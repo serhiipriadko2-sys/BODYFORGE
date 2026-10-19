@@ -48,6 +48,7 @@ export class SquatCounter {
   private lowestAngle: number | null = null;
   private lastRepAt = Number.NEGATIVE_INFINITY;
   private lastVisibleAt: number | null = null;
+  private trackedSide: KneeSide | null = null;
 
   private resetPoseTracking(): void {
     // Preserve completed reps while ensuring an obscured rep cannot finish unseen.
@@ -59,6 +60,7 @@ export class SquatCounter {
     this.descentAt = null;
     this.bottomAt = null;
     this.lowestAngle = null;
+    this.trackedSide = null;
   }
 
   reset(): void {
@@ -88,7 +90,7 @@ export class SquatCounter {
       : Math.max(MIN_STANDING_ANGLE, this.standingAngle - RETURN_TOLERANCE);
   }
 
-  update(rawAngle: number | null, now: number): CounterSnapshot {
+  update(rawAngle: number | null, now: number, side: KneeSide | null = null): CounterSnapshot {
     if (this.lastVisibleAt !== null && now - this.lastVisibleAt > LOST_POSE_MS) {
       this.resetPoseTracking();
       this.lastVisibleAt = null;
@@ -97,6 +99,13 @@ export class SquatCounter {
     if (rawAngle === null || !Number.isFinite(rawAngle) || rawAngle < 45 || rawAngle > 180) {
       return this.snapshot('find-body', false);
     }
+
+    // A cycle must belong to one leg. A brief missing observation keeps that
+    // identity; a real side change discards only the unfinished attempt.
+    if (side !== null && this.trackedSide !== null && side !== this.trackedSide) {
+      this.resetPoseTracking();
+    }
+    if (side !== null) this.trackedSide = side;
 
     this.lastVisibleAt = now;
     // Quick enough for a squat whose lowest point is visible for only a few frames.
@@ -204,8 +213,11 @@ export interface PosePoint {
 export type KneeSide = 'left' | 'right';
 interface KneeCandidate { angle: number; confidence: number; side: KneeSide }
 
-function jointAngle(a: PosePoint, b: PosePoint, c: PosePoint): number {
-  const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+function jointAngle(a: PosePoint, b: PosePoint, c: PosePoint, frameAspectRatio: number): number {
+  // MediaPipe normalizes x by video width and y by video height. Restore
+  // equal image units before measuring; the CSS viewport may have another ratio.
+  const radians = Math.atan2(c.y - b.y, (c.x - b.x) * frameAspectRatio)
+    - Math.atan2(a.y - b.y, (a.x - b.x) * frameAspectRatio);
   const degrees = Math.abs(radians * 180 / Math.PI);
   return degrees > 180 ? 360 - degrees : degrees;
 }
@@ -215,7 +227,8 @@ function validSegment(a: PosePoint, b: PosePoint): boolean {
 }
 
 /** MediaPipe normalized landmarks: left 23/25/27; right 24/26/28. */
-function kneeCandidates(landmarks: PosePoint[]): KneeCandidate[] {
+function kneeCandidates(landmarks: PosePoint[], frameAspectRatio: number): KneeCandidate[] {
+  if (!Number.isFinite(frameAspectRatio) || frameAspectRatio <= 0) return [];
   const candidates: KneeCandidate[] = [];
   for (const [side, hip, knee, ankle] of [
     ['left', 23, 25, 27],
@@ -231,7 +244,7 @@ function kneeCandidates(landmarks: PosePoint[]): KneeCandidate[] {
         p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1 &&
         (p.presence ?? 1) >= 0.4)) continue;
     if (!validSegment(a, b) || !validSegment(b, c)) continue;
-    const angle = jointAngle(a, b, c);
+    const angle = jointAngle(a, b, c, frameAspectRatio);
     if (Number.isFinite(angle) && angle >= 45 && angle <= 180) {
       candidates.push({ angle, confidence, side });
     }
@@ -239,8 +252,10 @@ function kneeCandidates(landmarks: PosePoint[]): KneeCandidate[] {
   return candidates;
 }
 
-export function getKneeAngle(landmarks: PosePoint[]): number | null {
-  const sorted = kneeCandidates(landmarks).sort((a, b) => b.confidence - a.confidence);
+/** Use intrinsic videoWidth / videoHeight, not the displayed camera frame.
+ * The default preserves callers with square/equal-unit coordinates. */
+export function getKneeAngle(landmarks: PosePoint[], frameAspectRatio = 1): number | null {
+  const sorted = kneeCandidates(landmarks, frameAspectRatio).sort((a, b) => b.confidence - a.confidence);
   return sorted[0]?.angle ?? null;
 }
 
@@ -249,8 +264,8 @@ export class StableKneeTracker {
   private preferred: KneeSide | null = null;
   reset(): void { this.preferred = null; }
 
-  update(landmarks: PosePoint[]): { angle: number | null; side: KneeSide | null } {
-    const candidates = kneeCandidates(landmarks);
+  update(landmarks: PosePoint[], frameAspectRatio = 1): { angle: number | null; side: KneeSide | null } {
+    const candidates = kneeCandidates(landmarks, frameAspectRatio);
     const previous = candidates.find((entry) => entry.side === this.preferred);
     const chosen = previous ?? candidates.sort((a, b) => b.confidence - a.confidence)[0];
     if (!chosen) return { angle: null, side: null };

@@ -22,7 +22,7 @@ import {
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, portraitCameraConstraints,
-  zoomConstraints, DEFAULT_CAMERA,
+  zoomConstraints, DEFAULT_CAMERA, VideoFrameGate,
   type CameraDeviceOption, type CameraOrientation, type CameraSource, type CameraZoom,
 } from './lib/camera';
 import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
@@ -183,15 +183,32 @@ function App() {
   const aliveRef = useRef(false);
   const requestIdRef = useRef(0);
   const lastInferenceAtRef = useRef(0);
+  const videoFramesRef = useRef(new VideoFrameGate());
+  const captureRequestedRef = useRef(false);
+  const streamCleanupRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => persistProfile(profile), [profile]);
+  useEffect(() => { persistProfile(profile); }, [profile]);
+
+  const invalidateObservation = useCallback(() => {
+    videoFramesRef.current.reset();
+    lastInferenceAtRef.current = 0;
+    kneeTrackerRef.current.reset();
+    setPoseGuidance(poseGuidanceRef.current.reset());
+    setTrackingSide(null);
+    setPoseFound(false);
+    setSnapshot(counterRef.current.recalibrate());
+  }, []);
 
   const stopCapture = useCallback(() => {
+    captureRequestedRef.current = false;
     aliveRef.current = false;
     requestIdRef.current++;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = null;
     scanRef.current = null;
+    streamCleanupRef.current?.();
+    streamCleanupRef.current = null;
+    videoFramesRef.current.reset();
     for (const track of streamRef.current?.getTracks() ?? []) track.stop();
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
@@ -200,6 +217,26 @@ function App() {
     const canvas = canvasRef.current;
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
+
+  const interruptCapture = useCallback((message: string) => {
+    stopCapture();
+    setError(message);
+    setMode('error');
+  }, [stopCapture]);
+
+  useEffect(() => {
+    const leave = () => {
+      if (!captureRequestedRef.current) return;
+      interruptCapture('Приложение ушло в фон. Камера остановлена без награды. Начни испытание заново.');
+    };
+    const visibility = () => { if (document.hidden) leave(); };
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('pagehide', leave);
+    return () => {
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('pagehide', leave);
+    };
+  }, [interruptCapture]);
 
   const refreshCameraDevices = useCallback(async () => {
     if (!navigator.mediaDevices?.enumerateDevices) return;
@@ -241,14 +278,38 @@ function App() {
         throw new DOMException('Camera request cancelled', 'AbortError');
       }
       setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
+      videoFramesRef.current.reset();
       const track = stream.getVideoTracks()[0];
       if (track) {
-        track.addEventListener('ended', () => {
-          if (requestId !== requestIdRef.current || streamRef.current !== stream) return;
-          stopCapture();
-          setError('Камера отключилась во время испытания. Проверь её и начни заново.');
-          setMode('error');
-        }, { once: true });
+        const ownsStream = () => requestId === requestIdRef.current && streamRef.current === stream;
+        const ended = () => {
+          if (ownsStream()) interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
+        };
+        const muted = () => {
+          if (!ownsStream()) return;
+          invalidateObservation();
+          setCameraMessage('Камера временно не передаёт кадры. Засчитанные повторы сохранены.');
+        };
+        const resumed = () => {
+          if (!ownsStream()) return;
+          invalidateObservation();
+          setCameraMessage('Кадры снова поступают. Встань прямо для повторной калибровки.');
+        };
+        const resized = () => {
+          if (!ownsStream()) return;
+          setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
+          invalidateObservation();
+        };
+        track.addEventListener('ended', ended);
+        track.addEventListener('mute', muted);
+        track.addEventListener('unmute', resumed);
+        video.addEventListener('resize', resized);
+        streamCleanupRef.current = () => {
+          track.removeEventListener('ended', ended);
+          track.removeEventListener('mute', muted);
+          track.removeEventListener('unmute', resumed);
+          video.removeEventListener('resize', resized);
+        };
         try {
           const capabilities = track.getCapabilities() as MediaTrackCapabilities & {
             zoom?: { min: number; max: number; step?: number };
@@ -263,11 +324,15 @@ function App() {
       return stream;
     } catch (error) {
       stream.getTracks().forEach((track) => track.stop());
-      if (streamRef.current === stream) streamRef.current = null;
+      if (streamRef.current === stream) {
+        streamCleanupRef.current?.();
+        streamCleanupRef.current = null;
+        streamRef.current = null;
+      }
       if (video.srcObject === stream) video.srcObject = null;
       throw error;
     }
-  }, [refreshCameraDevices, stopCapture]);
+  }, [refreshCameraDevices, invalidateObservation, interruptCapture]);
 
   useEffect(() => () => {
     stopCapture();
@@ -365,6 +430,12 @@ function App() {
       }
     }
 
+    if (document.hidden) {
+      setError('Вернись в приложение, чтобы начать испытание с камерой.');
+      setMode('error');
+      return;
+    }
+    captureRequestedRef.current = true;
     setMode('loading');
     const requestId = requestIdRef.current;
     let stream: MediaStream | null = null;
@@ -373,6 +444,7 @@ function App() {
       stream = await connectCamera(cameraSource, requestId);
 
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
+      if (requestId !== requestIdRef.current) return;
       const sharedOptions = {
         baseOptions: { modelAssetPath: MODEL_URL },
         runningMode: 'VIDEO' as const,
@@ -387,6 +459,7 @@ function App() {
           baseOptions: { ...sharedOptions.baseOptions, delegate: 'GPU' },
         });
       } catch {
+        if (requestId !== requestIdRef.current) return;
         landmarker = await PoseLandmarker.createFromOptions(vision, {
           ...sharedOptions,
           baseOptions: { ...sharedOptions.baseOptions, delegate: 'CPU' },
@@ -401,19 +474,29 @@ function App() {
       setMode('active');
 
       const scan = (time: number) => {
-        if (!aliveRef.current || !landmarkerRef.current || !videoRef.current) return;
+        if (requestId !== requestIdRef.current || !aliveRef.current || !landmarkerRef.current || !videoRef.current) return;
+        if (document.hidden) {
+          interruptCapture('Приложение ушло в фон. Камера остановлена без награды. Начни испытание заново.');
+          return;
+        }
         const liveVideo = videoRef.current;
-        if (liveVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && time - lastInferenceAtRef.current >= 90) {
+        const liveTrack = streamRef.current?.getVideoTracks()[0];
+        if (!liveTrack || liveTrack.readyState !== 'live') {
+          interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
+          return;
+        }
+        if (!liveTrack.muted && liveVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+            time - lastInferenceAtRef.current >= 90 && videoFramesRef.current.accept(liveVideo.currentTime)) {
           lastInferenceAtRef.current = time;
           try {
             const result = landmarkerRef.current.detectForVideo(liveVideo, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points);
-            const measured = kneeTrackerRef.current.update(points ?? []);
+            const measured = kneeTrackerRef.current.update(points ?? [], liveVideo.videoWidth / liveVideo.videoHeight);
             setPoseGuidance(poseGuidanceRef.current.update(points, measured.angle, time));
             setPoseFound(Boolean(points?.length));
             setTrackingSide(measured.side);
-            const next = counterRef.current.update(measured.angle, time);
+            const next = counterRef.current.update(measured.angle, time, measured.side);
             setSnapshot(next);
             if (next.counted) {
               if (startedAtRef.current !== null) splitsRef.current.push(Math.max(0, time - startedAtRef.current));
@@ -460,7 +543,7 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource]);
+  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture]);
 
   /** Zoom uses the real capture track, never CSS stretching of the skeleton. */
   const changeCameraZoom = useCallback(async (requested: number) => {
@@ -479,10 +562,7 @@ function App() {
       }
       setCameraZoom((previous) => previous ? { ...previous, current: actual } : null);
       if (actual < .95) setShowFullFrame(true);
-      kneeTrackerRef.current.reset();
-      setPoseGuidance(poseGuidanceRef.current.reset());
-      setTrackingSide(null);
-      setSnapshot(counterRef.current.recalibrate());
+      invalidateObservation();
       setCameraMessage('Масштаб изменён. Встань прямо: повторная калибровка без потери приседаний.');
     } catch {
       setCameraMessage('Этот масштаб недоступен в браузере телефона.');
@@ -490,7 +570,7 @@ function App() {
       zoomBusyRef.current = false;
       setCameraBusy(false);
     }
-  }, [mode, cameraZoom]);
+  }, [mode, cameraZoom, invalidateObservation]);
 
   /** On mobile, switching lenses releases the previous track before opening a
    * new one. The elapsed timer continues. Already-counted reps are preserved. */
@@ -522,6 +602,8 @@ function App() {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = null;
     const previousStream = streamRef.current;
+    streamCleanupRef.current?.();
+    streamCleanupRef.current = null;
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     previousStream.getTracks().forEach((track) => track.stop());
@@ -529,12 +611,7 @@ function App() {
     const resume = (source: CameraSource) => {
       if (requestId !== requestIdRef.current) return;
       setCameraSource(source);
-      kneeTrackerRef.current.reset();
-      setPoseGuidance(poseGuidanceRef.current.reset());
-      setTrackingSide(null);
-      setPoseFound(false);
-      setSnapshot(counterRef.current.recalibrate());
-      lastInferenceAtRef.current = 0;
+      invalidateObservation();
       aliveRef.current = true;
       if (scanRef.current) frameRef.current = requestAnimationFrame(scanRef.current);
     };
@@ -565,7 +642,7 @@ function App() {
       switchingRef.current = false;
       setCameraBusy(false);
     }
-  }, [mode, cameraSource, cameraDevices, cameraZoom, connectCamera, changeCameraZoom, stopCapture]);
+  }, [mode, cameraSource, cameraDevices, cameraZoom, connectCamera, changeCameraZoom, stopCapture, invalidateObservation]);
 
   const level = getLevel(profile.xp);
   const levelPercent = Math.round(getLevelProgress(profile.xp) * 100);
@@ -801,7 +878,7 @@ function App() {
               setProfile((previous) => claimDailyQuest(previous, now));
             }}
             onTraining={() => goTraining('training')}/>
-          <ForgeStudio profile={profile}
+          <ForgeStudio profile={profile} paused={isCameraShown}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
             onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
           <TowerBoard profile={profile}

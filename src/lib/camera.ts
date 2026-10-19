@@ -7,6 +7,35 @@ export type CameraSource =
 
 export const DEFAULT_CAMERA: CameraSource = { kind: 'facing', value: 'user' };
 
+/** RAF ticks are not camera observations. Accept each advancing source time
+ * once; a newly connected stream starts its own video clock. */
+export class VideoFrameGate {
+  private lastTime: number | null = null;
+
+  reset(): void { this.lastTime = null; }
+
+  accept(currentTime: number): boolean {
+    if (!Number.isFinite(currentTime) || currentTime < 0 ||
+        (this.lastTime !== null && currentTime <= this.lastTime)) return false;
+    this.lastTime = currentTime;
+    return true;
+  }
+}
+
+/** Expire the displayed pose even when a live track freezes without a mute event.
+ * Uses the RAF monotonic clock, independently of the stalled video's clock. */
+export class CameraFrameWatchdog {
+  private observedAt: number | null = null;
+
+  reset(): void { this.observedAt = null; }
+
+  observe(fresh: boolean, now: number): boolean {
+    if (fresh || this.observedAt === null) this.observedAt = now;
+    // Match the counter's lost-observation window; slower input must recalibrate.
+    return now - this.observedAt >= 900;
+  }
+}
+
 export interface CameraDeviceOption {
   deviceId: string;
   label: string;

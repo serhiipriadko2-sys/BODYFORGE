@@ -140,6 +140,9 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       const onContextLost = (event: Event) => {
         event.preventDefault();
         console.warn('BODYFORGE 3D context lost');
+        // A fallback replaces the canvas without unmounting this component.
+        // Stop its runtime now, before later profile updates can redraw it.
+        currentRuntime.stopped();
         setAvailable(false);
       };
       element.addEventListener('pointerdown', onPointerDown);
@@ -180,8 +183,11 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
         current: null as THREE.Group | null,
         redraw,
         stopped: () => {
+          if (disposed) return;
           disposed = true;
           if (animation !== null) cancelAnimationFrame(animation);
+          animation = null;
+          if (runtime.current === currentRuntime) runtime.current = null;
           element.removeEventListener('pointerdown', onPointerDown);
           element.removeEventListener('pointermove', onPointerMove);
           element.removeEventListener('pointerup', onPointerUp);

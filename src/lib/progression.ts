@@ -8,6 +8,8 @@ export const XP_REWARD = 120;
 export const COIN_REWARD = 35;
 // Do not change the key: upgrading a game must not destroy prior workout progress.
 const STORAGE_KEY = 'bodyforge:pilot:v1';
+export const PROFILE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
+const QUARANTINE_PREFIX = `${STORAGE_KEY}:quarantine:`;
 
 export interface Workout {
   id: string;
@@ -26,6 +28,14 @@ export interface Profile {
   workouts: Workout[];
   game: GameState;
 }
+
+export interface ProfileLoadResult {
+  profile: Profile;
+  status: 'ready' | 'empty' | 'recovery-required' | 'unavailable';
+  backupAvailable: boolean;
+}
+
+export type ProfilePersistResult = 'saved' | 'recovery-required' | 'unavailable';
 
 export const EMPTY_PROFILE: Profile = { xp: 0, coins: 0, workouts: [], game: freshGame() };
 
@@ -57,14 +67,20 @@ export function bestTime(workouts: Workout[]): number | null {
 
 export interface WorkoutOptions { mode?: WorkoutMode; splitsMs?: number[] }
 
+function validWorkoutSplits(splits: unknown, durationMs: number): splits is number[] {
+  // Saves and runtime input can violate TypeScript types; array-like values are not split times.
+  return Array.isArray(splits) && splits.length === TARGET_REPS && Array.from(splits).every((ms, i) =>
+    typeof ms === 'number' && Number.isFinite(ms) && ms >= 0 && ms <= durationMs
+      && (i === 0 || ms >= splits[i - 1]));
+}
+
 /** Applies a verified *local* camera result; not an anti-cheat proof for online PvP. */
 export function addCompletedWorkout(
   profile: Profile, durationMs: number, now = new Date(), options: WorkoutOptions = {},
 ): Profile {
   if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('Время тренировки должно быть положительным');
   const splits = options.splitsMs;
-  const validSplits = splits && splits.length === TARGET_REPS && splits.every((ms, i) =>
-    Number.isFinite(ms) && ms >= 0 && ms <= durationMs && (i === 0 || ms >= splits[i - 1]));
+  const validSplits = validWorkoutSplits(splits, durationMs);
   const workout: Workout = {
     id: `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`,
     finishedAt: now.toISOString(),
@@ -84,13 +100,17 @@ export function addCompletedWorkout(
   return options.mode === 'tower' ? beatTowerFloor(withGhost, durationMs) : withGhost;
 }
 
-export function parseProfile(value: unknown): Profile {
-  const empty = (): Profile => ({ ...EMPTY_PROFILE, workouts: [], game: freshGame() });
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return empty();
+function validProfileRoot(value: unknown): value is Pick<Profile, 'xp' | 'coins' | 'workouts'> & { game?: unknown } {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const record = value as Partial<Profile>;
-  if (typeof record.xp !== 'number' || !Number.isFinite(record.xp) || record.xp < 0 ||
-      typeof record.coins !== 'number' || !Number.isFinite(record.coins) || record.coins < 0 ||
-      !Array.isArray(record.workouts)) return empty();
+  return typeof record.xp === 'number' && Number.isFinite(record.xp) && record.xp >= 0
+    && typeof record.coins === 'number' && Number.isFinite(record.coins) && record.coins >= 0
+    && Array.isArray(record.workouts);
+}
+
+export function parseProfile(value: unknown): Profile {
+  if (!validProfileRoot(value)) return { ...EMPTY_PROFILE, workouts: [], game: freshGame() };
+  const record = value;
   const workouts = record.workouts.filter((item): item is Workout => {
     if (typeof item !== 'object' || item === null) return false;
     return typeof item.id === 'string' && typeof item.finishedAt === 'string'
@@ -98,32 +118,99 @@ export function parseProfile(value: unknown): Profile {
       && typeof item.durationMs === 'number' && Number.isFinite(item.durationMs) && item.durationMs > 0
       && item.repetitions === TARGET_REPS && typeof item.xp === 'number' && Number.isFinite(item.xp) && item.xp >= 0;
   }).slice(0, 60).map((workout) => {
-    const splits = workout.splitsMs;
-    if (!splits || splits.length !== TARGET_REPS || !splits.every((ms, i) =>
-      Number.isFinite(ms) && ms >= 0 && ms <= workout.durationMs && (i === 0 || ms >= splits[i - 1]))) {
-      const { splitsMs: _, ...rest } = workout;
-      void _;
-      return rest;
-    }
-    return workout;
+    const { splitsMs, mode, ...rest } = workout;
+    return {
+      ...rest,
+      ...(mode === 'training' || mode === 'tower' || mode === 'ghost' ? { mode } : {}),
+      ...(validWorkoutSplits(splitsMs, workout.durationMs) ? { splitsMs: [...splitsMs] } : {}),
+    };
   });
   return { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
 }
 
-export function loadProfile(): Profile {
-  if (typeof window === 'undefined') return { ...EMPTY_PROFILE, workouts: [], game: freshGame() };
+function decodeStoredProfile(raw: string | null): Profile | null {
+  if (raw === null) return null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? parseProfile(JSON.parse(raw) as unknown) : parseProfile(null);
+    const value: unknown = JSON.parse(raw);
+    return validProfileRoot(value) ? parseProfile(value) : null;
   } catch {
-    return parseProfile(null);
+    return null;
   }
 }
 
-export function persistProfile(profile: Profile): void {
+export function loadProfileState(): ProfileLoadResult {
+  const empty = parseProfile(null);
+  if (typeof window === 'undefined') return { profile: empty, status: 'unavailable', backupAvailable: false };
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const profile = decodeStoredProfile(raw);
+    if (profile) return { profile, status: 'ready', backupAvailable: false };
+    const backupRaw = localStorage.getItem(PROFILE_BACKUP_KEY);
+    return {
+      profile: empty,
+      status: raw !== null || backupRaw !== null ? 'recovery-required' : 'empty',
+      backupAvailable: decodeStoredProfile(backupRaw) !== null,
+    };
   } catch {
-    // Restricted storage can reject writes. The current browser session still works.
+    return { profile: empty, status: 'unavailable', backupAvailable: false };
+  }
+}
+
+/** Compatibility wrapper. Automatic persistence still independently protects unreadable originals. */
+export function loadProfile(): Profile {
+  return loadProfileState().profile;
+}
+
+function writeVerified(key: string, raw: string): boolean {
+  localStorage.setItem(key, raw);
+  return localStorage.getItem(key) === raw;
+}
+
+export function persistProfile(profile: Profile): ProfilePersistResult {
+  if (!validProfileRoot(profile)) return 'unavailable';
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const previous = decodeStoredProfile(raw);
+    // Recheck on every save, including the initial React effect and other tabs' changes.
+    if (raw !== null && !previous) return 'recovery-required';
+    if (raw === null && localStorage.getItem(PROFILE_BACKUP_KEY) !== null) return 'recovery-required';
+    const next = JSON.stringify(parseProfile(profile));
+    const backup = previous ? JSON.stringify(previous) : next;
+    // Preserve a validated fallback before touching the primary; quota/no-op failures fail closed.
+    if (!writeVerified(PROFILE_BACKUP_KEY, backup)) return 'unavailable';
+    if (localStorage.getItem(STORAGE_KEY) !== raw) return 'recovery-required';
+    return writeVerified(STORAGE_KEY, next) ? 'saved' : 'unavailable';
+  } catch {
+    return 'unavailable';
+  }
+}
+
+/** Explicit user action only: preserve the exact damaged original before replacing it. */
+export function recoverProfile(source: 'backup' | 'empty'): ProfileLoadResult {
+  const state = loadProfileState();
+  if (state.status !== 'recovery-required') return state;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const backupRaw = localStorage.getItem(PROFILE_BACKUP_KEY);
+    const restored = source === 'backup' ? decodeStoredProfile(backupRaw) : parseProfile(null);
+    if (!restored) return state;
+    // If the primary was removed, preserve the surviving backup before a deliberate fresh start.
+    const original = raw ?? backupRaw;
+    if (original !== null) {
+      let preserved = false;
+      for (let index = 0; index < 1000; index += 1) {
+        const key = `${QUARANTINE_PREFIX}${index}`;
+        const existing = localStorage.getItem(key);
+        if (existing === original) { preserved = true; break; }
+        if (existing === null) { preserved = writeVerified(key, original); break; }
+      }
+      if (!preserved) return { ...state, status: 'unavailable' };
+    }
+    // A changed primary is never overwritten using a stale recovery decision.
+    if (localStorage.getItem(STORAGE_KEY) !== raw) return loadProfileState();
+    if (!writeVerified(STORAGE_KEY, JSON.stringify(restored))) return { ...state, status: 'unavailable' };
+    return loadProfileState();
+  } catch {
+    return { ...state, status: 'unavailable' };
   }
 }

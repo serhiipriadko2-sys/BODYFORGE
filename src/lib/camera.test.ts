@@ -1,5 +1,61 @@
 import { describe, expect, it } from 'vitest';
-import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints } from './camera';
+import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints, VideoFrameGate, CameraFrameWatchdog } from './camera';
+import { SquatCounter } from './squatCounter';
+
+describe('fresh camera observations', () => {
+  it('expires frozen observations without mute and resumes only on a fresh frame', () => {
+    const watchdog = new CameraFrameWatchdog();
+    expect(watchdog.observe(true, 100)).toBe(false);
+    expect(watchdog.observe(false, 999)).toBe(false);
+    expect(watchdog.observe(false, 1000)).toBe(true);
+    expect(watchdog.observe(false, 2000)).toBe(true);
+    expect(watchdog.observe(true, 2100)).toBe(false);
+    expect(watchdog.observe(false, 2999)).toBe(false);
+    expect(watchdog.observe(false, 3000)).toBe(true);
+  });
+
+  it('also expires an empty stream and resets the timer for a new session', () => {
+    const watchdog = new CameraFrameWatchdog();
+    expect(watchdog.observe(false, 100)).toBe(false);
+    expect(watchdog.observe(false, 1000)).toBe(true);
+    watchdog.reset();
+    expect(watchdog.observe(false, 5000)).toBe(false);
+    expect(watchdog.observe(false, 5899)).toBe(false);
+    expect(watchdog.observe(true, 5900)).toBe(false);
+    expect(watchdog.observe(false, 6799)).toBe(false);
+  });
+
+  it('does not finish a repetition by repeatedly processing one frozen frame', () => {
+    const gate = new VideoFrameGate();
+    const counter = new SquatCounter();
+    const sequence = [170, 170, 170, 140, 123, 98, 91, 89, 90, 90, 118, 142, 167];
+    let count = 0;
+    sequence.forEach((angle, index) => {
+      if (gate.accept(index / 10)) count = counter.update(angle, index * 100).count;
+    });
+    for (const now of [1300, 1400, 1500, 1800]) {
+      if (gate.accept(1.2)) count = counter.update(167, now).count;
+    }
+    expect(count).toBe(0);
+    expect(gate.accept(2.4)).toBe(true);
+    const resumed = counter.update(170, 2400);
+    expect(resumed.phase).toBe('calibrate');
+    expect(resumed.count).toBe(0);
+  });
+
+  it('requires advancing finite video time and accepts a new stream only after reset', () => {
+    const gate = new VideoFrameGate();
+    expect(gate.accept(Number.NaN)).toBe(false);
+    expect(gate.accept(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(gate.accept(-1)).toBe(false);
+    expect(gate.accept(0)).toBe(true);
+    expect(gate.accept(0)).toBe(false);
+    expect(gate.accept(1)).toBe(true);
+    expect(gate.accept(.5)).toBe(false);
+    gate.reset();
+    expect(gate.accept(0)).toBe(true);
+  });
+});
 
 describe('portrait-first camera', () => {
   it('requests a portrait feed instead of the previous 1280x720 landscape feed', () => {

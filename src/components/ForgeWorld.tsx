@@ -92,8 +92,9 @@ interface StudioProps {
   profile: Profile;
   onUpgrade: (muscle: Muscle) => void;
   onOutfit: (outfit: Outfit) => void;
+  paused?: boolean;
 }
-export function ForgeStudio({ profile, onUpgrade, onOutfit }: StudioProps) {
+export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false }: StudioProps) {
   const game = profile.game;
   const sum = MUSCLES.reduce((total, muscle) => total + game.muscles[muscle.id], 0);
   return (
@@ -104,7 +105,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit }: StudioProps) {
       </div>
       <div className="studio-layout">
         <div className="studio-preview"><span className="preview-kicker">ЭВОЛЮЦИЯ БОЙЦА</span>
-          <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}/>
+          <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit} paused={paused}/>
           <strong>{game.nickname}</strong>
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
