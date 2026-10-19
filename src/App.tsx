@@ -3,10 +3,16 @@ import {
   Activity, ArrowRight, Award, CameraOff, Check, ChevronRight,
   CircleHelp, Clock3, Coins, Dumbbell, Flame, Info,
   Hammer, Medal, Play, RotateCcw, ShieldCheck, Smartphone, Target,
-  TrendingUp, Trophy, Volume2, VolumeX, WifiOff, X, Zap,
+  Trophy, Volume2, VolumeX, WifiOff, X, Zap, Swords, Globe2, UserRound,
 } from 'lucide-react';
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
-import Avatar from './components/Avatar';
+import GameAvatar from './components/GameAvatar';
+import { DailyBoard, FighterSetup, ForgeStudio, OnlineBoard, TowerBoard } from './components/ForgeWorld';
+import {
+  buyOrEquipOutfit, claimDailyQuest, claimLogin, createFighter, ghostRepetitions,
+  nextTowerFloor, TOWER_FLOORS, upgradeMuscle,
+  type BodyBuild, type Muscle, type Outfit, type WorkoutMode,
+} from './lib/game';
 import {
   addCompletedWorkout, bestTime, COIN_REWARD, formatTime, getLevel,
   getLevelProgress, getRank, loadProfile, persistProfile,
@@ -139,6 +145,9 @@ function App() {
   const [section, setSection] = useState('dashboard');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
+  const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
+  const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
+  const [today, setToday] = useState(() => new Date());
   const [trackingSide, setTrackingSide] = useState<'left' | 'right' | null>(null);
   const [poseFound, setPoseFound] = useState(false);
 
@@ -149,6 +158,8 @@ function App() {
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const frameRef = useRef<number | null>(null);
   const counterRef = useRef(new SquatCounter());
+  const workoutModeRef = useRef<WorkoutMode>('training');
+  const splitsRef = useRef<number[]>([]);
   const kneeTrackerRef = useRef(new StableKneeTracker());
   const startedAtRef = useRef<number | null>(null);
   const aliveRef = useRef(false);
@@ -212,11 +223,22 @@ function App() {
     setSnapshot(FIRST_SNAPSHOT);
     setLastResultMs(null);
     setVideoOrientation('unknown');
+    setWorkoutMode('training');
+    workoutModeRef.current = 'training';
+    splitsRef.current = [];
     setError('');
     setMode('idle');
   }, [stopCapture]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (requestedMode: WorkoutMode = 'training') => {
+    if (!profile.game.created) {
+      navigate('onboarding');
+      return;
+    }
+    workoutModeRef.current = requestedMode;
+    setWorkoutMode(requestedMode);
+    splitsRef.current = [];
+    setLastChallenge(null);
     stopCapture();
     counterRef.current.reset();
     kneeTrackerRef.current.reset();
@@ -314,13 +336,26 @@ function App() {
             setTrackingSide(measured.side);
             const next = counterRef.current.update(measured.angle, time);
             setSnapshot(next);
-            if (next.counted && soundEnabled) playRepCue(audioRef.current, next.count >= TARGET_REPS);
+            if (next.counted) {
+              if (startedAtRef.current !== null) splitsRef.current.push(Math.max(0, time - startedAtRef.current));
+              if (soundEnabled) playRepCue(audioRef.current, next.count >= TARGET_REPS);
+            }
             if (next.calibrated && startedAtRef.current === null) startedAtRef.current = time;
             if (next.count >= TARGET_REPS) {
               const durationMs = Math.max(1, time - (startedAtRef.current ?? time));
               setElapsedMs(durationMs);
               setLastResultMs(durationMs);
-              setProfile((previous) => addCompletedWorkout(previous, durationMs));
+              const selectedMode = workoutModeRef.current;
+              const floor = nextTowerFloor(profile.game);
+              const victory = selectedMode === 'tower'
+                ? profile.game.highestClearedFloor < TOWER_FLOORS.length && durationMs <= floor.targetMs
+                : selectedMode === 'ghost' && profile.game.bestGhost
+                  ? durationMs < profile.game.bestGhost.durationMs : null;
+              setLastChallenge({ mode: selectedMode, victory });
+              setProfile((previous) => addCompletedWorkout(previous, durationMs, new Date(), {
+                mode: selectedMode, splitsMs: [...splitsRef.current],
+              }));
+              setToday(new Date());
               stopCapture();
               setMode('complete');
               return;
@@ -345,34 +380,55 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled]);
+  }, [stopCapture, soundEnabled, profile.game]);
 
   const level = getLevel(profile.xp);
   const levelPercent = Math.round(getLevelProgress(profile.xp) * 100);
   const best = useMemo(() => bestTime(profile.workouts), [profile.workouts]);
-  const repetitionsDone = profile.workouts.length * TARGET_REPS;
+  const repetitionsDone = profile.workouts.reduce((sum, workout) => sum + workout.repetitions, 0);
   const workoutCount = profile.workouts.length;
   const isCameraShown = mode === 'loading' || mode === 'active';
   const displayTime = mode === 'complete' ? (lastResultMs ?? 0) : elapsedMs;
 
   function navigate(id: string) {
-    setSection(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if ((mode === 'active' || mode === 'loading') && id !== 'challenge') return;
+    const destination = id === 'onboarding' ? 'dashboard' : id;
+    setSection(destination);
+    if (window.matchMedia('(max-width: 740px)').matches) {
+      // True mobile tabs: reveal the selected screen, then return to its top.
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
+  function goTraining(requestedMode: WorkoutMode = 'training') {
+    navigate('challenge');
+    void start(requestedMode);
+  }
+
+  const selectedFloor = nextTowerFloor(profile.game);
+  const opponentReps = mode === 'active' && workoutMode === 'tower'
+    ? Math.min(TARGET_REPS, Math.floor(elapsedMs / (selectedFloor.targetMs / TARGET_REPS)))
+    : mode === 'active' && workoutMode === 'ghost' && profile.game.bestGhost
+      ? ghostRepetitions(profile.game.bestGhost.splitsMs, elapsedMs) : 0;
+  const canNavigate = mode !== 'active' && mode !== 'loading';
+
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-screen={section}>
       <aside className="sidebar">
         <Brand />
         <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
         <nav className="nav-items" aria-label="Навигация">
-          <button className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
-          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} onClick={() => navigate('challenge')}><Target size={19} /> <span>Испытание</span><span className="nav-selected-dot" /></button>
-          <button className={`nav-item${section === 'progress' ? ' selected' : ''}`} onClick={() => navigate('progress')}><TrendingUp size={19} /> <span>Летопись</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
+          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} onClick={() => navigate('challenge')}><Target size={19} /> <span>Тренировка</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} onClick={() => navigate('forge')}><UserRound size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} onClick={() => navigate('tower')}><Swords size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} onClick={() => navigate('online')}><Globe2 size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-quote"><div className="quote-mark"><Hammer size={30} /></div><p>ЖАР<br /><span>ПРЕВРАЩАЕТ</span><br />ЖЕЛЕЗО В СИЛУ.</p><div className="quote-line" /></div>
-          <div className="sidebar-version"><span className="online-dot" /> BODYFORGE / FORGE 01 <span>v0.2</span></div>
+          <div className="sidebar-version"><span className="online-dot" /> BODYFORGE / MOBILE FIRST <span>v0.3</span></div>
         </div>
       </aside>
 
@@ -387,6 +443,11 @@ function App() {
         </header>
 
         <main className="content">
+          {!profile.game.created && <FighterSetup legacyWorkouts={profile.workouts.length}
+            onCreate={(build: BodyBuild, nickname: string) => {
+              setProfile((previous) => createFighter(previous, build, nickname));
+              setSection('dashboard');
+            }} />}
           <section className="intro" aria-label="Приветствие">
             <div className="intro-copy">
               <div className="eyebrow"><span className="tiny-spark" /> BODYFORGE / КУЗНИЦА ТЕЛА</div>
@@ -397,15 +458,23 @@ function App() {
             <div className="intro-badge"><div className="intro-badge-icon"><Flame size={26} /></div><div><strong>ГОРН РАЗОГРЕТ</strong><span>ПЕРВОЕ ИСПЫТАНИЕ ГОТОВО</span></div></div>
           </section>
 
+          <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
+            <div className="quickstart-copy"><span>ТВОЙ СЕГОДНЯШНИЙ ШАГ</span><strong>20 ПРИСЕДАНИЙ</strong>
+              <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
+            <button type="button" disabled={!profile.game.created || !canNavigate}
+              onClick={() => goTraining('training')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
+          </div>
+
           <section className="cards-grid" aria-label="Герой и испытание">
             <article className="character-card">
               <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
-              <div className="character-header"><div><div className="character-subtitle">ВЫКОВАНО ТВОИМИ УСИЛИЯМИ</div><h2>СТАЛЬНОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
+              <div className="character-header"><div><div className="character-subtitle">{profile.game.created ? profile.game.nickname : 'ВЫКОВАНО ТВОИМИ УСИЛИЯМИ'}</div><h2>СТАЛЬНОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
               <div className="avatar-stage">
                 <div className="forge-furnace" aria-hidden="true" /><div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
-                <Avatar workouts={workoutCount} />
-                <div className="power-label"><span className="online-dot" /><strong>ЗАКАЛКА</strong><span>{Math.min(workoutCount, 4)}/4</span></div>
+                <GameAvatar workouts={workoutCount} build={profile.game.build}
+                  muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown}/>
+                <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="character-footer">
                 <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
@@ -416,7 +485,7 @@ function App() {
 
             <article className={`challenge-card${isCameraShown ? ' challenge-card-live' : ''}`} id="challenge">
               <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ГОРНА</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
-              <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> ЗАКАЛКА №01 / СИЛА НОГ</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
+              <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> {workoutMode === 'tower' ? `БАШНЯ · ЭТАЖ ${selectedFloor.floor}` : workoutMode === 'ghost' ? 'БОЙ С ТЕНЬЮ' : 'ЗАКАЛКА №01 / СИЛА НОГ'}</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
 
               <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}`} data-camera-format="9:16">
                 <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
@@ -452,6 +521,24 @@ function App() {
                 {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ЗАХВАТ ДВИЖЕНИЯ / LIVE</div>}
               </div>
 
+              {mode === 'active' && workoutMode !== 'training' && (
+                <div className="opponent-race" role="status">
+                  <span>{workoutMode === 'tower' ? `БОТ «${selectedFloor.bot}»` : 'ТВОЯ ПРОШЛАЯ ТЕНЬ'}</span>
+                  <strong>{opponentReps}/20</strong>
+                  <span>{workoutMode === 'tower' ? `ЭТАЛОН: ${formatTime(selectedFloor.targetMs)}` :
+                    `РЕКОРД: ${formatTime(profile.game.bestGhost?.durationMs ?? 0)}`}</span>
+                </div>
+              )}
+              {mode === 'complete' && lastChallenge?.mode !== 'training' && lastChallenge && (
+                <div className={`battle-result ${lastChallenge.victory ? 'victory' : 'defeat'}`}>
+                  <Trophy size={23}/>
+                  <div><strong>{lastChallenge.victory ? 'ПОБЕДА!' : 'ПОПРОБУЙ ЕЩЁ'}</strong>
+                    <span>{lastChallenge.mode === 'tower'
+                      ? lastChallenge.victory ? 'Этаж башни взят, награда начислена.' : 'Бот оказался быстрее. Тренировочные XP сохранены.'
+                      : lastChallenge.victory ? 'Личный рекорд побит!' : 'Ты прошёл 20 повторений, но старая тень быстрее.'}</span>
+                  </div>
+                </div>
+              )}
               <div className="live-feedback" aria-live="polite">
                 {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
                   : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
@@ -472,14 +559,34 @@ function App() {
               </div>
 
               {mode === 'error' && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
-              {mode === 'idle' && <button className="primary-button" onClick={start}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>}
+              {mode === 'idle' && <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>}
               {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
               {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
-              {mode === 'error' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> РАЗЖЕЧЬ ГОРН СНОВА <ArrowRight size={19} /></button>}
-              {mode === 'complete' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
+              {mode === 'error' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> РАЗЖЕЧЬ ГОРН СНОВА <ArrowRight size={19} /></button>}
+              {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
             </article>
           </section>
+
+          <DailyBoard profile={profile} now={today}
+            onLogin={() => {
+              const now = new Date();
+              setToday(now);
+              setProfile((previous) => claimLogin(previous, now));
+            }}
+            onClaimQuest={() => {
+              const now = new Date();
+              setToday(now);
+              setProfile((previous) => claimDailyQuest(previous, now));
+            }}
+            onTraining={() => goTraining('training')}/>
+          <ForgeStudio profile={profile}
+            onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
+            onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
+          <TowerBoard profile={profile}
+            onTower={() => goTraining('tower')}
+            onGhost={() => goTraining('ghost')}/>
+          <OnlineBoard/>
 
           <section className="lower-grid" id="progress" aria-label="Прогресс тренировок">
             <div className="records-card">
@@ -501,7 +608,13 @@ function App() {
           <footer className="footer"><span><span className="footer-mark"><Hammer size={13} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>СТАЛЬ НЕ РОЖДАЕТСЯ ГОТОВОЙ.</span></footer>
         </main>
       </div>
-      <nav className="mobile-nav" aria-label="Мобильная навигация"><button onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21} /><span>ГОРН</span></button><button onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21} /><span>ТРЕНИРОВКА</span></button><button onClick={() => navigate('progress')} className={section === 'progress' ? 'active' : ''}><TrendingUp size={21} /><span>ЛЕТОПИСЬ</span></button></nav>
+      <nav className="mobile-nav" aria-label="Мобильная навигация">
+        <button type="button" disabled={!canNavigate} onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21}/><span>ГОРН</span></button>
+        <button type="button" onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21}/><span>КАМЕРА</span></button>
+        <button type="button" disabled={!canNavigate} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><UserRound size={21}/><span>ГЕРОЙ</span></button>
+        <button type="button" disabled={!canNavigate} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><Swords size={21}/><span>БАШНЯ</span></button>
+        <button type="button" disabled={!canNavigate} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><Globe2 size={21}/><span>ОНЛАЙН</span></button>
+      </nav>
       <div className="screen-grain" aria-hidden="true" />
       <div className="sr-only" aria-live="polite">{mode === 'complete' ? 'Тренировка окончена. Вы получили опыт и монеты.' : ''}</div>
     </div>

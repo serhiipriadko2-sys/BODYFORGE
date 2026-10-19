@@ -1,0 +1,135 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+
+const chromePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const port=9582, width=390, height=844;
+const profile=path.join(os.tmpdir(),'bf-e2e-20261019-'+process.pid);
+const chrome=spawn(chromePath,[
+  '--headless=new','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader',
+  '--no-first-run','--no-default-browser-check','--remote-allow-origins=*',
+  '--remote-debugging-port='+port,'--user-data-dir='+profile,
+  '--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream',
+  'about:blank',
+],{stdio:'ignore'});
+const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
+let socket,seq=0;const pending=new Map();
+async function endpoint(){
+  for(let i=0;i<75;i++){
+    try{const tabs=await(await fetch('http://127.0.0.1:'+port+'/json')).json();
+      const tab=tabs.find(t=>t.type==='page');
+      if(tab)return tab.webSocketDebuggerUrl;
+    }catch{} await sleep(200);
+  }throw Error('Chrome DevTools unavailable');
+}
+function cdp(method,params={}){
+  return new Promise((resolve,reject)=>{
+    const id=++seq;
+    const timer=setTimeout(()=>{pending.delete(id);reject(Error(method+' timeout'))},18000);
+    pending.set(id,(m)=>{clearTimeout(timer);m.error?reject(Error(JSON.stringify(m.error))):resolve(m.result)});
+    socket.send(JSON.stringify({id,method,params}));
+  });
+}
+async function js(expression){
+  const result=await cdp('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
+  if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
+  return result.result.value;
+}
+async function read(expression){return JSON.parse(await js('JSON.stringify('+expression+')'));}
+async function screenshot(name){
+  const shot=await cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  const file=path.join(os.tmpdir(),name);
+  fs.writeFileSync(file,Buffer.from(shot.data,'base64'));
+  console.log('SHOT',file,fs.statSync(file).size);
+}
+function check(ok,message){if(!ok)throw Error('FAIL '+message);console.log('PASS',message);}
+async function click(selector){
+  const found=await js('(()=>{const el=document.querySelector('+JSON.stringify(selector)+');if(!el)return false;el.click();return true;})()');
+  check(found,'click '+selector);
+  await sleep(300);
+}
+async function snapshot(){
+ return await read("({screen:document.querySelector('.app-shell')?.dataset.screen,scroll:document.documentElement.scrollWidth,viewport:innerWidth,setup:!!document.querySelector('#onboarding'), coins:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').coins,game:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game,three:[...document.querySelectorAll('[data-3d-status]')].map(x=>x.dataset['3dStatus'])})");
+}
+try{
+  const url=await endpoint();
+  socket=new WebSocket(url);
+  await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});
+  socket.addEventListener('message',e=>{
+    const m=JSON.parse(e.data.toString());
+    if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}
+    if(m.method==='Runtime.exceptionThrown')console.log('BROWSER_EXCEPTION',(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,270));
+    if(m.method==='Runtime.consoleAPICalled'&&m.params?.type==='error')
+      console.log('BROWSER_ERROR',JSON.stringify(m.params.args?.map(a=>a.value??a.description).slice(0,2)).slice(0,440));
+  });
+  await cdp('Runtime.enable');await cdp('Page.enable');
+  await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+  await cdp('Page.navigate',{url:'http://127.0.0.1:5173/'});
+  await sleep(3400);
+  let s=await snapshot();
+  console.log('INITIAL',JSON.stringify(s).slice(0,470));
+  check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
+  check(s.three.includes('active'),'WebGL 3D hero active');
+  await screenshot('bf-qa-mobile-setup.png');
+  await click('.build-options button:nth-child(2)');
+  await click('#onboarding .forge-solid-button');
+  s=await snapshot();
+  console.log('CREATED',JSON.stringify(s).slice(0,440));
+  check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');
+  await click('.mobile-nav button:nth-child(3)');
+  const nav=await read("({screen:document.querySelector('.app-shell').dataset.screen,studioTop:document.querySelector('#forge')?.getBoundingClientRect().top,introDisplay:getComputedStyle(document.querySelector('.intro')).display,studioDisplay:getComputedStyle(document.querySelector('#forge')).display})");
+  console.log('FORGE_NAV',JSON.stringify(nav));
+  check(nav.screen==='forge'&&nav.studioTop>=0&&nav.studioTop<340&&nav.introDisplay==='none'&&nav.studioDisplay!=='none','mobile tab reveals actual forge screen');
+  await sleep(1600);
+  const studio=await read("({three:document.querySelector('#forge [data-3d-status]')?.dataset['3dStatus'],canvas:!!document.querySelector('#forge canvas'),scroll:document.documentElement.scrollWidth})");
+  console.log('STUDIO_3D',JSON.stringify(studio));
+  check(studio.three==='active'&&studio.canvas,'studio renders real 3D avatar');
+  await screenshot('bf-qa-mobile-forge.png');
+  await click('.mobile-nav button:nth-child(1)');
+  await click('#quests .quest-button');
+  s=await snapshot();
+  check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
+  // QA-only wallet top-up in this disposable Chrome profile. Never changes actual user data.
+  await js("(()=>{const key='bodyforge:pilot:v1',p=JSON.parse(localStorage.getItem(key));p.coins=180;localStorage.setItem(key,JSON.stringify(p));return true})()");
+  await cdp('Page.reload',{ignoreCache:true});await sleep(1850);
+  await click('.mobile-nav button:nth-child(3)');
+  await sleep(800);
+  await click('#forge .muscle-card button');
+  s=await snapshot();
+  check(s.game.muscles.arms===1&&s.coins===155,'muscle upgrade spends coins and changes state');
+  await click('#forge .outfit-item:nth-child(2)');
+  s=await snapshot();
+  check(s.game.outfit==='ember'&&s.coins===95,'outfit purchase persists color choice');
+  await screenshot('bf-qa-mobile-forge-upgraded.png');
+  await cdp('Page.reload',{ignoreCache:true});await sleep(1700);
+  s=await snapshot();
+  check(!s.setup&&s.game.muscles.arms===1&&s.game.outfit==='ember'&&s.coins===95,'save survives reload');
+  await click('.mobile-nav button:nth-child(4)');
+  const tower=await read("({screen:document.querySelector('.app-shell').dataset.screen,top:document.querySelector('#tower').getBoundingClientRect().top,floors:document.querySelectorAll('.tower-floor').length,challengeDisplay:getComputedStyle(document.querySelector('#tower')).display})");
+  console.log('TOWER',JSON.stringify(tower));
+  check(tower.screen==='tower'&&tower.floors===5&&tower.top<340&&tower.challengeDisplay!=='none','solo tower shown on its own tab');
+  await screenshot('bf-qa-mobile-tower.png');
+  await click('.mobile-nav button:nth-child(5)');
+  const online=await read("({visible:getComputedStyle(document.querySelector('#online')).display,body:document.querySelector('#online')?.textContent?.includes('ОНЛАЙН ЕЩЁ НЕ ПОДКЛЮЧЁН')})");
+  check(online.visible!=='none'&&online.body,'online properly marked upcoming');
+  await click('.mobile-nav button:nth-child(2)');
+  const camera=await read("({screen:document.querySelector('.app-shell').dataset.screen,card:document.querySelector('#challenge')?.getBoundingClientRect().top,button:!!document.querySelector('#challenge .primary-button'),ratio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
+  console.log('CAMERA_TAB',JSON.stringify(camera));
+  check(camera.screen==='challenge'&&camera.card<340&&camera.button&&Math.abs(camera.ratio-9/16)<.006,'mobile camera tab with portrait stage');
+  await click('#challenge .primary-button');
+  for(let i=0;i<60;i++){await sleep(250);const mode=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',loading:!!document.querySelector('.loading-overlay')})");if(mode.active||mode.error){console.log('CAMERA_START',JSON.stringify(mode));check(mode.active&&!mode.error,'camera starts after 3D navigation');break;}if(i===59)throw Error('Camera did not start after 15 s');}
+  const context=await read("({active3d:[...document.querySelectorAll('[data-3d-status=active]')].length,stageRatio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
+  console.log('CAMERA_GPU',JSON.stringify(context));
+  check(context.active3d===0,'3D renderer suspends during camera inference');
+  await click('#challenge .secondary-button');
+  const stopped=await read("({video:!!document.querySelector('.camera-visible'),rewards:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp})");
+  check(!stopped.video&&stopped.rewards===0,'manual camera stop grants no XP');
+  await cdp('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
+  await sleep(500);
+  const small=await read("({viewport:innerWidth,scroll:document.documentElement.scrollWidth})");
+  console.log('SMALL_VIEWPORT',JSON.stringify(small));
+  check(small.viewport===360&&small.scroll<=360,'360 px mobile no horizontal overflow');
+  console.log('BODYFORGE_MOBILE_E2E_PASS');
+}catch(error){console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12}
+finally{socket?.close();chrome.kill();await sleep(400);try{fs.rmSync(profile,{recursive:true,force:true})}catch{}}
