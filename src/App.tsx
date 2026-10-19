@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Activity, ArrowRight, Award, Camera, CameraOff, Check, ChevronRight,
-  CircleHelp, Clock3, Coins, Dumbbell, Flame, Footprints, Info,
-  Medal, Play, RotateCcw, ScanLine, ShieldCheck, Target,
+  Activity, ArrowRight, Award, CameraOff, Check, ChevronRight,
+  CircleHelp, Clock3, Coins, Dumbbell, Flame, Info,
+  Hammer, Medal, Play, RotateCcw, ShieldCheck, Smartphone, Target,
   TrendingUp, Trophy, Volume2, VolumeX, WifiOff, X, Zap,
 } from 'lucide-react';
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
@@ -13,6 +13,7 @@ import {
   TARGET_REPS, XP_REWARD, type Profile,
 } from './lib/progression';
 import { getKneeAngle, SquatCounter, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
+import { cameraOrientation, portraitCameraConstraints, type CameraOrientation } from './lib/camera';
 
 type Mode = 'idle' | 'loading' | 'active' | 'complete' | 'error';
 
@@ -21,12 +22,12 @@ const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmark
 const FIRST_SNAPSHOT: CounterSnapshot = { count: 0, phase: 'calibrate', feedback: 'stand', angle: null, counted: false, calibrated: false };
 
 const FEEDBACK: Record<CounterFeedback, string> = {
-  'find-body': 'Встань чуть дальше — нужны ноги целиком',
-  stand: 'Встань боком и выпрями ноги для калибровки',
-  'go-down': 'Отлично! Теперь приседай',
-  lower: 'Ниже — до уверенного приседа',
-  rise: 'Поднимайся до прямых ног',
-  great: 'Повторение засчитано!',
+  'find-body': 'Отойди дальше: таз, колени и стопы должны быть в кадре',
+  stand: 'Встань боком и выпрями ноги — начинаем закалку',
+  'go-down': 'Горн зажжён. Начинай приседать',
+  lower: 'Ещё глубже — доведи движение до конца',
+  rise: 'Выпрями ноги. Заверши удар молота',
+  great: 'Удар засчитан. Куй дальше!',
 };
 
 function cameraErrorMessage(error: unknown): string {
@@ -81,7 +82,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
     const one = points[a];
     const two = points[b];
     if (!one || !two || (one.visibility ?? 1) < 0.5 || (two.visibility ?? 1) < 0.5) continue;
-    ctx.strokeStyle = '#caff42';
+    ctx.strokeStyle = '#ff9854';
     ctx.beginPath();
     ctx.moveTo(one.x * width, one.y * height);
     ctx.lineTo(two.x * width, two.y * height);
@@ -91,7 +92,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
     const point = points[index];
     if (!point || (point.visibility ?? 1) < 0.5) continue;
     ctx.beginPath();
-    ctx.fillStyle = '#efffd5';
+    ctx.fillStyle = '#ffe2c2';
     ctx.arc(point.x * width, point.y * height, Math.max(4, width / 180), 0, Math.PI * 2);
     ctx.fill();
   }
@@ -101,8 +102,8 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className="brand" aria-label="BODYFORGE">
-      <div className="brand-symbol"><span>B</span><i /></div>
-      {!compact && <div className="brand-copy"><strong>BODY<span>FORGE</span></strong><small>BUILD YOUR LEGEND</small></div>}
+      <div className="brand-symbol"><Hammer size={26} strokeWidth={2.8} /><i /></div>
+      {!compact && <div className="brand-copy"><strong>BODY<span>FORGE</span></strong><small>КУЗНИЦА ТЕЛА / EST. 2026</small></div>}
     </div>
   );
 }
@@ -114,12 +115,12 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
   return (
     <div className={`counter-circle${active ? ' counter-circle-active' : ''}`}>
       <svg viewBox="0 0 180 180" aria-hidden="true">
-        <circle cx="90" cy="90" r={radius} fill="none" stroke="#343c36" strokeWidth="7" />
-        <circle cx="90" cy="90" r={radius} fill="none" stroke="#ceff52" strokeWidth="7" strokeLinecap="round"
+        <circle cx="90" cy="90" r={radius} fill="none" stroke="#50392c" strokeWidth="7" />
+        <circle cx="90" cy="90" r={radius} fill="none" stroke="#ff8641" strokeWidth="7" strokeLinecap="round"
           strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} transform="rotate(-90 90 90)" />
-        <circle cx="90" cy="90" r="55" stroke="#c5ff4a" strokeOpacity=".09" strokeWidth="1" strokeDasharray="3 7" fill="none" />
+        <circle cx="90" cy="90" r="55" stroke="#ffad6b" strokeOpacity=".09" strokeWidth="1" strokeDasharray="3 7" fill="none" />
       </svg>
-      <div className="counter-inner"><span className="counter-number">{count}</span><span className="counter-divider" /><span className="counter-target">/ {TARGET_REPS}</span><small>ПОВТОРЕНИЙ</small></div>
+      <div className="counter-inner"><span className="counter-number">{count}</span><span className="counter-divider" /><span className="counter-target">/ {TARGET_REPS}</span><small>ПРИСЕДАНИЙ</small></div>
     </div>
   );
 }
@@ -133,6 +134,7 @@ function App() {
   const [lastResultMs, setLastResultMs] = useState<number | null>(null);
   const [section, setSection] = useState('dashboard');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -177,6 +179,21 @@ function App() {
     return () => clearInterval(id);
   }, [mode]);
 
+  // Keep the entire 9:16 window visible once a mobile workout starts.
+  // The start button lives below the frame; without scrolling, the live count
+  // may be hidden by the fixed bottom navigation.
+  useEffect(() => {
+    if (mode !== 'active' || !window.matchMedia('(max-width: 740px)').matches) return;
+    const frame = requestAnimationFrame(() => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelector('.training-visual')?.scrollIntoView({
+        block: 'center',
+        behavior: reduced ? 'instant' : 'smooth',
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [mode]);
+
   const cancel = useCallback(() => {
     stopCapture();
     counterRef.current.reset();
@@ -184,6 +201,7 @@ function App() {
     setElapsedMs(0);
     setSnapshot(FIRST_SNAPSHOT);
     setLastResultMs(null);
+    setVideoOrientation('unknown');
     setError('');
     setMode('idle');
   }, [stopCapture]);
@@ -196,6 +214,7 @@ function App() {
     setSnapshot(FIRST_SNAPSHOT);
     setElapsedMs(0);
     setLastResultMs(null);
+    setVideoOrientation('unknown');
     setError('');
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -220,10 +239,7 @@ function App() {
     let stream: MediaStream | null = null;
     let landmarker: PoseLandmarker | null = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 60 } },
-      });
+      stream = await navigator.mediaDevices.getUserMedia(portraitCameraConstraints());
       if (requestId !== requestIdRef.current) {
         stream.getTracks().forEach((track) => track.stop());
         return;
@@ -241,6 +257,7 @@ function App() {
       if (!video) throw new Error('Не найден видеоплеер');
       video.srcObject = stream;
       await video.play();
+      setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
 
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
       const sharedOptions = {
@@ -332,22 +349,22 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <Brand />
-        <div className="sidebar-section-label">ТВОЯ АРЕНА</div>
+        <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
         <nav className="nav-items" aria-label="Навигация">
-          <button className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Штаб героя</span><span className="nav-selected-dot" /></button>
+          <button className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
           <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} onClick={() => navigate('challenge')}><Target size={19} /> <span>Испытание</span><span className="nav-selected-dot" /></button>
-          <button className={`nav-item${section === 'progress' ? ' selected' : ''}`} onClick={() => navigate('progress')}><TrendingUp size={19} /> <span>Прогресс</span><span className="nav-selected-dot" /></button>
+          <button className={`nav-item${section === 'progress' ? ' selected' : ''}`} onClick={() => navigate('progress')}><TrendingUp size={19} /> <span>Летопись</span><span className="nav-selected-dot" /></button>
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-quote"><div className="quote-mark">“</div><p>ТВОЯ СИЛА<br /><span>НЕ В ИГРЕ.</span><br />ОНА В ТЕБЕ.</p><div className="quote-line" /></div>
-          <div className="sidebar-version"><span className="online-dot" /> BODYFORGE ALPHA <span>V.01</span></div>
+          <div className="sidebar-quote"><div className="quote-mark"><Hammer size={30} /></div><p>ЖАР<br /><span>ПРЕВРАЩАЕТ</span><br />ЖЕЛЕЗО В СИЛУ.</p><div className="quote-line" /></div>
+          <div className="sidebar-version"><span className="online-dot" /> BODYFORGE / FORGE 01 <span>v0.2</span></div>
         </div>
       </aside>
 
       <div className="main-area" id="dashboard">
         <header className="topbar">
           <div className="mobile-brand"><Brand compact /><strong>BODYFORGE</strong></div>
-          <div className="breadcrumbs"><span>ЛИЧНЫЙ ШТАБ</span><ChevronRight size={15} /><strong>ОБЗОР</strong></div>
+          <div className="breadcrumbs"><span>КУЗНИЦА ТЕЛА</span><ChevronRight size={15} /><strong>ГЛАВНЫЙ ГОРН</strong></div>
           <div className="topbar-right">
             <div className="currency-pill"><Coins size={17} /><strong>{profile.coins}</strong><span className="desktop-word">МОНЕТ</span></div>
             <div className="topbar-level"><div className="level-hex"><Zap size={17} fill="currentColor" /></div><div><small>УРОВЕНЬ ГЕРОЯ</small><strong>{String(level).padStart(2, '0')}</strong></div></div>
@@ -357,53 +374,56 @@ function App() {
         <main className="content">
           <section className="intro" aria-label="Приветствие">
             <div className="intro-copy">
-              <div className="eyebrow"><span className="tiny-spark" /> ТВОЯ ИГРА НАЧИНАЕТСЯ С ДВИЖЕНИЯ</div>
-              <h1>ПОСТРОЙ <em>СЕБЯ.</em><br /><span>ПРОКАЧАЙ ГЕРОЯ.</span></h1>
-              <p>Реальные упражнения. Настоящий прогресс. Каждое повторение делает тебя и твоего персонажа сильнее.</p>
+              <div className="eyebrow"><span className="tiny-spark" /> BODYFORGE / КУЗНИЦА ТЕЛА</div>
+              <h1>КУЙ <em>СВОЁ</em><br /><span>ТЕЛО.</span></h1>
+              <p>Ты не просто тренируешься — ты выковываешь нового себя. Каждое движение закаляет тело и делает твоего бойца сильнее.</p>
+              <div className="intro-mark"><Hammer size={16} /><span>КАЖДОЕ ПОВТОРЕНИЕ — УДАР МОЛОТА</span></div>
             </div>
-            <div className="intro-badge"><div className="intro-badge-icon"><Flame size={22} /></div><div><strong>РЕЖИМ: СТАРТ</strong><span>ТВОЯ ПЕРВАЯ ТРЕНИРОВКА ЖДЁТ</span></div></div>
+            <div className="intro-badge"><div className="intro-badge-icon"><Flame size={26} /></div><div><strong>ГОРН РАЗОГРЕТ</strong><span>ПЕРВОЕ ИСПЫТАНИЕ ГОТОВО</span></div></div>
           </section>
 
           <section className="cards-grid" aria-label="Герой и испытание">
             <article className="character-card">
-              <div className="card-topline"><span className="section-index">01 / ТВОЙ ПЕРСОНАЖ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
-              <div className="character-header"><div><div className="character-subtitle">ТВОЯ ЦИФРОВАЯ ФОРМА</div><h2>МОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
+              <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
+              <div className="character-header"><div><div className="character-subtitle">ВЫКОВАНО ТВОИМИ УСИЛИЯМИ</div><h2>СТАЛЬНОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
               <div className="avatar-stage">
-                <div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
+                <div className="forge-furnace" aria-hidden="true" /><div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
                 <Avatar workouts={workoutCount} />
-                <div className="power-label"><span className="online-dot" /><strong>СИЛА</strong><span>{Math.min(workoutCount, 4)}/4</span></div>
+                <div className="power-label"><span className="online-dot" /><strong>ЗАКАЛКА</strong><span>{Math.min(workoutCount, 4)}/4</span></div>
               </div>
               <div className="character-footer">
-                <div className="xp-heading"><span><Zap size={16} fill="currentColor" /> ОПЫТ ГЕРОЯ</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
+                <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
                 <div className="xp-track"><div className="xp-progress" style={{ width: `${levelPercent}%` }} /></div>
-                <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО СЛЕДУЮЩЕГО: {250 - (profile.xp % 250)} XP</span></div>
+                <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО НОВОЙ ЗАКАЛКИ: {250 - (profile.xp % 250)} XP</span></div>
               </div>
             </article>
 
             <article className={`challenge-card${isCameraShown ? ' challenge-card-live' : ''}`} id="challenge">
-              <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ДНЯ</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
-              <div className="challenge-heading"><div><div className="challenge-type"><Footprints size={16} /> БАЗОВАЯ СИЛА · НОГИ</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Опускайся и вставай. Камера засчитает каждое полное движение автоматически.</p></div></div>
+              <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ГОРНА</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
+              <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> ЗАКАЛКА №01 / СИЛА НОГ</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
 
-              <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}`}>
-                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} playsInline muted autoPlay aria-label="Видео с камеры для отслеживания движений" />
+              <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}`} data-camera-format="9:16">
+                <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
+                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
-                {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><ScanLine size={76} strokeWidth={1.1} /></div><div className="scan-circle" /></div>}
+                {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><Hammer size={74} strokeWidth={1.1} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
                 {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модель распознавания позы…</span></div>}
                 {mode === 'complete' ? (
-                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ИСПЫТАНИЕ ПРОЙДЕНО!</strong><span>20 ЧЕСТНЫХ ПОВТОРЕНИЙ</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
+                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span>20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
                 ) : (
                   <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} /></div>
                 )}
-                {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ПОЗА В РЕАЛЬНОМ ВРЕМЕНИ</div>}
+                {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ЗАХВАТ ДВИЖЕНИЯ / LIVE</div>}
               </div>
 
               <div className="live-feedback" aria-live="polite">
                 {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
                   : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
                     : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>Всё засчитано. Герой стал сильнее!</span></>
-                      : <><Camera size={17} /><span>Поставь телефон сбоку, чтобы были видны ноги целиком.</span></>}
+                      : <><Smartphone size={17} /><span>Поставь телефон вертикально, сбоку от себя. Тело и стопы должны быть видны.</span></>}
               </div>
+              {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>Камера отдаёт широкий поток. Показываем его центр в вертикальной рамке — стой посередине.</span></div>}
               <div className="challenge-stats"><div><span>ВРЕМЯ</span><strong><Clock3 size={16} /> {formatTime(displayTime)}</strong></div><span className="stats-separator" /><div><span>НАГРАДА</span><strong className="reward-color"><Zap size={15} /> +{XP_REWARD} XP</strong></div><span className="stats-separator" /><div><span>МОНЕТЫ</span><strong className="reward-color"><Coins size={15} /> +{COIN_REWARD}</strong></div></div>
 
               <div className="training-settings">
@@ -413,22 +433,22 @@ function App() {
                   <span>ЗВУК ПОВТОРЕНИЙ</span>
                   <strong>{soundEnabled ? 'ВКЛ' : 'ВЫКЛ'}</strong>
                 </button>
-                <span>Короткий сигнал при каждом засчитанном приседе</span>
+                <span>Короткий сигнал молота после каждого зачёта</span>
               </div>
 
               {mode === 'error' && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
-              {mode === 'idle' && <button className="primary-button" onClick={start}><Camera size={20} /> НАЧАТЬ ИСПЫТАНИЕ <ArrowRight size={20} /></button>}
+              {mode === 'idle' && <button className="primary-button" onClick={start}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>}
               {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
               {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
-              {mode === 'error' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> ПОПРОБОВАТЬ СНОВА <ArrowRight size={19} /></button>}
-              {mode === 'complete' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> ПОВТОРИТЬ ИСПЫТАНИЕ <ArrowRight size={19} /></button>}
+              {mode === 'error' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> РАЗЖЕЧЬ ГОРН СНОВА <ArrowRight size={19} /></button>}
+              {mode === 'complete' && <button className="primary-button" onClick={start}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
             </article>
           </section>
 
           <section className="lower-grid" id="progress" aria-label="Прогресс тренировок">
             <div className="records-card">
-              <div className="lower-card-header"><div><span className="section-index">03 / ТВОЯ СТАТИСТИКА</span><h3>ЦИФРЫ, КОТОРЫЕ <em>РАСТУТ</em></h3></div><Award size={22} /></div>
+              <div className="lower-card-header"><div><span className="section-index">03 / ЛЕТОПИСЬ КУЗНИ</span><h3>СЛЕДЫ <em>ТВОЕЙ СИЛЫ</em></h3></div><Award size={22} /></div>
               <div className="record-list">
                 <div className="record-item"><div className="record-icon"><Dumbbell size={22} /></div><div><strong>{repetitionsDone}</strong><span>ВСЕГО ПРИСЕДАНИЙ</span></div></div>
                 <div className="record-item"><div className="record-icon"><Medal size={22} /></div><div><strong>{workoutCount}</strong><span>ИСПЫТАНИЙ ПРОЙДЕНО</span></div></div>
@@ -436,17 +456,17 @@ function App() {
               </div>
               <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{TARGET_REPS} приседаний</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
             </div>
-            <div className="tips-card"><div className="lower-card-header"><div><span className="section-index">ПЕРЕД СТАРТОМ</span><h3>КАМЕРА <em>ВИДИТ ВСЁ?</em></h3></div><CircleHelp size={22} /></div>
-              <div className="tip-row"><div className="tip-number">01</div><div><strong>Поставь телефон сбоку</strong><span>Камера должна видеть всё тело, особенно таз, колени и стопы.</span></div></div>
-              <div className="tip-row"><div className="tip-number">02</div><div><strong>Встань прямо для старта</strong><span>Система сначала определит исходную стойку, затем включит секундомер.</span></div></div>
+            <div className="tips-card"><div className="lower-card-header"><div><span className="section-index">ПЕРЕД УДАРОМ</span><h3>ПОДГОТОВЬ <em>КАДР</em></h3></div><CircleHelp size={22} /></div>
+              <div className="tip-row"><div className="tip-number">01</div><div><strong>Телефон вертикально, сбоку</strong><span>Снимай в портретном положении 9:16. Целиком должны быть видны таз, колени и стопы.</span></div></div>
+              <div className="tip-row"><div className="tip-number">02</div><div><strong>Прими исходную стойку</strong><span>Система сначала определит исходную стойку, затем включит секундомер.</span></div></div>
               <div className="tip-row"><div className="tip-number">03</div><div><strong>Выполни 20 полных приседаний</strong><span>Присядь достаточно глубоко и выпрями ноги. На двадцатом система остановится сама.</span></div></div>
               <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
             </div>
           </section>
-          <footer className="footer"><span><span className="footer-mark">B/F</span> BODYFORGE · EARLY ACCESS</span><span>НЕ ПРОСТО ИГРА. ТВОЙ ПУТЬ.</span></footer>
+          <footer className="footer"><span><span className="footer-mark"><Hammer size={13} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>СТАЛЬ НЕ РОЖДАЕТСЯ ГОТОВОЙ.</span></footer>
         </main>
       </div>
-      <nav className="mobile-nav" aria-label="Мобильная навигация"><button onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21} /><span>ШТАБ</span></button><button onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21} /><span>ТРЕНИРОВКА</span></button><button onClick={() => navigate('progress')} className={section === 'progress' ? 'active' : ''}><TrendingUp size={21} /><span>ПРОГРЕСС</span></button></nav>
+      <nav className="mobile-nav" aria-label="Мобильная навигация"><button onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21} /><span>ГОРН</span></button><button onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21} /><span>ТРЕНИРОВКА</span></button><button onClick={() => navigate('progress')} className={section === 'progress' ? 'active' : ''}><TrendingUp size={21} /><span>ЛЕТОПИСЬ</span></button></nav>
       <div className="screen-grain" aria-hidden="true" />
       <div className="sr-only" aria-live="polite">{mode === 'complete' ? 'Тренировка окончена. Вы получили опыт и монеты.' : ''}</div>
     </div>
