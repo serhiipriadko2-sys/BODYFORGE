@@ -68,6 +68,14 @@ export class SquatCounter {
     this.lastVisibleAt = null;
   }
 
+  /** Switching lenses changes the projected knee angle. Recalibrate posture
+   * without losing completed repetitions or counting an invisible half-rep. */
+  recalibrate(): CounterSnapshot {
+    this.resetPoseTracking();
+    this.lastVisibleAt = null;
+    return this.snapshot('stand', false);
+  }
+
   private depthThreshold(): number | null {
     return this.standingAngle === null
       ? null

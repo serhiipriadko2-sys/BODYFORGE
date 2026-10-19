@@ -9,3 +9,12 @@ dist/
 .vscode/
 coverage/
 *.tsbuildinfo
+
+# Искра SoT30/Codex integration is local to the developer's PC.
+# BODYFORGE is a public GitHub repository; never accidentally stage or publish
+# the 4 MB canonical corpus, project agent policy, ADRs or personal MCP setup.
+.iskra/
+.agents/
+.codex/
+AGENTS.md
+CODEX_ISKRA.md

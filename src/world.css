@@ -571,3 +571,172 @@ background:linear-gradient(160deg,#9d6335,#4e2818);box-shadow:inset 0 2px #ffdca
     scroll-margin-top: 78px;
   }
 }
+
+/* Phone camera preflight: make the HTTPS requirement visible before pressing Start. */
+.camera-preflight {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: 0 25px 18px;
+  padding: 13px 14px;
+  background: linear-gradient(130deg, #4d2b1d, #241913);
+  border: 1px solid #bb7549;
+  border-left: 4px solid #ffae6d;
+  border-radius: 6px;
+  box-shadow: inset 0 1px #ffc59735;
+  color: #f2d2b2;
+}
+.camera-preflight > svg { flex: none; margin-top: 3px; color: #ffb984; }
+.camera-preflight strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #ffe6c7;
+  font: 700 12px/1.4 'IBM Plex Mono', monospace;
+}
+.camera-preflight span {
+  display: block;
+  color: #d0b39e;
+  font-size: 11px;
+  line-height: 1.65;
+}
+@media (max-width: 740px) {
+  .camera-preflight { margin: 0 16px 17px; padding: 12px; }
+}
+
+/* Real camera source and lens controls; stays 9:16 for pose detection. */
+.camera-control-deck {
+  margin: 0 25px 18px;
+  padding: 13px;
+  border: 1px solid #94613f;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 100% 0, #ba62222b, transparent 65%),
+    linear-gradient(150deg, #382820, #1a1411);
+  box-shadow: inset 0 2px #ffd3a32f, inset 0 -3px #0703025b, 0 8px 19px #0005;
+  color: #ffdbb6;
+}
+.camera-control-header, .camera-control-header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.camera-control-header { justify-content: space-between; margin-bottom: 12px; }
+.camera-control-header strong { font: 700 11px 'IBM Plex Mono',monospace; letter-spacing: .5px; }
+.camera-control-header svg { color: #f9a76b; }
+.camera-refresh {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-height: 36px; padding: 7px 10px;
+  border: 1px solid #906747; border-radius: 5px;
+  color: #ffd2a4; background: #312219;
+  font: 700 9px 'IBM Plex Mono',monospace; cursor: pointer;
+}
+.camera-refresh:disabled { opacity: .4; cursor: not-allowed; }
+.camera-lenses { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
+.camera-lenses > button {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; min-width: 0; min-height: 70px; padding: 8px 5px;
+  border: 1px solid #745039; border-bottom: 3px solid #2a1711;
+  border-radius: 6px; background: linear-gradient(160deg, #463127, #251a15);
+  color: #f2bf96; cursor: pointer;
+  box-shadow: inset 0 2px #ffe0ae14, 0 3px 9px #0006;
+}
+.camera-lenses > button strong { font: 700 10px 'IBM Plex Mono',monospace; line-height: 1.2; white-space: nowrap; }
+.camera-lenses > button small { color: #bc9b83; font-size: 9px; line-height: 1.2; text-align: center; }
+.camera-lenses > button.selected {
+  color: #28130b; border-color: #ffc28b; border-bottom-color: #9d4524;
+  background: linear-gradient(180deg, #ffd09a, #dd7b3e 65%, #b54b29);
+  box-shadow: inset 0 2px #ffe6be8b, 0 3px 12px #e86c2940;
+}
+.camera-lenses > button.selected small { color: #512a17; }
+.camera-lenses > button:disabled { opacity: .42; cursor: not-allowed; }
+.camera-lenses > button:focus-visible,.camera-refresh:focus-visible,
+.camera-source-select select:focus-visible,.camera-zoom-control input:focus-visible {
+  outline: 2px solid #ffcb93; outline-offset: 2px;
+}
+.camera-source-select { display: grid; gap: 7px; margin-top: 14px; }
+.camera-source-select > span { font: 700 9px 'IBM Plex Mono',monospace; color: #bc9b84; }
+.camera-source-select select {
+  width: 100%; min-width: 0; min-height: 46px; padding: 7px 11px;
+  background: #221812; color: #ffe1c6;
+  border: 1px solid #8f5c3d; border-radius: 5px; font: 600 12px 'Manrope',sans-serif;
+}
+.camera-source-select select option { color: #16100e; }
+.camera-zoom-control { display: grid; gap: 8px; margin-top: 14px; }
+.camera-zoom-control > span { display: flex; align-items: center; gap: 6px; font: 700 10px 'IBM Plex Mono',monospace; }
+.camera-zoom-control > span strong { margin-left: auto; color: #ffb983; }
+.camera-zoom-control input { width: 100%; min-height: 28px; accent-color: #f99659; cursor: pointer; }
+.camera-zoom-control input:disabled { cursor: not-allowed; opacity: .6; }
+.camera-zoom-control small { display: flex; justify-content: space-between; color: #b4947e; font-size: 10px; }
+.camera-control-help {
+  margin-top: 12px; color: #bfa38f;
+  font-size: 10px; line-height: 1.6;
+}
+.camera-switch-overlay {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  z-index: 8; background: #170d0ccf; color: #ffcca5;
+  font: 700 10px 'IBM Plex Mono',monospace; text-align: center;
+}
+@media(max-width:740px) {
+  .camera-control-deck { margin: 0 16px 18px; padding: 11px; }
+  .camera-lenses { gap: 6px; }
+  .camera-lenses > button { min-height: 68px; }
+  .camera-lenses > button strong { font-size: 9px; letter-spacing: -.1px; }
+  .camera-lenses > button small { font-size: 8px; }
+  .camera-control-header strong { font-size: 10px; }
+}
+
+.camera-frame-toggle {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  min-height: 43px; width: 100%; margin-top: 12px; padding: 9px 11px;
+  background: linear-gradient(150deg, #372821, #251b16);
+  border: 1px solid #83583e; border-radius: 5px; color: #e5b18b;
+  text-align: left; font: 700 10px 'IBM Plex Mono',monospace; cursor: pointer;
+}
+.camera-frame-toggle small { margin-left: auto; color: #b89b87; font-size: 9px; }
+.camera-frame-toggle.selected {
+  background: linear-gradient(150deg, #674128, #3e291b);
+  border-color: #ffb47a; color: #ffd3ac;
+  box-shadow: inset 0 1px #f7bb8b41;
+}
+.camera-fit-whole .camera-feed,
+.camera-fit-whole .pose-overlay { object-fit: contain; }
+.camera-frame-toggle:focus-visible { outline: 2px solid #ffd29b; outline-offset: 2px; }
+
+/* Squat camera framing coach: gives actionable directions without changing scoring. */
+.framing-primer {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 15px; margin: 0 25px 17px;
+  background: linear-gradient(150deg, #3e2b20, #211811);
+  color: #d7b79a; font-size: 11px; line-height: 1.6;
+  border: 1px solid #78543d; border-left: 3px solid #f8aa6d;
+  border-radius: 6px;
+}
+.framing-primer > svg { flex: none; margin-top: 2px; color: #f7ad77; }
+.framing-primer strong { color: #ffd6a7; font-weight: 800; }
+.pose-camera-coach {
+  position: absolute;
+  z-index: 7;
+  top: 47px; left: 10px; right: 10px;
+  max-width: 340px;
+  padding: 10px 12px 11px;
+  background: linear-gradient(145deg, #472a1df2, #1d1512f2);
+  border: 1px solid #ef9a5c;
+  border-left: 4px solid #f8a35f;
+  border-radius: 5px;
+  box-shadow: 0 6px 20px #000a, inset 0 1px #ffc08c28;
+  pointer-events: none;
+  text-align: left;
+}
+.pose-camera-coach strong {
+  display:block;
+  color:#ffe2c1;
+  font: 800 10px/1.35 'IBM Plex Mono', monospace;
+  letter-spacing: .5px;
+  margin-bottom: 5px;
+}
+.pose-camera-coach span { display:block; color:#ead0b7; font: 500 10px/1.45 'Manrope', sans-serif; }
+@media(max-width:740px) {
+  .framing-primer { padding: 11px 12px; margin: 0 16px 14px; font-size: 10px; }
+  .pose-camera-coach { top: 43px; left: 8px; right: 8px; padding: 8px 10px 9px; }
+  .pose-camera-coach span { font-size: 9px; }
+}

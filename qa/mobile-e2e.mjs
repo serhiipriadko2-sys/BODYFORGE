@@ -72,6 +72,17 @@ try{
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
   check(s.three.includes('active'),'WebGL 3D hero active');
   await screenshot('bf-qa-mobile-setup.png');
+  // First launch: tapping Camera before fighter setup must not silently jump
+  // to the home screen. The user should see why they cannot train yet.
+  await click('.mobile-nav button:nth-child(2)');
+  await click('#challenge .primary-button');
+  const notCreated=await read("({screen:document.querySelector('.app-shell').dataset.screen,error:document.querySelector('.camera-error[role=alert]')?.textContent||'',cta:document.querySelector('#challenge .primary-button')?.textContent||''})");
+  console.log('NO_FIGHTER_CAMERA',JSON.stringify(notCreated));
+  check(notCreated.screen==='challenge'&&notCreated.error.includes('создай бойца')&&notCreated.cta.includes('СОЗДАТЬ БОЙЦА'),
+    'camera stays open and offers fighter creation instead of redirecting');
+  await click('#challenge .primary-button');
+  const returned=await snapshot();
+  check(returned.screen==='dashboard'&&returned.setup,'explicit fighter creation button returns to onboarding');
   await click('.build-options button:nth-child(2)');
   await click('#onboarding .forge-solid-button');
   s=await snapshot();
@@ -117,11 +128,60 @@ try{
   const camera=await read("({screen:document.querySelector('.app-shell').dataset.screen,card:document.querySelector('#challenge')?.getBoundingClientRect().top,button:!!document.querySelector('#challenge .primary-button'),ratio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
   console.log('CAMERA_TAB',JSON.stringify(camera));
   check(camera.screen==='challenge'&&camera.card<340&&camera.button&&Math.abs(camera.ratio-9/16)<.006,'mobile camera tab with portrait stage');
+  check(await js("document.querySelector('.framing-primer')?.textContent.includes('сбоку') === true"),
+    'camera offers side-view and full-leg framing before the workout');
   await click('#challenge .primary-button');
   for(let i=0;i<60;i++){await sleep(250);const mode=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',loading:!!document.querySelector('.loading-overlay')})");if(mode.active||mode.error){console.log('CAMERA_START',JSON.stringify(mode));check(mode.active&&!mode.error,'camera starts after 3D navigation');break;}if(i===59)throw Error('Camera did not start after 15 s');}
   const context=await read("({active3d:[...document.querySelectorAll('[data-3d-status=active]')].length,stageRatio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
   console.log('CAMERA_GPU',JSON.stringify(context));
   check(context.active3d===0,'3D renderer suspends during camera inference');
+  let framing={visible:false,guidance:'',text:''};
+  for(let i=0;i<90;i++){
+    await sleep(300);
+    const live=await js("!!document.querySelector('#challenge .live-tag')");
+    framing=await read("({visible:!!document.querySelector('.pose-camera-coach'),guidance:document.querySelector('.pose-camera-coach')?.dataset.guidance||'',text:document.querySelector('.pose-camera-coach')?.textContent||''})");
+    if(live && framing.visible && framing.text.length>12) break;
+  }
+  console.log('POSE_GUIDANCE',JSON.stringify(framing));
+  check(framing.visible && framing.guidance && framing.text.length>12,
+    'on-screen camera coach explains tracking problem once pose model is running');
+  const controls=await read("({lenses:document.querySelectorAll('.camera-lenses button').length,wideDisabled:document.querySelector('.camera-lenses button:nth-child(3)')?.disabled,zoom:!!document.querySelector('.camera-zoom-control')})");
+  console.log('CAMERA_CONTROLS',JSON.stringify(controls));
+  check(controls.lenses===3,'front, rear and ultra-wide controls visible on mobile');
+  await click('.camera-frame-toggle');
+  const fit=await read("({whole:document.querySelector('.training-visual')?.classList.contains('camera-fit-whole'),ratio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
+  check(fit.whole&&Math.abs(fit.ratio-9/16)<.006,'full-frame option preserves the portrait 9:16 container');
+  await click('.camera-frame-toggle');
+  check(await js("!document.querySelector('.training-visual')?.classList.contains('camera-fit-whole')"),'cover mode can be restored');
+  let detectorReady=false;
+  for(let i=0;i<80;i++){
+    await sleep(300);
+    detectorReady=await js("!!document.querySelector('#challenge .live-tag') && !document.querySelector('.camera-lenses button:nth-child(2)').disabled");
+    if(detectorReady)break;
+  }
+  check(detectorReady,'pose model fully active before switching lens');
+  // Chrome's fake webcam is a single camera. Switching to the rear-facing
+  // preference must keep inference alive without wiping a workout reward.
+  await click('.camera-lenses button:nth-child(2)');
+  let changed=false;
+  for(let i=0;i<40;i++){
+    await sleep(350);
+    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),busy:!!document.querySelector('.camera-switch-overlay')})");
+    if(status.error)throw Error('Camera switch broke capture: '+status.error);
+    if(i%5===0)console.log('REAR_SWITCH_STEP',i,JSON.stringify(status));
+    if(status.active&&status.selected==='true'&&!status.busy){changed=true;break;}
+  }
+  check(changed,'live switch to rear camera resumes tracking');
+  await screenshot('bf-qa-mobile-lenses.png');
+  await click('.camera-lenses button:nth-child(1)');
+  changed=false;
+  for(let i=0;i<40;i++){
+    await sleep(350);
+    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(1)')?.getAttribute('aria-pressed'),busy:!!document.querySelector('.camera-switch-overlay')})");
+    if(status.error)throw Error('Returning to front camera broke capture: '+status.error);
+    if(status.active&&status.selected==='true'&&!status.busy){changed=true;break;}
+  }
+  check(changed,'live switch back to front camera resumes tracking');
   await click('#challenge .secondary-button');
   const stopped=await read("({video:!!document.querySelector('.camera-visible'),rewards:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp})");
   check(!stopped.video&&stopped.rewards===0,'manual camera stop grants no XP');

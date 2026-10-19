@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
+import CameraControls from './components/CameraControls';
 import { DailyBoard, FighterSetup, ForgeStudio, OnlineBoard, TowerBoard } from './components/ForgeWorld';
 import {
   buyOrEquipOutfit, claimDailyQuest, claimLogin, createFighter, ghostRepetitions,
@@ -19,7 +20,12 @@ import {
   TARGET_REPS, XP_REWARD, type Profile,
 } from './lib/progression';
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
-import { cameraOrientation, portraitCameraConstraints, type CameraOrientation } from './lib/camera';
+import {
+  cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, portraitCameraConstraints,
+  zoomConstraints, DEFAULT_CAMERA,
+  type CameraDeviceOption, type CameraOrientation, type CameraSource, type CameraZoom,
+} from './lib/camera';
+import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
 
 type Mode = 'idle' | 'loading' | 'active' | 'complete' | 'error';
 
@@ -45,6 +51,7 @@ function cameraErrorMessage(error: unknown): string {
   if (name === 'NotAllowedError' || name === 'PermissionDeniedError') return 'Доступ к камере запрещён. Разреши камеру в настройках браузера и попробуй ещё раз.';
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Камера не найдена. Подключи камеру или открой страницу на телефоне.';
   if (name === 'NotReadableError') return 'Камеру сейчас использует другое приложение. Закрой его и попробуй снова.';
+  if (name === 'OverconstrainedError') return 'Выбранный объектив или его настройки не поддерживаются. Выбери другую камеру.';
   return error instanceof Error ? `Не удалось запустить распознавание: ${error.message}` : 'Не удалось запустить камеру. Проверь соединение и разрешения.';
 }
 
@@ -145,11 +152,18 @@ function App() {
   const [section, setSection] = useState('dashboard');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
+  const [cameraSource, setCameraSource] = useState<CameraSource>(DEFAULT_CAMERA);
+  const [cameraDevices, setCameraDevices] = useState<CameraDeviceOption[]>([]);
+  const [cameraZoom, setCameraZoom] = useState<CameraZoom | null>(null);
+  const [cameraBusy, setCameraBusy] = useState(false);
+  const [cameraMessage, setCameraMessage] = useState('');
+  const [showFullFrame, setShowFullFrame] = useState(false);
   const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
   const [today, setToday] = useState(() => new Date());
   const [trackingSide, setTrackingSide] = useState<'left' | 'right' | null>(null);
   const [poseFound, setPoseFound] = useState(false);
+  const [poseGuidance, setPoseGuidance] = useState<PoseGuidance>(() => new PoseGuidanceTracker().reset());
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -157,10 +171,14 @@ function App() {
   const audioRef = useRef<AudioContext | null>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const frameRef = useRef<number | null>(null);
+  const scanRef = useRef<((time: number) => void) | null>(null);
+  const switchingRef = useRef(false);
+  const zoomBusyRef = useRef(false);
   const counterRef = useRef(new SquatCounter());
   const workoutModeRef = useRef<WorkoutMode>('training');
   const splitsRef = useRef<number[]>([]);
   const kneeTrackerRef = useRef(new StableKneeTracker());
+  const poseGuidanceRef = useRef(new PoseGuidanceTracker());
   const startedAtRef = useRef<number | null>(null);
   const aliveRef = useRef(false);
   const requestIdRef = useRef(0);
@@ -173,6 +191,7 @@ function App() {
     requestIdRef.current++;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = null;
+    scanRef.current = null;
     for (const track of streamRef.current?.getTracks() ?? []) track.stop();
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
@@ -181,6 +200,74 @@ function App() {
     const canvas = canvasRef.current;
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
+
+  const refreshCameraDevices = useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setCameraDevices(cameraDeviceOptions(devices));
+    } catch {
+      // Some browsers expose only the current camera or hide device labels until permission.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshCameraDevices();
+    const media = navigator.mediaDevices;
+    if (!media?.addEventListener) return;
+    const changed = () => { void refreshCameraDevices(); };
+    media.addEventListener('devicechange', changed);
+    return () => media.removeEventListener('devicechange', changed);
+  }, [refreshCameraDevices]);
+
+  /** Single ownership point for camera tracks, shared by start and hot-switch.
+   * Never trust deviceId to exist until the browser actually opens the stream. */
+  const connectCamera = useCallback(async (source: CameraSource, requestId: number): Promise<MediaStream> => {
+    const stream = await navigator.mediaDevices.getUserMedia(portraitCameraConstraints(source));
+    if (requestId !== requestIdRef.current) {
+      stream.getTracks().forEach((track) => track.stop());
+      throw new DOMException('Camera request cancelled', 'AbortError');
+    }
+    const video = videoRef.current;
+    if (!video) {
+      stream.getTracks().forEach((track) => track.stop());
+      throw new Error('Не найден видеоплеер');
+    }
+    try {
+      streamRef.current = stream;
+      video.srcObject = stream;
+      await video.play();
+      if (requestId !== requestIdRef.current) {
+        throw new DOMException('Camera request cancelled', 'AbortError');
+      }
+      setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
+      const track = stream.getVideoTracks()[0];
+      if (track) {
+        track.addEventListener('ended', () => {
+          if (requestId !== requestIdRef.current || streamRef.current !== stream) return;
+          stopCapture();
+          setError('Камера отключилась во время испытания. Проверь её и начни заново.');
+          setMode('error');
+        }, { once: true });
+        try {
+          const capabilities = track.getCapabilities() as MediaTrackCapabilities & {
+            zoom?: { min: number; max: number; step?: number };
+          };
+          const settings = track.getSettings() as MediaTrackSettings & { zoom?: number };
+          setCameraZoom(cameraZoomCapabilities(capabilities, settings));
+        } catch {
+          setCameraZoom(null);
+        }
+      }
+      void refreshCameraDevices();
+      return stream;
+    } catch (error) {
+      stream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current === stream) streamRef.current = null;
+      if (video.srcObject === stream) video.srcObject = null;
+      throw error;
+    }
+  }, [refreshCameraDevices, stopCapture]);
 
   useEffect(() => () => {
     stopCapture();
@@ -216,6 +303,7 @@ function App() {
     stopCapture();
     counterRef.current.reset();
     kneeTrackerRef.current.reset();
+    setPoseGuidance(poseGuidanceRef.current.reset());
     setTrackingSide(null);
     setPoseFound(false);
     startedAtRef.current = null;
@@ -223,6 +311,8 @@ function App() {
     setSnapshot(FIRST_SNAPSHOT);
     setLastResultMs(null);
     setVideoOrientation('unknown');
+    setCameraZoom(null);
+    setCameraMessage('');
     setWorkoutMode('training');
     workoutModeRef.current = 'training';
     splitsRef.current = [];
@@ -232,7 +322,10 @@ function App() {
 
   const start = useCallback(async (requestedMode: WorkoutMode = 'training') => {
     if (!profile.game.created) {
-      navigate('onboarding');
+      // Keep the requested camera tab open; silently navigating home made
+      // first-time phone users think the exercise screen had crashed.
+      setError('Перед первым испытанием создай бойца на экране «Горн». Затем вернись во вкладку «Камера».');
+      setMode('error');
       return;
     }
     workoutModeRef.current = requestedMode;
@@ -242,6 +335,7 @@ function App() {
     stopCapture();
     counterRef.current.reset();
     kneeTrackerRef.current.reset();
+    setPoseGuidance(poseGuidanceRef.current.reset());
     setTrackingSide(null);
     setPoseFound(false);
     startedAtRef.current = null;
@@ -250,6 +344,8 @@ function App() {
     setElapsedMs(0);
     setLastResultMs(null);
     setVideoOrientation('unknown');
+    setCameraZoom(null);
+    setCameraMessage('');
     setError('');
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -274,25 +370,7 @@ function App() {
     let stream: MediaStream | null = null;
     let landmarker: PoseLandmarker | null = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia(portraitCameraConstraints());
-      if (requestId !== requestIdRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
-        return;
-      }
-      streamRef.current = stream;
-      for (const track of stream.getVideoTracks()) {
-        track.addEventListener('ended', () => {
-          if (requestId !== requestIdRef.current) return;
-          stopCapture();
-          setError('Камера отключилась во время испытания. Проверь её и начни заново.');
-          setMode('error');
-        }, { once: true });
-      }
-      const video = videoRef.current;
-      if (!video) throw new Error('Не найден видеоплеер');
-      video.srcObject = stream;
-      await video.play();
-      setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
+      stream = await connectCamera(cameraSource, requestId);
 
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
       const sharedOptions = {
@@ -332,6 +410,7 @@ function App() {
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points);
             const measured = kneeTrackerRef.current.update(points ?? []);
+            setPoseGuidance(poseGuidanceRef.current.update(points, measured.angle, time));
             setPoseFound(Boolean(points?.length));
             setTrackingSide(measured.side);
             const next = counterRef.current.update(measured.angle, time);
@@ -369,6 +448,7 @@ function App() {
         }
         frameRef.current = requestAnimationFrame(scan);
       };
+      scanRef.current = scan;
       frameRef.current = requestAnimationFrame(scan);
     } catch (failure) {
       if (requestId !== requestIdRef.current) {
@@ -380,7 +460,112 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled, profile.game]);
+  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource]);
+
+  /** Zoom uses the real capture track, never CSS stretching of the skeleton. */
+  const changeCameraZoom = useCallback(async (requested: number) => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track || mode !== 'active' || !cameraZoom || switchingRef.current || zoomBusyRef.current) return;
+    const zoom = Math.min(cameraZoom.max, Math.max(cameraZoom.min, requested));
+    zoomBusyRef.current = true;
+    setCameraBusy(true);
+    try {
+      await track.applyConstraints(zoomConstraints(zoom));
+      if (streamRef.current?.getVideoTracks()[0] !== track) return;
+      const actual = (track.getSettings() as MediaTrackSettings & { zoom?: number }).zoom;
+      if (typeof actual !== 'number' || Math.abs(actual - zoom) > Math.max(.11, cameraZoom.step * 1.6)) {
+        setCameraMessage('Браузер не применил выбранный масштаб. Попробуй другой объектив.');
+        return;
+      }
+      setCameraZoom((previous) => previous ? { ...previous, current: actual } : null);
+      if (actual < .95) setShowFullFrame(true);
+      kneeTrackerRef.current.reset();
+      setPoseGuidance(poseGuidanceRef.current.reset());
+      setTrackingSide(null);
+      setSnapshot(counterRef.current.recalibrate());
+      setCameraMessage('Масштаб изменён. Встань прямо: повторная калибровка без потери приседаний.');
+    } catch {
+      setCameraMessage('Этот масштаб недоступен в браузере телефона.');
+    } finally {
+      zoomBusyRef.current = false;
+      setCameraBusy(false);
+    }
+  }, [mode, cameraZoom]);
+
+  /** On mobile, switching lenses releases the previous track before opening a
+   * new one. The elapsed timer continues. Already-counted reps are preserved. */
+  const chooseCamera = useCallback(async (nextSource: CameraSource) => {
+    if (mode === 'loading' || switchingRef.current || zoomBusyRef.current) return;
+    const unchanged = cameraSource.kind === nextSource.kind && cameraSource.value === nextSource.value;
+    if (mode !== 'active') {
+      setCameraSource(nextSource);
+      if (nextSource.kind === 'device' &&
+          cameraDevices.some((device) => device.deviceId === nextSource.value && device.ultraWide)) {
+        setShowFullFrame(true);
+      }
+      setCameraMessage('Камера будет выбрана при следующем запуске.');
+      return;
+    }
+    if (unchanged) {
+      if (cameraZoom && cameraZoom.current < .96 && cameraZoom.min <= 1 && cameraZoom.max >= 1) {
+        await changeCameraZoom(1);
+      }
+      return;
+    }
+    if (!streamRef.current || !scanRef.current) return;
+
+    switchingRef.current = true;
+    setCameraBusy(true);
+    setCameraMessage('Переключаем объектив…');
+    const requestId = requestIdRef.current;
+    aliveRef.current = false;
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
+    const previousStream = streamRef.current;
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    previousStream.getTracks().forEach((track) => track.stop());
+
+    const resume = (source: CameraSource) => {
+      if (requestId !== requestIdRef.current) return;
+      setCameraSource(source);
+      kneeTrackerRef.current.reset();
+      setPoseGuidance(poseGuidanceRef.current.reset());
+      setTrackingSide(null);
+      setPoseFound(false);
+      setSnapshot(counterRef.current.recalibrate());
+      lastInferenceAtRef.current = 0;
+      aliveRef.current = true;
+      if (scanRef.current) frameRef.current = requestAnimationFrame(scanRef.current);
+    };
+
+    try {
+      await connectCamera(nextSource, requestId);
+      if (requestId !== requestIdRef.current) return;
+      resume(nextSource);
+      if (nextSource.kind === 'device' &&
+          cameraDevices.some((device) => device.deviceId === nextSource.value && device.ultraWide)) {
+        setShowFullFrame(true);
+      }
+      setCameraMessage('Запросили выбранный объектив. Проверь обзор и встань прямо для калибровки; счётчик сохранён.');
+    } catch (failure) {
+      if (requestId !== requestIdRef.current) return;
+      try {
+        await connectCamera(cameraSource, requestId);
+        if (requestId !== requestIdRef.current) return;
+        resume(cameraSource);
+        setCameraMessage('Не удалось открыть выбранный объектив. Вернули предыдущую камеру.');
+      } catch {
+        if (requestId !== requestIdRef.current) return;
+        stopCapture();
+        setError(cameraErrorMessage(failure));
+        setMode('error');
+      }
+    } finally {
+      switchingRef.current = false;
+      setCameraBusy(false);
+    }
+  }, [mode, cameraSource, cameraDevices, cameraZoom, connectCamera, changeCameraZoom, stopCapture]);
 
   const level = getLevel(profile.xp);
   const levelPercent = Math.round(getLevelProgress(profile.xp) * 100);
@@ -393,6 +578,11 @@ function App() {
   function navigate(id: string) {
     if ((mode === 'active' || mode === 'loading') && id !== 'challenge') return;
     const destination = id === 'onboarding' ? 'dashboard' : id;
+    if (destination !== 'challenge' && mode === 'error') {
+      // A stale camera error must not survive creating a fighter or switching tabs.
+      setError('');
+      setMode('idle');
+    }
     setSection(destination);
     if (window.matchMedia('(max-width: 740px)').matches) {
       // True mobile tabs: reveal the selected screen, then return to its top.
@@ -487,12 +677,33 @@ function App() {
               <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ГОРНА</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
               <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> {workoutMode === 'tower' ? `БАШНЯ · ЭТАЖ ${selectedFloor.floor}` : workoutMode === 'ghost' ? 'БОЙ С ТЕНЬЮ' : 'ЗАКАЛКА №01 / СИЛА НОГ'}</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
 
-              <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}`} data-camera-format="9:16">
+              {(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) && (
+                <div className="camera-preflight" role="status">
+                  <WifiOff size={19} />
+                  <div><strong>КАМЕРА ТРЕБУЕТ HTTPS</strong>
+                    <span>По текущему HTTP-адресу доступен интерфейс, но браузер не разрешает распознавание приседаний. Для камеры нужен защищённый HTTPS-адрес.</span>
+                  </div>
+                </div>
+              )}
+
+              <CameraControls source={cameraSource} devices={cameraDevices} zoom={cameraZoom}
+                active={mode === 'active'} busy={mode === 'loading' || cameraBusy}
+                message={cameraMessage} fullFrame={showFullFrame}
+                onToggleFullFrame={() => setShowFullFrame((value) => !value)}
+                onChoose={(source) => { void chooseCamera(source); }}
+                onRefresh={() => { void refreshCameraDevices(); }}
+                onZoom={(value) => { void changeCameraZoom(value); }}/>
+              <div className="framing-primer"><Smartphone size={16}/><span>Для приседаний установи телефон <strong>сбоку</strong> и дальше от себя. В кадре должны быть таз, колено и стопа хотя бы одной ноги.</span></div>
+
+              <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}${showFullFrame ? ' camera-fit-whole' : ''}`} data-camera-format="9:16">
                 <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
                 <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
                 {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><Hammer size={74} strokeWidth={1.1} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
                 {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модель распознавания позы…</span></div>}
+                {mode === 'active' && cameraBusy && <div className="camera-switch-overlay" role="status">
+                  <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
+                </div>}
                 {mode === 'complete' ? (
                   <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span>20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
                 ) : (
@@ -507,15 +718,22 @@ function App() {
                     </span>
                     <div className="pose-hud-angle"><span>КОЛЕНО</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></div>
                     <div className="pose-hud-target">
-                      {snapshot.depthTarget === null ? 'ВСТАНЬ ПРЯМО' :
+                      {snapshot.angle === null ? 'ПОПРАВЬ КАДР' :
+                        snapshot.depthTarget === null ? 'ВСТАНЬ ПРЯМО' :
                         snapshot.phase === 'bottom' ? `ВСТАТЬ ≥ ${snapshot.returnTarget}°` :
                           `ПРИСЕСТЬ ≤ ${snapshot.depthTarget}°`}
                     </div>
                     <div className="pose-hud-side">
                       {snapshot.angle === null
-                        ? poseFound ? 'СУСТАВЫ НЕ ВИДНЫ' : 'ЧЕЛОВЕК НЕ НАЙДЕН'
+                        ? poseFound ? poseGuidance.title : 'ЧЕЛОВЕК НЕ НАЙДЕН'
                         : trackingSide === 'left' ? 'ЛЕВАЯ НОГА' : 'ПРАВАЯ НОГА'}
                     </div>
+                  </div>
+                )}
+                {mode === 'active' && poseGuidance.warning && (
+                  <div className="pose-camera-coach" role="status" aria-live="polite" data-guidance={poseGuidance.kind}>
+                    <strong>{poseGuidance.title}</strong>
+                    <span>{poseGuidance.instruction}</span>
                   </div>
                 )}
                 {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ЗАХВАТ ДВИЖЕНИЯ / LIVE</div>}
@@ -540,7 +758,7 @@ function App() {
                 </div>
               )}
               <div className="live-feedback" aria-live="polite">
-                {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
+                {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{poseGuidance.warning && snapshot.angle === null ? poseGuidance.instruction : FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
                   : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
                     : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>Всё засчитано. Герой стал сильнее!</span></>
                       : <><Smartphone size={17} /><span>Поставь телефон вертикально, сбоку от себя. Тело и стопы должны быть видны.</span></>}
@@ -562,7 +780,10 @@ function App() {
               {mode === 'idle' && <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>}
               {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
               {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
-              {mode === 'error' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> РАЗЖЕЧЬ ГОРН СНОВА <ArrowRight size={19} /></button>}
+              {mode === 'error' && (profile.game.created
+                ? <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> ПОВТОРИТЬ ПОПЫТКУ <ArrowRight size={19} /></button>
+                : <button className="primary-button" onClick={() => { setMode('idle'); navigate('dashboard'); }}><UserRound size={19} /> СОЗДАТЬ БОЙЦА <ArrowRight size={19} /></button>
+              )}
               {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
             </article>

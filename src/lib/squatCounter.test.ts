@@ -81,6 +81,19 @@ describe('SquatCounter', () => {
     expect(resumed.count).toBe(1);
   });
 
+  it('preserves completed repetitions but discards an unfinished squat on camera switch', () => {
+    const counter = new SquatCounter();
+    expect(feed(counter, SQUAT).count).toBe(1);
+    const partial = feed(counter, SQUAT.slice(3, 10), 1500);
+    expect(partial.phase).toBe('bottom');
+    const afterSwitch = counter.recalibrate();
+    expect(afterSwitch.phase).toBe('calibrate');
+    expect(afterSwitch.count).toBe(1);
+    expect(afterSwitch.calibrated).toBe(false);
+    expect(feed(counter, [170, 170, 170], 2300).count).toBe(1);
+    expect(feed(counter, SQUAT, 2500).count).toBe(2);
+  });
+
   it('tolerates a brief missed landmark without double counting', () => {
     const counter = new SquatCounter();
     expect(feed(counter, SQUAT.slice(0, 10)).phase).toBe('bottom');
