@@ -36,27 +36,31 @@ export class SquatCounter {
   private lastRepAt = Number.NEGATIVE_INFINITY;
   private lastVisibleAt: number | null = null;
 
-  reset(): void {
+  private resetPoseTracking(): void {
+    // Preserve completed repetitions, but never finish a rep interrupted by lost tracking.
     this.phase = 'calibrate';
-    this.count = 0;
     this.filteredAngle = null;
     this.standSince = null;
     this.deepSince = null;
     this.bottomAt = null;
+  }
+
+  reset(): void {
+    this.resetPoseTracking();
+    this.count = 0;
     this.lastRepAt = Number.NEGATIVE_INFINITY;
     this.lastVisibleAt = null;
   }
 
   update(rawAngle: number | null, now: number): CounterSnapshot {
+    // requestAnimationFrame can pause in background tabs; the first returning frame
+    // may already show a straight leg. It must not complete a squat unseen.
+    if (this.lastVisibleAt !== null && now - this.lastVisibleAt > LOST_POSE_MS) {
+      this.resetPoseTracking();
+      this.lastVisibleAt = null;
+    }
+
     if (rawAngle === null || !Number.isFinite(rawAngle) || rawAngle < 45 || rawAngle > 180) {
-      if (this.lastVisibleAt !== null && now - this.lastVisibleAt > LOST_POSE_MS) {
-        this.phase = 'calibrate';
-        this.filteredAngle = null;
-        this.standSince = null;
-        this.deepSince = null;
-        this.bottomAt = null;
-        this.lastVisibleAt = null;
-      }
       return this.snapshot('find-body', false);
     }
 

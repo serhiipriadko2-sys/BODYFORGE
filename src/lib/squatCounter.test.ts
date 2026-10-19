@@ -45,6 +45,34 @@ describe('SquatCounter', () => {
     expect(state.phase).toBe('calibrate');
     expect(state.count).toBe(0);
   });
+
+  it('does not finish an unseen squat after a long camera pause', () => {
+    const counter = new SquatCounter();
+    expect(feed(counter, SQUAT.slice(0, 10)).phase).toBe('bottom');
+    const resumed = counter.update(172, 2100);
+    expect(resumed.phase).toBe('calibrate');
+    expect(resumed.count).toBe(0);
+    expect(feed(counter, [172, 172, 172], 2175).count).toBe(0);
+  });
+
+  it('keeps earned repetitions when recalibrating after a pause', () => {
+    const counter = new SquatCounter();
+    expect(feed(counter, SQUAT).count).toBe(1);
+    const resumed = counter.update(170, 3100);
+    expect(resumed.phase).toBe('calibrate');
+    expect(resumed.count).toBe(1);
+  });
+
+  it('tolerates a brief missed landmark without double counting', () => {
+    const counter = new SquatCounter();
+    expect(feed(counter, SQUAT.slice(0, 10)).phase).toBe('bottom');
+    const missed = counter.update(null, 750);
+    expect(missed.phase).toBe('bottom');
+    const finished = feed(counter, SQUAT.slice(10), 825);
+    expect(finished.count).toBe(1);
+    expect(finished.counted).toBe(true);
+    expect(counter.update(176, 1300).count).toBe(1);
+  });
 });
 
 describe('getKneeAngle', () => {

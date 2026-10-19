@@ -3,7 +3,7 @@ import {
   Activity, ArrowRight, Award, Camera, CameraOff, Check, ChevronRight,
   CircleHelp, Clock3, Coins, Dumbbell, Flame, Footprints, Info,
   Medal, Play, RotateCcw, ScanLine, ShieldCheck, Target,
-  TrendingUp, Trophy, WifiOff, X, Zap,
+  TrendingUp, Trophy, Volume2, VolumeX, WifiOff, X, Zap,
 } from 'lucide-react';
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import Avatar from './components/Avatar';
@@ -22,7 +22,7 @@ const FIRST_SNAPSHOT: CounterSnapshot = { count: 0, phase: 'calibrate', feedback
 
 const FEEDBACK: Record<CounterFeedback, string> = {
   'find-body': 'Встань чуть дальше — нужны ноги целиком',
-  stand: 'Встань прямо перед камерой',
+  stand: 'Встань боком и выпрями ноги для калибровки',
   'go-down': 'Отлично! Теперь приседай',
   lower: 'Ниже — до уверенного приседа',
   rise: 'Поднимайся до прямых ног',
@@ -35,6 +35,29 @@ function cameraErrorMessage(error: unknown): string {
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Камера не найдена. Подключи камеру или открой страницу на телефоне.';
   if (name === 'NotReadableError') return 'Камеру сейчас использует другое приложение. Закрой его и попробуй снова.';
   return error instanceof Error ? `Не удалось запустить распознавание: ${error.message}` : 'Не удалось запустить камеру. Проверь соединение и разрешения.';
+}
+
+function playRepCue(audio: AudioContext | null, finalRep: boolean): void {
+  if (!audio || audio.state !== 'running') return;
+  try {
+    const frequencies = finalRep ? [784, 1047] : [880];
+    frequencies.forEach((frequency, index) => {
+      const begins = audio.currentTime + index * 0.14;
+      const tone = audio.createOscillator();
+      const volume = audio.createGain();
+      tone.type = 'sine';
+      tone.frequency.setValueAtTime(frequency, begins);
+      volume.gain.setValueAtTime(0.0001, begins);
+      volume.gain.exponentialRampToValueAtTime(0.08, begins + 0.015);
+      volume.gain.exponentialRampToValueAtTime(0.0001, begins + 0.11);
+      tone.connect(volume);
+      volume.connect(audio.destination);
+      tone.start(begins);
+      tone.stop(begins + 0.12);
+    });
+  } catch {
+    // Missing audio support must never interrupt pose counting or rewards.
+  }
 }
 
 function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement, points: PosePoint[] | undefined) {
@@ -109,10 +132,12 @@ function App() {
   const [error, setError] = useState('');
   const [lastResultMs, setLastResultMs] = useState<number | null>(null);
   const [section, setSection] = useState('dashboard');
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<AudioContext | null>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const frameRef = useRef<number | null>(null);
   const counterRef = useRef(new SquatCounter());
@@ -137,7 +162,12 @@ function App() {
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
-  useEffect(() => () => stopCapture(), [stopCapture]);
+  useEffect(() => () => {
+    stopCapture();
+    const audio = audioRef.current;
+    audioRef.current = null;
+    if (audio && audio.state !== 'closed') void audio.close().catch(() => {});
+  }, [stopCapture]);
 
   useEffect(() => {
     if (mode !== 'active') return;
@@ -174,6 +204,17 @@ function App() {
       return;
     }
 
+    // Start audio during the button gesture; some mobile browsers block it later.
+    if (soundEnabled && typeof window.AudioContext === 'function') {
+      try {
+        const audio = audioRef.current ?? new window.AudioContext();
+        audioRef.current = audio;
+        void audio.resume().catch(() => {});
+      } catch {
+        // Camera counting continues silently when audio is unavailable.
+      }
+    }
+
     setMode('loading');
     const requestId = requestIdRef.current;
     let stream: MediaStream | null = null;
@@ -188,6 +229,14 @@ function App() {
         return;
       }
       streamRef.current = stream;
+      for (const track of stream.getVideoTracks()) {
+        track.addEventListener('ended', () => {
+          if (requestId !== requestIdRef.current) return;
+          stopCapture();
+          setError('Камера отключилась во время испытания. Проверь её и начни заново.');
+          setMode('error');
+        }, { once: true });
+      }
       const video = videoRef.current;
       if (!video) throw new Error('Не найден видеоплеер');
       video.srcObject = stream;
@@ -233,6 +282,7 @@ function App() {
             const angle = getKneeAngle(points ?? []);
             const next = counterRef.current.update(angle, time);
             setSnapshot(next);
+            if (next.counted && soundEnabled) playRepCue(audioRef.current, next.count >= TARGET_REPS);
             if (next.calibrated && startedAtRef.current === null) startedAtRef.current = time;
             if (next.count >= TARGET_REPS) {
               const durationMs = Math.max(1, time - (startedAtRef.current ?? time));
@@ -263,7 +313,7 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture]);
+  }, [stopCapture, soundEnabled]);
 
   const level = getLevel(profile.xp);
   const levelPercent = Math.round(getLevelProgress(profile.xp) * 100);
@@ -355,6 +405,16 @@ function App() {
                       : <><Camera size={17} /><span>Поставь телефон сбоку, чтобы были видны ноги целиком.</span></>}
               </div>
               <div className="challenge-stats"><div><span>ВРЕМЯ</span><strong><Clock3 size={16} /> {formatTime(displayTime)}</strong></div><span className="stats-separator" /><div><span>НАГРАДА</span><strong className="reward-color"><Zap size={15} /> +{XP_REWARD} XP</strong></div><span className="stats-separator" /><div><span>МОНЕТЫ</span><strong className="reward-color"><Coins size={15} /> +{COIN_REWARD}</strong></div></div>
+
+              <div className="training-settings">
+                <button type="button" className="sound-toggle" aria-pressed={soundEnabled}
+                  disabled={mode === 'active' || mode === 'loading'} onClick={() => setSoundEnabled((enabled) => !enabled)}>
+                  {soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+                  <span>ЗВУК ПОВТОРЕНИЙ</span>
+                  <strong>{soundEnabled ? 'ВКЛ' : 'ВЫКЛ'}</strong>
+                </button>
+                <span>Короткий сигнал при каждом засчитанном приседе</span>
+              </div>
 
               {mode === 'error' && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
               {mode === 'idle' && <button className="primary-button" onClick={start}><Camera size={20} /> НАЧАТЬ ИСПЫТАНИЕ <ArrowRight size={20} /></button>}
