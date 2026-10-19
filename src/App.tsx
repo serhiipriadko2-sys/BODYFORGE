@@ -12,22 +12,26 @@ import {
   getLevelProgress, getRank, loadProfile, persistProfile,
   TARGET_REPS, XP_REWARD, type Profile,
 } from './lib/progression';
-import { getKneeAngle, SquatCounter, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
+import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import { cameraOrientation, portraitCameraConstraints, type CameraOrientation } from './lib/camera';
 
 type Mode = 'idle' | 'loading' | 'active' | 'complete' | 'error';
 
 const WASM_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/wasm';
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
-const FIRST_SNAPSHOT: CounterSnapshot = { count: 0, phase: 'calibrate', feedback: 'stand', angle: null, counted: false, calibrated: false };
+const FIRST_SNAPSHOT: CounterSnapshot = {
+  count: 0, phase: 'calibrate', feedback: 'stand', angle: null,
+  counted: false, calibrated: false, standingAngle: null, depthTarget: null,
+  returnTarget: null, lowestAngle: null,
+};
 
 const FEEDBACK: Record<CounterFeedback, string> = {
-  'find-body': 'Отойди дальше: таз, колени и стопы должны быть в кадре',
-  stand: 'Встань боком и выпрями ноги — начинаем закалку',
-  'go-down': 'Горн зажжён. Начинай приседать',
-  lower: 'Ещё глубже — доведи движение до конца',
-  rise: 'Выпрями ноги. Заверши удар молота',
-  great: 'Удар засчитан. Куй дальше!',
+  'find-body': 'Не вижу колено: отойди дальше или повернись боком',
+  stand: 'Встань прямо и постой неподвижно для калибровки',
+  'go-down': 'Стойка найдена. Приседай до цели по углу',
+  lower: 'Продолжай сгибать колени — нужен угол ниже цели',
+  rise: 'Глубина достигнута! Теперь выпрями ноги',
+  great: 'Присед засчитан! Следующий удар!',
 };
 
 function cameraErrorMessage(error: unknown): string {
@@ -81,7 +85,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
   for (const [a, b] of segments) {
     const one = points[a];
     const two = points[b];
-    if (!one || !two || (one.visibility ?? 1) < 0.5 || (two.visibility ?? 1) < 0.5) continue;
+    if (!one || !two || (one.visibility ?? 1) < 0.4 || (two.visibility ?? 1) < 0.4) continue;
     ctx.strokeStyle = '#ff9854';
     ctx.beginPath();
     ctx.moveTo(one.x * width, one.y * height);
@@ -90,7 +94,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
   }
   for (const index of [11, 12, 23, 24, 25, 26, 27, 28]) {
     const point = points[index];
-    if (!point || (point.visibility ?? 1) < 0.5) continue;
+    if (!point || (point.visibility ?? 1) < 0.4) continue;
     ctx.beginPath();
     ctx.fillStyle = '#ffe2c2';
     ctx.arc(point.x * width, point.y * height, Math.max(4, width / 180), 0, Math.PI * 2);
@@ -135,6 +139,8 @@ function App() {
   const [section, setSection] = useState('dashboard');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
+  const [trackingSide, setTrackingSide] = useState<'left' | 'right' | null>(null);
+  const [poseFound, setPoseFound] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,6 +149,7 @@ function App() {
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const frameRef = useRef<number | null>(null);
   const counterRef = useRef(new SquatCounter());
+  const kneeTrackerRef = useRef(new StableKneeTracker());
   const startedAtRef = useRef<number | null>(null);
   const aliveRef = useRef(false);
   const requestIdRef = useRef(0);
@@ -197,6 +204,9 @@ function App() {
   const cancel = useCallback(() => {
     stopCapture();
     counterRef.current.reset();
+    kneeTrackerRef.current.reset();
+    setTrackingSide(null);
+    setPoseFound(false);
     startedAtRef.current = null;
     setElapsedMs(0);
     setSnapshot(FIRST_SNAPSHOT);
@@ -209,6 +219,9 @@ function App() {
   const start = useCallback(async () => {
     stopCapture();
     counterRef.current.reset();
+    kneeTrackerRef.current.reset();
+    setTrackingSide(null);
+    setPoseFound(false);
     startedAtRef.current = null;
     lastInferenceAtRef.current = 0;
     setSnapshot(FIRST_SNAPSHOT);
@@ -264,9 +277,9 @@ function App() {
         baseOptions: { modelAssetPath: MODEL_URL },
         runningMode: 'VIDEO' as const,
         numPoses: 1,
-        minPoseDetectionConfidence: 0.65,
-        minPosePresenceConfidence: 0.65,
-        minTrackingConfidence: 0.65,
+        minPoseDetectionConfidence: 0.55,
+        minPosePresenceConfidence: 0.55,
+        minTrackingConfidence: 0.55,
       };
       try {
         landmarker = await PoseLandmarker.createFromOptions(vision, {
@@ -296,8 +309,10 @@ function App() {
             const result = landmarkerRef.current.detectForVideo(liveVideo, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points);
-            const angle = getKneeAngle(points ?? []);
-            const next = counterRef.current.update(angle, time);
+            const measured = kneeTrackerRef.current.update(points ?? []);
+            setPoseFound(Boolean(points?.length));
+            setTrackingSide(measured.side);
+            const next = counterRef.current.update(measured.angle, time);
             setSnapshot(next);
             if (next.counted && soundEnabled) playRepCue(audioRef.current, next.count >= TARGET_REPS);
             if (next.calibrated && startedAtRef.current === null) startedAtRef.current = time;
@@ -413,6 +428,26 @@ function App() {
                   <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span>20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
                 ) : (
                   <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} /></div>
+                )}
+                {mode === 'active' && (
+                  <div className={`pose-hud${snapshot.angle === null ? ' pose-hud-lost' : ''}`} aria-label="Диагностика распознавания приседаний">
+                    <span className="pose-hud-step">
+                      {snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' :
+                        snapshot.phase === 'ready' ? 'ГОТОВ К ПРИСЕДУ' :
+                          snapshot.phase === 'descending' ? 'ОПУСКАЙСЯ' : 'ВЫПРЯМИСЬ'}
+                    </span>
+                    <div className="pose-hud-angle"><span>КОЛЕНО</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></div>
+                    <div className="pose-hud-target">
+                      {snapshot.depthTarget === null ? 'ВСТАНЬ ПРЯМО' :
+                        snapshot.phase === 'bottom' ? `ВСТАТЬ ≥ ${snapshot.returnTarget}°` :
+                          `ПРИСЕСТЬ ≤ ${snapshot.depthTarget}°`}
+                    </div>
+                    <div className="pose-hud-side">
+                      {snapshot.angle === null
+                        ? poseFound ? 'СУСТАВЫ НЕ ВИДНЫ' : 'ЧЕЛОВЕК НЕ НАЙДЕН'
+                        : trackingSide === 'left' ? 'ЛЕВАЯ НОГА' : 'ПРАВАЯ НОГА'}
+                    </div>
+                  </div>
                 )}
                 {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ЗАХВАТ ДВИЖЕНИЯ / LIVE</div>}
               </div>
