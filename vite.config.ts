@@ -24,7 +24,7 @@ function blockPrivateAgentFiles() {
           res.end('Bad request');
           return;
         }
-        if (/(^|\/)\.(?:iskra|agents|codex|git)(?:\/|$)/.test(pathname) ||
+        if (/(^|\/)\.(?:iskra|agents|codex|git|vscode)(?:\/|$)/.test(pathname) ||
             /(^|\/)(?:agents|codex_iskra)\.md$/.test(pathname)) {
           res.statusCode = 403;
           res.setHeader('Cache-Control', 'no-store');
@@ -45,7 +45,7 @@ export default defineConfig({
       deny: [
         '.env', '.env.*', '*.{crt,pem,key,p12,pfx,cer,der}',
         '.npmrc', '.yarnrc.yml', '**/.git/**',
-        '**/.iskra/**', '**/.agents/**', '**/.codex/**',
+        '**/.iskra/**', '**/.agents/**', '**/.codex/**', '**/.vscode/**',
         '**/AGENTS.md', '**/CODEX_ISKRA.md',
       ],
     },

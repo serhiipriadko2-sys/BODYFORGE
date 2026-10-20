@@ -239,10 +239,10 @@ function kneeCandidates(landmarks: PosePoint[], frameAspectRatio: number): KneeC
     const c = landmarks[ankle];
     if (!a || !b || !c) continue;
     const confidence = Math.min(...[a, b, c].map((p) => p.visibility ?? 1));
-    if (confidence < 0.42) continue;
+    if (!Number.isFinite(confidence) || confidence < 0.42 || confidence > 1) continue;
     if (![a, b, c].every((p) => Number.isFinite(p.x) && Number.isFinite(p.y) &&
         p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1 &&
-        (p.presence ?? 1) >= 0.4)) continue;
+        Number.isFinite(p.presence ?? 1) && (p.presence ?? 1) >= 0.4 && (p.presence ?? 1) <= 1)) continue;
     if (!validSegment(a, b) || !validSegment(b, c)) continue;
     const angle = jointAngle(a, b, c, frameAspectRatio);
     if (Number.isFinite(angle) && angle >= 45 && angle <= 180) {

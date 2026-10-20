@@ -7,7 +7,7 @@ export const TARGET_REPS = 20;
 export const XP_REWARD = 120;
 export const COIN_REWARD = 35;
 // Do not change the key: upgrading a game must not destroy prior workout progress.
-const STORAGE_KEY = 'bodyforge:pilot:v1';
+export const STORAGE_KEY = 'bodyforge:pilot:v1';
 export const PROFILE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
 const QUARANTINE_PREFIX = `${STORAGE_KEY}:quarantine:`;
 
@@ -22,7 +22,11 @@ export interface Workout {
   splitsMs?: number[];
 }
 
+export interface ProfileTotals { workouts: number; repetitions: number; bestDurationMs: number | null }
+
 export interface Profile {
+  /** Optional on legacy saves; updated independently of the last-60 display history. */
+  totals?: ProfileTotals;
   xp: number;
   coins: number;
   workouts: Workout[];
@@ -33,9 +37,11 @@ export interface ProfileLoadResult {
   profile: Profile;
   status: 'ready' | 'empty' | 'recovery-required' | 'unavailable';
   backupAvailable: boolean;
+  /** Exact observed primary value for optimistic stale-tab detection; never sent to a server. */
+  revision: string | null;
 }
 
-export type ProfilePersistResult = 'saved' | 'recovery-required' | 'unavailable';
+export type ProfilePersistResult = 'saved' | 'recovery-required' | 'unavailable' | 'conflict';
 
 export const EMPTY_PROFILE: Profile = { xp: 0, coins: 0, workouts: [], game: freshGame() };
 
@@ -65,7 +71,17 @@ export function bestTime(workouts: Workout[]): number | null {
   return valid.length ? Math.min(...valid.map((workout) => workout.durationMs)) : null;
 }
 
-export interface WorkoutOptions { mode?: WorkoutMode; splitsMs?: number[] }
+export interface WorkoutOptions { mode?: WorkoutMode; splitsMs?: number[]; sessionId?: string }
+
+export function getProfileTotals(profile: Profile): ProfileTotals {
+  const history = { workouts: profile.workouts.length, repetitions: profile.workouts.reduce((sum, w) => sum + w.repetitions, 0), bestDurationMs: bestTime(profile.workouts) };
+  const t = profile.totals;
+  if (!t || !Number.isSafeInteger(t.workouts) || t.workouts < history.workouts ||
+      !Number.isSafeInteger(t.repetitions) || t.repetitions !== t.workouts * TARGET_REPS ||
+      (t.bestDurationMs !== null && (!Number.isFinite(t.bestDurationMs) || t.bestDurationMs <= 0))) return history;
+  const candidates = [t.bestDurationMs, history.bestDurationMs].filter((v): v is number => v !== null);
+  return { workouts: t.workouts, repetitions: t.repetitions, bestDurationMs: candidates.length ? Math.min(...candidates) : null };
+}
 
 function validWorkoutSplits(splits: unknown, durationMs: number): splits is number[] {
   // Saves and runtime input can violate TypeScript types; array-like values are not split times.
@@ -79,10 +95,13 @@ export function addCompletedWorkout(
   profile: Profile, durationMs: number, now = new Date(), options: WorkoutOptions = {},
 ): Profile {
   if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('Время тренировки должно быть положительным');
+  if (options.sessionId !== undefined && (!options.sessionId.trim() || options.sessionId.length > 128)) throw new Error('Invalid workout session ID');
+  if (options.sessionId && profile.workouts.some((w) => w.id === options.sessionId)) return profile;
+  const totals = getProfileTotals(profile);
   const splits = options.splitsMs;
   const validSplits = validWorkoutSplits(splits, durationMs);
   const workout: Workout = {
-    id: `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: options.sessionId ?? `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`,
     finishedAt: now.toISOString(),
     durationMs,
     repetitions: TARGET_REPS,
@@ -95,6 +114,7 @@ export function addCompletedWorkout(
     coins: profile.coins + COIN_REWARD,
     workouts: [workout, ...profile.workouts].slice(0, 60),
     game: normalizeGame(profile.game),
+    totals: { workouts: totals.workouts + 1, repetitions: totals.repetitions + TARGET_REPS, bestDurationMs: Math.min(totals.bestDurationMs ?? durationMs, durationMs) },
   };
   const withGhost = validSplits ? storeGhost(updated, durationMs, splits) : updated;
   return options.mode === 'tower' ? beatTowerFloor(withGhost, durationMs) : withGhost;
@@ -125,7 +145,11 @@ export function parseProfile(value: unknown): Profile {
       ...(validWorkoutSplits(splitsMs, workout.durationMs) ? { splitsMs: [...splitsMs] } : {}),
     };
   });
-  return { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
+  const parsed: Profile = { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
+  if ('totals' in record && typeof record.totals === 'object' && record.totals !== null) {
+    parsed.totals = getProfileTotals({ ...parsed, totals: record.totals as ProfileTotals });
+  }
+  return parsed;
 }
 
 function decodeStoredProfile(raw: string | null): Profile | null {
@@ -140,19 +164,20 @@ function decodeStoredProfile(raw: string | null): Profile | null {
 
 export function loadProfileState(): ProfileLoadResult {
   const empty = parseProfile(null);
-  if (typeof window === 'undefined') return { profile: empty, status: 'unavailable', backupAvailable: false };
+  if (typeof window === 'undefined') return { profile: empty, status: 'unavailable', backupAvailable: false, revision: null };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const profile = decodeStoredProfile(raw);
-    if (profile) return { profile, status: 'ready', backupAvailable: false };
+    if (profile) return { profile, status: 'ready', backupAvailable: false, revision: raw };
     const backupRaw = localStorage.getItem(PROFILE_BACKUP_KEY);
     return {
       profile: empty,
       status: raw !== null || backupRaw !== null ? 'recovery-required' : 'empty',
       backupAvailable: decodeStoredProfile(backupRaw) !== null,
+      revision: raw,
     };
   } catch {
-    return { profile: empty, status: 'unavailable', backupAvailable: false };
+    return { profile: empty, status: 'unavailable', backupAvailable: false, revision: null };
   }
 }
 
@@ -166,15 +191,24 @@ function writeVerified(key: string, raw: string): boolean {
   return localStorage.getItem(key) === raw;
 }
 
-export function persistProfile(profile: Profile): ProfilePersistResult {
+export function persistProfile(profile: Profile, options: { expectedRaw?: string | null } = {}): ProfilePersistResult {
   if (!validProfileRoot(profile)) return 'unavailable';
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    // Detect a stale tab BEFORE altering the validated backup. This is optimistic
+    // conflict detection, not server-authoritative or a transactional anti-cheat.
+    if ('expectedRaw' in options && raw !== options.expectedRaw) return 'conflict';
     const previous = decodeStoredProfile(raw);
     // Recheck on every save, including the initial React effect and other tabs' changes.
     if (raw !== null && !previous) return 'recovery-required';
     if (raw === null && localStorage.getItem(PROFILE_BACKUP_KEY) !== null) return 'recovery-required';
     const next = JSON.stringify(parseProfile(profile));
+    // React StrictMode/reload must not replace yesterday's fallback with an
+    // identical current snapshot. Seed a backup only when it is missing/invalid.
+    if (previous && JSON.stringify(previous) === next && decodeStoredProfile(localStorage.getItem(PROFILE_BACKUP_KEY))) {
+      if (localStorage.getItem(STORAGE_KEY) !== raw) return 'conflict';
+      return raw === next || writeVerified(STORAGE_KEY, next) ? 'saved' : 'unavailable';
+    }
     const backup = previous ? JSON.stringify(previous) : next;
     // Preserve a validated fallback before touching the primary; quota/no-op failures fail closed.
     if (!writeVerified(PROFILE_BACKUP_KEY, backup)) return 'unavailable';

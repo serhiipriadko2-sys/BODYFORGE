@@ -87,8 +87,8 @@ export function normalizeGame(value: unknown): GameState {
   const splits: unknown[] = rawGhost && Array.isArray(rawGhost.splitsMs) ? rawGhost.splitsMs : [];
   const bestGhost = typeof duration === 'number' && Number.isFinite(duration) && duration > 0
     && splits.length === 20
-    && splits.every((ms): ms is number => typeof ms === 'number' && Number.isFinite(ms) && ms >= 0 && ms <= duration)
-    && splits.every((ms, index) => typeof ms === 'number' && (index === 0 || (typeof splits[index - 1] === 'number' && ms >= (splits[index - 1] as number))))
+    && Array.from(splits).every((ms): ms is number => typeof ms === 'number' && Number.isFinite(ms) && ms >= 0 && ms <= duration)
+    && Array.from(splits).every((ms, index) => typeof ms === 'number' && (index === 0 || (typeof splits[index - 1] === 'number' && ms >= (splits[index - 1] as number))))
     ? { durationMs: duration, splitsMs: [...splits] as number[] } : null;
 
   return {
@@ -126,11 +126,12 @@ export function muscleCost(currentLevel: number): number {
 
 export function createFighter(profile: Profile, build: BodyBuild, nickname: string): Profile {
   const name = nickname.trim().slice(0, 20);
-  if (profile.game.created || name.length < 2) return profile;
+  if (profile.game.created || name.length < 2 || !validBuild(build)) return profile;
   return { ...profile, game: { ...profile.game, created: true, build, nickname: name } };
 }
 
 export function upgradeMuscle(profile: Profile, muscle: Muscle): Profile {
+  if (!MUSCLES.some((entry) => entry.id === muscle)) return profile;
   const currentLevel = profile.game.muscles[muscle];
   if (!profile.game.created || currentLevel >= MAX_MUSCLE_LEVEL) return profile;
   const cost = muscleCost(currentLevel);
@@ -195,6 +196,7 @@ export function nextTowerFloor(game: GameState) {
 }
 
 export function beatTowerFloor(profile: Profile, durationMs: number): Profile {
+  if (!Number.isFinite(durationMs) || durationMs <= 0 || !profile.game.created) return profile;
   const floor = nextTowerFloor(profile.game);
   if (profile.game.highestClearedFloor >= TOWER_FLOORS.length || durationMs > floor.targetMs) return profile;
   return {
@@ -207,7 +209,7 @@ export function beatTowerFloor(profile: Profile, durationMs: number): Profile {
 
 export function storeGhost(profile: Profile, durationMs: number, splitsMs: number[]): Profile {
   if (!Array.isArray(splitsMs) || splitsMs.length !== 20) return profile;
-  if (!Number.isFinite(durationMs) || durationMs <= 0 || splitsMs.some((ms, index) =>
+  if (!Number.isFinite(durationMs) || durationMs <= 0 || Array.from(splitsMs).some((ms, index) =>
     !Number.isFinite(ms) || ms < 0 || ms > durationMs || (index !== 0 && ms < splitsMs[index - 1]))) return profile;
   if (profile.game.bestGhost && profile.game.bestGhost.durationMs <= durationMs) return profile;
   return {

@@ -8,6 +8,10 @@ import {
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
+import StorageRecovery from './components/StorageRecovery';
+import './recovery.css';
+import { useProfileStorage } from './hooks/useProfileStorage';
+import { withTimeout } from './lib/withTimeout';
 import { DailyBoard, FighterSetup, ForgeStudio, OnlineBoard, TowerBoard } from './components/ForgeWorld';
 import {
   buyOrEquipOutfit, claimDailyQuest, claimLogin, createFighter, ghostRepetitions,
@@ -15,14 +19,13 @@ import {
   type BodyBuild, type Muscle, type Outfit, type WorkoutMode,
 } from './lib/game';
 import {
-  addCompletedWorkout, bestTime, COIN_REWARD, formatTime, getLevel,
-  getLevelProgress, getRank, loadProfile, persistProfile,
-  TARGET_REPS, XP_REWARD, type Profile,
+  addCompletedWorkout, getProfileTotals, COIN_REWARD, formatTime, getLevel,
+  getLevelProgress, getRank, TARGET_REPS, XP_REWARD,
 } from './lib/progression';
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, portraitCameraConstraints,
-  zoomConstraints, DEFAULT_CAMERA, VideoFrameGate,
+  zoomConstraints, DEFAULT_CAMERA, VideoFrameGate, CameraFrameWatchdog,
   type CameraDeviceOption, type CameraOrientation, type CameraSource, type CameraZoom,
 } from './lib/camera';
 import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
@@ -50,6 +53,7 @@ function cameraErrorMessage(error: unknown): string {
   const name = error instanceof DOMException ? error.name : '';
   if (name === 'NotAllowedError' || name === 'PermissionDeniedError') return 'Доступ к камере запрещён. Разреши камеру в настройках браузера и попробуй ещё раз.';
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Камера не найдена. Подключи камеру или открой страницу на телефоне.';
+  if (name === 'TimeoutError') return 'Камера или модель слишком долго не отвечает. Проверь разрешение и соединение, затем повтори попытку.';
   if (name === 'NotReadableError') return 'Камеру сейчас использует другое приложение. Закрой его и попробуй снова.';
   if (name === 'OverconstrainedError') return 'Выбранный объектив или его настройки не поддерживаются. Выбери другую камеру.';
   return error instanceof Error ? `Не удалось запустить распознавание: ${error.message}` : 'Не удалось запустить камеру. Проверь соединение и разрешения.';
@@ -78,7 +82,7 @@ function playRepCue(audio: AudioContext | null, finalRep: boolean): void {
   }
 }
 
-function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement, points: PosePoint[] | undefined) {
+function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement, points: PosePoint[] | undefined, mirrored = true) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -90,8 +94,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
   ctx.clearRect(0, 0, width, height);
   if (!points) return;
   ctx.save();
-  ctx.translate(width, 0);
-  ctx.scale(-1, 1);
+  if (mirrored) { ctx.translate(width, 0); ctx.scale(-1, 1); }
   ctx.lineWidth = Math.max(3, width / 240);
   ctx.lineCap = 'round';
   const segments = [[11, 12], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
@@ -143,7 +146,7 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
 }
 
 function App() {
-  const [profile, setProfile] = useState<Profile>(loadProfile);
+  const { profile, setProfile, status: storageStatus, backupAvailable, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
   const [mode, setMode] = useState<Mode>('idle');
   const [snapshot, setSnapshot] = useState<CounterSnapshot>(FIRST_SNAPSHOT);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -156,11 +159,25 @@ function App() {
   const [cameraDevices, setCameraDevices] = useState<CameraDeviceOption[]>([]);
   const [cameraZoom, setCameraZoom] = useState<CameraZoom | null>(null);
   const [cameraBusy, setCameraBusy] = useState(false);
+  const [cameraMirrored, setCameraMirrored] = useState(true);
+  const [frameStalled, setFrameStalled] = useState(false);
   const [cameraMessage, setCameraMessage] = useState('');
   const [showFullFrame, setShowFullFrame] = useState(false);
   const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
   const [today, setToday] = useState(() => new Date());
+  // A daily reward must unlock after local midnight even if the app stays open.
+  useEffect(() => {
+    const refresh = () => {
+      const now = new Date();
+      setToday((previous) => previous.toDateString() === now.toDateString() ? previous : now);
+    };
+    const timer = window.setInterval(refresh, 30000);
+    const visible = () => { if (!document.hidden) refresh(); };
+    document.addEventListener('visibilitychange', visible);
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', visible); };
+  }, []);
+
   const [trackingSide, setTrackingSide] = useState<'left' | 'right' | null>(null);
   const [poseFound, setPoseFound] = useState(false);
   const [poseGuidance, setPoseGuidance] = useState<PoseGuidance>(() => new PoseGuidanceTracker().reset());
@@ -185,12 +202,19 @@ function App() {
   const lastInferenceAtRef = useRef(0);
   const videoFramesRef = useRef(new VideoFrameGate());
   const captureRequestedRef = useRef(false);
+  const frameWatchdogRef = useRef(new CameraFrameWatchdog());
+  const stallReportedRef = useRef(false);
+  const mirroredRef = useRef(true);
+  const workoutIdRef = useRef<string | undefined>(undefined);
   const streamCleanupRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => { persistProfile(profile); }, [profile]);
+
 
   const invalidateObservation = useCallback(() => {
+    setFrameStalled(false);
     videoFramesRef.current.reset();
+    frameWatchdogRef.current.reset();
+    stallReportedRef.current = false;
     lastInferenceAtRef.current = 0;
     kneeTrackerRef.current.reset();
     setPoseGuidance(poseGuidanceRef.current.reset());
@@ -202,6 +226,12 @@ function App() {
   const stopCapture = useCallback(() => {
     captureRequestedRef.current = false;
     aliveRef.current = false;
+    setFrameStalled(false);
+    switchingRef.current = false;
+    zoomBusyRef.current = false;
+    setCameraBusy(false);
+    frameWatchdogRef.current.reset();
+    stallReportedRef.current = false;
     requestIdRef.current++;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = null;
@@ -238,6 +268,12 @@ function App() {
     };
   }, [interruptCapture]);
 
+  useEffect(() => {
+    if (storageStatus !== 'ready' && captureRequestedRef.current) {
+      interruptCapture('Сохранение недоступно или изменилось. Камера остановлена, чтобы не потерять прогресс.');
+    }
+  }, [storageStatus, interruptCapture]);
+
   const refreshCameraDevices = useCallback(async () => {
     if (!navigator.mediaDevices?.enumerateDevices) return;
     try {
@@ -260,7 +296,8 @@ function App() {
   /** Single ownership point for camera tracks, shared by start and hot-switch.
    * Never trust deviceId to exist until the browser actually opens the stream. */
   const connectCamera = useCallback(async (source: CameraSource, requestId: number): Promise<MediaStream> => {
-    const stream = await navigator.mediaDevices.getUserMedia(portraitCameraConstraints(source));
+    const stream = await withTimeout(navigator.mediaDevices.getUserMedia(portraitCameraConstraints(source)), 20000, 'Camera permission timeout',
+      (lateStream) => lateStream.getTracks().forEach((track) => track.stop()));
     if (requestId !== requestIdRef.current) {
       stream.getTracks().forEach((track) => track.stop());
       throw new DOMException('Camera request cancelled', 'AbortError');
@@ -273,14 +310,21 @@ function App() {
     try {
       streamRef.current = stream;
       video.srcObject = stream;
-      await video.play();
+      await withTimeout(video.play(), 12000, 'Video playback timeout');
       if (requestId !== requestIdRef.current) {
         throw new DOMException('Camera request cancelled', 'AbortError');
       }
       setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
       videoFramesRef.current.reset();
       const track = stream.getVideoTracks()[0];
-      if (track) {
+      if (!track) throw new DOMException('No video track', 'NotFoundError');
+      {
+        const facing = track.getSettings().facingMode;
+        const mirrored = facing === 'user' || (facing !== 'environment' && source.kind === 'facing' && source.value === 'user');
+        mirroredRef.current = mirrored;
+        setCameraMirrored(mirrored);
+        frameWatchdogRef.current.reset();
+        stallReportedRef.current = false;
         const ownsStream = () => requestId === requestIdRef.current && streamRef.current === stream;
         const ended = () => {
           if (ownsStream()) interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
@@ -386,6 +430,8 @@ function App() {
   }, [stopCapture]);
 
   const start = useCallback(async (requestedMode: WorkoutMode = 'training') => {
+    if (storageStatus !== 'ready' || captureRequestedRef.current) return;
+    workoutIdRef.current = undefined;
     if (!profile.game.created) {
       // Keep the requested camera tab open; silently navigating home made
       // first-time phone users think the exercise screen had crashed.
@@ -435,6 +481,7 @@ function App() {
       setMode('error');
       return;
     }
+    workoutIdRef.current = globalThis.crypto?.randomUUID?.() ?? ('local-' + Date.now() + '-' + Math.random().toString(36).slice(2));
     captureRequestedRef.current = true;
     setMode('loading');
     const requestId = requestIdRef.current;
@@ -443,7 +490,7 @@ function App() {
     try {
       stream = await connectCamera(cameraSource, requestId);
 
-      const vision = await FilesetResolver.forVisionTasks(WASM_URL);
+      const vision = await withTimeout(FilesetResolver.forVisionTasks(WASM_URL), 30000, 'Pose runtime download timeout');
       if (requestId !== requestIdRef.current) return;
       const sharedOptions = {
         baseOptions: { modelAssetPath: MODEL_URL },
@@ -454,16 +501,17 @@ function App() {
         minTrackingConfidence: 0.55,
       };
       try {
-        landmarker = await PoseLandmarker.createFromOptions(vision, {
+        landmarker = await withTimeout(PoseLandmarker.createFromOptions(vision, {
           ...sharedOptions,
           baseOptions: { ...sharedOptions.baseOptions, delegate: 'GPU' },
-        });
-      } catch {
+        }), 45000, 'Pose model timeout', (lateModel) => lateModel.close());
+      } catch (failure) {
+        if (failure instanceof DOMException && failure.name === 'TimeoutError') throw failure;
         if (requestId !== requestIdRef.current) return;
-        landmarker = await PoseLandmarker.createFromOptions(vision, {
+        landmarker = await withTimeout(PoseLandmarker.createFromOptions(vision, {
           ...sharedOptions,
           baseOptions: { ...sharedOptions.baseOptions, delegate: 'CPU' },
-        });
+        }), 45000, 'Pose CPU model timeout', (lateModel) => lateModel.close());
       }
       if (requestId !== requestIdRef.current) {
         landmarker.close();
@@ -488,10 +536,16 @@ function App() {
         if (!liveTrack.muted && liveVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
             time - lastInferenceAtRef.current >= 90 && videoFramesRef.current.accept(liveVideo.currentTime)) {
           lastInferenceAtRef.current = time;
+          frameWatchdogRef.current.observe(true, time);
+          if (stallReportedRef.current) {
+            setFrameStalled(false);
+            setCameraMessage('Кадры снова поступают. Встань прямо для повторной калибровки.');
+          }
+          stallReportedRef.current = false;
           try {
             const result = landmarkerRef.current.detectForVideo(liveVideo, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
-            drawSkeleton(canvasRef.current, liveVideo, points);
+            drawSkeleton(canvasRef.current, liveVideo, points, mirroredRef.current);
             const measured = kneeTrackerRef.current.update(points ?? [], liveVideo.videoWidth / liveVideo.videoHeight);
             setPoseGuidance(poseGuidanceRef.current.update(points, measured.angle, time));
             setPoseFound(Boolean(points?.length));
@@ -514,9 +568,10 @@ function App() {
                 : selectedMode === 'ghost' && profile.game.bestGhost
                   ? durationMs < profile.game.bestGhost.durationMs : null;
               setLastChallenge({ mode: selectedMode, victory });
-              setProfile((previous) => addCompletedWorkout(previous, durationMs, new Date(), {
-                mode: selectedMode, splitsMs: [...splitsRef.current],
-              }));
+              // Freeze once outside React's updater (which StrictMode may invoke twice).
+              const finishedAt = new Date();
+              const resultOptions = { mode: selectedMode, splitsMs: [...splitsRef.current], sessionId: workoutIdRef.current };
+              setProfile((previous) => addCompletedWorkout(previous, durationMs, finishedAt, resultOptions));
               setToday(new Date());
               stopCapture();
               setMode('complete');
@@ -528,6 +583,18 @@ function App() {
             setMode('error');
             return;
           }
+        } else if (frameWatchdogRef.current.observe(false, time) && !stallReportedRef.current) {
+          // Do NOT reset VideoFrameGate here: that would accept the same frozen
+          // image as fresh on the next tick and resurrect an obsolete pose.
+          stallReportedRef.current = true;
+          setFrameStalled(true);
+          kneeTrackerRef.current.reset();
+          setSnapshot(counterRef.current.recalibrate());
+          setPoseGuidance(poseGuidanceRef.current.reset());
+          setTrackingSide(null);
+          setPoseFound(false);
+          drawSkeleton(canvasRef.current, liveVideo, undefined, mirroredRef.current);
+          setCameraMessage('Кадр камеры завис. Счётчик ждёт новое изображение; выполненные повторы сохранены.');
         }
         frameRef.current = requestAnimationFrame(scan);
       };
@@ -543,17 +610,23 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture]);
+  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture, storageStatus, setProfile]);
 
   /** Zoom uses the real capture track, never CSS stretching of the skeleton. */
   const changeCameraZoom = useCallback(async (requested: number) => {
     const track = streamRef.current?.getVideoTracks()[0];
     if (!track || mode !== 'active' || !cameraZoom || switchingRef.current || zoomBusyRef.current) return;
+    if (!Number.isFinite(requested)) return;
+    const requestId = requestIdRef.current;
     const zoom = Math.min(cameraZoom.max, Math.max(cameraZoom.min, requested));
+    aliveRef.current = false;
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
+    invalidateObservation();
     zoomBusyRef.current = true;
     setCameraBusy(true);
     try {
-      await track.applyConstraints(zoomConstraints(zoom));
+      await withTimeout(track.applyConstraints(zoomConstraints(zoom)), 8000, 'Zoom timeout');
       if (streamRef.current?.getVideoTracks()[0] !== track) return;
       const actual = (track.getSettings() as MediaTrackSettings & { zoom?: number }).zoom;
       if (typeof actual !== 'number' || Math.abs(actual - zoom) > Math.max(.11, cameraZoom.step * 1.6)) {
@@ -564,13 +637,23 @@ function App() {
       if (actual < .95) setShowFullFrame(true);
       invalidateObservation();
       setCameraMessage('Масштаб изменён. Встань прямо: повторная калибровка без потери приседаний.');
-    } catch {
+    } catch (failure) {
+      if (requestId !== requestIdRef.current) return;
+      if (failure instanceof DOMException && failure.name === 'TimeoutError') {
+        interruptCapture('Камера не завершила изменение масштаба. Попытка остановлена без награды.');
+        return;
+      }
       setCameraMessage('Этот масштаб недоступен в браузере телефона.');
     } finally {
-      zoomBusyRef.current = false;
-      setCameraBusy(false);
+      if (requestId === requestIdRef.current && streamRef.current?.getVideoTracks()[0] === track) {
+        zoomBusyRef.current = false;
+        setCameraBusy(false);
+        invalidateObservation();
+        aliveRef.current = true;
+        if (scanRef.current) frameRef.current = requestAnimationFrame(scanRef.current);
+      }
     }
-  }, [mode, cameraZoom, invalidateObservation]);
+  }, [mode, cameraZoom, invalidateObservation, interruptCapture]);
 
   /** On mobile, switching lenses releases the previous track before opening a
    * new one. The elapsed timer continues. Already-counted reps are preserved. */
@@ -639,16 +722,16 @@ function App() {
         setMode('error');
       }
     } finally {
-      switchingRef.current = false;
-      setCameraBusy(false);
+      if (requestId === requestIdRef.current) { switchingRef.current = false; setCameraBusy(false); }
     }
   }, [mode, cameraSource, cameraDevices, cameraZoom, connectCamera, changeCameraZoom, stopCapture, invalidateObservation]);
 
   const level = getLevel(profile.xp);
   const levelPercent = Math.round(getLevelProgress(profile.xp) * 100);
-  const best = useMemo(() => bestTime(profile.workouts), [profile.workouts]);
-  const repetitionsDone = profile.workouts.reduce((sum, workout) => sum + workout.repetitions, 0);
-  const workoutCount = profile.workouts.length;
+  const totals = useMemo(() => getProfileTotals(profile), [profile]);
+  const best = totals.bestDurationMs;
+  const repetitionsDone = totals.repetitions;
+  const workoutCount = totals.workouts;
   const isCameraShown = mode === 'loading' || mode === 'active';
   const displayTime = mode === 'complete' ? (lastResultMs ?? 0) : elapsedMs;
 
@@ -681,8 +764,11 @@ function App() {
       ? ghostRepetitions(profile.game.bestGhost.splitsMs, elapsedMs) : 0;
   const canNavigate = mode !== 'active' && mode !== 'loading';
 
+  if (storageStatus !== 'ready') return <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
+    profile={profile} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage}/>;
+
   return (
-    <div className="app-shell" data-screen={section}>
+    <div className="app-shell" data-screen={section} data-fighter-created={profile.game.created ? 'true' : 'false'}>
       <aside className="sidebar">
         <Brand />
         <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
@@ -710,6 +796,19 @@ function App() {
         </header>
 
         <main className="content">
+          {profile.game.created && (
+            <section className="dashboard-player" aria-label="Прогресс бойца">
+              <div className="dashboard-player-icon"><UserRound size={23} /></div>
+              <div className="dashboard-player-info">
+                <span>ТВОЙ БОЕЦ · {getRank(workoutCount)}</span>
+                <strong>{profile.game.nickname}</strong>
+                <div className="dashboard-player-track" aria-label={`Прогресс до следующего уровня: ${levelPercent}%`}>
+                  <div style={{ width: `${levelPercent}%` }} />
+                </div>
+              </div>
+              <div className="dashboard-player-stats"><strong>УР. {level}</strong><span>{repetitionsDone} ПОВТОРОВ</span></div>
+            </section>
+          )}
           {!profile.game.created && <FighterSetup legacyWorkouts={profile.workouts.length}
             onCreate={(build: BodyBuild, nickname: string) => {
               setProfile((previous) => createFighter(previous, build, nickname));
@@ -725,13 +824,6 @@ function App() {
             <div className="intro-badge"><div className="intro-badge-icon"><Flame size={26} /></div><div><strong>ГОРН РАЗОГРЕТ</strong><span>ПЕРВОЕ ИСПЫТАНИЕ ГОТОВО</span></div></div>
           </section>
 
-          <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-            <div className="quickstart-copy"><span>ТВОЙ СЕГОДНЯШНИЙ ШАГ</span><strong>20 ПРИСЕДАНИЙ</strong>
-              <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
-            <button type="button" disabled={!profile.game.created || !canNavigate}
-              onClick={() => goTraining('training')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
-          </div>
-
           <section className="cards-grid" aria-label="Герой и испытание">
             <article className="character-card">
               <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
@@ -743,7 +835,14 @@ function App() {
                   muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown}/>
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
+              <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
+                <div className="quickstart-copy"><span>ТВОЙ СЕГОДНЯШНИЙ ШАГ</span><strong>20 ПРИСЕДАНИЙ</strong>
+                  <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
+                <button type="button" disabled={!profile.game.created || !canNavigate}
+                  onClick={() => goTraining('training')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
+              </div>
               <div className="character-footer">
+                <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПРИСЕДАНИЙ <strong>{repetitionsDone}</strong></span></div>
                 <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
                 <div className="xp-track"><div className="xp-progress" style={{ width: `${levelPercent}%` }} /></div>
                 <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО НОВОЙ ЗАКАЛКИ: {250 - (profile.xp % 250)} XP</span></div>
@@ -774,7 +873,7 @@ function App() {
 
               <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}${showFullFrame ? ' camera-fit-whole' : ''}`} data-camera-format="9:16">
                 <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
-                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
+                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} style={{ transform: cameraMirrored ? 'scaleX(-1)' : 'none' }} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
                 {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><Hammer size={74} strokeWidth={1.1} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
                 {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модель распознавания позы…</span></div>}
@@ -807,13 +906,13 @@ function App() {
                     </div>
                   </div>
                 )}
-                {mode === 'active' && poseGuidance.warning && (
-                  <div className="pose-camera-coach" role="status" aria-live="polite" data-guidance={poseGuidance.kind}>
-                    <strong>{poseGuidance.title}</strong>
-                    <span>{poseGuidance.instruction}</span>
+                {mode === 'active' && (frameStalled || poseGuidance.warning) && (
+                  <div className="pose-camera-coach" role="status" aria-live="polite" data-guidance={frameStalled ? 'camera-stalled' : poseGuidance.kind}>
+                    <strong>{frameStalled ? 'КАДР КАМЕРЫ ЗАВИС' : poseGuidance.title}</strong>
+                    <span>{frameStalled ? 'Новые изображения не поступают. Дождись восстановления потока или останови испытание. Это не ошибка твоей позы.' : poseGuidance.instruction}</span>
                   </div>
                 )}
-                {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> ЗАХВАТ ДВИЖЕНИЯ / LIVE</div>}
+                {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> {frameStalled ? 'ПОТОК ПРИОСТАНОВЛЕН' : 'ЗАХВАТ ДВИЖЕНИЯ / LIVE'}</div>}
               </div>
 
               {mode === 'active' && workoutMode !== 'training' && (

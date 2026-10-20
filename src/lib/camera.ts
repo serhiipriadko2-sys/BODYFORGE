@@ -55,7 +55,7 @@ type CameraSettings = { zoom?: number };
 
 /** "wide" alone may mean the standard 1x camera: do not mislabel it as 0.5x. */
 export function isUltraWideCamera(label: string): boolean {
-  return /ultra[\s-]*wide|super[\s-]*wide|wide[\s-]*angle|0[.,][45678]\s*[x×]|сверхшир|ультра[\s-]*шир|широкоугольн/i.test(label);
+  return /ultra[\s-]*wide|super[\s-]*wide|0[.,][45678]\s*[x×]|сверхшир|ультра[\s-]*шир/i.test(label);
 }
 
 export function cameraDeviceOptions(devices: DeviceCandidate[]): CameraDeviceOption[] {

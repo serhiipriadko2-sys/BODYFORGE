@@ -59,7 +59,7 @@ export default function CameraControls({
         <button type="button" className={selectedWide ? 'selected' : ''}
           disabled={!canChange || !wideAvailable} aria-pressed={selectedWide}
           onClick={() => wide ? onChoose({ kind: 'device', value: wide.deviceId }) : zoom && onZoom(zoom.min)}>
-          <Scan size={19}/><strong>ШИРОКАЯ</strong><small>{wideAvailable ? '0.5× / широко' : 'НЕТ ДОСТУПА'}</small>
+          <Scan size={19}/><strong>ШИРОКАЯ</strong><small>{wide ? 'Широкий объектив' : canOpticalWide && zoom ? `От ${zoom.min.toFixed(1)}×` : 'НЕТ ДОСТУПА'}</small>
         </button>
       </div>
       {devices.length > 0 && (
@@ -73,7 +73,7 @@ export default function CameraControls({
             <option value="">По умолчанию</option>
             {devices.map((camera) => (
               <option key={camera.deviceId} value={camera.deviceId}>
-                {camera.ultraWide ? '0.5× · ' : ''}{camera.label}
+                {camera.ultraWide ? 'Широкий · ' : ''}{camera.label}
               </option>
             ))}
           </select>
@@ -95,7 +95,7 @@ export default function CameraControls({
       </button>
       <p className="camera-control-help" role="status">
         {message || (wideAvailable
-          ? 'Широкоугольный объектив доступен. Держи телефон вертикально: кадр всегда 9:16.'
+          ? 'Браузер предлагает широкий объектив или уменьшение масштаба. Это не гарантирует оптический зум 0.5×. Кадр остаётся 9:16.'
           : 'Широкая 0.5× появляется, только если браузер видит этот объектив или поддерживает зум меньше 1×.')}
       </p>
     </div>

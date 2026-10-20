@@ -71,6 +71,13 @@ try{
   console.log('INITIAL',JSON.stringify(s).slice(0,470));
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
   check(s.three.includes('active'),'WebGL 3D hero active');
+  let photoHuman=false;
+  for(let i=0;i<70;i++){
+    photoHuman=await js("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'");
+    if(photoHuman)break;
+    await sleep(200);
+  }
+  check(photoHuman,'licensed anatomical CC0 human 3D loaded instead of procedural fallback');
   await screenshot('bf-qa-mobile-setup.png');
   // First launch: tapping Camera before fighter setup must not silently jump
   // to the home screen. The user should see why they cannot train yet.
@@ -88,6 +95,20 @@ try{
   s=await snapshot();
   console.log('CREATED',JSON.stringify(s).slice(0,440));
   check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');
+  const premium=await read("({player:!!document.querySelector('.dashboard-player'),dark:!!document.querySelector('link[href*=premium]')||getComputedStyle(document.body).backgroundColor,firstRect:document.querySelector('.character-card')?.getBoundingClientRect().top})");
+  console.log('PREMIUM_HOME',JSON.stringify(premium));
+  check(premium.player && premium.firstRect>0,'home has real fighter status and 3D hero');
+  const primaryCta=await read("(()=>{const c=document.querySelector('.character-card .mobile-quickstart button')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {visible:!!c,withinViewport:!!c&&!!n&&c.top>=0&&c.bottom<n.top,bodyBg:getComputedStyle(document.body).backgroundColor}})()");
+  check(primaryCta.visible&&primaryCta.withinViewport&&primaryCta.bodyBg==='rgb(5, 14, 25)',
+    'golden training CTA visible above bottom navigation on compact premium home');
+  await screenshot('bf-qa-mobile-home-premium.png');
+  await cdp('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
+  await sleep(280);
+  const compact=await read("(()=>{const c=document.querySelector('.character-card .mobile-quickstart button')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,cta:!!c&&!!n&&c.bottom<n.top}})()");
+  check(compact.viewport===360&&compact.scroll<=360&&compact.cta,'360 px first screen keeps training button visible and has no horizontal overflow');
+  await screenshot('bf-qa-mobile-home-360-premium.png');
+  await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+  await sleep(280);
   await click('.mobile-nav button:nth-child(3)');
   const nav=await read("({screen:document.querySelector('.app-shell').dataset.screen,studioTop:document.querySelector('#forge')?.getBoundingClientRect().top,introDisplay:getComputedStyle(document.querySelector('.intro')).display,studioDisplay:getComputedStyle(document.querySelector('#forge')).display})");
   console.log('FORGE_NAV',JSON.stringify(nav));
@@ -190,6 +211,7 @@ try{
   const small=await read("({viewport:innerWidth,scroll:document.documentElement.scrollWidth})");
   console.log('SMALL_VIEWPORT',JSON.stringify(small));
   check(small.viewport===360&&small.scroll<=360,'360 px mobile no horizontal overflow');
+  await screenshot('bf-qa-mobile-360-premium.png');
   console.log('BODYFORGE_MOBILE_E2E_PASS');
 }catch(error){console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12}
 finally{socket?.close();chrome.kill();await sleep(400);try{fs.rmSync(profile,{recursive:true,force:true})}catch{}}

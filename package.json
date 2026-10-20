@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "qa:mobile": "node qa/mobile-e2e.mjs",
     "qa:tower20": "node qa/tower20-e2e.mjs",
-    "qa:privacy": "node qa/privacy-server-e2e.mjs"
+    "qa:privacy": "node qa/privacy-server-e2e.mjs",
+    "qa:resilience": "node qa/resilience-e2e.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.1.1",

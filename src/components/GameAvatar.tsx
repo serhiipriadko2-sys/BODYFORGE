@@ -1,8 +1,15 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 import Avatar from './Avatar';
 
 const Avatar3D = lazy(() => import('./Avatar3D'));
+
+// A failed lazy chunk (offline/stale deployment) must not erase the entire game.
+class AvatarBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? this.props.fallback : this.props.children; }
+}
 
 interface GameAvatarProps {
   workouts: number;
@@ -37,9 +44,14 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
   return (
     <div className={`avatar-3d-slot ${className ?? ''}`} ref={container}>
       {show3D ? (
+        <AvatarBoundary fallback={<div className="avatar-3d-fallback" data-3d-status="fallback">
+          <Avatar workouts={workouts} build={build} muscles={muscles} outfit={outfit}/>
+          <span>3D не загрузилось. Игра доступна с облегчённым персонажем; повторная загрузка — после обновления страницы.</span>
+        </div>}>
         <Suspense fallback={<div className="avatar-3d-wait"><div className="avatar-3d-loading-orb"/><span>КУЗНЕЦ ГОТОВИТ БОЙЦА...</span></div>}>
           <Avatar3D build={build} muscles={muscles} outfit={outfit} />
         </Suspense>
+        </AvatarBoundary>
       ) : (
         <div className="avatar-3d-idle">
           <Avatar workouts={workouts} build={build} muscles={muscles} outfit={outfit} />
