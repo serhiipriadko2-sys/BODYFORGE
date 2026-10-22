@@ -5,10 +5,10 @@ import {
   Swords, Target, Timer, UserRound, Zap,
 } from 'lucide-react';
 import GameAvatar from './GameAvatar';
-import { canClaimQuest } from '../lib/game';
+import { canClaimLogin, canClaimQuest, hasClaimedDailyReward } from '../lib/game';
 import {
   LOGIN_COINS, MUSCLES, OUTFITS, QUEST_COINS, QUEST_XP, TOWER_COINS,
-  TOWER_FLOORS, TOWER_XP, localDay, muscleCost, nextTowerFloor,
+  TOWER_FLOORS, TOWER_XP, muscleCost, nextTowerFloor,
   type BodyBuild, type Muscle, type Outfit,
 } from '../lib/game';
 import { formatTime, getLevel, type Profile } from '../lib/progression';
@@ -59,9 +59,8 @@ interface DailyProps {
   onTraining: () => void;
 }
 export function DailyBoard({ profile, now, onLogin, onClaimQuest, onTraining }: DailyProps) {
-  const day = localDay(now);
-  const loginClaimed = profile.game.lastLoginDay === day;
-  const questClaimed = profile.game.lastQuestClaimDay === day;
+  const loginClaimed = hasClaimedDailyReward(profile.game, 'login', now);
+  const questClaimed = hasClaimedDailyReward(profile.game, 'quest', now);
   const questReady = canClaimQuest(profile, now);
   return (
     <section className="forge-section" id="quests" aria-label="Ежедневные задания">
@@ -71,7 +70,7 @@ export function DailyBoard({ profile, now, onLogin, onClaimQuest, onTraining }: 
           <div className="quest-icon"><Gift size={26}/></div>
           <div><strong>БОНУС ЗА ВХОД</strong><p>Вернулся в кузницу — получи монеты.</p>
             <span className="quest-reward"><Coins size={15}/> +{LOGIN_COINS} монет</span></div>
-          <button type="button" disabled={loginClaimed || !profile.game.created} onClick={onLogin}
+          <button type="button" disabled={!canClaimLogin(profile, now)} onClick={onLogin}
             className="quest-button">{loginClaimed ? <><CheckCircle2 size={16}/> ПОЛУЧЕНО</> : 'ЗАБРАТЬ'}</button>
         </div>
         <div className="quest-card">

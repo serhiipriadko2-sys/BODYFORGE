@@ -113,6 +113,7 @@ try{
   check(returned.screen==='dashboard'&&returned.setup,'explicit fighter creation button returns to onboarding');
   await click('.build-options button:nth-child(2)');
   await click('#onboarding .forge-solid-button');
+  await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game?.created===true", 'fighter creation acknowledged on disk');
   s=await snapshot();
   console.log('CREATED',JSON.stringify(s).slice(0,440));
   check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');

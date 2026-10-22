@@ -29,6 +29,11 @@ async function ev(expression){
  return r.result.value;
 }
 const obj=async exp=>JSON.parse(await ev('JSON.stringify('+exp+')'));
+async function until(expression,label){
+ const deadline=Date.now()+10000;
+ while(Date.now()<deadline){if(await ev(expression))return;await sleep(100);}
+ throw Error('TIMEOUT '+label);
+}
 function assert(ok,label){if(!ok)throw Error('FAIL '+label);console.log('PASS',label)}
 async function click(selector){assert(await ev("(()=>{const x=document.querySelector("+JSON.stringify(selector)+");if(!x)return false;x.click();return true;})()"),'click '+selector)}
 async function shot(name){
@@ -65,6 +70,7 @@ try{
  }
  console.log('FINAL_UI',JSON.stringify(final));
  assert(final.complete&&!final.camera&&!final.error,'camera auto-stops after twenty poses');
+ await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').workouts?.length===1",'tower result acknowledged on disk');
  const profileState=await obj("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}')");
  console.log('PROFILE',JSON.stringify({xp:profileState.xp,coins:profileState.coins,floor:profileState.game?.highestClearedFloor,ghost:profileState.game?.bestGhost?.splitsMs?.length,workouts:profileState.workouts?.length,reps:profileState.workouts?.[0]?.repetitions,splits:profileState.workouts?.[0]?.splitsMs?.length}));
  assert(profileState.xp===185&&profileState.coins===65,'tower gives workout and victory bonus exactly once');
@@ -83,6 +89,7 @@ try{
  console.log('QUEST',JSON.stringify(questButton));
  assert(questButton.text.includes('ЗАБРАТЬ'),'daily quest earned after completed workout');
  await click('#quests .quest-card:nth-child(2) button');
+ await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp===240",'daily quest acknowledged on disk');
  const claimed=await obj("({xp:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp,coins:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').coins})");
  console.log('QUEST_CLAIMED',JSON.stringify(claimed));
  assert(claimed.xp===240&&claimed.coins===85,'daily quest claimed once');
