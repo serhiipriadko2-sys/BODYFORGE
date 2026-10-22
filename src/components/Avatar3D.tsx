@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { ActiveFrameLoop } from '../lib/frameLoop';
+import { disposeThreeTree } from '../lib/threeResources';
 import Avatar from './Avatar';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 
@@ -36,6 +38,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     current: THREE.Group | null;
     stopped: () => void;
     redraw: () => void;
+    syncMotion: () => void;
   } | null>(null);
   const pausedRef = useRef(paused);
   const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit });
@@ -46,6 +49,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
 
   useEffect(() => {
     pausedRef.current = paused;
+    runtime.current?.syncMotion();
     runtime.current?.redraw();
   }, [paused]);
 
@@ -53,8 +57,8 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     const element = canvas.current as HTMLCanvasElement;
     if (!element) return;
     let renderer: THREE.WebGLRenderer | null = null;
-    let animation: number | null = null;
-    let visible = true;
+    let intersectsViewport = true;
+    let visible = !document.hidden;
     let disposed = false;
     let rotation = -0.21;
     let activePointer: number | null = null;
@@ -165,28 +169,37 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       element.addEventListener('webglcontextlost', onContextLost);
 
       const onVisibility = () => {
-        visible = !document.hidden && !!element.getBoundingClientRect().height;
-        redraw();
+        visible = !document.hidden && intersectsViewport && element.getBoundingClientRect().height > 0;
+        syncMotion();
+        if (visible) redraw();
       };
       document.addEventListener('visibilitychange', onVisibility);
       const observer = new IntersectionObserver((entries) => {
-        visible = entries[0]?.isIntersecting === true && !document.hidden;
-        if (visible) redraw();
+        intersectsViewport = entries[0]?.isIntersecting === true;
+        onVisibility();
       }, { threshold: .01 });
       observer.observe(element);
       const resize = new ResizeObserver(redraw);
       resize.observe(element);
 
       function animate(time: number) {
-        if (disposed) return;
-        animation = requestAnimationFrame(animate);
-        if (visible && !pausedRef.current && time - lastDraw > 42) {
+        if (time - lastDraw > 42) {
           lastDraw = time;
-          if (!isDragging && !prefersReducedMotion) {
-            figureRoot.position.y = Math.sin(time / 1500) * .022;
-          }
+          if (!isDragging) figureRoot.position.y = Math.sin(time / 1500) * .022;
           redraw();
         }
+      }
+      const frameLoop = new ActiveFrameLoop(
+        animate,
+        (callback) => window.requestAnimationFrame(callback),
+        (id) => window.cancelAnimationFrame(id),
+      );
+      function syncMotion() {
+        // Idle / hidden 3D must not schedule another RAF. Manual drag and
+        // model updates still redraw on demand, including reduced-motion mode.
+        const running = visible && !pausedRef.current && !prefersReducedMotion && !disposed;
+        frameLoop.setActive(running);
+        element.dataset.renderLoop = running ? 'running' : 'paused';
       }
       const currentRuntime = {
         renderer,
@@ -195,12 +208,16 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
         figureRoot,
         current: null as THREE.Group | null,
         redraw,
+        syncMotion,
         stopped: () => {
           if (disposed) return;
           disposed = true;
-          if (animation !== null) cancelAnimationFrame(animation);
-          animation = null;
-          if (runtime.current === currentRuntime) runtime.current = null;
+          frameLoop.stop();
+          element.dataset.renderLoop = 'stopped';
+          if (runtime.current === currentRuntime) {
+            runtime.current = null;
+            importedRef.current = null;
+          }
           element.removeEventListener('pointerdown', onPointerDown);
           element.removeEventListener('pointermove', onPointerMove);
           element.removeEventListener('pointerup', onPointerUp);
@@ -209,14 +226,13 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
           document.removeEventListener('visibilitychange', onVisibility);
           observer.disconnect();
           resize.disconnect();
-          disposeScene(scene);
+          disposeThreeTree(scene);
           // Keep the canvas context valid across React StrictMode's
           // development-only effect cleanup/remount cycle.
           renderer?.dispose();
         },
       };
       runtime.current = currentRuntime;
-      animation = requestAnimationFrame(animate);
       onVisibility();
 
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
@@ -225,14 +241,14 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
         '/assets/male-base-mesh-base_male.glb',
         (gltf) => {
           if (disposed || runtime.current !== currentRuntime) {
-            disposeScene(gltf.scene);
+            disposeThreeTree(gltf.scene);
             return;
           }
           try {
             const imported = buildImportedFigure(gltf.scene, figureSettingsRef.current);
             if (currentRuntime.current) {
               currentRuntime.figureRoot.remove(currentRuntime.current);
-              disposeScene(currentRuntime.current);
+              disposeThreeTree(currentRuntime.current);
             }
             currentRuntime.figureRoot.add(imported.root);
             currentRuntime.current = imported.root;
@@ -241,7 +257,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
             redraw();
           } catch (error) {
             console.warn('CC0 avatar unavailable, retaining procedural fallback:', error);
-            disposeScene(gltf.scene);
+            disposeThreeTree(gltf.scene);
           }
         },
         undefined,
@@ -269,7 +285,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     }
     if (state.current) {
       state.figureRoot.remove(state.current);
-      disposeScene(state.current);
+      disposeThreeTree(state.current);
     }
     const mesh = makeFigure({ build, muscles, outfit });
     state.figureRoot.add(mesh);
@@ -295,21 +311,6 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     </div>
   );
 }
-
-function disposeScene(object: THREE.Object3D) {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-  object.traverse((item) => {
-    if (item instanceof THREE.Mesh) {
-      geometries.add(item.geometry);
-      const props = Array.isArray(item.material) ? item.material : [item.material];
-      props.forEach((material) => materials.add(material));
-    }
-  });
-  geometries.forEach((geo) => geo.dispose());
-  materials.forEach((mat) => mat.dispose());
-}
-
 
 /** Anatomical CC0 GLB display. It is never sampled from the phone camera.
  * Cloth is added before the model replaces its procedural fallback. */

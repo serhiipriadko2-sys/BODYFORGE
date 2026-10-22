@@ -78,6 +78,16 @@ try{
     await sleep(200);
   }
   check(photoHuman,'licensed anatomical CC0 human 3D loaded instead of procedural fallback');
+  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
+    'visible 3D character schedules animation frames');
+  await js("document.querySelector('#onboarding canvas').style.display='none'");
+  await sleep(500);
+  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'"),
+    'off-screen or hidden avatar suspends animation frame loop');
+  await js("document.querySelector('#onboarding canvas').style.removeProperty('display')");
+  await sleep(500);
+  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
+    'avatar resumes animation after becoming visible');
   await screenshot('bf-qa-mobile-setup.png');
   // First launch: tapping Camera before fighter setup must not silently jump
   // to the home screen. The user should see why they cannot train yet.
