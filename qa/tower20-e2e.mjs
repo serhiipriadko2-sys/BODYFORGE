@@ -74,6 +74,8 @@ try{
  console.log('PROFILE',JSON.stringify({xp:profileState.xp,coins:profileState.coins,floor:profileState.game?.highestClearedFloor,ghost:profileState.game?.bestGhost?.splitsMs?.length,workouts:profileState.workouts?.length,reps:profileState.workouts?.[0]?.repetitions,splits:profileState.workouts?.[0]?.splitsMs?.length}));
  assert(profileState.xp===185&&profileState.coins===65,'tower gives workout and victory bonus exactly once');
  assert(profileState.game?.highestClearedFloor===1,'one tower floor unlocked');
+ await until("document.querySelector('.completion-stage [role=\"status\"]')?.textContent==='20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'",'completion confirms the saved result');
+ assert(await ev("document.querySelector('#challenge .challenge-type')?.textContent?.trim()==='БАШНЯ · ЭТАЖ 1'"),'completed tower heading retains the original floor after the next floor unlocks');
  assert(profileState.game?.bestGhost?.splitsMs?.length===20,'ghost records twenty split times');
  assert(profileState.workouts?.length===1&&profileState.workouts[0].repetitions===20,'single workout credited');
  await shot('bf-qa-tower-victory.png');

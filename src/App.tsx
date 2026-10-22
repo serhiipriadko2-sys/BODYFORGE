@@ -10,7 +10,7 @@ import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
 import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
-import StorageRecovery from './components/StorageRecovery';
+import StorageRecovery, { ResultQuarantineNotice } from './components/StorageRecovery';
 import './recovery.css';
 import { useProfileStorage } from './hooks/useProfileStorage';
 import { withTimeout } from './lib/withTimeout';
@@ -149,7 +149,7 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
 }
 
 function App() {
-  const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, journalEntries,
+  const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, journalEntries, quarantined, quarantine,
     beginWorkout, completeWorkout, openCurrent, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
   const [mode, setMode] = useState<Mode>('idle');
   const [snapshot, setSnapshot] = useState<CounterSnapshot>(FIRST_SNAPSHOT);
@@ -780,7 +780,8 @@ function App() {
     void start(requestedMode);
   }
 
-  const selectedFloor = nextTowerFloor(profile.game);
+  const frozenFloor = workoutSessionRef.current?.mode === 'tower' && mode !== 'idle' ? workoutSessionRef.current.floor : null;
+  const selectedFloor = frozenFloor ? TOWER_FLOORS.find((floor) => floor.floor === frozenFloor) ?? nextTowerFloor(profile.game) : nextTowerFloor(profile.game);
   const opponentReps = mode === 'active' && workoutMode === 'tower'
     ? Math.min(TARGET_REPS, Math.floor(elapsedMs / (selectedFloor.targetMs / TARGET_REPS)))
     : mode === 'active' && workoutMode === 'ghost' && profile.game.bestGhost
@@ -789,7 +790,7 @@ function App() {
 
   if (storageStatus !== 'ready') return <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
     writeIssue={writeIssue} isSaving={isSaving} profile={profile} pendingResult={pendingResult} journalEntries={journalEntries}
-    onOpenCurrent={openCurrent} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage}/>;
+    onOpenCurrent={openCurrent} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage} onQuarantine={quarantine}/>;
 
   return (
     <div className="app-shell" data-screen={section} data-fighter-created={profile.game.created ? 'true' : 'false'}>
@@ -820,6 +821,7 @@ function App() {
         </header>
 
         <main className="content">
+          <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
           {profile.game.created && (
             <section className="dashboard-player" aria-label="Прогресс бойца">
               <div className="dashboard-player-icon"><UserRound size={23} /></div>
@@ -963,7 +965,7 @@ function App() {
                     : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>{isSaving ? '20 повторов засчитаны. Дождись сохранения результата.' : 'Всё засчитано. Герой стал сильнее!'}</span></>
                       : <><Smartphone size={17} /><span>Поставь телефон вертикально, сбоку от себя. Тело и стопы должны быть видны.</span></>}
               </div>
-              {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>Камера отдаёт широкий поток. Показываем его центр в вертикальной рамке — стой посередине.</span></div>}
+              {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>{showFullFrame ? 'Камера отдаёт широкий поток. Показываем весь кадр с полями — держи таз, колено и стопу в кадре.' : 'Камера отдаёт широкий поток. Показываем его центр в вертикальной рамке — стой посередине.'}</span></div>}
               <div className="challenge-stats"><div><span>ВРЕМЯ</span><strong><Clock3 size={16} /> {formatTime(displayTime)}</strong></div><span className="stats-separator" /><div><span>НАГРАДА</span><strong className="reward-color"><Zap size={15} /> +{XP_REWARD} XP</strong></div><span className="stats-separator" /><div><span>МОНЕТЫ</span><strong className="reward-color"><Coins size={15} /> +{COIN_REWARD}</strong></div></div>
 
               <div className="training-settings">
@@ -990,7 +992,7 @@ function App() {
             </article>
           </section>
 
-          <DailyBoard profile={profile} now={today}
+          <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {
               const now = new Date();
               setToday(now);
@@ -1002,7 +1004,7 @@ function App() {
               setProfile((previous) => claimDailyQuest(previous, now));
             }}
             onTraining={() => goTraining('training')}/>
-          <ForgeStudio profile={profile} paused={isCameraShown}
+          <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
             onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
           <TowerBoard profile={profile}

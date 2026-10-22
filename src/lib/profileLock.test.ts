@@ -107,4 +107,102 @@ describe('cooperative profile write lock', () => {
     expect(await withProfileWriteLock(operation)).toEqual({ status: 'unavailable', reason: 'failed' });
     expect(operation).toHaveBeenCalledTimes(source === 'operation' ? 1 : 0);
   });
+
+  it('awaits an async operation before releasing the lock and returns its resolved receipt', async () => {
+    let finish!: (value: string) => void;
+    const durableWrite = new Promise<string>((resolve) => { finish = resolve; });
+    const order: string[] = [];
+    vi.stubGlobal('navigator', { locks: { request: vi.fn(async (_name, _options, callback) => {
+      order.push('granted');
+      const result = await callback();
+      order.push('released');
+      return result;
+    }) } });
+    const pending = withProfileWriteLock(async () => {
+      order.push('stage');
+      const receipt = await durableWrite;
+      order.push('primary');
+      return receipt;
+    });
+    await Promise.resolve(); await Promise.resolve();
+    expect(order).toEqual(['granted', 'stage']);
+    finish('strict-complete');
+    expect(await pending).toEqual({ status: 'completed', value: 'strict-complete' });
+    expect(order).toEqual(['granted', 'stage', 'primary', 'released']);
+  });
+
+  it('does not grant a second writer while the first awaits its durable transaction', async () => {
+    let finish!: () => void;
+    const durableWrite = new Promise<void>((resolve) => { finish = resolve; });
+    let tail = Promise.resolve();
+    const order: string[] = [];
+    vi.stubGlobal('navigator', { locks: { request: vi.fn((_name, _options, callback) => {
+      const previous = tail;
+      let release!: () => void;
+      tail = new Promise<void>((resolve) => { release = resolve; });
+      return previous.then(async () => { try { return await callback(); } finally { release(); } });
+    }) } });
+    const first = withProfileWriteLock(async () => {
+      order.push('first-stage');
+      await durableWrite;
+      order.push('first-primary');
+      return 1;
+    });
+    const second = withProfileWriteLock(() => { order.push('second-write'); return 2; });
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    expect(order).toEqual(['first-stage']);
+    finish();
+    expect(await first).toEqual({ status: 'completed', value: 1 });
+    expect(await second).toEqual({ status: 'completed', value: 2 });
+    expect(order).toEqual(['first-stage', 'first-primary', 'second-write']);
+  });
+
+  it('reports a rejected async durable write as a failure instead of a nested promise receipt', async () => {
+    vi.stubGlobal('navigator', { locks: { request: vi.fn(async (_name, _options, callback) => callback()) } });
+    expect(await withProfileWriteLock(async () => {
+      await Promise.resolve();
+      throw Error('IDB transaction aborted');
+    })).toEqual({ status: 'unavailable', reason: 'failed' });
+  });
+
+  it('clears the queue deadline when granted instead of timing out owned async work', async () => {
+    vi.useFakeTimers();
+    let finish!: () => void;
+    const durableWrite = new Promise<void>((resolve) => { finish = resolve; });
+    let lockSignal!: AbortSignal;
+    vi.stubGlobal('navigator', { locks: { request: vi.fn(async (_name, options, callback) => {
+      lockSignal = options.signal;
+      return await callback();
+    }) } });
+    const pending = withProfileWriteLock(async () => { await durableWrite; return 'committed'; });
+    await vi.advanceTimersByTimeAsync(PROFILE_WRITE_WAIT_MS + 1);
+    expect(lockSignal.aborted).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    finish();
+    expect(await pending).toEqual({ status: 'completed', value: 'committed' });
+  });
+
+  it('holds an already-granted lock until async work settles when the caller aborts', async () => {
+    let finish!: () => void;
+    const durableWrite = new Promise<void>((resolve) => { finish = resolve; });
+    const order: string[] = [];
+    vi.stubGlobal('navigator', { locks: { request: vi.fn(async (_name, _options, callback) => {
+      order.push('granted');
+      try { return await callback(); } finally { order.push('released'); }
+    }) } });
+    const controller = new AbortController();
+    const pending = withProfileWriteLock(async () => {
+      order.push('stage');
+      await durableWrite;
+      // The caller checks its cancellation token before starting later writes.
+      order.push(controller.signal.aborted ? 'skip-primary' : 'primary');
+      return 'settled';
+    }, { signal: controller.signal });
+    controller.abort();
+    await Promise.resolve(); await Promise.resolve();
+    expect(order).toEqual(['granted', 'stage']);
+    finish();
+    expect(await pending).toEqual({ status: 'completed', value: 'settled' });
+    expect(order).toEqual(['granted', 'stage', 'skip-primary', 'released']);
+  });
 });

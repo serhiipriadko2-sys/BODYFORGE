@@ -10,9 +10,10 @@ export type ProfileLockResult<T> =
 
 /** Cooperative, same-origin coordination. Every production writer must use this
  * lock; it cannot protect against old versions or manual localStorage writes.
- * Keep the operation synchronous and acknowledge its revision inside the lock. */
+ * Async operations retain the lock through settlement. A caller that cancels
+ * after grant must check its own signal before starting subsequent writes. */
 export async function withProfileWriteLock<T>(
-  operation: () => T, options: { signal?: AbortSignal } = {},
+  operation: () => T | Promise<T>, options: { signal?: AbortSignal } = {},
 ): Promise<ProfileLockResult<T>> {
   if (options.signal?.aborted) return { status: 'cancelled' };
   const controller = new AbortController();
@@ -23,10 +24,13 @@ export async function withProfileWriteLock<T>(
     if (typeof navigator === 'undefined' || !navigator.locks?.request) {
       return { status: 'unavailable', reason: 'unsupported' };
     }
-    return await navigator.locks.request(PROFILE_WRITE_LOCK, { mode: 'exclusive', signal: controller.signal }, () => {
+    return await navigator.locks.request(PROFILE_WRITE_LOCK, { mode: 'exclusive', signal: controller.signal }, async () => {
+      // This deadline bounds queueing only; owned durable work must settle
+      // before the browser may grant a competing writer the same lock.
+      clearTimeout(deadline);
       if (controller.signal.aborted) return options.signal?.aborted
         ? { status: 'cancelled' as const } : { status: 'unavailable' as const, reason: 'timeout' as const };
-      return { status: 'completed' as const, value: operation() };
+      return { status: 'completed' as const, value: await operation() };
     });
   } catch {
     return options.signal?.aborted ? { status: 'cancelled' }

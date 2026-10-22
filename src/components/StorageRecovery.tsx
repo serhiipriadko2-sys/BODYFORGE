@@ -3,6 +3,27 @@ import type { StorageStatus } from '../hooks/useProfileStorage';
 import type { Profile } from '../lib/progression';
 import type { ProfileWriteIssue } from '../lib/profileLock';
 import type { CompletedWorkoutResult, JournalEntry } from '../lib/workoutJournal';
+import { createProgressExport } from '../lib/progressExport';
+import { readDurableJournal } from '../lib/durableJournal';
+
+async function exportProgress(profile: Profile, pendingResult: CompletedWorkoutResult | null) {
+  const durable = await readDurableJournal();
+  const payload = { ...createProgressExport(profile, pendingResult), durableResults: durable.entries, durableReadStatus: durable.status };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'bodyforge-local-progress.json';
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function ResultQuarantineNotice({ profile, count, unavailable }: { profile: Profile; count: number; unavailable: boolean }) {
+  if (!count && !unavailable) return null;
+  return <aside className="result-quarantine-notice" data-quarantined-results={count} aria-label="Отложенные результаты">
+    <p>{unavailable ? 'Не удалось полностью прочитать отложенные результаты.' : `Отложенных результатов: ${count}. Исходные данные сохранены отдельно, награды за них не начисляются.`}</p>
+    <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, null); }}>Экспортировать сохранённые данные</button>
+  </aside>;
+}
 
 interface Props {
   status: Exclude<StorageStatus, 'ready'>;
@@ -16,28 +37,22 @@ interface Props {
   onRetry: () => void;
   onReload: () => void;
   onRecover: (source: 'backup' | 'empty') => void;
+  onQuarantine: (expected: readonly JournalEntry[]) => void;
 }
 
 export default function StorageRecovery({ status, backupAvailable, writeIssue, isSaving, profile, pendingResult, journalEntries,
-  onOpenCurrent, onRetry, onReload, onRecover }: Props) {
+  onOpenCurrent, onRetry, onReload, onRecover, onQuarantine }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
-  const title = status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
+  const [quarantineSnapshot, setQuarantineSnapshot] = useState<JournalEntry[] | null>(null);
+  const title = status === 'checking' ? 'ПРОВЕРЯЕМ СОХРАНЕНИЕ' : status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
     : status === 'recovery-required' ? 'ПРОГРЕСС НУЖНО ВОССТАНОВИТЬ' : 'НЕ УДАЛОСЬ СОХРАНИТЬ';
-  function exportSession() {
-    const payload = { ...profile, pendingResult,
-      pendingResults: journalEntries.map((entry) => entry.result ?? { key: entry.key, raw: entry.raw }) };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'bodyforge-local-progress.json';
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
   return <main className="storage-recovery" data-storage-status={status}>
     <section className="storage-panel" aria-labelledby="storage-title">
       <span className="section-index">BODYFORGE / ЗАЩИТА ПРОГРЕССА</span>
       <h1 id="storage-title">{title}</h1>
-      <p role="alert">{status === 'pending-result'
+      <p role={status === 'checking' ? 'status' : 'alert'}>{status === 'checking'
+        ? 'Проверяем локальный журнал и незавершённые результаты перед открытием прогресса.'
+        : status === 'pending-result'
         ? 'Найден результат, который нельзя автоматически применить к текущему бойцу или этажу, либо журнал повреждён. Исходные данные сохранены. Экспортируй их для разбора: награда не переносится другому бойцу или на следующий этаж.'
         : status === 'conflict'
         ? 'Другая вкладка изменила прогресс. Текущая тренировка остановлена: старые данные не перезаписали новый результат.'
@@ -70,7 +85,14 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
       </>}
       {(status === 'unavailable' || status === 'pending-result') && <button type="button" className="forge-solid-button" data-action="retry-save" disabled={isSaving} onClick={onRetry}>ПОВТОРИТЬ СОХРАНЕНИЕ</button>}
       {status === 'pending-result' && <button type="button" data-action="open-current-profile" disabled={isSaving} onClick={onOpenCurrent}>Открыть текущий профиль без применения результата</button>}
-      <button type="button" data-action="export-session" onClick={exportSession} disabled={!profile.game.created && !pendingResult && !journalEntries.length}>Экспортировать данные этой страницы</button>
+      {status === 'pending-result' && journalEntries.length > 0 && (!quarantineSnapshot
+        ? <button type="button" data-action="request-quarantine" disabled={isSaving} onClick={() => setQuarantineSnapshot(journalEntries.map((e) => ({ ...e })))}>Отложить эти результаты и продолжить…</button>
+        : <div role="group" aria-label="Подтверждение отложенных результатов">
+          <p>Отложить результатов: {quarantineSnapshot.length}. Они останутся в отдельном локальном карантине и экспорте. Награды за них не начислятся. Автоматический перенос в другого бойца или этаж не выполняется.</p>
+          <button type="button" data-action="confirm-quarantine" disabled={isSaving} onClick={() => { onQuarantine(quarantineSnapshot); setQuarantineSnapshot(null); }}>Подтверждаю: сохранить отдельно и продолжить</button>
+          <button type="button" disabled={isSaving} onClick={() => setQuarantineSnapshot(null)}>Отмена</button>
+        </div>)}
+      <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, pendingResult); }}>Экспортировать данные этой страницы</button>
       <small>Данные остаются у тебя. Ничего не отправляется на сервер. Экспорт — локальный JSON для сохранения и восстановления вручную.</small>
     </section>
   </main>;

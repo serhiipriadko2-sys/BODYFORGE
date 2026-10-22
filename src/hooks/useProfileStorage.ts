@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProfileState, saveProfile, recoverProfile, STORAGE_KEY, type Profile, type ProfileLoadResult } from '../lib/progression';
 import { withProfileWriteLock, type ProfileWriteIssue } from '../lib/profileLock';
-import { commitWorkoutResult, prepareWorkoutSession, readResultJournal, reconcileWorkoutResults,
-  type CompletedWorkoutResult, type JournalOutcome, type WorkoutSession } from '../lib/workoutJournal';
+import { prepareWorkoutSession, readResultJournal, readQuarantinedResults, sameWorkoutResult,
+  type CompletedWorkoutResult, type JournalEntry, type JournalOutcome, type WorkoutSession } from '../lib/workoutJournal';
+import { replayDurableWorkouts, quarantineDurableWorkouts } from '../lib/durableWorkout';
 import type { WorkoutMode } from '../lib/game';
 
-export type StorageStatus = 'ready' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
+export type StorageStatus = 'ready' | 'checking' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
 const uiStatus = (state: ProfileLoadResult): StorageStatus => state.status === 'empty' ? 'ready' : state.status;
 
 /** All production profile mutations share a cooperative browser lock. Queued
@@ -15,12 +16,13 @@ export function useProfileStorage() {
   const [initialJournal] = useState(readResultJournal);
   const [profile, setProfile] = useState<Profile>(initial.profile);
   const [status, setStatus] = useState<StorageStatus>(() => initial.status === 'ready' || initial.status === 'empty'
-    ? initialJournal.status === 'unavailable' ? 'unavailable' : initialJournal.entries.length ? 'pending-result' : uiStatus(initial)
+    ? 'checking'
     : uiStatus(initial));
   const [backupAvailable, setBackupAvailable] = useState(initial.backupAvailable);
   const [writeIssue, setWriteIssue] = useState<ProfileWriteIssue | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [journalEntries, setJournalEntries] = useState(initialJournal.entries);
+  const [quarantined, setQuarantined] = useState(readQuarantinedResults);
   const [pendingResult, setPendingResult] = useState<CompletedWorkoutResult | null>(null);
   const volatileResult = useRef<CompletedWorkoutResult | null>(null);
   const [reconcileToken, requestReconcile] = useState(0);
@@ -29,6 +31,7 @@ export function useProfileStorage() {
   const saved = useRef<Profile>(initial.profile);
   const pending = useRef<AbortController | null>(null);
   const generation = useRef(0);
+  const hydrated = useRef(false);
   // A completed result owns the next write. Ordinary UI updates must not cancel
   // its queued journal commit or replace it with an unrelated profile snapshot.
   const guardedSetProfile = useCallback((action: Parameters<typeof setProfile>[0]) => {
@@ -42,17 +45,17 @@ export function useProfileStorage() {
     setIsSaving(false);
   }, []);
 
-  const runWrite = useCallback(<T,>(operation: () => T) => {
+  const runWrite = useCallback(<T,>(operation: (context: { signal: AbortSignal; isCurrent: () => boolean }) => T | Promise<T>) => {
     cancelPending();
     const token = generation.current;
     const controller = new AbortController();
     pending.current = controller;
     setIsSaving(true);
-    return withProfileWriteLock(() => {
+    const isCurrent = () => token === generation.current && !controller.signal.aborted;
+    return withProfileWriteLock(async () => {
       if (token !== generation.current || controller.signal.aborted) return;
-      const value = operation();
-      pending.current = null;
-      setIsSaving(false);
+      const value = await operation({ signal: controller.signal, isCurrent });
+      if (isCurrent()) { pending.current = null; setIsSaving(false); }
       return value;
     }, { signal: controller.signal }).then((result) => {
       if (token !== generation.current || controller.signal.aborted) return { status: 'cancelled' as const };
@@ -139,25 +142,34 @@ export function useProfileStorage() {
   const applyJournal = useCallback((outcome: JournalOutcome) => {
     accept(outcome.state);
     setJournalEntries(readResultJournal().entries);
-    if (outcome.status === 'saved') {
+    setQuarantined(readQuarantinedResults());
+    hydrated.current = outcome.status !== 'unavailable';
+    const own = volatileResult.current;
+    // A batch can credit our result but still report a different damaged record.
+    // Clear RAM by its own verified identity, independently of the global issue.
+    if (own && outcome.state.status === 'ready' && outcome.state.profile.profileId === own.profileId &&
+        (outcome.state.profile.creditedWorkoutIds?.includes(own.sessionId) || outcome.state.profile.workouts.some((w) => w.id === own.sessionId))) {
       volatileResult.current = null;
       setPendingResult(null);
-    } else {
+    }
+    if (outcome.status !== 'saved') {
       setStatus(outcome.status === 'mismatch' || outcome.status === 'invalid' ? 'pending-result' : outcome.status);
     }
   }, [accept]);
-  const replay = useCallback(() => runWrite(() => applyJournal(volatileResult.current
-    ? commitWorkoutResult(volatileResult.current) : reconcileWorkoutResults())), [applyJournal, runWrite]);
+  const replay = useCallback(() => runWrite(async (context) => {
+    const outcome = await replayDurableWorkouts(volatileResult.current, context);
+    if (context.isCurrent()) applyJournal(outcome);
+  }), [applyJournal, runWrite]);
   useEffect(() => {
-    const journal = readResultJournal();
-    if (journal.status === 'unavailable' || journal.entries.length) void replay();
+    void replay();
   }, [reconcileToken, replay]);
 
   const beginWorkout = useCallback(async (mode: WorkoutMode): Promise<WorkoutSession | null> => {
     if (volatileResult.current) { setStatus('unavailable'); return null; }
-    const response = await runWrite(() => {
+    const response = await runWrite(async (context) => {
       if (loadProfileState().revision !== revision.current) { setStatus('conflict'); return null; }
-      const reconciled = reconcileWorkoutResults();
+      const reconciled = await replayDurableWorkouts(null, context);
+      if (!context.isCurrent()) return null;
       applyJournal(reconciled);
       if (reconciled.status !== 'saved') return null;
       const result = prepareWorkoutSession(revision.current, mode);
@@ -175,31 +187,50 @@ export function useProfileStorage() {
   const reload = useCallback(() => {
     cancelPending();
     accept(loadProfileState());
-    // Explicitly opening the durable profile never applies a RAM-only result.
-    volatileResult.current = null;
-    setPendingResult(null);
+    // A fresh profile view cannot erase an unjournaled completion. Retry its
+    // identity-bound result; mismatched identities remain explicit recovery.
+    setStatus('checking');
     requestReconcile((n) => n + 1);
   }, [accept, cancelPending]);
   const openCurrent = useCallback(() => {
     cancelPending();
     // This action is offered only for a durable unresolved record, never to
     // silently discard a RAM-only result that failed to reach the journal.
-    if (volatileResult.current && readResultJournal().entries.some((e) => e.result?.sessionId === volatileResult.current?.sessionId)) {
+    const journal = readResultJournal();
+    if (volatileResult.current && journal.status === 'ready' && journal.entries.some((e) => sameWorkoutResult(e.result, volatileResult.current))) {
       volatileResult.current = null;
       setPendingResult(null);
     }
     accept(loadProfileState());
+    if (volatileResult.current) setStatus('unavailable');
   }, [accept, cancelPending]);
-  const recover = useCallback((source: 'backup' | 'empty') => runWrite(() => {
+  const recover = useCallback((source: 'backup' | 'empty') => runWrite(async (context) => {
     const state = recoverProfile(source);
     accept(state);
-    if (state.status === 'ready' || state.status === 'empty') applyJournal(reconcileWorkoutResults());
+    if (state.status === 'ready' || state.status === 'empty') {
+      const outcome = await replayDurableWorkouts(volatileResult.current, context);
+      if (context.isCurrent()) applyJournal(outcome);
+    }
   }), [accept, applyJournal, runWrite]);
   const retry = useCallback(() => {
     const journal = readResultJournal();
-    return volatileResult.current || journal.status === 'unavailable' || journal.entries.length ? replay() : save(profile, true);
+    return !hydrated.current || volatileResult.current || journal.status === 'unavailable' || journal.entries.length ? replay() : save(profile, true);
   }, [profile, replay, save]);
 
-  return { profile, setProfile: guardedSetProfile, status, backupAvailable, writeIssue, pendingResult, journalEntries, beginWorkout, completeWorkout, openCurrent,
-    isSaving: isSaving || (status === 'ready' && (saved.current !== profile || volatileResult.current !== null)), retry, recover, reload };
+  const quarantine = useCallback((expected: readonly JournalEntry[]) => runWrite(async (context) => {
+    const outcome = await quarantineDurableWorkouts(expected, context);
+    if (!context.isCurrent()) return;
+    if (outcome.status === 'saved' && volatileResult.current && expected.some((e) => sameWorkoutResult(e.result, volatileResult.current))) {
+      volatileResult.current = null;
+      setPendingResult(null);
+    }
+    applyJournal(outcome);
+    if (outcome.status === 'saved' && volatileResult.current) {
+      const retried = await replayDurableWorkouts(volatileResult.current, context);
+      if (context.isCurrent()) applyJournal(retried);
+    }
+  }), [applyJournal, runWrite]);
+
+  return { profile, setProfile: guardedSetProfile, status, backupAvailable, writeIssue, pendingResult, journalEntries, quarantined, quarantine, beginWorkout, completeWorkout, openCurrent,
+    isSaving: isSaving || status === 'checking' || (status === 'ready' && (saved.current !== profile || volatileResult.current !== null)), retry, recover, reload };
 }

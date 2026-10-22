@@ -57,27 +57,29 @@ interface DailyProps {
   onLogin: () => void;
   onClaimQuest: () => void;
   onTraining: () => void;
+  busy?: boolean;
 }
-export function DailyBoard({ profile, now, onLogin, onClaimQuest, onTraining }: DailyProps) {
+export function DailyBoard({ profile, now, onLogin, onClaimQuest, onTraining, busy = false }: DailyProps) {
   const loginClaimed = hasClaimedDailyReward(profile.game, 'login', now);
   const questClaimed = hasClaimedDailyReward(profile.game, 'quest', now);
   const questReady = canClaimQuest(profile, now);
   return (
     <section className="forge-section" id="quests" aria-label="Ежедневные задания">
       <div className="forge-heading"><span>МИССИИ / 01</span><h2>ЖАР <em>КАЖДЫЙ ДЕНЬ</em></h2><p>Короткий вход. Реальная тренировка. Настоящие награды для твоего персонажа.</p></div>
+      {busy && <p role="status">Сохраняем прогресс. Награды и новая тренировка станут доступны после завершения записи.</p>}
       <div className="quest-grid">
         <div className="quest-card">
           <div className="quest-icon"><Gift size={26}/></div>
           <div><strong>БОНУС ЗА ВХОД</strong><p>Вернулся в кузницу — получи монеты.</p>
             <span className="quest-reward"><Coins size={15}/> +{LOGIN_COINS} монет</span></div>
-          <button type="button" disabled={!canClaimLogin(profile, now)} onClick={onLogin}
+          <button type="button" disabled={busy || !canClaimLogin(profile, now)} onClick={onLogin}
             className="quest-button">{loginClaimed ? <><CheckCircle2 size={16}/> ПОЛУЧЕНО</> : 'ЗАБРАТЬ'}</button>
         </div>
         <div className="quest-card">
           <div className="quest-icon"><Target size={26}/></div>
           <div><strong>КВЕСТ ДНЯ: 20 ПРИСЕДАНИЙ</strong><p>Сделай один честный заход с камерой.</p>
             <span className="quest-reward"><Zap size={15}/> +{QUEST_XP} XP <Coins size={14}/> +{QUEST_COINS}</span></div>
-          <button type="button" disabled={questClaimed || !profile.game.created}
+          <button type="button" disabled={busy || questClaimed || !profile.game.created}
             onClick={questReady ? onClaimQuest : onTraining} className="quest-button">
             {questClaimed ? <><CheckCircle2 size={16}/> ГОТОВО</> : questReady ? 'ЗАБРАТЬ' : 'ВЫПОЛНИТЬ'}
           </button>
@@ -92,8 +94,9 @@ interface StudioProps {
   onUpgrade: (muscle: Muscle) => void;
   onOutfit: (outfit: Outfit) => void;
   paused?: boolean;
+  busy?: boolean;
 }
-export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false }: StudioProps) {
+export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false, busy = false }: StudioProps) {
   const game = profile.game;
   const sum = MUSCLES.reduce((total, muscle) => total + game.muscles[muscle.id], 0);
   return (
@@ -102,6 +105,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false }: St
         <span>ПЕРСОНАЖ / 02</span><h2>ВЫКУЙ <em>СВОЮ ФОРМУ</em></h2>
         <p>Потрать заработанные монеты на мышцы и одежду. Внешность меняется прямо на персонаже.</p>
       </div>
+      {busy && <p role="status">Сохраняем прогресс. Дождись завершения записи, прежде чем улучшать мышцы или менять одежду.</p>}
       <div className="studio-layout">
         <div className="studio-preview"><span className="preview-kicker">ЭВОЛЮЦИЯ БОЙЦА</span>
           <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit} paused={paused}/>
@@ -120,7 +124,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false }: St
                 <div className="muscle-pips" aria-label={`Уровень ${level} из 5`}>
                   {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < level ? 'filled' : ''}/>)}
                 </div>
-                <button type="button" disabled={!game.created || capped || !enough} onClick={() => onUpgrade(muscle.id)}>
+                <button type="button" disabled={busy || !game.created || capped || !enough} onClick={() => onUpgrade(muscle.id)}>
                   {capped ? 'МАКС.' : <><Coins size={14}/> {cost} · УЛУЧШИТЬ</>}</button>
               </div>;
             })}
@@ -132,7 +136,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false }: St
               const selected = game.outfit === outfit.id;
               return <button key={outfit.id} type="button"
                 className={`outfit-item ${selected ? 'active' : ''}`}
-                disabled={!game.created || selected || (!owned && profile.coins < outfit.price)}
+                disabled={busy || !game.created || selected || (!owned && profile.coins < outfit.price)}
                 onClick={() => onOutfit(outfit.id)}>
                 <span className={`outfit-swatch outfit-${outfit.id}`}><Shirt size={23}/></span>
                 <strong>{outfit.label}</strong><small>{outfit.detail}</small>

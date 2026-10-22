@@ -202,7 +202,8 @@ async function queuedCompletion() {
   check(await page.js('window.__tracks.length===1 && window.__tracks.every(t=>t.readyState===\'ended\')'),
     'starting another workout cannot launch a second stream while the result waits');
   await click('.mobile-nav button:nth-child(1)');
-  await click('#quests .quest-button');
+  check(await page.js("document.querySelector('#quests .quest-button')?.disabled===true"),
+    'ordinary reward action explains the pending save instead of silently ignoring a click');
   await observer.js('window.__release();true');
   await waitFor(async () => { const value = await readProfile(); return value.xp !== 0 || value.coins !== 0; }, 'queued completion or competing action settles');
   const completed = await readProfile(), sessionId = completed.workouts[0]?.id;
@@ -223,8 +224,8 @@ try {
   if (!port) throw Error('Owned DevTools unavailable');
   observer = await newPage(true);
 
-  await queuedCompletion();
-  if (!process.argv.includes('--queue-only')) {
+  if (!process.argv.includes('--recovery-only')) await queuedCompletion();
+  if (!process.argv.includes('--queue-only') && !process.argv.includes('--recovery-only')) {
 
   // A real App finish reaches journal read-back, then the renderer is killed.
   await reset(); page = await newPage();
@@ -269,7 +270,7 @@ try {
 
   // If journal itself cannot be written, the actual App keeps an exportable RAM result.
   await reset(); page = await newPage();
-  await page.js(`(()=>{const set=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith(${JSON.stringify(prefix)}))throw new DOMException('journal full','QuotaExceededError');return set.call(this,k,v)};return true})()`);
+  await page.js(`(()=>{const set=Storage.prototype.setItem;window.__journalFull=true;Storage.prototype.setItem=function(k,v){if(window.__journalFull&&k.startsWith(${JSON.stringify(prefix)}))throw new DOMException('journal full','QuotaExceededError');return set.call(this,k,v)};return true})()`);
   await startTower();
   await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'", 'journal quota after 20 reps', 65000);
   check(await page.js('window.__poseCalls>=320'), 'journal quota is exercised by a complete synthetic App workout');
@@ -278,8 +279,27 @@ try {
   check(exported.pendingResult?.repetitions === 20 && exported.pendingResult.profileId === player.profileId && exported.pendingResult.floor === 1,
     'journal quota exports the honest RAM-only result with its frozen identities');
   check(exported.xp === 0 && await page.js('window.__exportRequested===true'), 'RAM-only export does not misrepresent credited XP or write owner Downloads');
+  const newer = { ...player, coins: 50 };
+  await observer.js('localStorage.setItem(' + JSON.stringify(key) + ',' + JSON.stringify(JSON.stringify(newer)) + ');true');
+  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='conflict'", 'another tab changes primary while result is only in RAM');
+  await click('[data-action=load-latest]');
+  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'", 'latest profile retains RAM result and retries journal');
+  const retained = await exportSession();
+  check(retained.pendingResult?.sessionId === exported.pendingResult.sessionId && retained.coins === 50,
+    'loading latest never drops the RAM-only result or overwrites the newer balance');
+  await page.js('window.__journalFull=false;true');
+  // An unrelated malformed entry must not keep an already-credited RAM result busy forever.
+  await observer.js('localStorage.setItem(' + JSON.stringify(prefix + 'unrelated') + ',"{unrelated");true');
+  await click('[data-action=retry-save]');
+  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='pending-result'", 'mixed batch reports unrelated invalid result');
+  check((await readProfile()).xp === 185 && (await readProfile()).coins === 115, 'retry awards own RAM result once onto the fresh balance');
+  check((await exportSession()).pendingResult === null, 'confirmed own completion clears RAM independently of unrelated journal failure');
+  await click('[data-action=request-quarantine]');
+  await click('[data-action=confirm-quarantine]');
+  await page.until("!!document.querySelector('.app-shell')", 'explicit quarantine resolves mixed-batch recovery');
+  check(await page.js("document.querySelector('#quests .quest-button')?.disabled===false"), 'confirmed result no longer leaves normal actions permanently busy');
   await reload();
-  check((await readProfile()).xp === 0 && (await journals()).length === 0, 'reload after unpersisted journal failure never invents a reward');
+  check((await readProfile()).xp === 185 && (await readProfile()).workouts.length === 1, 'RAM recovery plus quarantine survives reload without duplicate XP');
 
   for (const item of [
     { name: 'foreign-profile', profile: { ...player, profileId: 'qa-other-player', xp: 500, coins: 900 }, value: envelope('qa-journal-foreign') },
@@ -300,6 +320,38 @@ try {
     }
     await reload();
     check((await journals())[0]?.raw === raw && (await readProfile()).xp === item.profile.xp, item.name + ' stays preserved through real reload');
+  }
+
+  if (!process.argv.includes('--queue-only')) {
+    for (const item of [
+      { name: 'foreign', profile: { ...player, profileId: 'qa-other-player' }, raw: JSON.stringify(envelope('held-foreign')), id: 'held-foreign' },
+      { name: 'stale-floor', profile: { ...player, game: { ...player.game, highestClearedFloor: 1 } }, raw: JSON.stringify(envelope('held-floor')), id: 'held-floor' },
+      { name: 'malformed', profile: player, raw: '{original malformed', id: 'held-malformed' },
+      { name: 'future', profile: player, raw: JSON.stringify(envelope('held-future', { schemaVersion: 99 })), id: 'held-future' },
+    ]) {
+      const sourceKey = resultKey(item.id);
+      await reset([[sourceKey, item.raw]], item.profile); page = await newPage();
+      await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='pending-result'", item.name + ' unresolved recovery');
+      await click('[data-action=request-quarantine]');
+      check((await journals()).length === 1, item.name + ' confirmation alone never removes the active original');
+      await click('[data-action=confirm-quarantine]');
+      await page.until("!!document.querySelector('.app-shell')", item.name + ' explicit quarantine opens current profile');
+      check((await journals()).length === 0 && (await readProfile()).xp === item.profile.xp, item.name + ' quarantined result gives no reward and leaves profile intact');
+      check(await page.js("!!document.querySelector('[data-quarantined-results]')"), item.name + ' preserved result remains visible in the working application');
+      const exported = await exportSession();
+      check(exported.quarantinedResults.some((entry) => {
+        const saved = JSON.parse(entry.raw); return saved.sourceKey === sourceKey && saved.raw === item.raw;
+      }), item.name + ' normal-profile export retains exact original bytes and source key');
+      await reload();
+      check(await page.js("!!document.querySelector('.app-shell') && !!document.querySelector('[data-quarantined-results]')"), item.name + ' quarantine and usable profile survive real reload');
+      await page.js(`(async()=>{const {prepareWorkoutSession}=await import('/src/lib/workoutJournal.ts');window.__prepared=await navigator.locks.request(${JSON.stringify(key + ':write')},()=>prepareWorkoutSession(localStorage.getItem(${JSON.stringify(key)}),'training'));return true})()`);
+      check(await page.js("window.__prepared.status==='ready'"), item.name + ' new session preparation works without applying quarantined rewards');
+    }
+    const legacy = { xp: 120, coins: 35, workouts: [{ id: 'legacy-export', repetitions: 20, durationMs: 32000, finishedAt: '2026-10-21T12:00:00.000Z' }] };
+    await reset([], legacy); page = await newPage();
+    await observer.js('localStorage.setItem(' + JSON.stringify(key) + ',' + JSON.stringify(JSON.stringify({ ...legacy, coins: 40 })) + ');true');
+    await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='conflict'", 'legacy profile conflict');
+    check((await exportSession()).xp === 120, 'valid legacy progress without a created fighter remains exportable');
   }
   }
 
