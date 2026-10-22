@@ -4,6 +4,7 @@ import path from 'node:path';
 import {spawn} from 'node:child_process';
 
 const chromePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const origin=process.env.BODYFORGE_QA_ORIGIN||'http://127.0.0.1:5173';
 const width=390, height=844;
 const profile=fs.mkdtempSync(path.join(os.tmpdir(),'bf-mobile-'));
 const chrome=spawn(chromePath,[
@@ -72,7 +73,7 @@ try{
   });
   await cdp('Runtime.enable');await cdp('Page.enable');
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
-  await cdp('Page.navigate',{url:'http://127.0.0.1:5173/'});
+  await cdp('Page.navigate',{url:origin+'/'});
   await sleep(3400);
   // A cold lazy chunk can take longer than a fixed sleep under CPU/GPU load.
   // Wait for a terminal 3D status; fallback still fails the active-WebGL check.
