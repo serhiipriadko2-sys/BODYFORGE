@@ -4,6 +4,7 @@ export class ActiveFrameLoop {
   private pending: number | null = null;
   private active = false;
   private stopped = false;
+  private generation = 0;
 
   constructor(
     private readonly onFrame: (time: number) => void,
@@ -12,15 +13,16 @@ export class ActiveFrameLoop {
   ) {}
 
   setActive(active: boolean): void {
-    if (this.stopped) return;
+    if (this.stopped || this.active === active) return;
     this.active = active;
+    this.generation++;
     if (!active) {
       if (this.pending !== null) {
         this.cancelFrame(this.pending);
         this.pending = null;
       }
     } else if (this.pending === null) {
-      this.pending = this.requestFrame(this.tick);
+      this.schedule(this.generation);
     }
   }
 
@@ -29,15 +31,21 @@ export class ActiveFrameLoop {
     this.stopped = true;
   }
 
-  private tick = (time: number): void => {
+  private schedule(generation: number): void {
+    this.pending = this.requestFrame((time) => this.tick(time, generation));
+  }
+
+  private tick(time: number, generation: number): void {
+    // A callback cancelled before pause/resume cannot clear the new pending RAF.
+    if (generation !== this.generation) return;
     this.pending = null;
     if (!this.active || this.stopped) return;
     try {
       this.onFrame(time);
     } finally {
-      if (this.active && !this.stopped && this.pending === null) {
-        this.pending = this.requestFrame(this.tick);
+      if (generation === this.generation && this.active && !this.stopped && this.pending === null) {
+        this.schedule(generation);
       }
     }
-  };
+  }
 }

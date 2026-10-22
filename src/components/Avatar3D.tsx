@@ -65,7 +65,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     let pointerX = 0;
     let isDragging = false;
     let lastDraw = 0;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     try {
       renderer = new THREE.WebGLRenderer({
@@ -118,7 +118,9 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       stage.add(figureRoot);
 
       function redraw() {
-        if (!disposed && renderer) {
+        // ResizeObserver, GLB loading and profile updates can redraw without RAF.
+        // Apply the same visibility/camera pause boundary to these entry points.
+        if (!disposed && renderer && visible && !document.hidden && !pausedRef.current) {
           const rect = element.getBoundingClientRect();
           const w = Math.max(1, Math.round(rect.width));
           const h = Math.max(1, Math.round(rect.height));
@@ -174,6 +176,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
         if (visible) redraw();
       };
       document.addEventListener('visibilitychange', onVisibility);
+      motionPreference.addEventListener('change', onVisibility);
       const observer = new IntersectionObserver((entries) => {
         intersectsViewport = entries[0]?.isIntersecting === true;
         onVisibility();
@@ -197,7 +200,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       function syncMotion() {
         // Idle / hidden 3D must not schedule another RAF. Manual drag and
         // model updates still redraw on demand, including reduced-motion mode.
-        const running = visible && !pausedRef.current && !prefersReducedMotion && !disposed;
+        const running = visible && !pausedRef.current && !motionPreference.matches && !disposed;
         frameLoop.setActive(running);
         element.dataset.renderLoop = running ? 'running' : 'paused';
       }
@@ -224,6 +227,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
           element.removeEventListener('pointercancel', onPointerUp);
           element.removeEventListener('webglcontextlost', onContextLost);
           document.removeEventListener('visibilitychange', onVisibility);
+          motionPreference.removeEventListener('change', onVisibility);
           observer.disconnect();
           resize.disconnect();
           disposeThreeTree(scene);

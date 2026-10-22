@@ -36,6 +36,11 @@ async function js(expression){
   if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
   return result.result.value;
 }
+async function until(expression,label,timeoutMs=20000){
+  const deadline=Date.now()+timeoutMs;
+  while(Date.now()<deadline){if(await js(expression))return;await sleep(150);}
+  throw Error('TIMEOUT '+label);
+}
 async function read(expression){return JSON.parse(await js('JSON.stringify('+expression+')'));}
 async function screenshot(name){
   const shot=await cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
@@ -67,6 +72,9 @@ try{
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
   await cdp('Page.navigate',{url:'http://127.0.0.1:5173/'});
   await sleep(3400);
+  // A cold lazy chunk can take longer than a fixed sleep under CPU/GPU load.
+  // Wait for a terminal 3D status; fallback still fails the active-WebGL check.
+  await until("!!document.querySelector('#onboarding [data-3d-status]')",'initial 3D character');
   let s=await snapshot();
   console.log('INITIAL',JSON.stringify(s).slice(0,470));
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');

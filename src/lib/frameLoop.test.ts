@@ -63,4 +63,34 @@ describe('active 3D frame loop', () => {
     expect(c.callbacks.size).toBe(0);
     expect(seen).toEqual([]);
   });
+
+  it('ignores a cancelled callback after resume without creating a second frame loop', () => {
+    const c = clock();
+    const seen: number[] = [];
+    const loop = new ActiveFrameLoop((time) => seen.push(time), c.request, c.cancel);
+    loop.setActive(true);
+    const stale = [...c.callbacks.values()][0];
+    loop.setActive(false);
+    loop.setActive(true);
+    stale(20);
+    expect(seen).toEqual([]);
+    expect(c.callbacks.size).toBe(1);
+    c.fire(30);
+    expect(seen).toEqual([30]);
+    expect(c.callbacks.size).toBe(1);
+    loop.stop();
+  });
+
+  it('does not rearm an old generation when its frame pauses and resumes the loop', () => {
+    const c = clock();
+    const loop = new ActiveFrameLoop(() => {
+      loop.setActive(false);
+      loop.setActive(true);
+    }, c.request, c.cancel);
+    loop.setActive(true);
+    c.fire(20);
+    expect(c.callbacks.size).toBe(1);
+    loop.stop();
+    expect(c.callbacks.size).toBe(0);
+  });
 });
