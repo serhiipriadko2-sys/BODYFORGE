@@ -58,6 +58,17 @@ async function boot(primary = JSON.stringify(fighter), backup = JSON.stringify({
   await sleep(300);
 }
 async function current() { return JSON.parse(await js('localStorage.getItem(' + JSON.stringify(key) + ')')); }
+async function reloadSavedProfile() {
+  // boot() seeds fixtures on each new document. Remove that hook to test a real
+  // reload of the progress the application just saved, rather than reseeding it.
+  if (initScript) {
+    await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: initScript });
+    initScript = null;
+  }
+  await cdp('Page.reload', { ignoreCache: true });
+  await until("!!document.querySelector('.app-shell')", 'reload durable progress');
+  await sleep(300);
+}
 async function shot(name) {
   const data = await cdp('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   const file = path.join(os.tmpdir(), name);
@@ -124,10 +135,51 @@ try {
   await boot();
   await click('#quests .quest-button');
   check(await js("document.querySelector('#quests .quest-button').disabled"), 'daily reward locked after claim');
-  await js("(()=>{const Native=Date;const delta=86400000;window.Date=class extends Native {constructor(...args){if(args.length)super(...args);else super(Native.now()+delta)}static now(){return Native.now()+delta}};document.dispatchEvent(new Event('visibilitychange'));return true})()");
+  await js("(()=>{const Native=Date;const delta=86400000;window.__restoreClock=()=>{window.Date=Native};window.Date=class extends Native {constructor(...args){if(args.length)super(...args);else super(Native.now()+delta)}static now(){return Native.now()+delta}};document.dispatchEvent(new Event('visibilitychange'));return true})()");
   await until("!document.querySelector('#quests .quest-button').disabled", 'daily reward unlocked after midnight');
   await click('#quests .quest-button');
   check((await current()).coins === 90, 'one new daily reward after date change without reload');
+  await js("window.__restoreClock();document.dispatchEvent(new Event('visibilitychange'));true");
+  await until("document.querySelector('#quests .quest-button').disabled", 'old claimed day remains locked after clock rollback');
+  check((await current()).coins === 90, 'A to B to A pays two daily login rewards, not three');
+  await reloadSavedProfile();
+  check(await js("document.querySelector('#quests .quest-button').disabled && document.querySelector('#quests .quest-button').textContent.includes('ПОЛУЧЕНО')"), 'reload shows the actual already-claimed daily login state');
+  check((await current()).coins === 90, 'daily reward history survives real reload');
+
+  await boot();
+  await js(`(async()=>{
+    const {addCompletedWorkout,loadProfile}=await import('/src/lib/progression.ts');
+    const {claimDailyQuest}=await import('/src/lib/game.ts');
+    const a=new Date(),b=new Date(Date.now()+86400000);
+    let p=addCompletedWorkout(loadProfile(),65000,a,{sessionId:'quest-A'});
+    p=claimDailyQuest(p,a);
+    p=addCompletedWorkout(p,65000,b,{sessionId:'quest-B'});
+    p=claimDailyQuest(p,b);
+    localStorage.setItem(${JSON.stringify(key)},JSON.stringify(p));return true;
+  })()`);
+  await reloadSavedProfile();
+  check(await js("document.querySelector('#quests .quest-card:nth-child(2) button').disabled && document.querySelector('#quests .quest-card:nth-child(2) button').textContent.includes('ГОТОВО')"), 'quest UI preserves claimed status after a later day and reload');
+  check((await current()).xp === 710 && (await current()).coins === 180, 'two daily quests preserve exact XP and coin rewards');
+
+  await boot();
+  await js(`(async()=>{
+    const {addCompletedWorkout,loadProfile}=await import('/src/lib/progression.ts');
+    let p=loadProfile();
+    for(let i=0;i<65;i++)p=addCompletedWorkout(p,65000,new Date(),{sessionId:'durable-'+i,mode:i===0?'tower':'training'});
+    localStorage.setItem(${JSON.stringify(key)},JSON.stringify(p));return true;
+  })()`);
+  await reloadSavedProfile();
+  const mature = await current();
+  check(mature.workouts.length === 60 && mature.totals.workouts === 65 && mature.creditedWorkoutIds.length === 65,
+    '65 credited workout identities survive reload independently of the last-60 history');
+  const replay = await js(`(async()=>{
+    const {addCompletedWorkout,loadProfile}=await import('/src/lib/progression.ts');
+    const p=loadProfile(),next=addCompletedWorkout(p,1000,new Date(),{sessionId:'durable-0',mode:'tower'});
+    return {same:next===p,xp:next.xp,coins:next.coins,floor:next.game.highestClearedFloor,total:next.totals.workouts};
+  })()`);
+  check(replay.same && replay.xp === mature.xp && replay.coins === mature.coins && replay.floor === 1 && replay.total === 65,
+    'old tower replay after history rotation changes neither reward, floor, record nor workout total');
+  check(await js('document.documentElement.scrollWidth<=390'), 'mature profile balances and lifetime totals fit a 390px phone');
 
   await boot(undefined, undefined, "Object.defineProperty(window,'isSecureContext',{value:false});Object.defineProperty(crypto,'randomUUID',{value:undefined});");
   await click('.mobile-nav button:nth-child(2)');

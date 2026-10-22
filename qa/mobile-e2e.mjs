@@ -4,12 +4,12 @@ import path from 'node:path';
 import {spawn} from 'node:child_process';
 
 const chromePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const port=9582, width=390, height=844;
-const profile=path.join(os.tmpdir(),'bf-e2e-20261019-'+process.pid);
+const width=390, height=844;
+const profile=fs.mkdtempSync(path.join(os.tmpdir(),'bf-mobile-'));
 const chrome=spawn(chromePath,[
   '--headless=new','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader',
   '--no-first-run','--no-default-browser-check','--remote-allow-origins=*',
-  '--remote-debugging-port='+port,'--user-data-dir='+profile,
+  '--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,
   '--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream',
   'about:blank',
 ],{stdio:'ignore'});
@@ -17,9 +17,11 @@ const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
 let socket,seq=0;const pending=new Map();
 async function endpoint(){
   for(let i=0;i<75;i++){
-    try{const tabs=await(await fetch('http://127.0.0.1:'+port+'/json')).json();
+    if(chrome.exitCode!==null)throw Error('Owned Chrome exited '+chrome.exitCode);
+    try{const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
+      const tabs=await(await fetch('http://127.0.0.1:'+port+'/json')).json();
       const tab=tabs.find(t=>t.type==='page');
-      if(tab)return tab.webSocketDebuggerUrl;
+      if(tab){console.log('CDP_OWNER',process.pid,port);return tab.webSocketDebuggerUrl;}
     }catch{} await sleep(200);
   }throw Error('Chrome DevTools unavailable');
 }
@@ -169,6 +171,10 @@ try{
   check(camera.screen==='challenge'&&camera.card<340&&camera.button&&Math.abs(camera.ratio-9/16)<.006,'mobile camera tab with portrait stage');
   check(await js("document.querySelector('.framing-primer')?.textContent.includes('сбоку') === true"),
     'camera offers side-view and full-leg framing before the workout');
+  await click('.perf-toggle');
+  const preflightDiagnostics = await read("({open:!!document.querySelector('[data-diagnostics=open]'),glb:document.querySelector('[data-glb-load]')?.dataset.glbLoad,privacy:document.querySelector('.perf-body')?.textContent.includes('Никакие кадры камеры')})");
+  check(preflightDiagnostics.open&&Number(preflightDiagnostics.glb)>0&&preflightDiagnostics.privacy,
+    'device diagnostics offers a locally measured GLB load and privacy notice');
   await click('#challenge .primary-button');
   for(let i=0;i<60;i++){await sleep(250);const mode=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',loading:!!document.querySelector('.loading-overlay')})");if(mode.active||mode.error){console.log('CAMERA_START',JSON.stringify(mode));check(mode.active&&!mode.error,'camera starts after 3D navigation');break;}if(i===59)throw Error('Camera did not start after 15 s');}
   const context=await read("({active3d:[...document.querySelectorAll('[data-3d-status=active]')].length,stageRatio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
@@ -184,6 +190,14 @@ try{
   console.log('POSE_GUIDANCE',JSON.stringify(framing));
   check(framing.visible && framing.guidance && framing.text.length>12,
     'on-screen camera coach explains tracking problem once pose model is running');
+  await sleep(1200);
+  const performanceReport=await read("(()=>{const metrics=JSON.parse(document.querySelector('#perf-report').value);return {frames:metrics.camera.frames,p95:metrics.camera.p95Ms,private:!/landmarks|nickname|deviceId|workouts|video/i.test(JSON.stringify(metrics)),scroll:document.documentElement.scrollWidth}})()");
+  console.log('PERF_DIAGNOSTICS',JSON.stringify(performanceReport));
+  check(performanceReport.frames>0 && (performanceReport.p95===null ? performanceReport.frames<20 : performanceReport.p95>=0) && performanceReport.private && performanceReport.scroll<=390,
+    'live MediaPipe timings appear on mobile without video or profile data');
+  await js("document.querySelector('.perf-panel').scrollIntoView({block:'start'});true");
+  await sleep(200);
+  await screenshot('bf-qa-mobile-performance-panel.png');
   const controls=await read("({lenses:document.querySelectorAll('.camera-lenses button').length,wideDisabled:document.querySelector('.camera-lenses button:nth-child(3)')?.disabled,zoom:!!document.querySelector('.camera-zoom-control')})");
   console.log('CAMERA_CONTROLS',JSON.stringify(controls));
   check(controls.lenses===3,'front, rear and ultra-wide controls visible on mobile');
@@ -231,5 +245,10 @@ try{
   check(small.viewport===360&&small.scroll<=360,'360 px mobile no horizontal overflow');
   await screenshot('bf-qa-mobile-360-premium.png');
   console.log('BODYFORGE_MOBILE_E2E_PASS');
-}catch(error){console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12}
+}catch(error){
+  console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12;
+  if(socket?.readyState===1)try{
+    console.log('FAILURE_STATE',await js("JSON.stringify({url:location.href,screen:document.querySelector('.app-shell')?.dataset.screen,storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus,loading:!!document.querySelector('.avatar-3d-wait')})"));
+  }catch{}
+}
 finally{socket?.close();chrome.kill();await sleep(400);try{fs.rmSync(profile,{recursive:true,force:true})}catch{}}

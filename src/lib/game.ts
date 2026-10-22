@@ -46,6 +46,9 @@ export interface GameState {
   ownedOutfits: Outfit[];
   lastLoginDay: string | null;
   lastQuestClaimDay: string | null;
+  /** Optional on legacy saves; last-claimed dates alone cannot detect clock rollback. */
+  claimedLoginDays?: string[];
+  claimedQuestDays?: string[];
   highestClearedFloor: number;
   bestGhost: { durationMs: number; splitsMs: number[] } | null;
 }
@@ -67,8 +70,16 @@ export function freshGame(): GameState {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
-const validDay = (v: unknown): string | null =>
-  typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
+function validDay(value: unknown): string | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : null;
+}
+
+function claimedDays(value: unknown, legacy: unknown): string[] {
+  const entries: unknown[] = Array.isArray(value) ? value : [];
+  return [...new Set([...entries, legacy].map(validDay).filter((day): day is string => day !== null))];
+}
 const validBuild = (v: unknown): v is BodyBuild => v === 'lean' || v === 'solid';
 const validOutfit = (v: unknown): v is Outfit => v === 'base' || v === 'ember' || v === 'steel';
 export const MAX_MUSCLE_LEVEL = 5;
@@ -106,6 +117,8 @@ export function normalizeGame(value: unknown): GameState {
     outfit: validOutfit(value.outfit) && ownedOutfits.includes(value.outfit) ? value.outfit : 'base',
     lastLoginDay: validDay(value.lastLoginDay),
     lastQuestClaimDay: validDay(value.lastQuestClaimDay),
+    ...('claimedLoginDays' in value ? { claimedLoginDays: claimedDays(value.claimedLoginDays, value.lastLoginDay) } : {}),
+    ...('claimedQuestDays' in value ? { claimedQuestDays: claimedDays(value.claimedQuestDays, value.lastQuestClaimDay) } : {}),
     highestClearedFloor: typeof value.highestClearedFloor === 'number'
       && Number.isInteger(value.highestClearedFloor)
       ? Math.min(TOWER_FLOORS.length, Math.max(0, value.highestClearedFloor)) : 0,
@@ -165,19 +178,33 @@ export function buyOrEquipOutfit(profile: Profile, outfit: Outfit): Profile {
   };
 }
 
-export function claimLogin(profile: Profile, now = new Date()): Profile {
+export function hasClaimedDailyReward(game: GameState, kind: 'login' | 'quest', now: Date): boolean {
   const day = localDay(now);
-  if (!profile.game.created || profile.game.lastLoginDay === day) return profile;
+  const days = kind === 'login'
+    ? claimedDays(game.claimedLoginDays, game.lastLoginDay)
+    : claimedDays(game.claimedQuestDays, game.lastQuestClaimDay);
+  return days.includes(day);
+}
+
+export function canClaimLogin(profile: Profile, now = new Date()): boolean {
+  return profile.game.created && validDay(localDay(now)) !== null
+    && !hasClaimedDailyReward(profile.game, 'login', now);
+}
+
+export function claimLogin(profile: Profile, now = new Date()): Profile {
+  if (!canClaimLogin(profile, now)) return profile;
+  const day = localDay(now);
   return {
     ...profile,
     coins: profile.coins + LOGIN_COINS,
-    game: { ...profile.game, lastLoginDay: day },
+    game: { ...profile.game, lastLoginDay: day,
+      claimedLoginDays: [...claimedDays(profile.game.claimedLoginDays, profile.game.lastLoginDay), day] },
   };
 }
 
 export function canClaimQuest(profile: Profile, now = new Date()): boolean {
   const day = localDay(now);
-  return profile.game.created && profile.game.lastQuestClaimDay !== day
+  return profile.game.created && validDay(day) !== null && !hasClaimedDailyReward(profile.game, 'quest', now)
     && profile.workouts.some((workout) => localDay(new Date(workout.finishedAt)) === day);
 }
 
@@ -187,7 +214,8 @@ export function claimDailyQuest(profile: Profile, now = new Date()): Profile {
     ...profile,
     xp: profile.xp + QUEST_XP,
     coins: profile.coins + QUEST_COINS,
-    game: { ...profile.game, lastQuestClaimDay: localDay(now) },
+    game: { ...profile.game, lastQuestClaimDay: localDay(now),
+      claimedQuestDays: [...claimedDays(profile.game.claimedQuestDays, profile.game.lastQuestClaimDay), localDay(now)] },
   };
 }
 

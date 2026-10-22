@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProfileState, persistProfile, recoverProfile, STORAGE_KEY, type Profile, type ProfileLoadResult } from '../lib/progression';
+import { loadProfileState, saveProfile, recoverProfile, STORAGE_KEY, type Profile, type ProfileLoadResult } from '../lib/progression';
 
 export type StorageStatus = 'ready' | 'recovery-required' | 'unavailable' | 'conflict';
 const uiStatus = (state: ProfileLoadResult): StorageStatus => state.status === 'empty' ? 'ready' : state.status;
@@ -15,17 +15,16 @@ export function useProfileStorage() {
   const saved = useRef<Profile | null>(null);
 
   const save = useCallback((next: Profile) => {
-    const result = persistProfile(next, { expectedRaw: revision.current });
-    if (result === 'saved') {
-      const state = loadProfileState();
-      if (state.status !== 'ready') { setStatus('unavailable'); return; }
-      revision.current = state.revision;
+    const result = saveProfile(next, { expectedRaw: revision.current });
+    if (result.status === 'saved') {
+      // Do not re-read the primary here: it could already belong to another tab.
+      revision.current = result.revision;
       saved.current = next;
       setStatus('ready');
       return;
     }
-    setStatus(result);
-    if (result === 'recovery-required') setBackupAvailable(loadProfileState().backupAvailable);
+    setStatus(result.status);
+    if (result.status === 'recovery-required') setBackupAvailable(loadProfileState().backupAvailable);
   }, []);
 
   useEffect(() => {

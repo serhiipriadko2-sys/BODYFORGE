@@ -482,3 +482,23 @@ h1,h2,h3,.character-level,.topbar-level strong,.counter-number {
     touch-action:manipulation;
   }
 }
+
+/* Session-only diagnostics. Deliberately subordinate to the game CTA. */
+.perf-panel { margin-top: 15px; background: #0b1b2b; border: 1px solid #2b4359; border-radius: 12px; overflow: hidden; color: #dae5ee; }
+.perf-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; background: transparent; border: 0; text-align: left; color: #a9bccb; font-weight: 800; letter-spacing: .08em; font-size: 11px; }
+.perf-toggle:hover, .perf-toggle:focus-visible { color: #ffe2a1; }
+.perf-toggle span:last-child { color: #f5bd56; font-size: 19px; }
+.perf-body { border-top: 1px solid #2b4359; padding: 13px 14px 16px; }
+.perf-body p { font-size: 11px; color: #a9bccb; line-height: 1.55; margin: 0 0 11px; }
+.perf-values { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.perf-values > div { padding: 10px 9px; background: #12273a; border: 1px solid #253e54; border-radius: 8px; min-width: 0; }
+.perf-values span { display: block; font-size: 10px; color: #b4c5d3; margin-bottom: 4px; }
+.perf-values strong { display: block; font-size: 17px; color: #f5bd56; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.perf-body .perf-hint { margin: 12px 0; }
+.perf-export-label { display: block; color: #b4c5d3; font-size: 10px; font-weight: 700; margin-bottom: 5px; }
+.perf-export { display: block; width: 100%; max-width: 100%; min-height: 102px; padding: 8px; background: #071521; border: 1px solid #304b62; border-radius: 8px; color: #dce9f4; font-family: ui-monospace, monospace; font-size: 10px; line-height: 1.45; resize: vertical; }
+.perf-copy { margin-top: 10px; width: 100%; min-height: 44px; padding: 9px 12px; border-radius: 8px; border: 1px solid #7c602e; background: #263247; color: #ffe2a1; font-size: 11px; font-weight: 800; }
+.perf-copy:hover, .perf-copy:focus-visible { background: #35465c; }
+.perf-body .perf-copy-status { margin-top: 9px; color: #ffe2a1; }
+.avatar-3d-shell canvas:focus-visible { outline: 3px solid #f5bd56; outline-offset: 3px; border-radius: 9px; }
+@media (max-width: 400px) { .perf-values strong { font-size: 15px; } .perf-body { padding-inline: 10px; } }

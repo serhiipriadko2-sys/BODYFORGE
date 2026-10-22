@@ -8,6 +8,8 @@ import {
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
+import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
+import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
 import StorageRecovery from './components/StorageRecovery';
 import './recovery.css';
 import { useProfileStorage } from './hooks/useProfileStorage';
@@ -483,6 +485,7 @@ function App() {
     }
     workoutIdRef.current = globalThis.crypto?.randomUUID?.() ?? ('local-' + Date.now() + '-' + Math.random().toString(36).slice(2));
     captureRequestedRef.current = true;
+    runtimeDiagnostics.startCameraSession();
     setMode('loading');
     const requestId = requestIdRef.current;
     let stream: MediaStream | null = null;
@@ -543,7 +546,9 @@ function App() {
           }
           stallReportedRef.current = false;
           try {
+            const inferenceStarted = performance.now();
             const result = landmarkerRef.current.detectForVideo(liveVideo, time);
+            runtimeDiagnostics.recordInference(performance.now() - inferenceStarted, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points, mirroredRef.current);
             const measured = kneeTrackerRef.current.update(points ?? [], liveVideo.videoWidth / liveVideo.videoHeight);
@@ -962,6 +967,7 @@ function App() {
               )}
               {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
+              <RuntimeDiagnosticsPanel />
             </article>
           </section>
 
