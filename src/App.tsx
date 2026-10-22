@@ -5,7 +5,7 @@ import {
   Hammer, Medal, Play, RotateCcw, ShieldCheck, Smartphone, Target,
   Trophy, Volume2, VolumeX, WifiOff, X, Zap, Swords, Globe2, UserRound,
 } from 'lucide-react';
-import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
+import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
@@ -58,6 +58,7 @@ function cameraErrorMessage(error: unknown): string {
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Камера не найдена. Подключи камеру или открой страницу на телефоне.';
   if (name === 'TimeoutError') return 'Камера или модель слишком долго не отвечает. Проверь разрешение и соединение, затем повтори попытку.';
   if (name === 'NotReadableError') return 'Камеру сейчас использует другое приложение. Закрой его и попробуй снова.';
+  if (name === 'NetworkError') return 'Модуль распознавания не загрузился. Проверь интернет и обнови приложение.';
   if (name === 'OverconstrainedError') return 'Выбранный объектив или его настройки не поддерживаются. Выбери другую камеру.';
   return error instanceof Error ? `Не удалось запустить распознавание: ${error.message}` : 'Не удалось запустить камеру. Проверь соединение и разрешения.';
 }
@@ -166,6 +167,7 @@ function App() {
   const [cameraMirrored, setCameraMirrored] = useState(true);
   const [frameStalled, setFrameStalled] = useState(false);
   const [cameraMessage, setCameraMessage] = useState('');
+  const [cameraModuleUnavailable, setCameraModuleUnavailable] = useState(false);
   const [showFullFrame, setShowFullFrame] = useState(false);
   const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
@@ -466,6 +468,7 @@ function App() {
     setVideoOrientation('unknown');
     setCameraZoom(null);
     setCameraMessage('');
+    setCameraModuleUnavailable(false);
     setError('');
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -508,6 +511,20 @@ function App() {
       workoutSessionRef.current = session;
       stream = await connectCamera(cameraSource, requestId);
 
+      // Pose decoding is used only by workouts, never by the home/forge screens.
+      // A dynamic import keeps its JavaScript outside the initial application chunk.
+      let poseModule: typeof import('@mediapipe/tasks-vision');
+      try {
+        poseModule = await withTimeout(import('@mediapipe/tasks-vision'), 20000, 'Pose library download timeout');
+      } catch (failure) {
+        if (requestId !== requestIdRef.current) return;
+        // Some browsers cache a failed import until the page is reloaded.
+        setCameraModuleUnavailable(true);
+        if (failure instanceof DOMException && failure.name === 'TimeoutError') throw failure;
+        throw new DOMException('Pose module import failed', 'NetworkError');
+      }
+      if (requestId !== requestIdRef.current) return;
+      const { FilesetResolver, PoseLandmarker } = poseModule;
       const vision = await withTimeout(FilesetResolver.forVisionTasks(WASM_URL), 30000, 'Pose runtime download timeout');
       if (requestId !== requestIdRef.current) return;
       const sharedOptions = {
@@ -902,7 +919,7 @@ function App() {
                 <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} style={{ transform: cameraMirrored ? 'scaleX(-1)' : 'none' }} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
                 {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><Hammer size={74} strokeWidth={1.1} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
-                {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модель распознавания позы…</span></div>}
+                {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модуль и модель распознавания. Для первого запуска нужен интернет.</span></div>}
                 {mode === 'active' && cameraBusy && <div className="camera-switch-overlay" role="status">
                   <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
                 </div>}
@@ -983,7 +1000,9 @@ function App() {
               {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
               {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
               {mode === 'error' && (profile.game.created
-                ? <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> ПОВТОРИТЬ ПОПЫТКУ <ArrowRight size={19} /></button>
+                ? cameraModuleUnavailable
+                  ? <button className="primary-button" onClick={() => window.location.reload()}><RotateCcw size={19} /> ОБНОВИТЬ ПРИЛОЖЕНИЕ <ArrowRight size={19} /></button>
+                  : <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> ПОВТОРИТЬ ПОПЫТКУ <ArrowRight size={19} /></button>
                 : <button className="primary-button" onClick={() => { setMode('idle'); navigate('dashboard'); }}><UserRound size={19} /> СОЗДАТЬ БОЙЦА <ArrowRight size={19} /></button>
               )}
               {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
