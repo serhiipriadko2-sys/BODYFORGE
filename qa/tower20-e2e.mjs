@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
+const origin=process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
 const sleep=ms=>new Promise(ok=>setTimeout(ok,ms));
 const port=9583, profile=path.join(os.tmpdir(),'bf-e2e-tower-'+process.pid);
 const chrome=spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',[
@@ -45,7 +46,7 @@ try{
  });
  await cmd('Page.enable');await cmd('Runtime.enable');
  await cmd('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
- await cmd('Page.navigate',{url:'http://127.0.0.1:5173/'});
+ await cmd('Page.navigate',{url:origin+'/'});
  await sleep(2800);
  await click('#onboarding .forge-solid-button');
  await sleep(150);

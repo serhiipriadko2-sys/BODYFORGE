@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ActiveFrameLoop } from '../lib/frameLoop';
 import { disposeThreeTree } from '../lib/threeResources';
+import { runtimeDiagnostics } from '../lib/runtimeDiagnostics';
 import Avatar from './Avatar';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 
@@ -56,6 +57,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
   useEffect(() => {
     const element = canvas.current as HTMLCanvasElement;
     if (!element) return;
+    const telemetryId = runtimeDiagnostics.attachAvatar();
     let renderer: THREE.WebGLRenderer | null = null;
     let intersectsViewport = true;
     let visible = !document.hidden;
@@ -156,6 +158,13 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
           if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
         }
       };
+      const onArrowKey = (event: KeyboardEvent) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        rotation = THREE.MathUtils.clamp(rotation + (event.key === 'ArrowLeft' ? -.12 : .12), -1.02, 1.02);
+        figureRoot.rotation.y = rotation;
+        redraw();
+      };
       const onContextLost = (event: Event) => {
         event.preventDefault();
         console.warn('BODYFORGE 3D context lost');
@@ -168,6 +177,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       element.addEventListener('pointermove', onPointerMove);
       element.addEventListener('pointerup', onPointerUp);
       element.addEventListener('pointercancel', onPointerUp);
+      element.addEventListener('keydown', onArrowKey);
       element.addEventListener('webglcontextlost', onContextLost);
 
       const onVisibility = () => {
@@ -190,6 +200,11 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
           lastDraw = time;
           if (!isDragging) figureRoot.position.y = Math.sin(time / 1500) * .022;
           redraw();
+          if (renderer) runtimeDiagnostics.recordAvatarFrame(telemetryId, time, {
+            drawCalls: renderer.info.render.calls,
+            geometries: renderer.info.memory.geometries,
+            textures: renderer.info.memory.textures,
+          });
         }
       }
       const frameLoop = new ActiveFrameLoop(
@@ -225,12 +240,14 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
           element.removeEventListener('pointermove', onPointerMove);
           element.removeEventListener('pointerup', onPointerUp);
           element.removeEventListener('pointercancel', onPointerUp);
+          element.removeEventListener('keydown', onArrowKey);
           element.removeEventListener('webglcontextlost', onContextLost);
           document.removeEventListener('visibilitychange', onVisibility);
           motionPreference.removeEventListener('change', onVisibility);
           observer.disconnect();
           resize.disconnect();
           disposeThreeTree(scene);
+          runtimeDiagnostics.detachAvatar(telemetryId);
           // Keep the canvas context valid across React StrictMode's
           // development-only effect cleanup/remount cycle.
           renderer?.dispose();
@@ -241,6 +258,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
 
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
       // clothing and materials are ready; procedural human remains the fallback.
+      const glbStartedAt = performance.now();
       new GLTFLoader().load(
         '/assets/male-base-mesh-base_male.glb',
         (gltf) => {
@@ -258,6 +276,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
             currentRuntime.current = imported.root;
             importedRef.current = imported;
             setModelSource('cc0');
+            runtimeDiagnostics.recordGlbLoad(telemetryId, performance.now() - glbStartedAt);
             redraw();
           } catch (error) {
             console.warn('CC0 avatar unavailable, retaining procedural fallback:', error);
@@ -270,6 +289,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     } catch (error) {
       console.error('BODYFORGE 3D renderer unavailable:', error);
       renderer?.dispose();
+      runtimeDiagnostics.detachAvatar(telemetryId);
       if (!disposed) setAvailable(false);
     }
 
@@ -309,7 +329,8 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
   return (
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}>
       <div className="avatar-3d-embers" aria-hidden="true" />
-      <canvas ref={canvas} aria-label="Объёмный 3D-персонаж BODYFORGE. Потяни пальцем влево или вправо, чтобы повернуть." role="img" />
+      <canvas ref={canvas} tabIndex={0} aria-keyshortcuts="ArrowLeft ArrowRight"
+        aria-label="Объёмный 3D-персонаж BODYFORGE. Поверни пальцем или клавишами со стрелками влево и вправо." role="img" />
       <span className="avatar-3d-drag">↔ ПОВЕРНИ ГЕРОЯ</span>
       <span className="avatar-3d-label">BODYFORGE / 3D БОЕЦ</span>
     </div>

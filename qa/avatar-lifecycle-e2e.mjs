@@ -131,6 +131,13 @@ try {
   await sleep(250);
   check(await js(draws) > beforeUpdate, 'visible body-build change redraws in reduced motion');
   check(await js(loop) === 'paused', 'manual update does not restart the reduced-motion loop');
+  const beforeKeyboard = await js(draws);
+  await js(canvas + '.focus()');
+  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+  await sleep(100);
+  check(await js(draws) > beforeKeyboard && await js(loop) === 'paused',
+    'keyboard arrow rotates the 3D hero without starting a reduced-motion RAF');
   await js("document.querySelector('.mobile-nav button:nth-child(2)').click()");
   await until("!document.querySelector('#onboarding canvas')", 'avatar unmount');
   const stopped = await js(draws);
