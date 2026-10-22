@@ -8,6 +8,8 @@ import {
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
+import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
+import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
 import StorageRecovery from './components/StorageRecovery';
 import './recovery.css';
 import { useProfileStorage } from './hooks/useProfileStorage';
@@ -19,9 +21,10 @@ import {
   type BodyBuild, type Muscle, type Outfit, type WorkoutMode,
 } from './lib/game';
 import {
-  addCompletedWorkout, getProfileTotals, COIN_REWARD, formatTime, getLevel,
+  getProfileTotals, COIN_REWARD, formatTime, getLevel,
   getLevelProgress, getRank, TARGET_REPS, XP_REWARD,
 } from './lib/progression';
+import type { WorkoutSession } from './lib/workoutJournal';
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, portraitCameraConstraints,
@@ -147,7 +150,8 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
 }
 
 function App() {
-  const { profile, setProfile, status: storageStatus, backupAvailable, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
+  const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, journalEntries,
+    beginWorkout, completeWorkout, openCurrent, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
   const [mode, setMode] = useState<Mode>('idle');
   const [snapshot, setSnapshot] = useState<CounterSnapshot>(FIRST_SNAPSHOT);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -207,7 +211,7 @@ function App() {
   const frameWatchdogRef = useRef(new CameraFrameWatchdog());
   const stallReportedRef = useRef(false);
   const mirroredRef = useRef(true);
-  const workoutIdRef = useRef<string | undefined>(undefined);
+  const workoutSessionRef = useRef<WorkoutSession | null>(null);
   const streamCleanupRef = useRef<(() => void) | null>(null);
 
 
@@ -433,7 +437,12 @@ function App() {
 
   const start = useCallback(async (requestedMode: WorkoutMode = 'training') => {
     if (storageStatus !== 'ready' || captureRequestedRef.current) return;
-    workoutIdRef.current = undefined;
+    workoutSessionRef.current = null;
+    if (isSaving) {
+      setError('Дождись сохранения прогресса, затем начни испытание.');
+      if (mode !== 'complete') setMode('error');
+      return;
+    }
     if (!profile.game.created) {
       // Keep the requested camera tab open; silently navigating home made
       // first-time phone users think the exercise screen had crashed.
@@ -484,13 +493,22 @@ function App() {
       setMode('error');
       return;
     }
-    workoutIdRef.current = globalThis.crypto?.randomUUID?.() ?? ('local-' + Date.now() + '-' + Math.random().toString(36).slice(2));
     captureRequestedRef.current = true;
+    runtimeDiagnostics.startCameraSession();
     setMode('loading');
     const requestId = requestIdRef.current;
     let stream: MediaStream | null = null;
     let landmarker: PoseLandmarker | null = null;
     try {
+      const session = await beginWorkout(requestedMode);
+      if (requestId !== requestIdRef.current) return;
+      if (!session) {
+        stopCapture();
+        setError('Не удалось подготовить сохранение тренировки. Проверь прогресс и повтори.');
+        setMode('error');
+        return;
+      }
+      workoutSessionRef.current = session;
       stream = await connectCamera(cameraSource, requestId);
 
       // Pose decoding is used only by workouts, never by the home/forge screens.
@@ -560,7 +578,9 @@ function App() {
           }
           stallReportedRef.current = false;
           try {
+            const inferenceStarted = performance.now();
             const result = landmarkerRef.current.detectForVideo(liveVideo, time);
+            runtimeDiagnostics.recordInference(performance.now() - inferenceStarted, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points, mirroredRef.current);
             const measured = kneeTrackerRef.current.update(points ?? [], liveVideo.videoWidth / liveVideo.videoHeight);
@@ -579,7 +599,9 @@ function App() {
               setElapsedMs(durationMs);
               setLastResultMs(durationMs);
               const selectedMode = workoutModeRef.current;
-              const floor = nextTowerFloor(profile.game);
+              const session = workoutSessionRef.current;
+              if (!session) throw Error('Workout session unavailable');
+              const floor = TOWER_FLOORS.find((f) => f.floor === session.floor) ?? nextTowerFloor(profile.game);
               const victory = selectedMode === 'tower'
                 ? profile.game.highestClearedFloor < TOWER_FLOORS.length && durationMs <= floor.targetMs
                 : selectedMode === 'ghost' && profile.game.bestGhost
@@ -587,11 +609,12 @@ function App() {
               setLastChallenge({ mode: selectedMode, victory });
               // Freeze once outside React's updater (which StrictMode may invoke twice).
               const finishedAt = new Date();
-              const resultOptions = { mode: selectedMode, splitsMs: [...splitsRef.current], sessionId: workoutIdRef.current };
-              setProfile((previous) => addCompletedWorkout(previous, durationMs, finishedAt, resultOptions));
+              const result = { ...session, durationMs, finishedAt: finishedAt.toISOString(), repetitions: 20 as const,
+                splitsMs: [...splitsRef.current] };
               setToday(new Date());
               stopCapture();
               setMode('complete');
+              void completeWorkout(result);
               return;
             }
           } catch (failure) {
@@ -627,7 +650,7 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture, storageStatus, setProfile]);
+  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture, storageStatus, isSaving, mode, beginWorkout, completeWorkout]);
 
   /** Zoom uses the real capture track, never CSS stretching of the skeleton. */
   const changeCameraZoom = useCallback(async (requested: number) => {
@@ -782,7 +805,8 @@ function App() {
   const canNavigate = mode !== 'active' && mode !== 'loading';
 
   if (storageStatus !== 'ready') return <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
-    profile={profile} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage}/>;
+    writeIssue={writeIssue} isSaving={isSaving} profile={profile} pendingResult={pendingResult} journalEntries={journalEntries}
+    onOpenCurrent={openCurrent} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage}/>;
 
   return (
     <div className="app-shell" data-screen={section} data-fighter-created={profile.game.created ? 'true' : 'false'}>
@@ -898,7 +922,7 @@ function App() {
                   <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
                 </div>}
                 {mode === 'complete' ? (
-                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span>20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
+                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span role="status">{isSaving ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
                 ) : (
                   <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} /></div>
                 )}
@@ -944,7 +968,7 @@ function App() {
                 <div className={`battle-result ${lastChallenge.victory ? 'victory' : 'defeat'}`}>
                   <Trophy size={23}/>
                   <div><strong>{lastChallenge.victory ? 'ПОБЕДА!' : 'ПОПРОБУЙ ЕЩЁ'}</strong>
-                    <span>{lastChallenge.mode === 'tower'
+                    <span>{isSaving ? 'Результат ожидает сохранения.' : lastChallenge.mode === 'tower'
                       ? lastChallenge.victory ? 'Этаж башни взят, награда начислена.' : 'Бот оказался быстрее. Тренировочные XP сохранены.'
                       : lastChallenge.victory ? 'Личный рекорд побит!' : 'Ты прошёл 20 повторений, но старая тень быстрее.'}</span>
                   </div>
@@ -953,7 +977,7 @@ function App() {
               <div className="live-feedback" aria-live="polite">
                 {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{poseGuidance.warning && snapshot.angle === null ? poseGuidance.instruction : FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
                   : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
-                    : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>Всё засчитано. Герой стал сильнее!</span></>
+                    : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>{isSaving ? '20 повторов засчитаны. Дождись сохранения результата.' : 'Всё засчитано. Герой стал сильнее!'}</span></>
                       : <><Smartphone size={17} /><span>Поставь телефон вертикально, сбоку от себя. Тело и стопы должны быть видны.</span></>}
               </div>
               {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>Камера отдаёт широкий поток. Показываем его центр в вертикальной рамке — стой посередине.</span></div>}
@@ -981,6 +1005,7 @@ function App() {
               )}
               {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
+              <RuntimeDiagnosticsPanel />
             </article>
           </section>
 
@@ -1032,7 +1057,8 @@ function App() {
         <button type="button" disabled={!canNavigate} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><Globe2 size={21}/><span>ОНЛАЙН</span></button>
       </nav>
       <div className="screen-grain" aria-hidden="true" />
-      <div className="sr-only" aria-live="polite">{mode === 'complete' ? 'Тренировка окончена. Вы получили опыт и монеты.' : ''}</div>
+      <div className="sr-only" aria-live="polite">{mode === 'complete' ? isSaving
+        ? 'Тренировка окончена. Результат ожидает сохранения.' : 'Тренировка окончена. Вы получили опыт и монеты.' : ''}</div>
     </div>
   );
 }
