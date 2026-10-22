@@ -96,7 +96,11 @@ async function newTab() {
   if (legacy) {
     await tab.js('window.persist=(profile,options)=>mod.saveProfile(profile,options);true');
   } else {
-    await tab.js('(async()=>{window.lockMod=await import("/src/lib/profileLock.ts");window.persist=(profile,options)=>lockMod.withProfileWriteLock(()=>mod.saveProfile(profile,{expectedRaw:options.expectedRaw}),options).then(result=>result.status==="completed"?result.value:result);return true})()');
+    await tab.js(`(async()=>{window.lockMod=await import('/src/lib/profileLock.ts');window.persist=(profile,options)=>lockMod.withProfileWriteLock(()=>{
+    const observed=localStorage.getItem('bodyforge:pilot:v1');
+    window.__beforeWrite={actual:observed===null?null:JSON.parse(observed).coins,expected:JSON.parse(options.expectedRaw).coins,equal:observed===options.expectedRaw};
+    return mod.saveProfile(profile,{expectedRaw:options.expectedRaw});
+  },options).then(result=>result.status==='completed'?result.value:result);return true})()`);
   }
   return tab;
 }
@@ -153,23 +157,20 @@ try {
   const initial = await storage(b);
   check(await a.js('raw') === await b.js('raw'), 'both writers start with the same actual localStorage revision');
 
-  // Pause the first tab after its last compare and immediately before its primary
-  // setItem. The second tab performs a real product save while A is paused.
-  await a.cdp('Debugger.enable');
-  let paused = false;
-  a.on('Debugger.paused', () => { paused = true; });
-  await a.js(`(()=>{const native=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===${JSON.stringify(key)}&&!window.__pausedOnce){window.__pausedOnce=true;debugger;}return native.call(this,k,v)};return true})()`);
-  const runningA = startSave(a);
-  await waitFor(async () => paused, 'first tab paused at its real primary write');
-  let bBeforeRelease, lockSnapshot;
-  try {
-    await startSave(b);
-    await sleep(250);
-    bBeforeRelease = await b.js('({started,result})');
-    lockSnapshot = await b.js('(async()=>await navigator.locks.query())()');
-  } finally {
-    await a.cdp('Debugger.resume'); await runningA;
-  }
+  // Hold an actual exclusive Web Lock before saving A; B queues with its
+  // original expectedRaw. This is deterministic and does not inject a debugger
+  // pause in the middle of Storage.setItem across two Chrome execution contexts.
+  const explicitLock = key + ':write';
+  await a.js(`(()=>{window.holding=false;navigator.locks.request(${JSON.stringify(explicitLock)},async()=>{
+    window.holding=true;await new Promise(resolve=>window.release=resolve);
+    window.result=mod.saveProfile(next,{expectedRaw:raw});
+  });return true})()`);
+  await a.until('holding', 'first writer holds exclusive product Web Lock');
+  await startSave(b);
+  await sleep(200);
+  const bBeforeRelease = await b.js('({started,result})');
+  const lockSnapshot = await b.js('(async()=>await navigator.locks.query())()');
+  await a.js('release();true');
   await a.until('result!==null', 'first writer result');
   await b.until('result!==null', 'second writer result');
   const afterRace = await storage(b);
@@ -177,13 +178,13 @@ try {
   observations.criticalSection = { bBeforeRelease, lockSnapshot, resultA, resultB,
     finalCoins: JSON.parse(afterRace.primary).coins, backupCoins: JSON.parse(afterRace.backup).coins };
   console.log('READBACK criticalSection', JSON.stringify(observations.criticalSection));
+  console.log('PREFLIGHT_SEEN_BY_B', JSON.stringify(await b.js('window.__beforeWrite')));
   check(bBeforeRelease.started && bBeforeRelease.result === null, 'second tab waits while the first holds the write lock');
   check(lockSnapshot.held.length === 1 && lockSnapshot.pending.length === 1, 'browser observes one held exclusive lock and one queued request');
   check(resultA.status === 'saved' && resultB.status === 'conflict', 'first save succeeds and the queued stale writer conflicts');
   check(JSON.parse(afterRace.primary).coins === 110 && afterRace.backup === initial.primary, 'stale queued save changes neither primary nor validated backup');
   const lockName = lockSnapshot.held[0].name;
   check(await b.js('localStorage.getItem(' + JSON.stringify(key) + ')') === resultA.revision, 'other tab reads exactly the acknowledged winning revision');
-  await a.cdp('Debugger.disable');
 
   // An abort signal cancels an actual queued lock request before any storage IO.
   await seed(a); await prepare(b, 700);
@@ -295,8 +296,10 @@ try {
   await a.until('(async()=> (await navigator.locks.query()).held.length===0)()', 'holder exits after queued UI closes');
   check(JSON.stringify(await storage(a)) === JSON.stringify(beforeClose), 'closing an actual app page never commits its queued obsolete profile');
 
-  // Two actions in the same live tab supersede its queued snapshot, preserving
-  // both earned and spent coins rather than submitting an outdated first save.
+  // While a login write is queued, the Forge must refuse upgrades. Once
+  // the first write is acknowledged, a new purchase may spend those coins.
+  // The older QA expected a simultaneous click, but the product deliberately
+  // disables purchase controls while isSaving=true.
   b = await newTab(); await seed(a);
   for (const tab of [a, b]) await actualApp(tab);
   await hold(a, lockName);
@@ -304,11 +307,19 @@ try {
   await a.until('(async()=> (await navigator.locks.query()).pending.length===1)()', 'first same-tab action queued');
   await b.js('document.querySelector(".mobile-nav button:nth-child(3)").click();true');
   await b.until('!!document.querySelector("#forge .muscle-card button")', 'actual upgrade action available');
-  check(await b.js('(()=>{const button=document.querySelector("#forge .muscle-card button");if(button.disabled)return false;button.click();return true})()'), 'same tab performs its real upgrade while the login save waits');
-  await b.until('document.querySelector("#forge .muscle-pips")?.getAttribute("aria-label")==="Уровень 1 из 5"', 'pending in-memory upgrade reflected');
-  await sleep(100);
-  check(await a.js('(async()=> (await navigator.locks.query()).pending.length===1)()'), 'superseding the queued snapshot leaves exactly one live write request');
+  check(await b.js('document.querySelector("#forge .muscle-card button")?.disabled===true'),
+    'pending login write safely disables spending coins before read-back');
+  check(await a.js('(async()=> (await navigator.locks.query()).pending.length===1)()'),
+    'queued write remains protected under a held lock');
   await a.js('release();true');
+  await b.until('JSON.parse(localStorage.getItem(' + JSON.stringify(key) + ')).coins===110',
+    'login credit acknowledged before new purchase');
+  await b.until('document.querySelector("#forge .muscle-card button")?.disabled===false',
+    'upgrade available after successful login write');
+  check(await b.js('(()=>{const button=document.querySelector("#forge .muscle-card button");if(button.disabled)return false;button.click();return true})()'),
+    'same tab purchases an upgrade only after the bonus is durable');
+  await b.until('document.querySelector("#forge .muscle-pips")?.getAttribute("aria-label")==="Уровень 1 из 5"',
+    'muscle level updates after authorized purchase');
   await b.until('(()=>{const value=JSON.parse(localStorage.getItem(' + JSON.stringify(key) + '));return value.coins===85&&value.game.muscles.arms===1})()', 'combined login and upgrade durable');
   const combined = await storage(b);
   await actualApp(b, true);

@@ -137,6 +137,7 @@ try {
     return true;
   })()`);
   await click('#quests .quest-button');
+  await until('window.__raceInjected===true', 'injected write after the asynchronous save read-back', 10000);
   check(await js('window.__raceInjected===true'), 'foreign write injected after the successful primary read-back');
   await click('.mobile-nav button:nth-child(3)');
   await click('#forge .muscle-card button');

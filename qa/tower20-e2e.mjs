@@ -87,6 +87,8 @@ try{
  assert(ghost.disabled===false,'shadow race unlocks after first workout');
  await click('.mobile-nav button:nth-child(1)');
  await sleep(150);
+ await until("document.querySelector('#daily-plan [data-goal-completed]')?.dataset.goalCompleted==='20'",'completed workout appears in saved daily target');
+ assert(await ev("document.querySelector('#daily-plan [data-goal-target]')?.dataset.goalTarget==='20'"),'daily goal reaches 100% only from saved full camera workout');
  const questButton=await obj("({text:document.querySelectorAll('#quests .quest-button')[1]?.textContent||null,disabled:document.querySelectorAll('#quests .quest-button')[1]?.disabled})");
  console.log('QUEST',JSON.stringify(questButton));
  assert(questButton.text.includes('ЗАБРАТЬ'),'daily quest earned after completed workout');
