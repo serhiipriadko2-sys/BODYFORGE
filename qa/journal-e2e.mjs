@@ -112,6 +112,17 @@ async function mounted(tab = page) {
 }
 async function reset(entries = [], value = player) {
   if (page) { await page.close(); page = undefined; }
+  // Each test phase deliberately reuses the same fixture profileId. Clear the
+  // durable IDB store BETWEEN independent phases, otherwise a settled result
+  // from the preceding phase correctly replays after localStorage reset and
+  // advances the tower to floor 2 before the next phase can begin.
+  const erased = await observer.js(`(async()=>await new Promise(resolve=>{
+    const request=indexedDB.deleteDatabase('bodyforge:durable-results:v1');
+    const timer=setTimeout(()=>resolve(false),5000);
+    request.onsuccess=()=>{clearTimeout(timer);resolve(true)};
+    request.onerror=request.onblocked=()=>{clearTimeout(timer);resolve(false)};
+  }))()`);
+  if (!erased) throw Error('Disposable durable journal reset failed');
   await observer.js(`(()=>{localStorage.clear();localStorage.setItem(${JSON.stringify(key)},${JSON.stringify(JSON.stringify(value))});
     for(const [k,v] of ${JSON.stringify(entries)})localStorage.setItem(k,v);return true})()`);
 }

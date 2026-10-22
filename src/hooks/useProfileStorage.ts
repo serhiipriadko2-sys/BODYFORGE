@@ -4,6 +4,7 @@ import { withProfileWriteLock, type ProfileWriteIssue } from '../lib/profileLock
 import { prepareWorkoutSession, readResultJournal, readQuarantinedResults, sameWorkoutResult,
   type CompletedWorkoutResult, type JournalEntry, type JournalOutcome, type WorkoutSession } from '../lib/workoutJournal';
 import { replayDurableWorkouts, quarantineDurableWorkouts } from '../lib/durableWorkout';
+import { readDurableJournal } from '../lib/durableJournal';
 import type { WorkoutMode } from '../lib/game';
 
 export type StorageStatus = 'ready' | 'checking' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
@@ -161,7 +162,39 @@ export function useProfileStorage() {
     if (context.isCurrent()) applyJournal(outcome);
   }), [applyJournal, runWrite]);
   useEffect(() => {
-    void replay();
+    let active = true;
+    const token = generation.current;
+    // A clean startup or explicit "load latest" only needs a read. Requiring a
+    // Web Lock for an empty journal would leave the recovery screen waiting on
+    // another tab that intentionally holds the lock. Check both journal stores:
+    // IndexedDB can have a durable result after localStorage rolled back.
+    void (async () => {
+      const local = readResultJournal();
+      if (local.status === 'ready' && local.entries.length === 0 && !volatileResult.current) {
+        const durable = await readDurableJournal();
+        if (!active || token !== generation.current) return;
+        if (durable.status === 'ready' && durable.entries.length === 0) {
+          const checked = readResultJournal();
+          const current = loadProfileState();
+          if (checked.status === 'ready' && checked.entries.length === 0) {
+            if (current.revision !== revision.current) {
+              setStatus('conflict');
+              return;
+            }
+            if (current.status === 'ready' || current.status === 'empty') {
+              hydrated.current = true;
+              setStatus(uiStatus(current));
+              return;
+            }
+            setStatus(current.status);
+            setBackupAvailable(current.backupAvailable);
+            return;
+          }
+        }
+      }
+      if (active && token === generation.current) void replay();
+    })();
+    return () => { active = false; };
   }, [reconcileToken, replay]);
 
   const beginWorkout = useCallback(async (mode: WorkoutMode): Promise<WorkoutSession | null> => {
@@ -189,6 +222,7 @@ export function useProfileStorage() {
     accept(loadProfileState());
     // A fresh profile view cannot erase an unjournaled completion. Retry its
     // identity-bound result; mismatched identities remain explicit recovery.
+    // The effect preflights both durable stores before needing the write lock.
     setStatus('checking');
     requestReconcile((n) => n + 1);
   }, [accept, cancelPending]);
