@@ -14,7 +14,9 @@
     "qa:privacy": "node qa/privacy-server-e2e.mjs",
     "qa:resilience": "node qa/resilience-e2e.mjs",
     "qa:avatar": "node qa/avatar-lifecycle-e2e.mjs",
-    "qa:finish-save": "node qa/finish-save-e2e.mjs"
+    "qa:finish-save": "node qa/finish-save-e2e.mjs",
+    "qa:multitab": "node qa/multitab-e2e.mjs",
+    "qa:journal": "node qa/journal-e2e.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.1.1",

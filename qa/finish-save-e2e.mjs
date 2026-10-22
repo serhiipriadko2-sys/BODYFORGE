@@ -169,7 +169,7 @@ try {
     await js(`(()=>{const get=Storage.prototype.getItem,set=Storage.prototype.setItem;window.__atFinish=true;
       Storage.prototype.getItem=function(k){if(k===${JSON.stringify(key)}&&window.__atFinish&&document.querySelector('.completion-stage')){window.__atFinish=false;window.__completedBeforeConflict=true;set.call(this,k,${JSON.stringify(JSON.stringify(external))});}return get.call(this,k)};return true})()`);
     await startTower();
-    await waitFinishFailure('conflict');
+    await waitFinishFailure('pending-result');
     check(await js('window.__completedBeforeConflict===true'), 'conflict is injected at the completed result, not during an unfinished workout');
     check(await js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(JSON.stringify(external))), 'finish conflict leaves the other tab save intact');
     await js(`(()=>{const create=URL.createObjectURL.bind(URL),click=HTMLAnchorElement.prototype.click;
@@ -177,10 +177,13 @@ try {
       HTMLAnchorElement.prototype.click=function(){if(this.download==='bodyforge-local-progress.json'){window.__exportRequested=true;return;}return click.call(this)};return true})()`);
     await click('[data-action=export-session]');
     const exported = await js('(async()=>JSON.parse(await window.__exportedBlob.text()))()');
-    check(exported.xp === 185 && exported.coins === 65 && exported.workouts.length === 1 && exported.creditedWorkoutIds.includes(exported.workouts[0].id), 'local export retains the unsaved completed workout and its reward identity');
+    check(exported.xp === 500 && exported.coins === 900 && exported.workouts.length === 0 &&
+      exported.pendingResults.length === 1 && exported.pendingResults[0].repetitions === 20 &&
+      exported.pendingResults[0].floor === 1 && exported.pendingResults[0].sessionId === exported.pendingResult.sessionId,
+      'local export retains the original completed result without replacing the newer profile balance');
     check(await js('window.__exportRequested===true'), 'export is exercised without downloading to the owner Downloads folder');
-    observations.conflict = { exportedWorkouts: exported.workouts.length, durableCoins: (await readProfile()).coins };
-    await click('[data-action=load-latest]');
+    observations.conflict = { exportedResults: exported.pendingResults.length, durableCoins: (await readProfile()).coins };
+    await click('[data-action=open-current-profile]');
     await until("!!document.querySelector('.app-shell')", 'latest after export');
     check((await readProfile()).coins === 900 && (await readProfile()).game.highestClearedFloor === 1, 'latest save is loaded without applying a stale tower result to the next floor');
   }

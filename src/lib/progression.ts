@@ -25,6 +25,8 @@ export interface Workout {
 export interface ProfileTotals { workouts: number; repetitions: number; bestDurationMs: number | null }
 
 export interface Profile {
+  /** Stable local identity; assigned under the write lock before a workout. */
+  profileId?: string;
   /** Reward identities outlive the last-60 display history. Optional on legacy saves. */
   creditedWorkoutIds?: string[];
   /** Optional on legacy saves; updated independently of the last-60 display history. */
@@ -125,6 +127,7 @@ export function addCompletedWorkout(
     ...(validSplits ? { splitsMs: [...splits] } : {}),
   };
   const updated: Profile = {
+    ...(profile.profileId ? { profileId: profile.profileId } : {}),
     creditedWorkoutIds: [...credited, workout.id],
     xp: profile.xp + XP_REWARD,
     coins: profile.coins + COIN_REWARD,
@@ -163,6 +166,7 @@ export function parseProfile(value: unknown): Profile {
     };
   });
   const parsed: Profile = { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
+  if ('profileId' in record && validWorkoutId(record.profileId)) parsed.profileId = record.profileId;
   if ('creditedWorkoutIds' in record || history.length > 60) {
     parsed.creditedWorkoutIds = [...creditedWorkoutIds('creditedWorkoutIds' in record ? record.creditedWorkoutIds : undefined, history)];
   }

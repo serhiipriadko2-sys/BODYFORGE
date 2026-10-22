@@ -65,8 +65,9 @@ async function reloadSavedProfile() {
     await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: initScript });
     initScript = null;
   }
+  await js('window.__bfQaOldDocument=true');
   await cdp('Page.reload', { ignoreCache: true });
-  await until("!!document.querySelector('.app-shell')", 'reload durable progress');
+  await until("!window.__bfQaOldDocument && !!document.querySelector('.app-shell')", 'new document reloads durable progress');
   await sleep(300);
 }
 async function shot(name) {
@@ -138,6 +139,7 @@ try {
   await js("(()=>{const Native=Date;const delta=86400000;window.__restoreClock=()=>{window.Date=Native};window.Date=class extends Native {constructor(...args){if(args.length)super(...args);else super(Native.now()+delta)}static now(){return Native.now()+delta}};document.dispatchEvent(new Event('visibilitychange'));return true})()");
   await until("!document.querySelector('#quests .quest-button').disabled", 'daily reward unlocked after midnight');
   await click('#quests .quest-button');
+  await until('JSON.parse(localStorage.getItem(' + JSON.stringify(key) + ')).coins===90', 'second daily reward acknowledged on disk');
   check((await current()).coins === 90, 'one new daily reward after date change without reload');
   await js("window.__restoreClock();document.dispatchEvent(new Event('visibilitychange'));true");
   await until("document.querySelector('#quests .quest-button').disabled", 'old claimed day remains locked after clock rollback');
@@ -264,6 +266,7 @@ try {
   console.log('BODYFORGE_RESILIENCE_E2E_PASS assertions=' + assertions);
 } catch (error) {
   console.error('BODYFORGE_RESILIENCE_E2E_FAIL', error.stack || error);
+  try { console.error('FAILURE_STATE', JSON.stringify(await js("({status:document.querySelector('[data-storage-status]')?.dataset.storageStatus,profile:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'null')})"))); } catch {}
   process.exitCode = 12;
 } finally {
   socket?.close(); chrome.kill(); await sleep(400);
