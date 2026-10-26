@@ -46,7 +46,9 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
   const [quarantineSnapshot, setQuarantineSnapshot] = useState<JournalEntry[] | null>(null);
   const title = status === 'checking' ? 'ПРОВЕРЯЕМ СОХРАНЕНИЕ' : status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
     : status === 'recovery-required' ? 'ПРОГРЕСС НУЖНО ВОССТАНОВИТЬ' : 'НЕ УДАЛОСЬ СОХРАНИТЬ';
-  return <main className="storage-recovery" data-storage-status={status}>
+  const ambiguousRewards = status === 'recovery-required' && profile.creditedWorkoutIds === null;
+  return <main className="storage-recovery" data-storage-status={status}
+    data-recovery-reason={ambiguousRewards ? 'reward-identities' : undefined}>
     <section className="storage-panel" aria-labelledby="storage-title">
       <span className="section-index">BODYFORGE / ЗАЩИТА ПРОГРЕССА</span>
       <h1 id="storage-title">{title}</h1>
@@ -57,7 +59,9 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
         : status === 'conflict'
         ? 'Другая вкладка изменила прогресс. Текущая тренировка остановлена: старые данные не перезаписали новый результат.'
         : status === 'recovery-required'
-          ? 'В браузере уже есть сохранение, которое не удалось прочитать. Оно не удалено. Не создаём нового бойца поверх старого.'
+          ? ambiguousRewards
+            ? 'Баланс и профиль прочитаны, но список уже зачтённых тренировок повреждён. Начисления и изменения прогресса приостановлены, чтобы не выдать награду повторно. Исходные данные не удалены: экспортируй их перед восстановлением.'
+            : 'В браузере уже есть сохранение, которое не удалось прочитать. Оно не удалено. Не создаём нового бойца поверх старого.'
           : writeIssue === 'unsupported'
             ? 'Этот адрес или браузер не поддерживает безопасное сохранение между вкладками. Открой приложение по HTTPS в современном браузере; на компьютере можно использовать localhost. Изменения пока только в памяти страницы: сохрани их через экспорт.'
             : writeIssue === 'timeout'
@@ -68,6 +72,8 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
                   ? 'Браузер не подтвердил запись журнала. Результат пока только в памяти этой страницы. Не закрывай её до повторного сохранения или экспорта.'
               : 'Браузер не подтвердил запись прогресса. Новые изменения пока находятся только в памяти этой страницы. Не закрывай её до повторного сохранения или экспорта.'}</p>
       {isSaving && <p role="status">Ожидаем безопасную запись. Не закрывай страницу.</p>}
+      {ambiguousRewards && <p>Прочитанный баланс: <strong data-recovery-xp={profile.xp}>{profile.xp.toLocaleString('ru-RU')} XP</strong>
+        {' · '}<strong data-recovery-coins={profile.coins}>{profile.coins.toLocaleString('ru-RU')} монет</strong>.</p>}
       {status === 'recovery-required' && <>
         <button type="button" className="forge-solid-button" data-action="restore-backup" disabled={!backupAvailable || isSaving}
           onClick={() => onRecover('backup')}>ВОССТАНОВИТЬ РЕЗЕРВНУЮ КОПИЮ</button>

@@ -30,6 +30,8 @@ function preserveQuarantine(entry: { key: string; raw: string }): boolean {
  * completion precedes local rewards. Settled rows remain: localStorage itself
  * can roll back when the entire browser/storage process is killed. */
 export async function replayDurableWorkouts(pending: CompletedWorkoutResult | null, context: Context): Promise<JournalOutcome> {
+  const initial = loadProfileState();
+  if (initial.status === 'recovery-required' || initial.status === 'unavailable') return { status: initial.status, state: initial };
   const local = readResultJournal();
   if (local.status !== 'ready') return failed();
   const own = pending ? resultJournalEntry(pending) : null;

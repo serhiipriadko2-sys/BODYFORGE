@@ -24,7 +24,7 @@ import { withTimeout } from './lib/withTimeout';
 import { DailyBoard, FighterSetup, ForgeStudio, OnlineBoard, TowerBoard } from './components/ForgeWorld';
 import {
   buyOrEquipOutfit, claimDailyQuest, claimLogin, createFighter, ghostRepetitions,
-  nextTowerFloor, TOWER_FLOORS, upgradeMuscle,
+  localDay, nextTowerFloor, TOWER_FLOORS, upgradeMuscle,
   type BodyBuild, type Muscle, type Outfit, type WorkoutMode,
 } from './lib/game';
 import {
@@ -180,11 +180,18 @@ function App() {
   const [previewExercise, setPreviewExercise] = useState<ExerciseId>('squat');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
   const [today, setToday] = useState(() => new Date());
+  const observedDay = useRef(localDay(today));
   // A daily reward must unlock after local midnight even if the app stays open.
   useEffect(() => {
     const refresh = () => {
       const now = new Date();
-      setToday((previous) => previous.toDateString() === now.toDateString() ? previous : now);
+      const nextDay = localDay(now);
+      // Keep the previously observed calendar key: reformatting the old Date
+      // after a timezone change can hide a real change of the displayed day.
+      if (observedDay.current !== nextDay) {
+        observedDay.current = nextDay;
+        setToday(now);
+      }
     };
     const timer = window.setInterval(refresh, 30000);
     const visible = () => { if (!document.hidden) refresh(); };

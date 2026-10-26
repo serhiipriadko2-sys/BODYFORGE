@@ -18,7 +18,7 @@ export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogPro
         onClick={() => setCatalogOpen((value) => !value)} disabled={busy}>
         <span className="bf-catalog-trigger-icon"><Activity size={19}/></span>
         <span><small>ВЫБОР УПРАЖНЕНИЯ</small><strong>{guide.name}</strong></span>
-        <span className="bf-catalog-expand">{available ? 'КАМЕРА ГОТОВА' : 'ТОЛЬКО ГИД'} <ChevronDown size={16}/></span>
+        <span className="bf-catalog-expand">{available ? 'СЧЁТЧИК' : 'ТОЛЬКО ГИД'} <ChevronDown size={16}/></span>
       </button>
       {catalogOpen && (
         <div className="bf-catalog-grid" role="group" aria-label="Выбери упражнение для просмотра инструкции">
@@ -35,7 +35,7 @@ export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogPro
         </div>
       )}
       <div className="bf-capability" data-recognition={guide.recognition}>
-        {available ? <><ShieldCheck size={15}/><span>Автоподсчёт проверен для приседаний: полный подход — 20 повторений.</span></>
+        {available ? <><ShieldCheck size={15}/><span>Экспериментальный счётчик приседаний: полный подход — 20 повторений. Точность зависит от кадра и условий съёмки.</span></>
           : <><LockKeyhole size={15}/><span>Гид доступен. Камера пока не считает «{guide.name.toLowerCase()}» и не начисляет за них XP. Для тренировки вернись к приседаниям.</span></>}
       </div>
       <button type="button" className="bf-guide-trigger" onClick={() => setGuideOpen((value) => !value)}

@@ -20,6 +20,8 @@
     "qa:finish-save": "node qa/finish-save-e2e.mjs",
     "qa:multitab": "node qa/multitab-e2e.mjs",
     "qa:journal": "node qa/journal-e2e.mjs",
+    "qa:dedup-recovery": "node qa/journal-e2e.mjs --dedup-only",
+    "qa:steps-day": "node qa/steps-day-e2e.mjs",
     "qa:experience": "node qa/training-experience-e2e.mjs"
   },
   "dependencies": {

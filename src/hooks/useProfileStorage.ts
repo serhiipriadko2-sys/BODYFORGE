@@ -134,8 +134,11 @@ export function useProfileStorage() {
     setWriteIssue(null);
     setBackupAvailable(state.backupAvailable);
     setStatus(uiStatus(state));
-    if (state.status === 'ready' || state.status === 'empty') {
-      revision.current = state.revision;
+    // A recovery view acknowledges the observed raw revision without treating
+    // it as writable. Keep RAM untouched when storage could not be read.
+    if (state.status !== 'unavailable') revision.current = state.revision;
+    if (state.status === 'ready' || state.status === 'empty' ||
+        (state.status === 'recovery-required' && state.profile.creditedWorkoutIds === null)) {
       saved.current = state.profile;
       setProfile(state.profile);
     }

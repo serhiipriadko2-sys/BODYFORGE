@@ -92,6 +92,10 @@ class Client {
     observations.screenshots.push({ file, bytes: fs.statSync(file).size });
     console.log('SHOT', file, fs.statSync(file).size);
   }
+  async close() {
+    try { await fetch('http://127.0.0.1:' + port + '/json/close/' + this.target.id); }
+    finally { this.socket.close(); clients.delete(this); }
+  }
 }
 async function newTab() {
   const target = await (await fetch('http://127.0.0.1:' + port + '/json/new?about:blank', { method: 'PUT' })).json();
@@ -212,6 +216,234 @@ async function palette(tab, value) {
   await colors(tab, value);
 }
 
+// This function is serialized into the browser; all measurements come from
+// the actual styled application elements, not from the theme implementation.
+function integrationStyleSnapshot(specs) {
+  const probe = document.createElement('span');
+  probe.style.setProperty('transition', 'none', 'important');
+  probe.style.visibility = 'hidden';
+  document.body.append(probe);
+  const token = (name) => {
+    probe.style.color = 'var(' + name + ')';
+    return getComputedStyle(probe).color;
+  };
+  const effectiveBackground = (element) => {
+    for (let node = element; node; node = node.parentElement) {
+      const value = getComputedStyle(node).backgroundColor;
+      const channels = value.match(/[0-9.]+/g)?.map(Number) ?? [];
+      if (channels.length === 3 || channels[3] === 1) return value;
+      // A content panel should be opaque; partial alpha remains explicit and
+      // fails the solid-surface contract rather than being guessed here.
+      if (channels[3] > 0) return value;
+    }
+    return 'transparent';
+  };
+  const records = specs.map(({ selector, property, expected, pseudo }) => {
+    const element = document.querySelector(selector);
+    if (!element) return { selector, property, missing: true };
+    const style = getComputedStyle(element, pseudo);
+    return { selector, property, pseudo: pseudo ?? null,
+      actual: property === 'effectiveBackground' ? effectiveBackground(element) : style[property],
+      expected: token(expected), opacity: style.opacity, filter: style.backdropFilter,
+      background: property === 'color' ? effectiveBackground(element) : style.backgroundColor,
+      visible: !!element.getClientRects().length,
+    };
+  });
+  probe.remove();
+  return records;
+}
+async function integrationRecords(tab, specs) {
+  return tab.js('(' + integrationStyleSnapshot.toString() + ')(' + JSON.stringify(specs) + ')');
+}
+async function integrationBounds(tab, selectors, label) {
+  const bounds = await tab.js('(()=>{const selectors=' + JSON.stringify(selectors) + ';return {width:innerWidth,scroll:document.documentElement.scrollWidth,panels:selectors.map(selector=>{const e=document.querySelector(selector),r=e?.getBoundingClientRect();return {selector,present:!!e,client:e?.clientWidth,scroll:e?.scrollWidth,left:r?.left,right:r?.right,visible:!!e?.getClientRects().length}})}})()');
+  observations.integrationBounds ??= [];
+  observations.integrationBounds.push({ label, ...bounds });
+  console.log('INTEGRATION_BOUNDS', JSON.stringify({ label, ...bounds }));
+  check(bounds.scroll <= bounds.width, label + ' page has no horizontal overflow');
+  for (const panel of bounds.panels) {
+    check(panel.present && panel.visible && panel.left >= 0 && panel.right <= bounds.width && panel.scroll <= panel.client, label + ' new panel content stays within its mobile bounds ' + panel.selector);
+  }
+}
+async function preferenceDraftRaces(a, initialGame) {
+  const b = await newTab();
+  try {
+    await app(b);
+    const baseline = await a.js('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)');
+    check(baseline <= 120, 'synthetic goal has room for independent tab edits');
+    if (!await a.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await a.click('#daily-plan .bf-small-action');
+    await a.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    const wanted = baseline + 20, remote = baseline + 40;
+    await a.until('parseInt(document.querySelector("#daily-plan output")?.textContent)===' + wanted, 'first tab has its own unsaved daily-goal draft');
+    await b.click('#daily-plan .bf-small-action');
+    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    await b.click('#daily-plan .bf-goal-save');
+    await a.until('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)===' + remote, 'first tab receives actual newer goal from the second tab');
+    const goal = await a.js('({saved:Number(document.querySelector("[data-goal-target]").dataset.goalTarget),draft:parseInt(document.querySelector("#daily-plan output")?.textContent),warning:[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))})');
+    await a.click('#daily-plan .bf-goal-cancel');
+    await a.click('#daily-plan .bf-small-action');
+    goal.cancelledDraft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
+    await a.click('#daily-plan .bf-goal-cancel');
+    // Hiding an editor is not explicit cancellation of its unsaved contents.
+    await a.click('#daily-plan .bf-small-action');
+    await a.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    const hiddenWanted = remote + 20, hiddenRemote = remote + 40;
+    await a.until('parseInt(document.querySelector("#daily-plan output")?.textContent)===' + hiddenWanted, 'first tab edits a second daily-goal draft before hiding');
+    await a.click('#daily-plan .bf-small-action');
+    check(!await a.js('!!document.querySelector("#daily-plan .bf-goal-editor")'), 'hide editor collapses controls without explicit cancellation');
+    await b.click('#daily-plan .bf-small-action');
+    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+    await b.click('#daily-plan .bf-goal-save');
+    await a.until('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)===' + hiddenRemote, 'first tab receives newer goal while its dirty editor is hidden');
+    const hiddenGoal = await a.js('({saved:Number(document.querySelector("[data-goal-target]").dataset.goalTarget),warningBeforeReopen:[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))})');
+    await a.click('#daily-plan .bf-small-action');
+    hiddenGoal.draft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
+    hiddenGoal.warningAfterReopen = await a.js('[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))');
+    await a.click('#daily-plan .bf-goal-cancel');
+    await a.click('#daily-plan .bf-small-action');
+    hiddenGoal.cancelledDraft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
+    await a.click('#daily-plan .bf-goal-cancel');
+    await a.input('#bf-steps-today', '7777');
+    await b.input('#bf-steps-today', '8888');
+    await b.click('#step-log .bf-step-input-row button');
+    await a.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="8888"', 'first tab receives actual newer saved manual steps');
+    const steps = await a.js('({saved:Number(document.querySelector("[data-manual-steps]").dataset.manualSteps),draft:document.querySelector("#bf-steps-today").value,warning:[...document.querySelectorAll("#step-log [role=status]")].some(e=>/ввод/i.test(e.innerText)),durable:JSON.parse(localStorage.getItem("bodyforge:manual-steps:v1"))?.count})');
+    check(await gameBytes(a) === initialGame, 'two-tab goal and manual-step edits preserve every game storage byte');
+    await app(a, true);
+    steps.afterReload = await a.js('({saved:Number(document.querySelector("[data-manual-steps]").dataset.manualSteps),input:document.querySelector("#bf-steps-today").value})');
+    observations.preferenceDrafts = { baseline, wanted, remote, goal, hiddenWanted, hiddenRemote, hiddenGoal, steps };
+    console.log('PREFERENCE_DRAFT_OBSERVATIONS', JSON.stringify(observations.preferenceDrafts));
+    check(goal.saved === remote && goal.draft === wanted, 'cross-tab saved goal updates while first-tab unsaved draft remains intact');
+    check(goal.warning, 'cross-tab goal update visibly explains the preserved draft');
+    check(goal.cancelledDraft === remote, 'cancelling daily-goal draft returns to latest saved goal');
+    check(hiddenGoal.saved === hiddenRemote && hiddenGoal.draft === hiddenWanted, 'hidden unsaved daily-goal draft survives another tab save and reopening');
+    check(hiddenGoal.warningBeforeReopen && hiddenGoal.warningAfterReopen, 'cross-tab conflict warning remains visible when dirty goal editor is reopened');
+    check(hiddenGoal.cancelledDraft === hiddenRemote, 'explicit cancellation of hidden-and-reopened goal loads latest saved goal');
+    check(steps.saved === 8888 && steps.draft === '7777' && steps.durable === 8888, 'cross-tab saved manual steps update without replacing unsaved input');
+    check(steps.warning, 'cross-tab manual-step update visibly explains the preserved input');
+    check(steps.afterReload.saved === 8888 && steps.afterReload.input === '8888', 'reload restores durable manual steps rather than the abandoned draft');
+    check(await gameBytes(a) === initialGame, 'two-tab preference races and reload leave game progress byte-identical');
+  } finally { await b.close(); }
+}
+async function integrationExperience(tab, initialGame) {
+  const goalKey = 'bodyforge:daily-plan:v1', stepsKey = 'bodyforge:manual-steps:v1';
+  const appearanceBefore = await stored(tab);
+  await tab.until('!!document.querySelector("#daily-plan")&&!!document.querySelector("#step-log")', 'new daily plan and manual steps panels mounted');
+  await tab.click('#daily-plan .bf-small-action');
+  await tab.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+  await tab.click('#daily-plan .bf-goal-save');
+  await tab.until('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"', 'new daily goal acknowledged in actual panel');
+  check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(goalKey) + '))?.targetReps===40'), 'daily goal saved in its separate preference key');
+  check(await gameBytes(tab) === initialGame, 'changing daily goal preserves exact game primary, backup and result bytes');
+  check(await stored(tab) === appearanceBefore, 'changing daily goal does not rewrite appearance settings');
+  await tab.input('#bf-steps-today', '4321');
+  await tab.click('#step-log .bf-step-input-row button');
+  await tab.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"', 'manual steps acknowledged in actual panel');
+  check(await tab.js('(()=>{const s=JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '));return s?.count===4321&&s.source==="manual"})()'), 'manual steps saved with explicit manual provenance in separate key');
+  check(await gameBytes(tab) === initialGame, 'manual steps award no XP or coins and preserve exact game bytes');
+  check(await stored(tab) === appearanceBefore, 'manual steps do not rewrite appearance settings');
+  await app(tab, true);
+  check(await tab.js('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"&&document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"'), 'daily goal and manual steps survive actual application reload');
+  check(await gameBytes(tab) === initialGame, 'reloading goal and steps leaves game primary and backup byte-identical');
+
+  const homeSpecs = [
+    ['#daily-plan', 'effectiveBackground', '--bf-surface-solid'],
+    ['#step-log', 'effectiveBackground', '--bf-surface-solid'],
+    ['#daily-plan .bf-panel-heading strong', 'color', '--bf-copy'],
+    ['#step-log .bf-panel-heading strong', 'color', '--bf-copy'],
+    ['#daily-plan .bf-panel-description', 'color', '--bf-muted'],
+    ['#step-log .bf-panel-description', 'color', '--bf-muted'],
+    ['#daily-plan .bf-panel-heading>span', 'color', '--bf-accent-copy'],
+    ['#step-log .bf-panel-heading>span', 'color', '--bf-accent-copy'],
+    ['#daily-plan .bf-goal-overview strong', 'color', '--bf-accent-copy'],
+    ['#daily-plan .bf-goal-editor output', 'color', '--bf-accent-copy'],
+    ['#daily-plan .bf-goal-editor button[aria-label="Увеличить цель на 20"]', 'color', '--bf-accent-copy'],
+    ['#step-log .bf-step-summary strong', 'color', '--bf-accent-copy'],
+    ['#daily-plan .bf-gold-action', 'backgroundColor', '--bf-accent'],
+    ['#daily-plan .bf-gold-action', 'color', '--bf-accent-ink'],
+    ['#daily-plan .bf-goal-save', 'backgroundColor', '--bf-accent'],
+    ['#daily-plan .bf-goal-save', 'color', '--bf-accent-ink'],
+    ['#step-log .bf-step-input-row button', 'backgroundColor', '--bf-accent'],
+    ['#step-log .bf-step-input-row button', 'color', '--bf-accent-ink'],
+  ].map(([selector, property, expected]) => ({ selector, property, expected }));
+  const cameraSpecs = [
+    ['.bf-catalog', 'effectiveBackground', '--bf-surface-solid'],
+    ['.bf-guide', 'effectiveBackground', '--bf-surface-solid'],
+    ['.bf-catalog-trigger strong', 'color', '--bf-copy'],
+    ['.bf-catalog-trigger small', 'color', '--bf-muted'],
+    ['.bf-catalog-trigger-icon', 'color', '--bf-accent-copy'],
+    ['.bf-catalog-expand', 'color', '--bf-accent-copy'],
+    ['.bf-catalog-item.selected', 'borderTopColor', '--bf-accent-copy'],
+    ['.bf-catalog-item.selected', 'color', '--bf-accent-copy'],
+    ['.bf-guide-phone', 'color', '--bf-accent-copy'],
+    ['.bf-guide-pose strong', 'color', '--bf-copy'],
+    ['.bf-guide-steps li', 'color', '--bf-copy'],
+    ['.bf-guide-privacy', 'color', '--bf-muted'],
+  ].map(([selector, property, expected]) => ({ selector, property, expected }));
+  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'backgroundColor', expected: '--bf-accent' });
+  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'color', expected: '--bf-accent-ink' });
+  observations.integration = [];
+  for (const variant of ['mint', 'violet', 'custom-dark', 'high-contrast']) {
+    await open(tab);
+    if (variant === 'custom-dark') {
+      await tab.input('input[aria-label="HEX акцента"]', '#1842a5');
+      await tab.click('[data-action="apply-custom"]'); await savedSettings(tab, 'custom');
+    } else if (variant === 'high-contrast') {
+      await tab.click('input[name="highContrast"]'); await savedSettings(tab, 'custom', 'glass', true);
+    } else {
+      await tab.click('.appearance-palette [data-palette="' + variant + '"]'); await savedSettings(tab, variant);
+    }
+    await close(tab);
+    await tab.click('.mobile-nav button:nth-child(1)');
+    if (!await tab.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await tab.click('#daily-plan .bf-small-action');
+    const home = await integrationRecords(tab, homeSpecs);
+    await tab.click('.mobile-nav button:nth-child(2)');
+    if (!await tab.js('!!document.querySelector(".bf-catalog-grid")')) await tab.click('.bf-catalog-trigger');
+    if (!await tab.js('!!document.querySelector(".bf-guide")')) await tab.click('.bf-guide-trigger');
+    const camera = await integrationRecords(tab, cameraSpecs);
+    const records = [...home, ...camera];
+    const state = { variant, records };
+    observations.integration.push(state);
+    console.log('INTEGRATION_THEME', JSON.stringify(state));
+    for (const record of records) {
+      check(!record.missing && record.visible, variant + ' actual new control is rendered ' + record.selector);
+      check(record.actual === record.expected, variant + ' new control follows theme token ' + record.selector + (record.pseudo ?? '') + ' ' + record.property);
+      if (record.property === 'color' && !record.pseudo) {
+        check(measuredContrast(record.actual, record.background) >= 4.5, variant + ' new text/button has actual contrast >=4.5 ' + record.selector);
+      }
+      if (variant === 'high-contrast' && record.property === 'effectiveBackground') {
+        check(record.opacity === '1' && record.filter === 'none' && !record.actual.startsWith('rgba'), 'high contrast new content is opaque without blur ' + record.selector);
+      }
+    }
+    check(await gameBytes(tab) === initialGame, variant + ' new panel theme changes preserve exact game bytes');
+    check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(goalKey) + '))?.targetReps===40&&JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '))?.count===4321'), variant + ' theme changes preserve saved daily goal and manual steps');
+    for (const width of [390, 360, 320]) {
+      await tab.viewport(width, width === 390 ? 844 : 800);
+      await tab.click('.mobile-nav button:nth-child(1)');
+      await integrationBounds(tab, ['#daily-plan', '#step-log', '.bf-goal-editor', '.bf-step-input-row'], variant + ' ' + width + ' home');
+      if (width === 390) {
+        await tab.js('document.querySelector("#daily-plan").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.screenshot('integration-' + variant + '-daily-plan');
+        await tab.js('document.querySelector("#step-log").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.screenshot('integration-' + variant + '-manual-steps');
+      }
+      await tab.click('.mobile-nav button:nth-child(2)');
+      await integrationBounds(tab, ['.bf-catalog', '.bf-catalog-grid', '.bf-guide', '.bf-guide-visual'], variant + ' ' + width + ' camera guide');
+      if (width === 390) {
+        await tab.js('document.querySelector(".bf-catalog").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.screenshot('integration-' + variant + '-catalog-guide');
+      }
+    }
+    await tab.viewport(390);
+  }
+  await open(tab); await tab.click('[data-action="reset-appearance"]'); await savedSettings(tab, 'mint'); await close(tab);
+  await tab.click('.mobile-nav button:nth-child(1)');
+  await tab.js('scrollTo({top:0,behavior:"instant"});true');
+  check(await gameBytes(tab) === initialGame, 'integrated appearance, goal and steps workflow never rewrites game progression');
+}
+
 try {
   await waitFor(() => {
     const file = path.join(profile, 'DevToolsActivePort');
@@ -229,6 +461,12 @@ try {
   await a.until('document.querySelector(".dashboard-player")?.textContent.includes("QA ATLAS")', 'synthetic saved fighter displayed');
   await a.until('document.querySelector(".character-card [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'real human avatar loaded for screenshots', 25000);
   check(await gameBytes(a) === initialGame, 'loading preferences preserves exact primary and backup game bytes');
+  if (process.argv.includes('--preferences-only')) {
+    await preferenceDraftRaces(a, initialGame);
+    console.log('BODYFORGE_PREFERENCE_DRAFT_E2E_PASS assertions=' + assertions);
+  } else {
+  await integrationExperience(a, initialGame);
+  await preferenceDraftRaces(a, initialGame);
   if (process.argv.includes('--inspect-320')) {
     await a.viewport(320, 800); await open(a); await layout(a, '320 isolated inspection', true);
     await close(a); await a.viewport(390);
@@ -353,6 +591,7 @@ try {
   check([...clients].every((tab) => tab.errors.length === 0), 'no uncaught browser exceptions in either application tab');
   console.log('APPEARANCE_OBSERVATIONS', JSON.stringify(observations));
   console.log('BODYFORGE_APPEARANCE_E2E_PASS assertions=' + assertions);
+  }
 } catch (error) {
   console.error('BODYFORGE_APPEARANCE_E2E_FAIL', error.stack || String(error));
   process.exitCode = 18;

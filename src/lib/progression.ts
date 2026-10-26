@@ -27,8 +27,9 @@ export interface ProfileTotals { workouts: number; repetitions: number; bestDura
 export interface Profile {
   /** Stable local identity; assigned under the write lock before a workout. */
   profileId?: string;
-  /** Reward identities outlive the last-60 display history. Optional on legacy saves. */
-  creditedWorkoutIds?: string[];
+  /** Reward identities outlive the last-60 display history. Optional on legacy
+   * saves; null preserves an unreadable ledger across read/export round-trips. */
+  creditedWorkoutIds?: string[] | null;
   /** Optional on legacy saves; updated independently of the last-60 display history. */
   totals?: ProfileTotals;
   xp: number;
@@ -100,6 +101,12 @@ function validWorkoutSplits(splits: unknown, durationMs: number): splits is numb
 const validWorkoutId = (id: unknown): id is string =>
   typeof id === 'string' && id.trim().length > 0 && id.length <= 128;
 
+function ambiguousWorkoutIds(profile: object): boolean {
+  if (!('creditedWorkoutIds' in profile)) return false;
+  const value = (profile as { creditedWorkoutIds: unknown }).creditedWorkoutIds;
+  return !Array.isArray(value) || !Array.from(value).every(validWorkoutId);
+}
+
 function creditedWorkoutIds(value: unknown, history: Workout[]): Set<string> {
   const ids = Array.isArray(value) ? value.filter(validWorkoutId) : [];
   // Seed every known legacy ID before trimming a record from the visible history.
@@ -112,6 +119,7 @@ export function addCompletedWorkout(
 ): Profile {
   if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('Время тренировки должно быть положительным');
   if (options.sessionId !== undefined && !validWorkoutId(options.sessionId)) throw new Error('Invalid workout session ID');
+  if (ambiguousWorkoutIds(profile)) throw new Error('Reward identity ledger requires recovery');
   const credited = creditedWorkoutIds(profile.creditedWorkoutIds, profile.workouts);
   if (options.sessionId && credited.has(options.sessionId)) return profile;
   const totals = getProfileTotals(profile);
@@ -168,7 +176,10 @@ export function parseProfile(value: unknown): Profile {
   const parsed: Profile = { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
   if ('profileId' in record && validWorkoutId(record.profileId)) parsed.profileId = record.profileId;
   if ('creditedWorkoutIds' in record || history.length > 60) {
-    parsed.creditedWorkoutIds = [...creditedWorkoutIds('creditedWorkoutIds' in record ? record.creditedWorkoutIds : undefined, history)];
+    // Silently discarding a damaged dedup ledger can replay a paid result once
+    // it leaves the last-60 history. Keep ambiguity visible after serialization.
+    parsed.creditedWorkoutIds = ambiguousWorkoutIds(record) ? null
+      : [...creditedWorkoutIds('creditedWorkoutIds' in record ? record.creditedWorkoutIds : undefined, history)];
   }
   const totals = 'totals' in record && typeof record.totals === 'object' && record.totals !== null
     ? record.totals as ProfileTotals : undefined;
@@ -178,11 +189,11 @@ export function parseProfile(value: unknown): Profile {
   return parsed;
 }
 
-function decodeStoredProfile(raw: string | null): Profile | null {
+function decodeStoredProfile(raw: string | null, allowAmbiguousIds = false): Profile | null {
   if (raw === null) return null;
   try {
     const value: unknown = JSON.parse(raw);
-    return validProfileRoot(value) ? parseProfile(value) : null;
+    return validProfileRoot(value) && (allowAmbiguousIds || !ambiguousWorkoutIds(value)) ? parseProfile(value) : null;
   } catch {
     return null;
   }
@@ -197,7 +208,9 @@ export function loadProfileState(): ProfileLoadResult {
     if (profile) return { profile, status: 'ready', backupAvailable: false, revision: raw };
     const backupRaw = localStorage.getItem(PROFILE_BACKUP_KEY);
     return {
-      profile: empty,
+      // A readable wallet is preserved for inspection/export, but cannot
+      // authorize rewards while the identity ledger needs explicit recovery.
+      profile: decodeStoredProfile(raw, true) ?? empty,
       status: raw !== null || backupRaw !== null ? 'recovery-required' : 'empty',
       backupAvailable: decodeStoredProfile(backupRaw) !== null,
       revision: raw,
@@ -221,6 +234,7 @@ function writeVerified(key: string, raw: string): boolean {
  * primary immediately afterwards; its revision must never be adopted as ours. */
 export function saveProfile(profile: Profile, options: { expectedRaw?: string | null } = {}): ProfileWriteResult {
   if (!validProfileRoot(profile)) return { status: 'unavailable' };
+  if (ambiguousWorkoutIds(profile)) return { status: 'recovery-required' };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     // Detect a stale tab BEFORE altering the validated backup. This is optimistic

@@ -27,6 +27,32 @@ describe('manual-only private step notes', () => {
     expect(readManualSteps(new Date(2026, 9, 23, 0, 1), s).data.count).toBe(0);
     expect(readManualSteps(today, s).data.count).toBe(6000);
   });
+  it('preserves a valid later-dated note when the local calendar moves backwards', () => {
+    const s = storage();
+    const later = new Date(2026, 9, 23, 0, 1);
+    expect(saveManualSteps(later, 8888, s)).toBe(true);
+    const original = s.getItem(MANUAL_STEPS_KEY);
+    let writes = 0;
+    const observed = { getItem: s.getItem, setItem: (key: string, value: string) => {
+      writes++; s.setItem(key, value);
+    } };
+    expect(readManualSteps(today, observed)).toMatchObject({ status: 'date-conflict',
+      recordDay: '2026-10-23', data: { day: '2026-10-22', count: 0 } });
+    expect(saveManualSteps(today, 7777, observed)).toBe(false);
+    expect(saveManualSteps(today, 0, observed)).toBe(false);
+    expect(writes).toBe(0);
+    expect(s.getItem(MANUAL_STEPS_KEY)).toBe(original);
+    // A correct date restores access without deleting or migrating the note.
+    expect(readManualSteps(later, s)).toMatchObject({ status: 'ready', data: { count: 8888 } });
+    expect(saveManualSteps(later, 9000, s)).toBe(true);
+  });
+  it('does not replace a note when the preservation preflight cannot read storage', () => {
+    let writes = 0;
+    const unreadable = { getItem: (): string => { throw Error('read denied'); },
+      setItem: () => { writes++; } };
+    expect(saveManualSteps(today, 4321, unreadable)).toBe(false);
+    expect(writes).toBe(0);
+  });
   it('rejects invalid counts, storage errors, and malformed saves', () => {
     const s = storage();
     for (const n of [-1, .5, MAX_MANUAL_STEPS + 1, NaN, Infinity]) {

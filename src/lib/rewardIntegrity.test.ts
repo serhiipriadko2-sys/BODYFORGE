@@ -83,23 +83,31 @@ describe('durable workout reward identity', () => {
     expect(addCompletedWorkout(p, 65000, secondDay, { sessionId: 'legacy-64' })).toBe(p);
   });
 
-  it('keeps valid credited IDs when optional ledger entries are malformed', () => {
+  it('preserves the wallet but blocks rewards when any ledger entry is malformed', () => {
     const p = parseProfile({ ...player(), xp: 120, coins: 35,
       creditedWorkoutIds: ['old-credit', null, 7, '', '  ', 'x'.repeat(129), 'old-credit'] });
     expect(p.xp).toBe(120);
     expect(p.coins).toBe(35);
-    expect(addCompletedWorkout(p, 65000, firstDay, { sessionId: 'old-credit' })).toBe(p);
-    const next = addCompletedWorkout(p, 65000, firstDay, { sessionId: 'genuinely-new' });
-    expect(next.xp).toBe(240);
-    expect(next.coins).toBe(70);
+    // The ledger authorizes rewards after display history has been trimmed.
+    // Filtering bad entries cannot establish which old sessions were paid.
+    expect(p.creditedWorkoutIds).toBeNull();
+    for (const sessionId of ['old-credit', 'genuinely-new']) {
+      expect(() => addCompletedWorkout(p, 65000, firstDay, { sessionId })).toThrow('Reward identity ledger requires recovery');
+    }
+    expect(p.xp).toBe(120);
+    expect(p.coins).toBe(35);
   });
 
-  it.each([null, {}, 'not-an-array'])('preserves valid legacy progress with malformed optional ledger %j', (ledger) => {
+  it.each([null, {}, 'not-an-array'])('preserves readable progress while a malformed explicit ledger %j needs recovery', (ledger) => {
     const p = addCompletedWorkout(player(), 65000, firstDay, { sessionId: 'still-in-history' });
     const loaded = parseProfile({ ...p, creditedWorkoutIds: ledger });
     expect(loaded.xp).toBe(120);
+    expect(loaded.coins).toBe(p.coins);
     expect(loaded.workouts).toHaveLength(1);
-    expect(addCompletedWorkout(loaded, 65000, firstDay, { sessionId: 'still-in-history' })).toBe(loaded);
+    expect(loaded.workouts).toEqual(p.workouts);
+    expect(loaded.creditedWorkoutIds).toBeNull();
+    expect(() => addCompletedWorkout(loaded, 65000, firstDay, { sessionId: 'still-in-history' }))
+      .toThrow('Reward identity ledger requires recovery');
   });
 });
 

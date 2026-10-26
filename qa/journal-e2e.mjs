@@ -1,4 +1,6 @@
 // Disposable Chrome only: real renderer crashes at the workout commit boundaries.
+// --dedup-only checks damaged reward identity recovery with real IDB and reloads,
+// without crashing a renderer or starting a camera.
 // Synthetic camera frames exercise App finish; no owner's profile, camera or Downloads.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -143,7 +145,15 @@ async function reload(tab = page, removeInit = false) {
   if (removeInit && tab.initScript) { await tab.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: tab.initScript }); tab.initScript = undefined; }
   const before = await tab.js('window.__journalDocument=(window.__journalDocument||0)+1; window.__journalDocument');
   await tab.cdp('Page.reload', { ignoreCache: true });
-  await tab.until('window.__journalDocument===undefined && location.origin===' + JSON.stringify(origin), 'new document after reload');
+  await waitFor(async () => {
+    try { return await tab.js('window.__journalDocument===undefined && location.origin===' + JSON.stringify(origin)); }
+    catch (error) {
+      // Only this explicitly requested navigation may destroy its old Runtime
+      // context. A new document must still appear within the normal deadline.
+      if (!/Inspected target navigated or closed|Execution context was destroyed|Cannot find context with specified id/.test(error.message)) throw error;
+      return false;
+    }
+  }, 'new document after reload');
   await mounted(tab);
   return before;
 }
@@ -225,6 +235,131 @@ async function queuedCompletion() {
   check(isOneTower(await readProfile(), sessionId), 'queued finish survives reload with one stable workout identity and one reward');
 }
 
+async function dedupRecovery() {
+  await reset();
+  const fixture = await observer.js(`(async()=>{
+    const p=await import('/src/lib/progression.ts'),j=await import('/src/lib/workoutJournal.ts'),d=await import('/src/lib/durableJournal.ts');
+    let profile=${JSON.stringify(player)};
+    const finishedAt='2026-10-22T12:00:00.000Z';
+    for(let i=0;i<65;i++)profile=p.addCompletedWorkout(profile,65000,new Date(finishedAt),{sessionId:'qa-dedup-session-'+i,mode:'training'});
+    const entry=j.resultJournalEntry({schemaVersion:1,profileId:profile.profileId,sessionId:'qa-dedup-session-0',mode:'training',floor:null,durationMs:65000,finishedAt,repetitions:20});
+    const original=JSON.stringify({...profile,creditedWorkoutIds:{malformed:true}}),backup=JSON.stringify(profile);
+    await navigator.locks.request(${JSON.stringify(key + ':write')},async()=>{
+      if((await d.stageDurableResults([entry],localStorage.getItem(${JSON.stringify(key)}))).status!=='saved')throw Error('Real durable staging failed');
+      if((await d.markDurableResults([entry],'settled')).status!=='saved')throw Error('Real durable settlement failed');
+      localStorage.setItem(${JSON.stringify(key)},original);localStorage.setItem(p.PROFILE_BACKUP_KEY,backup);
+    });
+    return{profile,original,backup,entry,durable:await d.readDurableJournal()};
+  })()`);
+  check(fixture.profile.workouts.length === 60 && fixture.profile.totals.workouts === 65,
+    'production-generated fixture trims visible history but retains 65 total workouts');
+  check(fixture.profile.xp === 7800 && fixture.profile.coins === 2275 &&
+    !fixture.profile.workouts.some((w) => w.id === 'qa-dedup-session-0') && fixture.profile.creditedWorkoutIds.includes('qa-dedup-session-0'),
+    'old paid session exists only in the reward ledger before deliberate corruption');
+  check(fixture.durable.status === 'ready' && fixture.durable.entries.length === 1 &&
+    fixture.durable.entries[0].state === 'settled' && fixture.durable.entries[0].raw === fixture.entry.raw,
+    'actual strict IndexedDB retains one verified settled result before App boot');
+  check((await journals()).length === 0, 'dedup fixture starts without a local pending result');
+  page = await newPage();
+  const waitRecovery = () => page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='recovery-required' && document.querySelector('[data-recovery-reason]')?.dataset.recoveryReason==='reward-identities'",
+    'App reports reward identity recovery without claiming a usable ledger');
+  const originalIntact = () => observer.js(`localStorage.getItem(${JSON.stringify(key)})===${JSON.stringify(fixture.original)}&&localStorage.getItem(${JSON.stringify(key + ':backup')})===${JSON.stringify(fixture.backup)}`);
+  await waitRecovery();
+  check(await originalIntact(), 'App boot preserves exact damaged primary and trusted backup');
+  check((await readProfile()).xp === 7800 && (await readProfile()).coins === 2275 && (await readProfile()).totals.workouts === 65,
+    'retained settled receipt cannot pay an old workout again after ledger corruption');
+  const recoveryText = (await page.js("document.querySelector('.storage-panel').innerText")).replace(/\s/g, '');
+  check(recoveryText.includes('7800') && recoveryText.includes('2275') && /XP/i.test(recoveryText),
+    'recovery screen exposes readable XP and coin balances');
+  check(await page.js("!document.querySelector('[data-action=restore-backup]').disabled"),
+    'only the explicitly available trusted backup can be restored');
+  await reload(); await waitRecovery();
+  check(await originalIntact() && (await journals()).length === 0,
+    'real reload leaves both exact stored strings and the reward journal unchanged');
+  const exported = await exportSession();
+  check(await page.js('window.__exportRequested===true'), 'real export button is exercised without an owner Downloads write');
+  check(exported.profileId === player.profileId && exported.xp === 7800 && exported.coins === 2275 &&
+    exported.totals.workouts === 65 && exported.creditedWorkoutIds === null,
+    'download payload preserves readable progress and an explicit ambiguous-ledger sentinel');
+  check(exported.storedProfileRaw === fixture.original && exported.storedBackupRaw === fixture.backup,
+    'download payload preserves exact damaged primary and trusted backup bytes');
+  check(exported.durableReadStatus === 'ready' && exported.durableResults.length === 1 &&
+    exported.durableResults[0].state === 'settled' && exported.durableResults[0].raw === fixture.entry.raw,
+    'download payload includes the actual preserved IndexedDB settled receipt');
+  check(await originalIntact(), 'reading and exporting recovery data never normalizes or overwrites the stored error');
+  await click('[data-action=restore-backup]');
+  await page.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')", 'explicit trusted backup recovery opens the application');
+  const restored = await readProfile();
+  check(restored.profileId === player.profileId && restored.xp === 7800 && restored.coins === 2275 &&
+    restored.totals.workouts === 65 && restored.workouts.length === 60 &&
+    restored.creditedWorkoutIds.filter((id) => id === 'qa-dedup-session-0').length === 1,
+    'trusted backup recovery restores reward identity without a second payout');
+  check(await observer.js(`localStorage.getItem(${JSON.stringify(key + ':quarantine:0')})===${JSON.stringify(fixture.original)}`),
+    'explicit recovery preserves the exact damaged primary in local quarantine');
+  check((await journals()).length === 0, 'successful recovery leaves no resurrected pending result');
+  const restoredRaw = await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+  await reload();
+  await page.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')", 'recovered progress survives another real reload');
+  check(await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(restoredRaw)),
+    'post-recovery reload keeps the exact acknowledged profile revision and one payout');
+  const durableAfter = await observer.js("(async()=>await(await import('/src/lib/durableJournal.ts')).readDurableJournal())()");
+  check(durableAfter.status === 'ready' && durableAfter.entries.length === 1 &&
+    durableAfter.entries[0].state === 'settled' && durableAfter.entries[0].raw === fixture.entry.raw,
+    'settled evidence stays available after recovery and reload');
+  check(await page.js("window.__poseCalls===undefined && [...document.querySelectorAll('video')].every(v=>!v.srcObject)"),
+    'dedup recovery never starts a camera or synthetic pose sequence');
+  observations.dedupRecovery = { fixtureWorkouts: 65, visibleHistory: 60, xp: restored.xp, coins: restored.coins,
+    actualIndexedDB: true, actualReloads: 2, explicitBackupRestore: true, cameraInvoked: false };
+}
+
+async function hotDedupRecovery() {
+  // Empty durable/local result stores exercise load-latest's read-only boot path,
+  // independently of the settled-receipt recovery in the preceding phase.
+  await reset();
+  const fixture = await observer.js(`(async()=>{
+    const p=await import('/src/lib/progression.ts'),d=await import('/src/lib/durableJournal.ts');
+    const old=p.addCompletedWorkout(${JSON.stringify(player)},32000,new Date('2026-10-22T12:00:00.000Z'),{sessionId:'qa-hot-dedup-0',mode:'training'});
+    const latest=p.addCompletedWorkout(old,32000,new Date('2026-10-22T12:01:00.000Z'),{sessionId:'qa-hot-dedup-1',mode:'training'});
+    const oldRaw=JSON.stringify(old),latestRaw=JSON.stringify({...latest,creditedWorkoutIds:{malformed:true}});
+    localStorage.setItem(${JSON.stringify(key)},oldRaw);localStorage.setItem(p.PROFILE_BACKUP_KEY,oldRaw);
+    return{old,latest,oldRaw,latestRaw,durable:await d.readDurableJournal()};
+  })()`);
+  check(fixture.old.xp === 120 && fixture.old.coins === 35 && fixture.latest.xp === 240 && fixture.latest.coins === 70,
+    'hot recovery fixture distinguishes old and latest readable wallet values');
+  check(fixture.durable.status === 'ready' && fixture.durable.entries.length === 0 && (await journals()).length === 0,
+    'hot recovery starts with genuinely empty IndexedDB and local result journals');
+  page = await newPage();
+  await page.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')", 'old valid profile opens before another tab changes it');
+  await page.js(`window.__hotStorageEvents=0;window.addEventListener('storage',e=>{if(e.key===${JSON.stringify(key)})window.__hotStorageEvents++});true`);
+  await observer.js('localStorage.setItem(' + JSON.stringify(key) + ',' + JSON.stringify(fixture.latestRaw) + ');true');
+  await page.until("window.__hotStorageEvents>0 && document.querySelector('[data-storage-status]')?.dataset.storageStatus==='conflict'",
+    'actual cross-tab storage event places the old profile view in conflict');
+  check(await page.js('window.__hotStorageEvents>0'), 'native second-tab event is observed without a synthetic dispatch');
+  check(await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(fixture.latestRaw)),
+    'conflict never rewrites the latest damaged primary with the old valid snapshot');
+  await click('[data-action=load-latest]');
+  await page.until("!!document.querySelector('[data-storage-status]') && document.querySelector('[data-storage-status]').dataset.storageStatus!=='checking'",
+    'explicit latest read settles after checking both empty journals');
+  const recoveredView = await page.js(`({status:document.querySelector('[data-storage-status]')?.dataset.storageStatus,
+    reason:document.querySelector('[data-recovery-reason]')?.dataset.recoveryReason,
+    xp:document.querySelector('[data-recovery-xp]')?.dataset.recoveryXp,
+    coins:document.querySelector('[data-recovery-coins]')?.dataset.recoveryCoins})`);
+  observations.hotDedupRecovery = { nativeStorageEvent: true, emptyJournals: true, recoveredView };
+  check(recoveredView.status === 'recovery-required' && recoveredView.reason === 'reward-identities',
+    'load latest acknowledges the damaged revision and enters recovery instead of repeating conflict');
+  check(recoveredView.xp === '240' && recoveredView.coins === '70',
+    'hot recovery exposes the latest readable wallet rather than the stale in-memory balance');
+  const exported = await exportSession();
+  check(exported.xp === 240 && exported.coins === 70 && exported.totals.workouts === 2 && exported.creditedWorkoutIds === null,
+    'hot recovery export uses the latest readable profile and explicit ambiguity');
+  check(exported.storedProfileRaw === fixture.latestRaw && exported.storedBackupRaw === fixture.oldRaw,
+    'hot recovery export preserves exact latest primary and prior trusted backup bytes');
+  check(exported.durableReadStatus === 'ready' && exported.durableResults.length === 0 && exported.pendingResults.length === 0,
+    'hot recovery does not manufacture or stage a completed result');
+  check(await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(fixture.latestRaw)),
+    'accepting a recovery read never claims or performs a profile write');
+}
+
 try {
   for (let i = 0; i < 100; i++) {
     const file = path.join(ownedProfile, 'DevToolsActivePort');
@@ -235,6 +370,8 @@ try {
   if (!port) throw Error('Owned DevTools unavailable');
   observer = await newPage(true);
 
+  if (process.argv.includes('--dedup-only')) { await dedupRecovery(); await hotDedupRecovery(); }
+  else {
   if (!process.argv.includes('--recovery-only')) await queuedCompletion();
   if (!process.argv.includes('--queue-only') && !process.argv.includes('--recovery-only')) {
 
@@ -365,8 +502,10 @@ try {
     check((await exportSession()).xp === 120, 'valid legacy progress without a created fighter remains exportable');
   }
   }
+  }
 
-  console.log('BODYFORGE_JOURNAL_PASS', JSON.stringify({ assertions, crashes, queueOnly: process.argv.includes('--queue-only'), observations }));
+  console.log(process.argv.includes('--dedup-only') ? 'BODYFORGE_DEDUP_RECOVERY_PASS' : 'BODYFORGE_JOURNAL_PASS',
+    JSON.stringify({ assertions, crashes, queueOnly: process.argv.includes('--queue-only'), observations }));
 } catch (error) {
   console.error('BODYFORGE_JOURNAL_FAIL', error.stack || String(error));
   console.log('READBACK', JSON.stringify({ assertions, crashes, observations }));

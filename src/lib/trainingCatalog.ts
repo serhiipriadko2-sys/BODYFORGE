@@ -85,6 +85,7 @@ export function exerciseGuide(id: ExerciseId): ExerciseGuide {
   return EXERCISE_GUIDES.find((item) => item.id === id) ?? EXERCISE_GUIDES[0];
 }
 
-export function canStartCameraExercise(id: ExerciseId): boolean {
-  return exerciseGuide(id).recognition === 'camera-tested';
+export function canStartCameraExercise(id: unknown): boolean {
+  // Display guidance may fall back to squats; capability requires an exact ID.
+  return EXERCISE_GUIDES.some((guide) => guide.id === id && guide.recognition === 'camera-tested');
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Coins, Hammer, Minus, Plus, Target, Zap } from 'lucide-react';
 import { completedSquatsToday, DAILY_PLAN_KEY, GOAL_INCREMENT, MAX_DAILY_REPS,
   readDailyPlan, saveDailyPlan } from '../lib/dailyPlan';
@@ -8,17 +8,25 @@ interface Props { profile: Profile; now: Date; onTraining: () => void; }
 
 export default function DailyPlanBoard({ profile, now, onTraining }: Props) {
   const [read, setRead] = useState(readDailyPlan);
-  const [draft, setDraft] = useState(() => readDailyPlan().plan.targetReps);
+  const [draft, setDraft] = useState(() => read.plan.targetReps);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState('');
   const completed = completedSquatsToday(profile.workouts, now);
   const target = read.plan.targetReps;
   const percent = Math.min(100, Math.round((completed / target) * 100));
+  const editor = useRef({ draft, target });
+  editor.current = { draft, target };
   useEffect(() => {
     const sync = () => {
+      const keepDraft = editor.current.draft !== editor.current.target;
       const next = readDailyPlan();
       setRead(next);
-      setDraft(next.plan.targetReps);
+      if (keepDraft) {
+        setMessage('Цель изменилась в другой вкладке. Твой черновик не заменён. Сохранение применит твой вариант вместо текущей цели.');
+      } else {
+        setDraft(next.plan.targetReps);
+        setMessage('Цель обновлена из другой вкладки.');
+      }
     };
     const onStorage = (event: StorageEvent) => {
       if (event.key === DAILY_PLAN_KEY || event.key === null) sync();
@@ -32,8 +40,9 @@ export default function DailyPlanBoard({ profile, now, onTraining }: Props) {
       setMessage('Цель не сохранилась. Проверь доступность памяти браузера.');
       return;
     }
-    const next = readDailyPlan();
-    setRead(next);
+    // Acknowledge our own verified write. A later reader could already see
+    // another tab's preference; its storage event will update this view.
+    setRead({ status: 'ready', plan: { version: 1, targetReps: draft } });
     setEditing(false);
     setMessage('Цель сохранена на этом устройстве.');
   }
@@ -71,7 +80,7 @@ export default function DailyPlanBoard({ profile, now, onTraining }: Props) {
         : 'Хранилище браузера недоступно. Цель не гарантированно сохраняется.'}</p>}
       {message && <p className="bf-trust-note" role="status">{message}</p>}
       <div className="bf-goal-actions">
-        <button type="button" className="bf-small-action" onClick={() => { setEditing((value) => !value); setMessage(''); }}>
+        <button type="button" className="bf-small-action" onClick={() => { setEditing((value) => !value); if (draft === target) setMessage(''); }}>
           {editing ? 'СКРЫТЬ РЕДАКТОР' : 'ИЗМЕНИТЬ ЦЕЛЬ'}
         </button>
         <button type="button" className="bf-gold-action" onClick={onTraining} disabled={!profile.game.created}>
