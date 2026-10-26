@@ -1,0 +1,58 @@
+{
+    "schema":  "bodyforge.local-artifact-manifest.v1",
+    "date":  "2026-10-26",
+    "iteration":  "AURORA_NEON_PULSE_V3",
+    "stage":  "implemented-tested-locally-not-committed",
+    "gitHead":  "3aa8eeb123e4e254b75be596c93296740b5c4c51",
+    "codeFileCount":  7,
+    "fileCount":  8,
+    "totalBytes":  75984,
+    "files":  [
+                  {
+                      "path":  "src\\lib\\progressPulse.ts",
+                      "bytes":  3360,
+                      "sha256":  "dcd8d2bbd239a5d9fc7f77c339c0d5c5c6a244b35d24013487c811d756d86de2"
+                  },
+                  {
+                      "path":  "src\\lib\\progressPulse.test.ts",
+                      "bytes":  4433,
+                      "sha256":  "898f9ce04e085d96f98329f8d750dd8fa78ea43262dffbd92c55711316fd55bb"
+                  },
+                  {
+                      "path":  "src\\lib\\dashboardDisplay.ts",
+                      "bytes":  2865,
+                      "sha256":  "57b8480143e98732da28332ed14f0819b310c479cce067b4e4060624206fd2c9"
+                  },
+                  {
+                      "path":  "src\\lib\\dashboardDisplay.test.ts",
+                      "bytes":  2891,
+                      "sha256":  "3667df2102858465e42bbd1329a62463a062cc6b5e7c9c9f2d3ab1410380d729"
+                  },
+                  {
+                      "path":  "src\\components\\ProgressPulseBoard.tsx",
+                      "bytes":  13585,
+                      "sha256":  "6d3816b767f0465dc3ddca0c7ba480b063eac636e1698e00738c6a08b92abe64"
+                  },
+                  {
+                      "path":  "src\\neonPulseV2.css",
+                      "bytes":  27620,
+                      "sha256":  "7243129ae7da18588381ab9a929a686d68319f06bf13119d23c777553ab7a23c"
+                  },
+                  {
+                      "path":  "qa\\pulse-armory-e2e.mjs",
+                      "bytes":  16277,
+                      "sha256":  "69ba99bd81cde06f699c1b87cc130141636d96f0fb3bffacae1628199610810d"
+                  },
+                  {
+                      "path":  "docs\\audits\\BODYFORGE_2026-10-26_PULSE_RANGE_V3_QA.md",
+                      "bytes":  4953,
+                      "sha256":  "76b506ca25f95ace0e88c250fbe1acc768661f5305ec1fb65ffaa6c4ffd259c2"
+                  }
+              ],
+    "nonClaims":  [
+                      "not pushed",
+                      "not deployed",
+                      "not physical Android verified",
+                      "shared worktree includes independent edits"
+                  ]
+}

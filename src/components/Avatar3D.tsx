@@ -11,6 +11,9 @@ import { createAvatarHair } from '../lib/avatarHair';
 import { paintFittedBody } from '../lib/avatarSurfaceFit';
 import { createAvatarMaterials, importedSurfaceRole, paintAvatarEyes, tintAvatarNails, tintAvatarLips, type AvatarMaterials } from '../lib/avatarMaterials';
 import { applyAthleticPose } from '../lib/avatarPose';
+import { applyAvatarGrowth } from '../lib/avatarGrowth';
+import { createAvatarHairMaterial } from '../lib/avatarHairMaterial';
+import { maskAthleteOcclusion } from '../lib/avatarOcclusion';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 
@@ -30,7 +33,6 @@ type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look'>
 
 interface ImportedFigure {
   root: THREE.Group;
-  bones: THREE.Bone[];
   surfaces: THREE.SkinnedMesh[];
   nailSurfaces: THREE.SkinnedMesh[];
   lipSurfaces: THREE.SkinnedMesh[];
@@ -84,6 +86,12 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
   useEffect(() => {
     const element = canvas.current as HTMLCanvasElement;
     if (!element) return;
+    // Fail before allocating WebGL or attaching listeners. A partial setup
+    // used to leave visibility callbacks referring to an uninitialized loop.
+    if (typeof IntersectionObserver !== 'function' || typeof ResizeObserver !== 'function') {
+      setAvailable(false);
+      return;
+    }
     const telemetryId = runtimeDiagnostics.attachAvatar();
     let renderer: THREE.WebGLRenderer | null = null;
     let intersectsViewport = true;
@@ -459,11 +467,9 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   const nailSurfaces: THREE.SkinnedMesh[] = [];
   const lipSurfaces: THREE.SkinnedMesh[] = [];
   const garments: THREE.SkinnedMesh[] = [];
-  const bones: THREE.Bone[] = [];
   let headBone: THREE.Bone | null = null;
   source.traverse((node) => {
     if (node instanceof THREE.Bone) {
-      bones.push(node);
       if (node.name.toLowerCase() === 'head') headBone = node;
     }
     if (node instanceof THREE.SkinnedMesh) {
@@ -494,6 +500,10 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     materials.body.bumpMap?.dispose();
     throw new Error('CC0 rig cannot provide skinned body and head anchor');
   }
+  // These fixed garments share the rig but have simplified topology. Omit
+  // fully covered skin so it cannot poke through the decimated cloth at growth.
+  // Unknown layouts and the undressed legacy asset retain their complete body.
+  maskAthleteOcclusion(source);
 
   // The real head bone is at approximately (0,4.35,-.26) *after*
   // normalization, whereas the procedural hero's head was assumed to be at
@@ -505,7 +515,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     (headBone as THREE.Bone).getWorldPosition(new THREE.Vector3()),
   );
 
-  const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .62 });
+  const hair = createAvatarHairMaterial(0x191b21);
   const hairStyles = {} as Record<HairStyle, THREE.Group>;
   for (const { id } of HAIR_STYLES) {
     const style = createAvatarHair(id, hair);
@@ -545,7 +555,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   (headBone as THREE.Bone).attach(visorRoot);
 
   const imported: ImportedFigure = {
-    root, bones, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, hairStyles,
+    root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, hairStyles,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
   };
   applyAthleticPose(source);
@@ -592,23 +602,8 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   imported.visorEdgeMaterial.emissive.set(colors.trim);
   imported.visor.visible = look.visor;
   imported.visorEdge.visible = look.visor;
-  const arms = muscles.arms ?? 0;
-  const core = muscles.core ?? 0;
-  const legs = muscles.legs ?? 0;
-  const back = muscles.back ?? 0;
   imported.root.scale.x = build === 'solid' ? 1.055 : 1;
-  for (const bone of imported.bones) {
-    const name = bone.name.toLowerCase();
-    let factor = 1;
-    if (name.startsWith('upperarm')) factor = 1 + arms * .018;
-    else if (name.startsWith('lowerarm')) factor = 1 + arms * .009;
-    else if (name.startsWith('upperleg')) factor = 1 + legs * .019;
-    else if (name.startsWith('lowerleg')) factor = 1 + legs * .009;
-    else if (name === 'spine03' || name === 'spine04') factor = 1 + back * .013 + core * .008;
-    else if (name === 'spine05') factor = 1 + back * .017;
-    bone.scale.x = factor;
-    bone.scale.z = factor;
-  }
+  applyAvatarGrowth(imported.root, muscles);
 }
 
 function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: FigureParams): THREE.Group {
@@ -626,7 +621,7 @@ function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: Figu
   const skin = new THREE.MeshStandardMaterial({ color: base, roughness: .78, metalness: 0 });
   const warmSkin = new THREE.MeshStandardMaterial({ color: base.clone().lerp(new THREE.Color(0xffffff), .07), roughness: .76, metalness: 0 });
   const skinShade = new THREE.MeshStandardMaterial({ color: base.clone().lerp(new THREE.Color(0x000000), .22), roughness: .83, metalness: 0 });
-  const hair = new THREE.MeshStandardMaterial({ color: colors.hair, roughness: .94 });
+  const hair = createAvatarHairMaterial(colors.hair);
   const faceDetail = new THREE.MeshStandardMaterial({ color: 0x382a28, roughness: .92 });
   const outfitColor = outfit === 'ember' ? 0x976742 : outfit === 'steel' ? 0x476275 : 0x1b2733;
   const fabric = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: .71, metalness: .09 });

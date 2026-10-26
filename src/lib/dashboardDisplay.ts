@@ -27,19 +27,22 @@ export function fighterUpgradeFraction(muscles: GameState['muscles']): number {
   return fighterSkillMeters(muscles).reduce((total, meter) => total + meter.level, 0) / 20;
 }
 
-export type PulsePoint = { date: string; label: string; sessions: number; x: number; y: number };
+export type PulsePoint = { date: string; label: string; tick: string; sessions: number; x: number; y: number };
 export type PulseLine = {
   points: PulsePoint[]; path: string; area: string; axisMax: number; ticks: number[];
 };
 
-/** A chart is always seven truthful samples; 0 workouts => a FLAT zero line. */
+/** 7 or 30 truthful daily points; no interpolation overshoot. An empty period
+ * stays a flat zero line. Sparse date ticks keep a 30-day chart readable. */
 export function weeklySessionLine(days: readonly PulseDay[]): PulseLine {
-  const values = days.slice(-7).filter(d => Number.isSafeInteger(d.sessions) && d.sessions >= 0);
+  const values = days.slice(-30).filter(d => Number.isSafeInteger(d.sessions) && d.sessions >= 0);
   const peak = Math.max(0, ...values.map(d => d.sessions));
   const axisMax = peak <= 4 ? 4 : Math.ceil(peak / 4) * 4;
   const left = 42, right = 760, top = 26, bottom = 175;
   const points = values.map((day, i) => ({
     date: day.date, label: day.label, sessions: day.sessions,
+    tick: values.length <= 7 ? day.label : (i % 5 === 0 || i === values.length - 1
+      ? `${day.date.slice(8, 10)}.${day.date.slice(5, 7)}` : ''),
     x: left + (values.length === 1 ? 0 : i * (right - left) / (values.length - 1)),
     y: bottom - (day.sessions / axisMax) * (bottom - top),
   }));

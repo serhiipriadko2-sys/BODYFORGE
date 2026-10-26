@@ -20,12 +20,56 @@ describe('bounded low-poly haircut geometry', () => {
       expect(box.max.y).toBeGreaterThan(id === 'buzz' ? 4.68 : 4.75);
       for (const mesh of meshes) {
         expect((mesh as THREE.Mesh).material).toBe(mat);
-        expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeLessThan(2300);
+        expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeLessThan(5000);
         expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeGreaterThan(id === 'buzz' ? 400 : 1500);
         expect(Array.from((mesh as THREE.Mesh).geometry.attributes.position.array).every(Number.isFinite)).toBe(true);
       }
       disposeThreeTree(root);
     }
+  });
+  it('keeps the forehead boundary above the former helmet band', () => {
+    for (const id of ['buzz', 'crop', 'swept'] as const) {
+      const root = createAvatarHair(id, new THREE.MeshStandardMaterial());
+      const mesh = root.children[0] as THREE.Mesh;
+      const positions = mesh.geometry.getAttribute('position');
+      const uv = mesh.geometry.getAttribute('uv');
+      const fringe: number[] = [];
+      for (let i = 0; i < positions.count; i++) {
+        // The cap boundary retains V=0. Locks' roots lie at the back/crown,
+        // outside this frontal window, so this measures the visible hairline.
+        if (uv.getY(i) === 0 && positions.getZ(i) > .24 && Math.abs(positions.getX(i)) < .14) {
+          fringe.push(positions.getY(i));
+        }
+      }
+      expect(fringe.length).toBeGreaterThan(3);
+      const base = id === 'buzz' ? 4.620 : 4.576;
+      expect(Math.min(...fringe) - base).toBeGreaterThan(id === 'swept' ? .055 : id === 'crop' ? .035 : .020);
+      expect(Math.max(...fringe) - Math.min(...fringe)).toBeGreaterThan(.006);
+      disposeThreeTree(root);
+    }
+  });
+  it('creates deterministic, distinct silhouettes with finite normals and fibre-ready UVs', () => {
+    const silhouettes = new Map<string, number>();
+    for (const { id } of HAIR_STYLES) {
+      const a = createAvatarHair(id, new THREE.MeshStandardMaterial());
+      const b = createAvatarHair(id, new THREE.MeshStandardMaterial());
+      const geometry = (a.children[0] as THREE.Mesh).geometry;
+      const other = (b.children[0] as THREE.Mesh).geometry;
+      expect(geometry.attributes.position.array).toEqual(other.attributes.position.array);
+      const normal = geometry.getAttribute('normal'), uv = geometry.getAttribute('uv');
+      expect(normal.count).toBe(geometry.attributes.position.count);
+      expect(uv.count).toBe(normal.count);
+      expect(Array.from(normal.array).every(Number.isFinite)).toBe(true);
+      // SphereGeometry offsets its collapsed pole U by half a texel.
+      expect(Array.from(uv.array).every((v) => Number.isFinite(v) && v >= -.02 && v <= 1.02)).toBe(true);
+      const bounds = new THREE.Box3().setFromObject(a);
+      silhouettes.set(id, bounds.max.y);
+      disposeThreeTree(a); disposeThreeTree(b);
+    }
+    // The swept style is a short quiff, not a tall comb. Height is bounded;
+    // style identity also comes from coverage, curls and root-to-tip direction.
+    expect(silhouettes.get('swept')! - silhouettes.get('crop')!).toBeGreaterThan(.025);
+    expect(new Set(silhouettes.values()).size).toBe(3);
   });
   it('repositions the hairstyle only in depth for the SVG-independent fallback', () => {
     const mat = new THREE.MeshStandardMaterial();

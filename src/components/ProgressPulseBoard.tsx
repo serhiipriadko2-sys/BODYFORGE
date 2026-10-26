@@ -1,10 +1,11 @@
+import { useEffect, useRef, useState } from 'react';
 import {
-  Activity, ArrowUpRight, ChartNoAxesCombined, Dumbbell, Footprints,
+  Activity, ArrowUpRight, ChartNoAxesCombined, ChevronDown, Dumbbell, Footprints,
   Gauge, Shield, Target, TrendingUp, Zap,
 } from 'lucide-react';
 import { getLevel, getLevelProgress, type Profile } from '../lib/progression';
 import { fighterSkillMeters, fighterUpgradeFraction, weeklySessionLine } from '../lib/dashboardDisplay';
-import { weeklyPulse } from '../lib/progressPulse';
+import { comparePulsePeriods, type PulseRange } from '../lib/progressPulse';
 
 const RINGS = [76, 56, 36] as const;
 const RING_COLORS = ['#baff38', '#29c9ff', '#d27aff'];
@@ -13,8 +14,24 @@ const icons = { core: Target, back: Shield, arms: Dumbbell, legs: Footprints } a
 export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar }: {
   profile: Profile; now: Date; onTraining: () => void; onAvatar: () => void;
 }) {
-  const trend = weeklyPulse(profile.workouts, now);
+  const [range, setRange] = useState<PulseRange>(7);
+  const [selectedDate, setSelectedDate] = useState('');
+  const dateStrip = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // The 30-day strip has horizontal scroll; show today's chip on switching.
+    if (range === 30 && dateStrip.current) dateStrip.current.scrollLeft = dateStrip.current.scrollWidth;
+  }, [range]);
+  const { current: trend, previous, deltaSessions, historyLimited } =
+    comparePulsePeriods(profile.workouts, now, range);
   const chart = weeklySessionLine(trend.days);
+  const selected = trend.days.find(day => day.date === selectedDate) ?? trend.days.at(-1);
+  const changeLabel = historyLimited
+    ? 'Сравнение недоступно: видимая история ограничена'
+    : trend.sessions === 0 && previous.sessions === 0
+      ? 'Нет завершённых подходов в обоих периодах'
+      : deltaSessions === 0
+        ? 'Столько же подходов, сколько в прошлом периоде'
+        : `${deltaSessions > 0 ? '+' : ''}${deltaSessions} подходов к прошлому периоду`;
   const muscles = fighterSkillMeters(profile.game.muscles);
   const overall = fighterUpgradeFraction(profile.game.muscles);
   const upgradePercent = Math.round(overall * 100);
@@ -91,15 +108,34 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
       </article>
 
       <article className="pulse-trend-card" aria-label="Активность тренировок">
-        <div className="pulse-card-heading">
+        <div className="pulse-card-heading pulse-trend-heading">
           <ChartNoAxesCombined size={20}/> АКТИВНОСТЬ ТРЕНИРОВОК
-          <span className="pulse-heading-side">ПОСЛЕДНИЕ 7 ДНЕЙ</span>
+          <label className="pulse-range-control">
+            <span className="sr-only">Период активности</span>
+            <select id="pulse-activity-range" aria-label="Период активности"
+              data-pulse-range={range} value={range}
+              onChange={event => {
+                setRange(event.target.value === '30' ? 30 : 7);
+                setSelectedDate('');
+              }}>
+              <option value="7">За последние 7 дней</option>
+              <option value="30">За последние 30 дней</option>
+            </select>
+            <ChevronDown size={16} aria-hidden="true"/>
+          </label>
         </div>
-        <div className="pulse-chart-summary" data-weekly-sessions={trend.sessions}>
+        <div className="pulse-chart-summary" data-period-sessions={trend.sessions}
+          data-weekly-sessions={range === 7 ? trend.sessions : undefined}>
           <strong>{trend.sessions}</strong>
           <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {trend.reps} повторений</span>
         </div>
-        <div className="pulse-linechart" role="img" aria-label={trend.days.map(d=>`${d.label}: ${d.sessions} подходов`).join('; ')}>
+        <div className="pulse-comparison" data-pulse-delta={historyLimited ? 'unavailable' : deltaSessions}
+          data-prior-sessions={previous.sessions} aria-label={changeLabel}>
+          <TrendingUp size={14} aria-hidden="true"/>
+          <span>{changeLabel}</span>
+        </div>
+        <div className="pulse-linechart" role="img" data-chart-points={chart.points.length}
+          aria-label={`Активность за ${range} дней. Всего ${trend.sessions} завершённых подходов. Выбери дату под графиком для подробностей.`}>
           <svg viewBox="0 0 800 215" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="pulse-chart-fill" x1="0" x2="0" y1="0" y2="1">
@@ -115,22 +151,47 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
                 <text x="5" y={y+5} fill="#9bafc4" fontSize="16">{tick}</text>
               </g>;
             })}
-            {chart.points.map(p=><line key={p.date} x1={p.x} x2={p.x} y1="26" y2="175"
+            {chart.points.filter(p => p.tick).map(p=><line key={p.date} x1={p.x} x2={p.x} y1="26" y2="175"
               stroke="#436077" strokeDasharray="3 8" opacity=".42"/>)}
             {chart.area && <path d={chart.area} fill="url(#pulse-chart-fill)" />}
             {chart.path && <path d={chart.path} fill="none" stroke="#b7ff3f"
               strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
               filter="drop-shadow(0px 0px 5px #aaff3755)" />}
-            {chart.points.map(p=><circle key={p.date} cx={p.x} cy={p.y} r="5.5"
-              stroke="#e2ff9c" strokeWidth="2" fill="#beff43"/>)}
-            {chart.points.map(p=><text key={p.date} x={p.x} y="205" fill="#b6c5d8"
-              fontSize="16" textAnchor="middle">{p.label}</text>)}
+            {chart.points.map(p=><circle key={p.date} cx={p.x} cy={p.y}
+              r={selected?.date === p.date ? 7 : range === 30 ? 3.6 : 5.5}
+              stroke={selected?.date === p.date ? '#ffffff' : '#e2ff9c'}
+              strokeWidth={selected?.date === p.date ? 3 : 1.8} fill="#beff43"/>)}
+            {chart.points.filter(p => p.tick).map(p=><text key={p.date} x={p.x} y="205" fill="#b6c5d8"
+              fontSize="16" textAnchor="middle">{p.tick}</text>)}
           </svg>
+        </div>
+        <div className="pulse-date-strip" role="group" aria-label="Выбрать день графика"
+          data-period={range} ref={dateStrip}>
+          {trend.days.map(day => (
+            <button type="button" key={day.date} data-pulse-date={day.date}
+              className={`pulse-date-button${selected?.date === day.date ? ' is-selected' : ''}`}
+              aria-pressed={selected?.date === day.date}
+              aria-label={`${day.date.split('-').reverse().join('.')}: ${day.sessions} завершённых подходов`}
+              onClick={() => setSelectedDate(day.date)}>
+              <span>{day.label}</span>
+              <small>{day.date.slice(8, 10)}<span>.{day.date.slice(5, 7)}</span></small>
+            </button>
+          ))}
+        </div>
+        <div className="pulse-day-detail" role="status" aria-live="polite" aria-atomic="true"
+          data-selected-day={selected?.date ?? ''}>
+          <div><span>ВЫБРАННЫЙ ДЕНЬ</span>
+            <strong>{selected ? selected.date.split('-').reverse().join('.') : '—'}</strong>
+          </div>
+          <div className="pulse-day-values">
+            <strong data-selected-sessions={selected?.sessions ?? 0}>{selected?.sessions ?? 0} подходов</strong>
+            <span>{selected?.reps ?? 0} повторений</span>
+          </div>
         </div>
         <p className="pulse-data-note">{trend.sessions === 0
           ? 'Записанных подходов пока нет — график показывает ноль.'
           : 'График строится только по завершённым и сохранённым подходам.'}
-          {profile.workouts.length >= 60 ? ' · Видимая история ограничена последними 60 тренировками.' : ''}
+          {historyLimited ? ' · История ограничена последними 60 тренировками; сравнение периодов отключено.' : ''}
         </p>
       </article>
 
@@ -150,10 +211,12 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
       </article>
 
       <div className="pulse-metric-grid">
-        <div className="pulse-metric"><Dumbbell size={18}/><span>ПОВТОРОВ ЗА НЕДЕЛЮ</span>
-          <strong data-weekly-reps={trend.reps}>{trend.reps}</strong></div>
+        <div className="pulse-metric"><Dumbbell size={18}/><span>ПОВТОРОВ ЗА {range} ДНЕЙ</span>
+          <strong data-period-reps={trend.reps} data-weekly-reps={range === 7 ? trend.reps : undefined}>
+            {trend.reps}
+          </strong></div>
         <div className="pulse-metric"><Activity size={18}/><span>АКТИВНЫХ ДНЕЙ</span>
-          <strong data-active-days={trend.activeDays}>{trend.activeDays}<small>/7</small></strong></div>
+          <strong data-active-days={trend.activeDays}>{trend.activeDays}<small>/{range}</small></strong></div>
         <div className="pulse-metric pulse-metric-action"><Zap size={18}/><span>СЛЕДУЮЩИЙ ШАГ</span>
           <button type="button" onClick={onTraining}>Тренировка <ArrowUpRight size={15}/></button>
           <button type="button" onClick={onAvatar}>Герой <ArrowUpRight size={15}/></button>

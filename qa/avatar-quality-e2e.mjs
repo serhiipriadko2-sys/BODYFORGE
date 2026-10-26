@@ -165,6 +165,28 @@ try {
   await waitFor(()=>tab.blockedFailures>blockedBefore,'skin texture failure observed by browser');
   check(await tab.js('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="basic"'),'missing skin texture retains a usable basic material');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'network fallback paths preserve game bytes');
+  // This profile belongs only to this test. Maximum cosmetic growth must be
+  // inspected on the real rig as well as in the mathematical unit regression.
+  await tab.cdp('Network.setBlockedURLs',{urls:[]});
+  await tab.click('[data-skin="sand"]'); await tab.click('[data-hair="ink"]');
+  const maximum=JSON.parse(gameBefore);
+  maximum.game.muscles={arms:5,core:5,legs:5,back:5};
+  const maxRaw=JSON.stringify(maximum);
+  await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(maxRaw)+');true');
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','max-growth synthetic rig with skin map',35000);
+  await tab.click('[data-avatar-view="portrait"]');
+  await sleep(250); await tab.screenshot('athlete-max-portrait');
+  await tab.click('.armory-yaw-controls button:last-child');
+  await tab.click('.armory-yaw-controls button:last-child');
+  await sleep(200); await tab.screenshot('athlete-max-three-quarter');
+  await tab.click('[data-avatar-view="full"]');
+  await sleep(200); await tab.screenshot('athlete-max-full');
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===maxRaw,'max-growth rendering preserves synthetic fixture bytes');
+  await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(gameBefore)+');true');
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','zero-growth rig restored',35000);
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'zero-growth restoration preserves original synthetic save');
   await tab.js('document.querySelector(".studio-preview canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();true');
   await tab.until('!!document.querySelector(".studio-preview [data-3d-status=fallback]")','lost GPU context shows fallback');
   check(tab.errors.length===0,'no uncaught browser errors');

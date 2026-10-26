@@ -495,3 +495,98 @@
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
 }
+
+/* Pulse v3: functional 7/30-day selector and day-by-day inspection.
+   Overflow is confined to the timeline, never the mobile page. */
+.pulse-trend-heading {flex-wrap:wrap;row-gap:10px;}
+.pulse-range-control {
+  display:flex;align-items:center;position:relative;
+  margin-left:auto;max-width:100%;min-width:0;
+  background:#14263a;border:1px solid #385871;
+  border-radius:13px;color:#e1eeff;
+  transition:border-color .18s ease;
+}
+.pulse-range-control:focus-within {outline:2px solid #baff3d;outline-offset:2px;}
+.pulse-range-control select {
+  width:100%;min-height:44px;max-width:100%;
+  padding:7px 37px 7px 12px;border:0;border-radius:13px;
+  appearance:none;-webkit-appearance:none;outline:0;cursor:pointer;
+  background:transparent;color:inherit;
+  font:700 11px 'Manrope',system-ui,sans-serif;
+}
+.pulse-range-control select option {color:#e4f4ff;background:#101e30;}
+.pulse-range-control>svg {position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#bbd5fa;}
+.pulse-comparison {
+  display:flex;align-items:center;gap:7px;max-width:100%;
+  color:#b9d8c4;font-size:11px;font-weight:700;
+  line-height:1.45;padding:1px 0;
+}
+.pulse-comparison>svg {color:var(--aurora-lime);flex:none;}
+.pulse-comparison[data-pulse-delta^="-"] {color:#ffd4a8;}
+.pulse-comparison[data-pulse-delta^="-"]>svg {transform:rotate(180deg);color:#ffc777;}
+.pulse-comparison[data-pulse-delta="unavailable"] {color:#c0cce1;}
+.pulse-comparison[data-pulse-delta="unavailable"]>svg {color:#a5b3c9;}
+.pulse-date-strip {
+  display:flex;align-items:stretch;gap:6px;
+  min-width:0;max-width:100%;width:100%;padding:3px 0 9px;
+  overflow-x:auto;overflow-y:hidden;
+  overscroll-behavior-x:contain;touch-action:pan-x;
+  scrollbar-color:#49708c transparent;scrollbar-width:thin;
+  scroll-snap-type:x proximity;
+}
+.pulse-date-button {
+  flex:1 0 48px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;min-width:48px;min-height:48px;
+  padding:6px 7px;border:1px solid #304b60;border-radius:12px;
+  background:#14283a;color:#bed0dd;text-align:center;
+  scroll-snap-align:start;cursor:pointer;
+}
+.pulse-date-button span {font-size:10px;font-weight:900;letter-spacing:.06em;}
+.pulse-date-button small {font-size:9px;line-height:1.2;font-weight:700;white-space:nowrap;}
+.pulse-date-button:hover:not(:disabled) {border-color:#c1ef7b;background:#243a40;}
+.pulse-date-button.is-selected {
+  background:linear-gradient(135deg,#364d2c,#1b3e3c);
+  color:#eaffc9;border-color:#b5f846;
+  box-shadow:inset 0 1px #baff3d26,0 0 14px #a8ff3220;
+}
+.pulse-date-button:focus-visible {outline:2px solid var(--aurora-cyan);outline-offset:2px;}
+.pulse-date-strip[data-period="30"] .pulse-date-button {flex:0 0 57px;min-width:57px;}
+.pulse-day-detail {
+  display:flex;align-items:center;justify-content:space-between;gap:9px;
+  padding:13px 14px;border:1px solid #304a60;border-radius:15px;
+  background:linear-gradient(110deg,#142c38,#111f34);
+}
+.pulse-day-detail>div {display:flex;flex-direction:column;gap:4px;min-width:0;}
+.pulse-day-detail>div>span {color:#9bc0d0;font-size:9px;font-weight:850;letter-spacing:.09em;}
+.pulse-day-detail>div>strong {font-size:14px;color:#f2faff;font-weight:850;}
+.pulse-day-values {align-items:flex-end;text-align:right;}
+.pulse-day-values>strong {font-size:13px;color:var(--aurora-lime);font-weight:900;}
+.pulse-day-values>span {font-size:10px;color:#acc4db;}
+@media(max-width:740px) {
+  .pulse-trend-heading {gap:9px 6px;}
+  .pulse-range-control {margin-left:auto;min-width:0;}
+  .pulse-range-control select {font-size:10px;min-height:44px;}
+  .pulse-comparison {font-size:10px;}
+  .pulse-day-detail {padding:11px 12px;}
+  .pulse-day-detail>div>strong {font-size:12px;}
+  .pulse-day-values>strong {font-size:12px;}
+}
+@media(max-width:390px) {
+  .pulse-trend-heading .pulse-range-control {flex-basis:100%;}
+  .pulse-date-strip:not([data-period="30"]) {gap:3px;}
+  .pulse-date-strip:not([data-period="30"]) .pulse-date-button {
+    flex:1 1 0;min-width:0;padding:4px 2px;
+  }
+  .pulse-date-strip:not([data-period="30"]) .pulse-date-button small span {display:none;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .pulse-range-control {transition:none;}
+}
+:root[data-bf-contrast="high"] .pulse-date-button,
+:root[data-bf-contrast="high"] .pulse-range-control,
+:root[data-bf-contrast="high"] .pulse-day-detail {
+  border-color:#9fc5de;
+}
+:root[data-bf-contrast="high"] .pulse-date-button.is-selected {
+  color:#0b241b;background:#c5f878;border-color:#c5f878;
+}

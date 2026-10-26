@@ -44,4 +44,18 @@ describe('Aurora neon view-model: no invented progress or activity', () => {
     expect(chart.path.match(/L/g)).toHaveLength(6);
     expect(chart.area.endsWith('Z')).toBe(true);
   });
+  it('shows all thirty real points but only seven spaced date labels', () => {
+    const days: PulseDay[] = Array.from({length:30}, (_,i) => ({
+      date: `2026-10-${String(i + 1).padStart(2, '0')}`,
+      label: 'ЧТ', sessions: i === 12 ? 3 : 0, reps: i === 12 ? 60 : 0,
+    }));
+    const chart = weeklySessionLine(days);
+    expect(chart.points).toHaveLength(30);
+    expect(chart.points.filter(p=>p.tick).map(p=>p.tick)).toEqual([
+      '01.10', '06.10', '11.10', '16.10', '21.10', '26.10', '30.10',
+    ]);
+    expect(chart.points[12].y).toBeCloseTo(63.25);
+    expect(chart.points[29].y).toBe(175);
+    expect(chart.path.match(/L/g)).toHaveLength(29);
+  });
 });

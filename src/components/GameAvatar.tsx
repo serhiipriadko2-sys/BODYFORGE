@@ -38,7 +38,7 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
   useEffect(() => {
     const element = container.current;
     if (!element) return;
-    if (!('IntersectionObserver' in window)) {
+    if (typeof IntersectionObserver !== 'function') {
       setInView(true);
       return;
     }
