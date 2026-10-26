@@ -127,11 +127,22 @@ export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'ba
       <path d="M156 367L181 369M207 369L235 366" stroke="#a17965" strokeOpacity=".5" strokeWidth="2" />
 
       {/* Human head: ears, jaw, hair and facial features */}
-      <ellipse cx="158" cy="100" rx="8" ry="14" fill="#b57759" />
-      <ellipse cx="232" cy="100" rx="8" ry="14" fill="#b57759" />
-      <path d="M154 75Q156 46 195 42Q232 46 236 79L232 109Q229 131 207 144L183 144Q161 133 158 109Z" fill={`url(#${id}-skin)`} stroke="#84503d" strokeWidth="2" />
-      <path d="M153 78Q145 50 166 39Q180 31 193 36Q212 25 232 44Q247 56 235 82Q230 71 224 63Q209 69 197 58Q178 72 158 68Z" fill={colors.hair} />
-      <path d="M158 66Q170 46 189 52M207 45Q226 44 235 61" fill="none" stroke={blend(colors.hair, 255, .23)} strokeWidth="3" strokeOpacity=".5" />
+      <ellipse cx="158" cy="100" rx="8" ry="14" fill={blend(colors.skin, 0, .12)} />
+      <ellipse cx="232" cy="100" rx="8" ry="14" fill={blend(colors.skin, 0, .12)} />
+      <path d="M154 75Q156 46 195 42Q232 46 236 79L232 109Q229 131 207 144L183 144Q161 133 158 109Z" fill={`url(#${id}-skin)`} stroke={blend(colors.skin,0,.26)} strokeWidth="2" />
+      {(look.hairStyle ?? 'crop') === 'buzz' ? (
+        <path d="M156 79Q150 51 174 47Q199 38 221 49Q236 61 234 79L228 78Q207 65 158 79Z" fill={colors.hair}/>
+      ) : (look.hairStyle ?? 'crop') === 'swept' ? (
+        <>
+          <path d="M153 78Q146 50 172 39Q212 20 236 47Q244 58 235 84L229 71Q214 55 202 58Q181 83 158 69Z" fill={colors.hair}/>
+          <path d="M163 64Q198 29 229 52" fill="none" stroke={blend(colors.hair,255,.22)} strokeWidth="4" strokeOpacity=".55"/>
+        </>
+      ) : (
+        <>
+          <path d="M153 78Q145 50 166 39Q180 31 193 36Q212 25 232 44Q247 56 235 82Q230 71 224 63Q209 69 197 58Q178 72 158 68Z" fill={colors.hair} />
+          <path d="M158 66Q170 46 189 52M207 45Q226 44 235 61" fill="none" stroke={blend(colors.hair, 255, .23)} strokeWidth="3" strokeOpacity=".5" />
+        </>
+      )}
       <path d="M171 92l16-3M203 89l16 3" stroke="#332925" strokeWidth="4" strokeLinecap="round" />
       <path d="M175 98h10M205 98h10" stroke="#2a1a13" strokeWidth="3" strokeLinecap="round" />
       <path d="M195 100l-4 16h7" fill="none" stroke="#935b45" strokeWidth="2" strokeLinecap="round" />

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  AVATAR_LOOK_KEY, DEFAULT_AVATAR_LOOK, SKIN_TONES, HAIR_TONES, TRIM_TONES,
+  AVATAR_LOOK_KEY, DEFAULT_AVATAR_LOOK, SKIN_TONES, HAIR_TONES, HAIR_STYLES, TRIM_TONES,
   parseAvatarLook, readAvatarLook, saveAvatarLook, lookColors,
 } from './avatarLook';
 import { STORAGE_KEY, PROFILE_BACKUP_KEY } from './progression';
@@ -45,6 +45,8 @@ describe('origin-local avatar appearance — independent of paid gear', () => {
     JSON.stringify({ ...DEFAULT_AVATAR_LOOK, version: 2 }),
     JSON.stringify({ ...DEFAULT_AVATAR_LOOK, skin: '__proto__' }),
     JSON.stringify({ ...DEFAULT_AVATAR_LOOK, hair: 'red;--x:0' }),
+    JSON.stringify({ ...DEFAULT_AVATAR_LOOK, hairStyle: 'remote-code' }),
+    JSON.stringify({ ...DEFAULT_AVATAR_LOOK, hairStyle: null }),
     JSON.stringify({ ...DEFAULT_AVATAR_LOOK, trim: 'blue' }),
     JSON.stringify({ ...DEFAULT_AVATAR_LOOK, visor: 'false' }),
   ])('rejects malformed/newer choice and keeps bytes: %s', (raw) => {
@@ -53,6 +55,26 @@ describe('origin-local avatar appearance — independent of paid gear', () => {
     expect(readAvatarLook(storage).status).toBe('invalid');
     expect(storage.entries.get(AVATAR_LOOK_KEY)).toBe(raw);
     expect(storage.setItem).not.toHaveBeenCalled();
+  });
+  it('accepts legacy v1 bytes with no hairStyle without rewriting and lets a haircut be added later', () => {
+    const legacy = { version: 1 as const, skin: 'sand' as const, hair: 'ink' as const,
+      trim: 'glacier' as const, visor: false };
+    const original = JSON.stringify(legacy);
+    const storage = store(original);
+    expect(readAvatarLook(storage)).toEqual({ status: 'ready', look: legacy });
+    expect(storage.getItem(AVATAR_LOOK_KEY)).toBe(original);
+    expect(storage.setItem).not.toHaveBeenCalled();
+    const extended = { ...legacy, hairStyle: 'swept' as const };
+    expect(saveAvatarLook(extended, storage)).toBe(true);
+    expect(readAvatarLook(storage).look.hairStyle).toBe('swept');
+    expect(storage.entries.get(STORAGE_KEY)).toBe(reserved.get(STORAGE_KEY));
+  });
+  it('allows three haircuts but rejects injecting unsupported values into persisted looks', () => {
+    expect(HAIR_STYLES.map((s) => s.id)).toEqual(['crop', 'buzz', 'swept']);
+    for (const style of HAIR_STYLES) {
+      const value = { ...DEFAULT_AVATAR_LOOK, hairStyle: style.id };
+      expect(parseAvatarLook(JSON.stringify(value))).toEqual(value);
+    }
   });
   it('does not claim durable save for storage errors, quota or silent writes', () => {
     const storage = store();

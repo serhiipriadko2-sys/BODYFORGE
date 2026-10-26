@@ -6,7 +6,9 @@ import { disposeThreeTree } from '../lib/threeResources';
 import { runtimeDiagnostics } from '../lib/runtimeDiagnostics';
 import Avatar from './Avatar';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
-import { DEFAULT_AVATAR_LOOK, lookColors, type AvatarLook } from '../lib/avatarLook';
+import { DEFAULT_AVATAR_LOOK, HAIR_STYLES, lookColors, type AvatarLook, type HairStyle } from '../lib/avatarLook';
+import { createAvatarHair } from '../lib/avatarHair';
+import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 
 interface Avatar3DProps {
@@ -18,6 +20,7 @@ interface Avatar3DProps {
   look?: AvatarLook;
   focus?: AvatarFocus;
   yaw?: number;
+  onYawChange?: (angle: number) => void;
 }
 
 type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look'>;
@@ -31,6 +34,7 @@ interface ImportedFigure {
   shirt: THREE.MeshStandardMaterial;
   skin: THREE.MeshStandardMaterial;
   hair: THREE.MeshStandardMaterial;
+  hairStyles: Record<HairStyle, THREE.Group>;
   visor: THREE.Mesh;
   visorMaterial: THREE.MeshStandardMaterial;
   visorEdge: THREE.Mesh;
@@ -41,8 +45,8 @@ interface ImportedFigure {
  * Mobile-first procedural humanoid: real shaded three-dimensional meshes.
  * No external image CDN, animated rig, or access to the camera stream.
  */
-export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21,
-  paused = false, className = '' }: Avatar3DProps) {
+export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full',
+  yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, className = '' }: Avatar3DProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const runtime = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -58,6 +62,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     setAccent: (color: string) => void;
   } | null>(null);
   const pausedRef = useRef(paused);
+  const onYawChangeRef = useRef(onYawChange);
+  onYawChangeRef.current = onYawChange;
   const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit, look });
   const importedRef = useRef<ImportedFigure | null>(null);
   figureSettingsRef.current = { build, muscles, outfit, look };
@@ -78,7 +84,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     let intersectsViewport = true;
     let visible = !document.hidden;
     let disposed = false;
-    let rotation = yaw;
+    let rotation = clampAvatarYaw(yaw);
+    let pointerStartYaw = rotation;
     let activePointer: number | null = null;
     let pointerX = 0;
     let isDragging = false;
@@ -146,7 +153,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         redraw();
       };
       const setYaw = (next: number) => {
-        rotation = THREE.MathUtils.clamp(Number.isFinite(next) ? next : -.21, -1.02, 1.02);
+        rotation = clampAvatarYaw(next);
+        element.dataset.avatarYaw = String(rotation);
         figureRoot.rotation.y = rotation;
         redraw();
       };
@@ -178,29 +186,35 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 
       const onPointerDown = (event: PointerEvent) => {
         activePointer = event.pointerId;
+        pointerStartYaw = rotation;
         pointerX = event.clientX;
         isDragging = true;
         element.setPointerCapture(event.pointerId);
       };
       const onPointerMove = (event: PointerEvent) => {
         if (event.pointerId !== activePointer || !isDragging) return;
-        rotation = THREE.MathUtils.clamp(rotation + (event.clientX - pointerX) * .011, -1.02, 1.02);
+        rotation = stepAvatarYaw(rotation, (event.clientX - pointerX) * .011);
         pointerX = event.clientX;
+        element.dataset.avatarYaw = String(rotation);
         figureRoot.rotation.y = rotation;
         redraw();
       };
       const onPointerUp = (event: PointerEvent) => {
         if (event.pointerId === activePointer) {
+          const changed = isDragging && rotation !== pointerStartYaw;
           isDragging = false;
           activePointer = null;
+          if (changed) onYawChangeRef.current?.(rotation);
           if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
         }
       };
       const onArrowKey = (event: KeyboardEvent) => {
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
         event.preventDefault();
-        rotation = THREE.MathUtils.clamp(rotation + (event.key === 'ArrowLeft' ? -.12 : .12), -1.02, 1.02);
+        rotation = stepAvatarYaw(rotation, event.key === 'ArrowLeft' ? -.12 : .12);
+        element.dataset.avatarYaw = String(rotation);
         figureRoot.rotation.y = rotation;
+        onYawChangeRef.current?.(rotation);
         redraw();
       };
       const onContextLost = (event: Event) => {
@@ -378,7 +392,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 
   return (
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
-      data-look-skin={look.skin} data-look-hair={look.hair} data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
+      data-look-skin={look.skin} data-look-hair={look.hair} data-look-hair-style={look.hairStyle ?? 'crop'}
+      data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
       <div className="avatar-3d-embers" aria-hidden="true" />
       <canvas ref={canvas} tabIndex={0} aria-keyshortcuts="ArrowLeft ArrowRight"
         aria-label="Объёмный 3D-персонаж BODYFORGE. Поверни пальцем или клавишами со стрелками влево и вправо." role="img" />
@@ -444,6 +459,8 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     return mesh;
   };
   const sphere = new THREE.SphereGeometry(1, 28, 18);
+  // Rounded upper yoke covers the bare shoulder seam seen in portrait view.
+  add('jersey-shoulder-yoke', sphere, shirt, 0, 3.78, -.015, .685, .195, .31);
   // Fitted technical jersey over the CC0 anatomical torso. It deliberately
   // exists for every paid outfit, and has no effect on earned stats.
   add('technical-jersey', new THREE.LatheGeometry([
@@ -453,7 +470,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     new THREE.Vector2(.57, 3.80), new THREE.Vector2(.32, 3.94),
   ], 48), shirt, 0, 0, 0, 1, 1, .76);
   for (const side of [-1, 1]) {
-    add('jersey-sleeve', sphere, shirt, side * .67, 3.65, -.018, .245, .235, .245);
+    add('jersey-sleeve', sphere, shirt, side * .70, 3.63, -.018, .19, .187, .222);
     const piping = add('jersey-sleeve-piping',
       new THREE.CylinderGeometry(.219, .224, .014, 32), trim,
       side * .72, 3.465, .012, 1, 1, .97);
@@ -481,9 +498,11 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   // Neutral, close-cut hair material: facial features remain those of
   // the original anatomical GLB rather than handmade spheres.
   const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .94 });
-  // One tapered hair cap instead of disconnected spheres; preserve the face.
-  add('short-hair',new THREE.SphereGeometry(.314,40,18,0,Math.PI*2,0,Math.PI*.45),
-    hair,0,4.565,-.005);
+  // All three hairstyles share the same validated hair material. Switching
+  // visibility avoids remounting a large CC0 mesh and reallocating the GPU.
+  const hairStyles = Object.fromEntries(HAIR_STYLES.map(({ id }) =>
+    [id, createAvatarHair(id, hair, -.005)])) as Record<HairStyle, THREE.Group>;
+  for (const style of Object.values(hairStyles)) outfitGroup.add(style);
 
   // Thin tinted glass with an independent emissive rim, not an opaque bar.
   const visorMaterial = new THREE.MeshStandardMaterial({ color: '#163448', metalness: .12, roughness: .22,
@@ -492,7 +511,8 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   const visorEdgeMaterial = new THREE.MeshStandardMaterial({ color: '#55e3f2', metalness: .36, roughness: .24,
     emissive: '#55e3f2', emissiveIntensity: .3 });
   const visorEdge = add('holo-visor-frame', new THREE.BoxGeometry(.64, .015, .053), visorEdgeMaterial, 0, 4.43, .35);
-  const imported: ImportedFigure = { root, bones, shorts, trim, shoes, shirt, skin, hair, visor, visorMaterial, visorEdge, visorEdgeMaterial };
+  const imported: ImportedFigure = { root, bones, shorts, trim, shoes, shirt, skin, hair,
+    hairStyles, visor, visorMaterial, visorEdge, visorEdgeMaterial };
   styleImportedFigure(imported, settings);
   return imported;
 }
@@ -501,6 +521,7 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   const colors = lookColors(look);
   imported.skin.color.set(colors.skin);
   imported.hair.color.set(colors.hair);
+  for (const style of HAIR_STYLES) imported.hairStyles[style.id].visible = style.id === (look.hairStyle ?? 'crop');
   imported.visorEdgeMaterial.color.set(colors.trim);
   imported.visorEdgeMaterial.emissive.set(colors.trim);
   imported.visor.visible = look.visor;
@@ -644,6 +665,7 @@ function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: Figu
   jerseyBody.name='technical-jersey';
   jerseyBody.scale.z=.79;
   group.add(jerseyBody);
+  ball('shirt-shoulder-yoke',0,3.81,.025,.69,.185,.31,jersey);
   const chestMass=.022+back*.015;
   for(const side of [-1,1]){
     ball('pectoral',side*(.27+back*.008),3.52,.255,.282+chestMass,.145+back*.011,.119+chestMass*.4,skin);
@@ -664,7 +686,7 @@ function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: Figu
   // Shoulders and arms are individually reshaped with the "arms" stat.
   for(const side of [-1,1]){
     const sx=side*(shoulderRadius+.08);
-    ball('shirt-sleeve',sx,3.66,.0,.24,.222,.253,jersey);
+    ball('shirt-sleeve',sx,3.66,.0,.205,.18,.232,jersey);
     ball('deltoid',sx,3.66,.0,.228+arms*.018,.237+arms*.017,.23+arms*.017,skin);
     limb('upper-arm',[sx,3.53,.005],[side*(.86+back*.012),2.88,.075],
       .174+arms*.020,.167+arms*.018,skin);
@@ -687,12 +709,7 @@ function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: Figu
   }
   ball('nose',0,4.395,.352,.040,.086,.058,skin);
   ball('mouth',0,4.265,.36,.072,.010,.014,skinShade);
-  const hairCap = new THREE.Mesh(
-    new THREE.SphereGeometry(.312,32,16,0,Math.PI*2,0,Math.PI*.38),hair,
-  );
-  hairCap.position.set(0,4.575,.064);
-  group.add(hairCap);
-  ball('hair-side',-.185,4.68,.055,.085,.14,.16,hair);
+  group.add(createAvatarHair(look.hairStyle ?? 'crop', hair, .064));
   if (look.visor) {
     const tinted = new THREE.MeshStandardMaterial({ color: '#203749', metalness: .12, roughness: .25,
       transparent: true, opacity: .42, depthWrite: false });

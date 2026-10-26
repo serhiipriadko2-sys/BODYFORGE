@@ -1,8 +1,9 @@
 import { Check, ChevronLeft, ChevronRight, Eye, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, UserRound, WandSparkles } from 'lucide-react';
 import {
-  DEFAULT_AVATAR_LOOK, HAIR_TONES, SKIN_TONES, TRIM_TONES, type AvatarLook,
+  DEFAULT_AVATAR_LOOK, HAIR_STYLES, HAIR_TONES, SKIN_TONES, TRIM_TONES, lookColors, type AvatarLook,
 } from '../lib/avatarLook';
 import type { AvatarFocus } from './GameAvatar';
+import { stepAvatarYaw } from '../lib/avatarYaw';
 
 interface Props {
   look: AvatarLook;
@@ -15,7 +16,7 @@ interface Props {
   readStatus: 'ready' | 'invalid' | 'unavailable';
 }
 export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, message, readStatus }: Props) {
-  const clamp = (next: number) => Math.max(-.95, Math.min(.95, Math.round(next * 100) / 100));
+  const colors = lookColors(look);
   return (
     <section className="armory-lab" aria-label="Редактор внешности бойца" id="avatar-lab">
       <header className="armory-lab-heading">
@@ -33,9 +34,9 @@ export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, 
           </button>
         </div>
         <div className="armory-yaw-controls" role="group" aria-label="Повернуть персонажа">
-          <button type="button" aria-label="Повернуть бойца влево" onClick={() => onYaw(clamp(yaw - .3))}><ChevronLeft size={20}/></button>
+          <button type="button" aria-label="Повернуть бойца влево" onClick={() => onYaw(stepAvatarYaw(yaw, -.3))}><ChevronLeft size={20}/></button>
           <span>ПОВОРОТ</span>
-          <button type="button" aria-label="Повернуть бойца вправо" onClick={() => onYaw(clamp(yaw + .3))}><ChevronRight size={20}/></button>
+          <button type="button" aria-label="Повернуть бойца вправо" onClick={() => onYaw(stepAvatarYaw(yaw, .3))}><ChevronRight size={20}/></button>
         </div>
       </div>
       <div className="armory-settings">
@@ -51,7 +52,7 @@ export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, 
           </div>
         </fieldset>
         <fieldset className="armory-swatches">
-          <legend><span>02</span> ЦВЕТ ВОЛОС <small>КОРОТКАЯ СТРИЖКА</small></legend>
+          <legend><span>02</span> ЦВЕТ ВОЛОС <small>4 ОТТЕНКА</small></legend>
           <div className="armory-swatch-grid four" role="group" aria-label="Цвет волос персонажа">
             {HAIR_TONES.map((item) => <button type="button" key={item.id} data-hair={item.id}
               title={item.label} aria-label={'Волосы: ' + item.label} aria-pressed={look.hair === item.id}
@@ -61,8 +62,24 @@ export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, 
             </button>)}
           </div>
         </fieldset>
+        <fieldset className="armory-hair-styles">
+          <legend><span>03</span> СТРИЖКА <small>3 ФОРМЫ · БЕСПЛАТНО</small></legend>
+          <div className="armory-style-grid" role="group" aria-label="Стрижка 3D-персонажа">
+            {HAIR_STYLES.map((item) => <button type="button" key={item.id} data-hair-style={item.id}
+              title={item.description} aria-label={'Стрижка: ' + item.label}
+              aria-pressed={(look.hairStyle ?? 'crop') === item.id}
+              onClick={() => onChange({ ...look, hairStyle: item.id })}>
+              <span className={'armory-hair-icon '+ item.id} aria-hidden="true">
+                <i className="armory-hair-face" style={{ backgroundColor: colors.skin }}/>
+                <i className="armory-hair-shape" style={{ backgroundColor: colors.hair }}/>
+              </span>
+              <strong>{item.label}</strong><small>{item.description}</small>
+              {(look.hairStyle ?? 'crop') === item.id && <Check size={14} className="armory-style-check"/>}
+            </button>)}
+          </div>
+        </fieldset>
         <fieldset className="armory-swatches">
-          <legend><span>03</span> СВЕТОВОЙ КОД <small>АКЦЕНТ ЭКИПИРОВКИ</small></legend>
+          <legend><span>04</span> СВЕТОВОЙ КОД <small>АКЦЕНТ ЭКИПИРОВКИ</small></legend>
           <div className="armory-swatch-grid four" role="group" aria-label="Цвет акцента экипировки">
             {TRIM_TONES.map((item) => <button type="button" key={item.id} data-trim={item.id}
               title={item.label} aria-label={'Свечение: ' + item.label} aria-pressed={look.trim === item.id}

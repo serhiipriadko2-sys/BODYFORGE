@@ -121,7 +121,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
           <span className="preview-kicker">BODYFORGE // AVATAR SYSTEM · 01</span>
           <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {focus === 'portrait' ? 'ПОРТРЕТ' : 'ПОЛНЫЙ РОСТ'}</div>
           <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}
-            paused={paused} look={look} focus={focus} yaw={yaw}/>
+            paused={paused} look={look} focus={focus} yaw={yaw} onYawChange={setYaw}/>
           <strong>{game.nickname}</strong>
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>

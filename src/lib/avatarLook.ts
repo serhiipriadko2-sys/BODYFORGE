@@ -18,6 +18,11 @@ export const HAIR_TONES = [
   { id: 'silver', label: 'Серебро', color: '#b7c1cd' },
   { id: 'plum', label: 'Аметист', color: '#665180' },
 ] as const;
+export const HAIR_STYLES = [
+  { id: 'crop', label: 'Кроп', description: 'Аккуратная текстура' },
+  { id: 'buzz', label: 'Ёжик', description: 'Минимальная длина' },
+  { id: 'swept', label: 'Набок', description: 'Выразительный объём' },
+] as const;
 export const TRIM_TONES = [
   { id: 'glacier', label: 'Ледник', color: '#55e3f2' },
   { id: 'voltage', label: 'Вольтаж', color: '#cbfa55' },
@@ -27,16 +32,19 @@ export const TRIM_TONES = [
 
 export type SkinTone = (typeof SKIN_TONES)[number]['id'];
 export type HairTone = (typeof HAIR_TONES)[number]['id'];
+export type HairStyle = (typeof HAIR_STYLES)[number]['id'];
 export type TrimTone = (typeof TRIM_TONES)[number]['id'];
 export interface AvatarLook {
   version: 1;
   skin: SkinTone;
   hair: HairTone;
+  /** Optional in v1: legacy saved looks have no haircut key. */
+  hairStyle?: HairStyle;
   trim: TrimTone;
   visor: boolean;
 }
 export const DEFAULT_AVATAR_LOOK: Readonly<AvatarLook> = Object.freeze({
-  version: 1, skin: 'sand', hair: 'ink', trim: 'glacier', visor: false,
+  version: 1, skin: 'sand', hair: 'ink', trim: 'glacier', visor: false, hairStyle: 'crop',
 });
 const includesId = <T extends { id: string }>(options: readonly T[], value: unknown): value is T['id'] =>
   typeof value === 'string' && options.some((option) => option.id === value);
@@ -50,9 +58,11 @@ export function parseAvatarLook(raw: string | null): AvatarLook | null {
     const v = value as Record<string, unknown>;
     if (v.version !== 1 || !includesId(SKIN_TONES, v.skin) ||
         !includesId(HAIR_TONES, v.hair) || !includesId(TRIM_TONES, v.trim) ||
+        (v.hairStyle !== undefined && !includesId(HAIR_STYLES, v.hairStyle)) ||
         typeof v.visor !== 'boolean') return null;
     return { version: 1, skin: v.skin as SkinTone, hair: v.hair as HairTone,
-      trim: v.trim as TrimTone, visor: v.visor };
+      trim: v.trim as TrimTone, visor: v.visor,
+      ...(v.hairStyle === undefined ? {} : { hairStyle: v.hairStyle as HairStyle }), };
   } catch { return null; }
 }
 export type LookRead = { status: 'ready' | 'invalid' | 'unavailable'; look: AvatarLook };

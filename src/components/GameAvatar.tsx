@@ -24,6 +24,7 @@ interface GameAvatarProps {
   look?: AvatarLook;
   focus?: AvatarFocus;
   yaw?: number;
+  onYawChange?: (angle: number) => void;
 }
 
 /**
@@ -31,7 +32,7 @@ interface GameAvatarProps {
  * The old lightweight SVG remains the fallback on unsupported devices.
  */
 export default function GameAvatar({ workouts, build, muscles, outfit, paused = false, className,
-  look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21 }: GameAvatarProps) {
+  look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21, onYawChange }: GameAvatarProps) {
   const container = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -56,7 +57,8 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
           <span>3D не загрузилось. Игра доступна с облегчённым персонажем; повторная загрузка — после обновления страницы.</span>
         </div>}>
         <Suspense fallback={<div className="avatar-3d-wait"><div className="avatar-3d-loading-orb"/><span>КУЗНЕЦ ГОТОВИТ БОЙЦА...</span></div>}>
-          <Avatar3D build={build} muscles={muscles} outfit={outfit} look={look} focus={focus} yaw={yaw} />
+          <Avatar3D build={build} muscles={muscles} outfit={outfit} look={look}
+            focus={focus} yaw={yaw} onYawChange={onYawChange} />
         </Suspense>
         </AvatarBoundary>
       ) : (

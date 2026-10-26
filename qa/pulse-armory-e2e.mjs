@@ -114,10 +114,16 @@ try {
   await until('!!document.querySelector(".studio-preview [data-3d-status=active]")', '3D renderer live');
   await until('!!document.querySelector(".studio-preview [data-avatar-source=cc0]")', 'real CC0 GLB rendered', 30000);
   assert(await js('document.querySelector(".armory-swatch-grid")!==null'), 'editor shows real choices');
+  assert(await js('document.querySelectorAll("[data-hair-style]").length===3'), 'three haircuts available without changing rewards');
   await screenshot('bodyforge-avatar-full', '#forge .studio-preview');
   await click('[data-avatar-view="portrait"]');
   await until('document.querySelector(".studio-preview canvas")?.dataset.avatarView==="portrait"', 'camera zoom to portrait');
   await screenshot('bodyforge-avatar-face', '#forge .studio-preview');
+  await click('[data-hair-style="buzz"]');
+  await until('document.querySelector(".studio-preview [data-look-hair-style]")?.dataset.lookHairStyle==="buzz"', 'second 3D haircut switches to buzz');
+  await screenshot('bodyforge-avatar-buzz', '#forge .studio-preview');
+  await click('[data-hair-style="swept"]');
+  await until('document.querySelector(".studio-preview [data-look-hair-style]")?.dataset.lookHairStyle==="swept"', 'third 3D haircut switches to swept');
   await click('[data-skin="deep"]');
   await click('[data-hair="silver"]');
   await click('[data-trim="pulse"]');
@@ -128,7 +134,7 @@ try {
   assert(await js('document.querySelector(".studio-preview [data-look-visor]")?.dataset.lookVisor==="on"'), 'optional visor updates on 3D');
   const look = await js('JSON.parse(localStorage.getItem("bodyforge:avatar-look:v1"))');
   assert(look.version === 1 && look.skin === 'deep' && look.hair === 'silver' &&
-    look.trim === 'pulse' && look.visor === true, 'chosen cosmetics verified in localStorage read-back');
+    look.trim === 'pulse' && look.visor === true && look.hairStyle === 'swept', 'chosen cosmetics and haircut verified in localStorage read-back');
   assert(await js('localStorage.getItem("bodyforge:pilot:v1")') === profileBefore, 'free cosmetics do not mutate paid gear, XP or profile');
   await screenshot('bodyforge-avatar-customized', '#forge .studio-preview');
   await screenshot('bodyforge-avatar-controls', '#avatar-lab');
@@ -143,6 +149,16 @@ try {
   await until('document.querySelector(".studio-preview canvas")?.dataset.avatarView==="full"', 'return to full-body 3D');
   await click('[aria-label="Повернуть бойца вправо"]');
   assert(await js('document.querySelector(".studio-preview [data-3d-status=active]")!==null'), '3D stays active during orbit change');
+  const beforeDrag = await js('Number(document.querySelector("#forge .studio-preview canvas")?.dataset.avatarYaw)');
+  const point = await js('(()=>{const r=document.querySelector("#forge .studio-preview canvas").getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}})()');
+  assert(Number.isFinite(beforeDrag) && Number.isFinite(point.x) && Number.isFinite(point.y), 'camera exposes finite orbit for gesture testing');
+  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 });
+  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x+42, y: point.y, button: 'left', buttons: 1 });
+  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x+42, y: point.y, button: 'left', clickCount: 1 });
+  await until('Number(document.querySelector("#forge .studio-preview canvas")?.dataset.avatarYaw) > '+(beforeDrag+.25), 'actual pointer gesture changes yaw');
+  const afterDrag = await js('Number(document.querySelector("#forge .studio-preview canvas")?.dataset.avatarYaw)');
+  await click('[aria-label="Повернуть бойца вправо"]');
+  await until('Number(document.querySelector("#forge .studio-preview canvas")?.dataset.avatarYaw) > '+(afterDrag+.15), 'button continues from gesture instead of snapping back');
   await js('window.__pulseBeforeReload = true; true');
   await cdp('Page.reload', { ignoreCache: true });
   // Page.reload starts navigation but its CDP reply may arrive before the old
@@ -156,6 +172,7 @@ try {
   const reloadLook = await js('({button:document.querySelector("#avatar-lab [data-visor]")?.getAttribute("data-visor"),pressed:document.querySelector("#avatar-lab [data-visor]")?.getAttribute("aria-pressed"),saved:JSON.parse(localStorage.getItem("bodyforge:avatar-look:v1"))?.visor,preview:document.querySelector(".studio-preview [data-look-visor]")?.dataset.lookVisor})');
   console.log('RELOAD_LOOK_READBACK', JSON.stringify(reloadLook));
   assert(reloadLook.button === 'on' && reloadLook.pressed === 'true' && reloadLook.saved === true && reloadLook.preview === 'on', 'visor control reflects reloaded saved look');
+  assert(await js('document.querySelector("[data-hair-style=swept]")?.getAttribute("aria-pressed")==="true"'), 'haircut restored and selected in editor after reload');
   assert(await js('localStorage.getItem("bodyforge:pilot:v1")') === profileBefore, 'reload did not rewrite fighter data');
   assert(errors.length === 0, 'no uncaught browser JavaScript errors');
   console.log('BODYFORGE_PULSE_ARMORY_PASS', JSON.stringify({ checks, screenshots: shots, browserErrors: errors }));
