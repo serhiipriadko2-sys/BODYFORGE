@@ -120,13 +120,13 @@ try{
   const premium=await read("({player:!!document.querySelector('.dashboard-player'),dark:!!document.querySelector('link[href*=premium]')||getComputedStyle(document.body).backgroundColor,firstRect:document.querySelector('.character-card')?.getBoundingClientRect().top})");
   console.log('PREMIUM_HOME',JSON.stringify(premium));
   check(premium.player && premium.firstRect>0,'home has real fighter status and 3D hero');
-  const primaryCta=await read("(()=>{const c=document.querySelector('.character-card .mobile-quickstart button')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {visible:!!c,withinViewport:!!c&&!!n&&c.top>=0&&c.bottom<n.top,bodyBg:getComputedStyle(document.body).backgroundColor}})()");
+  const primaryCta=await read("(()=>{const c=document.querySelector('.dashboard-player .profile-training-cta')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {visible:!!c,withinViewport:!!c&&!!n&&c.top>=0&&c.bottom<n.top,bodyBg:getComputedStyle(document.body).backgroundColor}})()");
   check(primaryCta.visible&&primaryCta.withinViewport&&primaryCta.bodyBg==='rgb(10, 16, 24)',
     'training CTA visible above bottom navigation on configurable dark home');
   await screenshot('bf-qa-mobile-home-premium.png');
   await cdp('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
   await sleep(280);
-  const compact=await read("(()=>{const c=document.querySelector('.character-card .mobile-quickstart button')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,cta:!!c&&!!n&&c.bottom<n.top}})()");
+  const compact=await read("(()=>{const c=document.querySelector('.dashboard-player .profile-training-cta')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,cta:!!c&&!!n&&c.bottom<n.top}})()");
   check(compact.viewport===360&&compact.scroll<=360&&compact.cta,'360 px first screen keeps training button visible and has no horizontal overflow');
   await screenshot('bf-qa-mobile-home-360-premium.png');
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
@@ -139,6 +139,10 @@ try{
   const studio=await read("({three:document.querySelector('#forge [data-3d-status]')?.dataset['3dStatus'],canvas:!!document.querySelector('#forge canvas'),scroll:document.documentElement.scrollWidth})");
   console.log('STUDIO_3D',JSON.stringify(studio));
   check(studio.three==='active'&&studio.canvas,'studio renders real 3D avatar');
+  // The expanded dashboard defers heavy 3D offscreen. Require a real GLB
+  // while the editor is visible before asserting a nonzero load diagnostic.
+  await js('document.querySelector("#forge .studio-preview")?.scrollIntoView({block:"start",behavior:"instant"});true');
+  await until('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'studio CC0 asset fully loaded', 30000);
   await screenshot('bf-qa-mobile-forge.png');
   await click('.mobile-nav button:nth-child(1)');
   await click('#quests .quest-button');
@@ -148,17 +152,25 @@ try{
   await js("(()=>{const key='bodyforge:pilot:v1',p=JSON.parse(localStorage.getItem(key));p.coins=180;localStorage.setItem(key,JSON.stringify(p));return true})()");
   await cdp('Page.reload',{ignoreCache:true});await sleep(1850);
   await click('.mobile-nav button:nth-child(3)');
-  await sleep(800);
+  await until('document.querySelector("#forge .muscle-card button")?.disabled===false', 'purchased improvement available after profile reload');
   await click('#forge .muscle-card button');
+  await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.game?.muscles?.arms===1&&p.coins===155})()', 'persisted muscle upgrade confirmed');
   s=await snapshot();
   check(s.game.muscles.arms===1&&s.coins===155,'muscle upgrade spends coins and changes state');
+  await until("document.querySelector('#forge .outfit-item:nth-child(2)')?.disabled===false", 'outfit purchase enabled after muscle save');
   await click('#forge .outfit-item:nth-child(2)');
+  await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.game?.outfit==="ember"&&p.coins===95})()', 'outfit purchase acknowledged and persisted');
   s=await snapshot();
   check(s.game.outfit==='ember'&&s.coins===95,'outfit purchase persists color choice');
   await screenshot('bf-qa-mobile-forge-upgraded.png');
   await cdp('Page.reload',{ignoreCache:true});await sleep(1700);
   s=await snapshot();
   check(!s.setup&&s.game.muscles.arms===1&&s.game.outfit==='ember'&&s.coins===95,'save survives reload');
+  // Session-only diagnostics reset on Page.reload, by design. Open the hero
+  // again and measure a NEW GLB load before navigating back to the camera.
+  await click('.mobile-nav button:nth-child(3)');
+  await js('document.querySelector("#forge .studio-preview")?.scrollIntoView({block:"start",behavior:"instant"});true');
+  await until('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'GLB measured after full reload', 30000);
   await click('.mobile-nav button:nth-child(4)');
   const tower=await read("({screen:document.querySelector('.app-shell').dataset.screen,top:document.querySelector('#tower').getBoundingClientRect().top,floors:document.querySelectorAll('.tower-floor').length,challengeDisplay:getComputedStyle(document.querySelector('#tower')).display})");
   console.log('TOWER',JSON.stringify(tower));
@@ -175,6 +187,7 @@ try{
     'camera offers side-view and full-leg framing before the workout');
   await click('.perf-toggle');
   const preflightDiagnostics = await read("({open:!!document.querySelector('[data-diagnostics=open]'),glb:document.querySelector('[data-glb-load]')?.dataset.glbLoad,privacy:document.querySelector('.perf-body')?.textContent.includes('Никакие кадры камеры')})");
+  console.log('PREFLIGHT_DIAGNOSTICS',JSON.stringify(preflightDiagnostics));
   check(preflightDiagnostics.open&&Number(preflightDiagnostics.glb)>0&&preflightDiagnostics.privacy,
     'device diagnostics offers a locally measured GLB load and privacy notice');
   await click('#challenge .primary-button');

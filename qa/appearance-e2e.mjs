@@ -137,8 +137,8 @@ async function savedSettings(tab, palette, material = 'glass', highContrast = fa
   await tab.until('(()=>{try{const s=JSON.parse(localStorage.getItem(' + JSON.stringify(key) + '));return s?.version===1&&s.palette===' + JSON.stringify(palette) + '&&s.material===' + JSON.stringify(material) + '&&s.highContrast===' + highContrast + '}catch{return false}})()', 'appearance acknowledged in localStorage');
 }
 async function layout(tab, label, dialog = false) {
-  if (!dialog) await tab.until('!!document.querySelector(".character-card .avatar-3d-drag")', 'avatar ready before measuring overlay geometry', 25000);
-  const result = await tab.js('(()=>{const d=document.querySelector("dialog.appearance-dialog"),r=d.getBoundingClientRect(),trigger=' + query('button[aria-label="Внешний вид"]') + '.getBoundingClientRect(),cta=document.querySelector(".character-card .mobile-quickstart button")?.getBoundingClientRect(),nav=document.querySelector(".mobile-nav")?.getBoundingClientRect(),hint=document.querySelector(".character-card .avatar-3d-drag")?.getBoundingClientRect(),power=document.querySelector(".character-card .power-label")?.getBoundingClientRect();return {label:' + JSON.stringify(label) + ',width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,trigger:{width:trigger.width,height:trigger.height,left:trigger.left,right:trigger.right},dialog:{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:d.clientWidth,scrollWidth:d.scrollWidth,height:d.clientHeight,scrollHeight:d.scrollHeight},hint:hint?{left:hint.left,right:hint.right,top:hint.top,bottom:hint.bottom}:null,power:power?{left:power.left,right:power.right,top:power.top,bottom:power.bottom}:null,cta:!!cta&&!!nav&&cta.top>=0&&cta.bottom<=nav.top}})()');
+  if (!dialog) await tab.until('!!document.querySelector(".dashboard-player .profile-training-cta")', 'above-fold fighter profile and start button ready', 25000);
+  const result = await tab.js('(()=>{const d=document.querySelector("dialog.appearance-dialog"),r=d.getBoundingClientRect(),trigger=' + query('button[aria-label="Внешний вид"]') + '.getBoundingClientRect(),cta=document.querySelector(".dashboard-player .profile-training-cta")?.getBoundingClientRect(),nav=document.querySelector(".mobile-nav")?.getBoundingClientRect(),hint=document.querySelector(".dashboard-player-icon")?.getBoundingClientRect(),power=document.querySelector(".dashboard-player-stats")?.getBoundingClientRect();return {label:' + JSON.stringify(label) + ',width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,trigger:{width:trigger.width,height:trigger.height,left:trigger.left,right:trigger.right},dialog:{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:d.clientWidth,scrollWidth:d.scrollWidth,height:d.clientHeight,scrollHeight:d.scrollHeight},hint:hint?{left:hint.left,right:hint.right,top:hint.top,bottom:hint.bottom}:null,power:power?{left:power.left,right:power.right,top:power.top,bottom:power.bottom}:null,cta:!!cta&&!!nav&&cta.top>=0&&cta.bottom<=nav.top}})()');
   observations.layouts.push(result);
   console.log('MOBILE_LAYOUT', JSON.stringify(result));
   if (dialog && result.dialog.scrollWidth > result.dialog.width) {
@@ -153,7 +153,7 @@ async function layout(tab, label, dialog = false) {
   } else {
     check(result.cta, label + ' training CTA remains above bottom navigation');
     const h = result.hint, p = result.power;
-    check(h && p && (h.right <= p.left || p.right <= h.left || h.bottom <= p.top || p.bottom <= h.top), label + ' avatar gesture hint and muscle badge do not overlap');
+    check(h && p && (h.right <= p.left || p.right <= h.left || h.bottom <= p.top || p.bottom <= h.top), label + ' fighter avatar and primary actions do not overlap');
   }
 }
 function measuredContrast(first, second) {
@@ -459,6 +459,9 @@ try {
   const initialGame = await gameBytes(a);
   await app(a, true);
   await a.until('document.querySelector(".dashboard-player")?.textContent.includes("QA ATLAS")', 'synthetic saved fighter displayed');
+  // The larger neon dashboard intentionally places the 3D card below the
+  // fold; make its viewport visible before requiring WebGL/GLB readiness.
+  await a.js('document.querySelector(".character-card .avatar-stage")?.scrollIntoView({block:"center",behavior:"instant"});true');
   await a.until('document.querySelector(".character-card [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'real human avatar loaded for screenshots', 25000);
   check(await gameBytes(a) === initialGame, 'loading preferences preserves exact primary and backup game bytes');
   if (process.argv.includes('--preferences-only')) {

@@ -12,3 +12,28 @@ Original: [Male base mesh — Rigged A-pose](https://www.innerscene.com/tools/li
 - This local asset must not be confused with the user's own likeness. No phone camera images are stored in the model.
 
 Source CC0 information: https://creativecommons.org/publicdomain/zero/1.0/
+
+## Derived athlete — 2026-10-26
+
+Current primary asset: `public/assets/bodyforge-athlete.glb`, derived locally
+from the pinned source above with Blender 5.2.0 LTS. The original remains the
+legacy runtime fallback and is unchanged.
+
+- Reproducible authoring: `scripts/author-athlete.py`; it checks the source SHA
+  before creating an independent output file. Run in an isolated Blender
+  `--background --factory-startup` process.
+- Real skinned shirt, shorts, shoes, chest emblem and eyebrows share the
+  original 163-bone rig. Source UVs and skin weights are preserved.
+- Final GLB: 5,011,480 bytes; SHA-256
+  `e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97`.
+- 122,531 triangles, 12 skinned meshes. This is a geometry budget, not a
+  claim of measured performance on a physical phone.
+- Runtime also supplies separate anatomical materials, a corrected stance,
+  selectable batched hair geometry, and a local skin albedo. The visible app
+  appearance therefore comprises the GLB, texture and Three.js styling together.
+- `public/assets/athlete-skin.jpg` is a 1024 x 1024, 130,759-byte CC0 MakeHuman
+  texture derivative; exact source, license and hashes are recorded in
+  `public/assets/athlete-skin-source.md`. No camera image or user likeness is used.
+- A detailed reference illustration remains a quality target. The current
+  character does not claim equivalent facial sculpting, strand grooming or
+  photorealistic skin scattering.

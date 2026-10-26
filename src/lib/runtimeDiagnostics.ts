@@ -86,6 +86,8 @@ export class RuntimeDiagnostics {
   private nextAvatarId = 0;
   private latestAvatarId: number | null = null;
   private previousAvatar: DiagnosticsSnapshot['avatar'] = { ...EMPTY_AVATAR };
+  /** Last successful GLB load in this tab; may outlive other avatar sessions. */
+  private lastCompletedGlbMs: number | null = null;
 
   startCameraSession(): void {
     this.cameraDurations = [];
@@ -135,6 +137,7 @@ export class RuntimeDiagnostics {
     const run = this.avatarRuns.get(id);
     if (!run || !isDuration(durationMs)) return;
     run.loadedMs = round(durationMs);
+    this.lastCompletedGlbMs = run.loadedMs;
     this.latestAvatarId = id;
   }
 
@@ -161,7 +164,12 @@ export class RuntimeDiagnostics {
         maxMs: this.cameraDurations.length ? round(Math.max(...this.cameraDurations)) : null,
         observedHz: frequency(this.cameraIntervals),
       },
-      avatar: current ? avatarSnapshot(current, true) : { ...this.previousAvatar },
+      avatar: {
+        ...(current ? avatarSnapshot(current, true) : this.previousAvatar),
+        // The last owned GLB load should remain measurable when a second,
+        // uninitialized avatar is detached during route transitions.
+        glbLoadMs: (current?.loadedMs ?? this.previousAvatar.glbLoadMs) ?? this.lastCompletedGlbMs,
+      },
     };
   }
 }

@@ -35,7 +35,12 @@ export default function RuntimeDiagnosticsPanel() {
   return (
     <section className="perf-panel" aria-label="Диагностика скорости приложения">
       <button type="button" className="perf-toggle" aria-expanded={open}
-        onClick={() => { setOpen((value) => !value); setMessage(''); }}>
+        onClick={() => {
+          // Opening must show the latest completed load immediately, rather
+          // than the empty snapshot captured before the avatar finished loading.
+          if (!open) setStats(runtimeDiagnostics.snapshot());
+          setOpen((value) => !value); setMessage('');
+        }}>
         <span>ДИАГНОСТИКА УСТРОЙСТВА</span><span aria-hidden="true">{open ? '−' : '+'}</span>
       </button>
       {open && (
@@ -50,7 +55,7 @@ export default function RuntimeDiagnosticsPanel() {
               <strong>{fmt(stats.camera.observedHz, ' Гц')}</strong></div>
             <div><span>3D · отрисовок/с</span>
               <strong data-avatar-fps={stats.avatar.observedFps ?? 'none'}>{fmt(stats.avatar.observedFps)}</strong></div>
-            <div><span>Загрузка модели GLB</span>
+            <div><span>Последняя загрузка GLB</span>
               <strong data-glb-load={stats.avatar.glbLoadMs ?? 'none'}>{fmt(stats.avatar.glbLoadMs, ' мс')}</strong></div>
             <div><span>GPU: геометрии / текстуры</span>
               <strong>{fmt(stats.avatar.geometries)} / {fmt(stats.avatar.textures)}</strong></div>

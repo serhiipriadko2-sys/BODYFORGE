@@ -93,7 +93,9 @@ try {
 
   // A runtime OS/browser preference change must be observed without a reload.
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-  await sleep(350);
+  // CDP acknowledgement precedes the browser's asynchronous media-query event.
+  // Await the observable state; still prove that no GPU draws recur below.
+  await until("matchMedia('(prefers-reduced-motion: reduce)').matches && " + loop + "==='paused'", 'live reduced-motion event and stopped RAF');
   observations.reducedMotionLoop = await js(loop);
   check(observations.reducedMotionLoop === 'paused', 'live reduced-motion change stops the avatar RAF');
   const still = await js(draws);

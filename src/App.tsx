@@ -13,6 +13,8 @@ const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'))
 import { useAvatarLook } from './hooks/useAvatarLook';
 import AppearancePanel from './components/AppearancePanel';
 import BrandMark from './components/BrandMark';
+import Avatar from './components/Avatar';
+import ForgeQuickDeck from './components/ForgeQuickDeck';
 import ForgeGlyph from './components/ForgeGlyph';
 import { ExerciseCatalog } from './components/ExerciseCatalog';
 import DailyPlanBoard from './components/DailyPlanBoard';
@@ -851,7 +853,7 @@ function App() {
 
       <div className="main-area" id="dashboard">
         <header className="topbar">
-          <div className="mobile-brand"><Brand compact /><strong>BODYFORGE</strong></div>
+          <div className="mobile-brand"><Brand compact /><strong>BODY<span>FORGE</span></strong></div>
           <div className="breadcrumbs"><span>КУЗНИЦА ТЕЛА</span><ChevronRight size={15} /><strong>ГЛАВНЫЙ ГОРН</strong></div>
           <div className="topbar-right">
             <AppearancePanel disabled={isCameraShown}/>
@@ -864,7 +866,8 @@ function App() {
           <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
           {profile.game.created && (
             <section className="dashboard-player" aria-label="Прогресс бойца">
-              <div className="dashboard-player-icon"><ForgeGlyph name="body" size={25} /></div>
+              <div className="dashboard-player-icon"><Avatar workouts={workoutCount} build={profile.game.build}
+                muscles={profile.game.muscles} outfit={profile.game.outfit} look={avatarLook}/></div>
               <div className="dashboard-player-info">
                 <span>ТВОЙ БОЕЦ · {getRank(workoutCount)}</span>
                 <strong>{profile.game.nickname}</strong>
@@ -872,7 +875,12 @@ function App() {
                   <div style={{ width: `${levelPercent}%` }} />
                 </div>
               </div>
-              <div className="dashboard-player-stats"><strong>УР. {level}</strong><span>{repetitionsDone} ПОВТОРОВ</span></div>
+              <div className="dashboard-player-stats"><strong>УР. {level}</strong><span>{repetitionsDone} ПОВТОРОВ</span>
+                <button type="button" className="profile-training-cta" disabled={!canNavigate}
+                  onClick={() => goTraining('training')} aria-label="Начать тренировку приседаний">
+                  <Play size={13} fill="currentColor"/> СТАРТ
+                </button>
+              </div>
             </section>
           )}
           {!profile.game.created && <FighterSetup legacyWorkouts={profile.workouts.length}
@@ -1045,6 +1053,10 @@ function App() {
             <ProgressPulseBoard profile={profile} now={today} onTraining={() => goTraining('training')}
               onAvatar={() => navigate('forge')}/>
           </Suspense>}
+          {profile.game.created && <ForgeQuickDeck profile={profile} disabled={!canNavigate}
+            onTraining={() => goTraining('training')} onAvatar={() => navigate('forge')}
+            onTower={() => navigate('tower')}
+            onDaily={() => document.getElementById('daily-plan')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}/>}
           {profile.game.created && <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training')}/>}
           <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {

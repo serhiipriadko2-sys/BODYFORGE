@@ -9,6 +9,8 @@ import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 import { DEFAULT_AVATAR_LOOK, HAIR_STYLES, lookColors, type AvatarLook, type HairStyle } from '../lib/avatarLook';
 import { createAvatarHair } from '../lib/avatarHair';
 import { paintFittedBody } from '../lib/avatarSurfaceFit';
+import { createAvatarMaterials, importedSurfaceRole, paintAvatarEyes, tintAvatarNails, tintAvatarLips, type AvatarMaterials } from '../lib/avatarMaterials';
+import { applyAthleticPose } from '../lib/avatarPose';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 
@@ -30,8 +32,10 @@ interface ImportedFigure {
   root: THREE.Group;
   bones: THREE.Bone[];
   surfaces: THREE.SkinnedMesh[];
-  /** Neutral vertex-colored fabric follows the original GLB skin weights. */
-  surfaceMaterial: THREE.MeshStandardMaterial;
+  nailSurfaces: THREE.SkinnedMesh[];
+  lipSurfaces: THREE.SkinnedMesh[];
+  garments: THREE.SkinnedMesh[];
+  materials: AvatarMaterials;
   hair: THREE.MeshStandardMaterial;
   hairStyles: Record<HairStyle, THREE.Group>;
   visor: THREE.Mesh;
@@ -41,8 +45,8 @@ interface ImportedFigure {
 }
 
 /**
- * Mobile-first procedural humanoid: real shaded three-dimensional meshes.
- * No external image CDN, animated rig, or access to the camera stream.
+ * Local rigged athlete, with a procedural human fallback.
+ * No external image CDN or access to the camera stream.
  */
 export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full',
   yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, className = '' }: Avatar3DProps) {
@@ -68,6 +72,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
   figureSettingsRef.current = { build, muscles, outfit, look };
   const [available, setAvailable] = useState(true);
   const [modelSource, setModelSource] = useState<'procedural' | 'cc0'>('procedural');
+  const [modelAsset, setModelAsset] = useState<'procedural' | 'legacy' | 'athlete'>('procedural');
+  const [skinMapReady, setSkinMapReady] = useState(false);
 
   useEffect(() => {
     pausedRef.current = paused;
@@ -107,12 +113,12 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 60);
       camera.position.set(0, 2.40, 8.35);
       camera.lookAt(0, 2.38, 0);
-      const hemisphere = new THREE.HemisphereLight(0xcbdfea, 0x243148, 1.35);
+      const hemisphere = new THREE.HemisphereLight(0xb8cce4, 0x182031, .95);
       scene.add(hemisphere);
-      const warm = new THREE.DirectionalLight(0xffdec0, 2.35);
+      const warm = new THREE.DirectionalLight(0xffe6d4, 2.6);
       warm.position.set(-4.5, 7, 6);
       scene.add(warm);
-      const cool = new THREE.DirectionalLight(0x84b5df, 1.65);
+      const cool = new THREE.DirectionalLight(0x5c99ff, 2.15);
       cool.position.set(4, 5, -3);
       scene.add(cool);
       const rim = new THREE.PointLight(0xf1b560, 16, 11);
@@ -316,8 +322,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
       // clothing and materials are ready; procedural human remains the fallback.
       const glbStartedAt = performance.now();
-      new GLTFLoader().load(
-        '/assets/male-base-mesh-base_male.glb',
+      const loadFigure = (url:string, fallback?:string) => new GLTFLoader().load(
+        url,
         (gltf) => {
           if (disposed || runtime.current !== currentRuntime) {
             disposeThreeTree(gltf.scene);
@@ -333,16 +339,36 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             currentRuntime.current = imported.root;
             importedRef.current = imported;
             setModelSource('cc0');
+            setModelAsset(imported.garments.length > 0 ? 'athlete' : 'legacy');
+            if (imported.garments.length > 0) {
+              new THREE.TextureLoader().load('/assets/athlete-skin.jpg', (texture) => {
+                if (disposed || currentRuntime.current !== imported.root) {
+                  texture.dispose();
+                  return;
+                }
+                // glTF UVs use the opposite vertical origin to TextureLoader.
+                texture.flipY = false;
+                texture.colorSpace = THREE.SRGBColorSpace;
+                texture.anisotropy = Math.min(4, renderer?.capabilities.getMaxAnisotropy() ?? 1);
+                imported.materials.body.map = texture;
+                imported.materials.body.needsUpdate = true;
+                styleImportedFigure(imported, figureSettingsRef.current);
+                setSkinMapReady(true);
+                redraw();
+              }, undefined, () => { /* Local material remains usable offline. */ });
+            }
             runtimeDiagnostics.recordGlbLoad(telemetryId, performance.now() - glbStartedAt);
             redraw();
           } catch (error) {
             console.warn('CC0 avatar unavailable, retaining procedural fallback:', error);
             disposeThreeTree(gltf.scene);
+            if (fallback) loadFigure(fallback);
           }
         },
         undefined,
-        () => { /* Offline app keeps the procedural character. */ },
+        () => { if (!disposed && fallback) loadFigure(fallback); },
       );
+      loadFigure('/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb');
     } catch (error) {
       console.error('BODYFORGE 3D renderer unavailable:', error);
       renderer?.dispose();
@@ -391,7 +417,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 
   return (
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
-      data-outfit-fit={modelSource === "cc0" ? "skinned-surface" : "procedural"}
+      data-avatar-asset={modelAsset}
+      data-skin-map={skinMapReady ? 'ready' : 'basic'}
+      data-outfit-fit={modelAsset === 'athlete' ? 'skinned-garment' : modelSource === "cc0" ? "skinned-surface" : "procedural"}
       data-look-skin={look.skin} data-look-hair={look.hair} data-look-hair-style={look.hairStyle ?? 'crop'}
       data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
       <div className="avatar-3d-embers" aria-hidden="true" />
@@ -424,14 +452,13 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   source.position.set(-centre.x * scale, -box.min.y * scale + .055, -centre.z * scale);
   body.add(source);
 
-  // A skinned MATERIAL on the original anatomical surface replaces the old
-  // detached spheres, cylinders and lathe-based shirt/shorts/shoes. This is a
-  // close-fitting base layer, not a claim of separately modelled loose cloth.
-  const surfaceMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff, vertexColors: true, metalness: 0, roughness: .88,
-    side: THREE.FrontSide,
-  });
+  // The derived GLB supplies real skinned garments. The original GLB remains
+  // a compatible fallback with a painted fitted layer.
+  const materials = createAvatarMaterials();
   const surfaces: THREE.SkinnedMesh[] = [];
+  const nailSurfaces: THREE.SkinnedMesh[] = [];
+  const lipSurfaces: THREE.SkinnedMesh[] = [];
+  const garments: THREE.SkinnedMesh[] = [];
   const bones: THREE.Bone[] = [];
   let headBone: THREE.Bone | null = null;
   source.traverse((node) => {
@@ -443,14 +470,28 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
       if (!node.geometry.getAttribute('position') || !node.geometry.getAttribute('skinIndex')) {
         throw new Error('CC0 skinned mesh lacks positions or skin weights');
       }
-      surfaces.push(node);
-      node.material = surfaceMaterial;
+      const garment = /^BODYFORGE_(Shirt|Shorts|Shoes|ChestMark|Brows)$/.test(node.name);
+      const role = garment ? 'garment' : importedSurfaceRole(node.name, node.geometry);
+      if (garment) {
+        garments.push(node);
+        const material = node.material as THREE.MeshStandardMaterial;
+        if (node.name !== 'BODYFORGE_ChestMark' && node.name !== 'BODYFORGE_Brows') {
+          material.bumpMap = materials.body.bumpMap;
+          material.bumpScale = .0015;
+        }
+      } else node.material = materials[role as keyof AvatarMaterials];
+      node.userData.surfaceRole = role;
+      if (role === 'eyes') paintAvatarEyes(node.geometry);
+      if (role === 'body') surfaces.push(node);
+      if (role === 'nails') nailSurfaces.push(node);
+      if (role === 'lips') lipSurfaces.push(node);
       node.castShadow = false;
       node.receiveShadow = true;
     }
   });
   if (surfaces.length === 0 || !headBone) {
-    surfaceMaterial.dispose();
+    Object.values(materials).forEach((material) => material.dispose());
+    materials.body.bumpMap?.dispose();
     throw new Error('CC0 rig cannot provide skinned body and head anchor');
   }
 
@@ -464,18 +505,18 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     (headBone as THREE.Bone).getWorldPosition(new THREE.Vector3()),
   );
 
-  const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .94 });
+  const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .62 });
   const hairStyles = {} as Record<HairStyle, THREE.Group>;
   for (const { id } of HAIR_STYLES) {
     const style = createAvatarHair(id, hair);
     // Shrink the procedural hairstyle to the measured MakeHuman skull.
     // Keep its world-space silhouette, then reparent to the actual head bone.
-    style.scale.set(.72, .79, .74);
+    style.scale.set(.72, 1.07, .74);
     const prototypeY = id === 'buzz' ? 4.620 : 4.576;
     style.position.set(
       headPosition.x,
-      headPosition.y + .325 - prototypeY * .79,
-      headPosition.z,
+      headPosition.y + .20 - prototypeY * 1.07,
+      headPosition.z + .08,
     );
     outfitAnchor.add(style);
     (headBone as THREE.Bone).attach(style);
@@ -504,9 +545,10 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   (headBone as THREE.Bone).attach(visorRoot);
 
   const imported: ImportedFigure = {
-    root, bones, surfaces, surfaceMaterial, hair, hairStyles,
+    root, bones, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, hairStyles,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
   };
+  applyAthleticPose(source);
   styleImportedFigure(imported, settings);
   return imported;
 }
@@ -515,7 +557,34 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   const colors = lookColors(look);
   // Outfit follows the *same skinned GLB positions*, not independent meshes.
   for (const surface of imported.surfaces) {
-    paintFittedBody(surface.geometry, { skin: colors.skin, trim: colors.trim, outfit });
+    if (imported.garments.length === 0) paintFittedBody(surface.geometry, { skin: colors.skin, trim: colors.trim, outfit });
+    else {
+      const geometry = surface.geometry;
+      const count = geometry.getAttribute('position').count;
+      let attribute = geometry.getAttribute('color');
+      if (!attribute || attribute.count !== count) {
+        attribute = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
+        geometry.setAttribute('color', attribute);
+      }
+      const skin = new THREE.Color(colors.skin);
+      if (imported.materials.body.map) {
+        const reference = new THREE.Color('#edbf9d');
+        skin.r /= reference.r; skin.g /= reference.g; skin.b /= reference.b;
+      }
+      for (let i = 0; i < count; i++) attribute.setXYZ(i, skin.r, skin.g, skin.b);
+      attribute.needsUpdate = true;
+    }
+  }
+  for (const surface of imported.nailSurfaces) tintAvatarNails(surface.geometry, colors.skin);
+  for (const surface of imported.lipSurfaces) tintAvatarLips(surface.geometry, colors.skin);
+  for (const garment of imported.garments) {
+    const material = garment.material as THREE.MeshStandardMaterial;
+    const shirt = garment.name === 'BODYFORGE_Shirt';
+    material.color.set(garment.name === 'BODYFORGE_Brows' ? colors.hair :
+      garment.name === 'BODYFORGE_ChestMark' ? colors.trim :
+      garment.name === 'BODYFORGE_Shoes' ? '#202b39' :
+      outfit === 'steel' ? (shirt ? '#263e53' : '#354e61') : outfit === 'ember' ?
+        (shirt ? '#453130' : '#764d39') : (shirt ? '#17212d' : '#161d27'));
   }
   imported.hair.color.set(colors.hair);
   for (const style of HAIR_STYLES) imported.hairStyles[style.id].visible = style.id === (look.hairStyle ?? 'crop');

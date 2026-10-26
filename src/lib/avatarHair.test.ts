@@ -11,7 +11,7 @@ describe('bounded low-poly haircut geometry', () => {
       const root = createAvatarHair(id, mat);
       const meshes = root.children.filter((mesh) => mesh instanceof THREE.Mesh);
       expect(root.name).toBe('hair-style-' + id);
-      expect(meshes.length).toBe(1); // One continuous shell, no rounded detached hair strands.
+      expect(meshes.length).toBe(1); // Locks and scalp share one mesh/draw call.
       const box = new THREE.Box3().setFromObject(root);
       expect(box.min.x).toBeGreaterThan(-.5);
       expect(box.max.x).toBeLessThan(.5);
@@ -20,7 +20,9 @@ describe('bounded low-poly haircut geometry', () => {
       expect(box.max.y).toBeGreaterThan(id === 'buzz' ? 4.68 : 4.75);
       for (const mesh of meshes) {
         expect((mesh as THREE.Mesh).material).toBe(mat);
-        expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeLessThan(700);
+        expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeLessThan(2300);
+        expect((mesh as THREE.Mesh).geometry.attributes.position.count).toBeGreaterThan(id === 'buzz' ? 400 : 1500);
+        expect(Array.from((mesh as THREE.Mesh).geometry.attributes.position.array).every(Number.isFinite)).toBe(true);
       }
       disposeThreeTree(root);
     }

@@ -63,6 +63,18 @@ describe('privacy-preserving performance diagnostics', () => {
     expect(report).not.toContain('video');
   });
 
+  it('retains the last completed numeric GLB load across navigation and uninitialized avatars', () => {
+    const state = new RuntimeDiagnostics();
+    const first = state.attachAvatar();
+    state.recordGlbLoad(first, 321.45);
+    state.detachAvatar(first);
+    const pending = state.attachAvatar();
+    expect(state.snapshot().avatar.glbLoadMs).toBe(321.5);
+    state.detachAvatar(pending);
+    expect(state.snapshot().avatar).toMatchObject({ active: false, glbLoadMs: 321.5 });
+    expect(JSON.stringify(state.snapshot())).not.toContain('nickname');
+  });
+
   it('ignores late GLB callbacks and frames after an avatar was destroyed', () => {
     const state = new RuntimeDiagnostics();
     const id = state.attachAvatar();

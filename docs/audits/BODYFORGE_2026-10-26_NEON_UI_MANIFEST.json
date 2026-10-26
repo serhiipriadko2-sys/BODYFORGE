@@ -1,0 +1,76 @@
+{
+    "project":  "BODYFORGE",
+    "date":  "2026-10-26",
+    "baseline":  "5e23ccb39df92cbfc8e773f72f51a994a79666ac",
+    "stage":  "implemented-tested-locally-not-committed",
+    "scope":  "UI-specific checksums; concurrent avatar work remains separate",
+    "files":  [
+                  {
+                      "path":  "src/App.tsx",
+                      "bytes":  71708,
+                      "sha256":  "660fb3d344893393de1cc855a78d0e13e022e643ad821fd40112e9287f0d63fa"
+                  },
+                  {
+                      "path":  "src/main.tsx",
+                      "bytes":  543,
+                      "sha256":  "04e8336c99bc85f2f528f799e7191be7da2726326cb0104e0c797ec1d8c92bdf"
+                  },
+                  {
+                      "path":  "src/components/ProgressPulseBoard.tsx",
+                      "bytes":  9607,
+                      "sha256":  "7fa7daf29d20548de9014b432b1a3ab98ef0dcb548003870ddcfc816c8ad39ac"
+                  },
+                  {
+                      "path":  "src/components/ForgeQuickDeck.tsx",
+                      "bytes":  3284,
+                      "sha256":  "b2e013df7caf5d62d23ec22166be6f5307316981e367ce859c22200ab5292a44"
+                  },
+                  {
+                      "path":  "src/lib/dashboardDisplay.ts",
+                      "bytes":  2625,
+                      "sha256":  "d9c9edae4e3fe475b111cd27256e59a57cc30b5398f677b5b3059672308060aa"
+                  },
+                  {
+                      "path":  "src/lib/dashboardDisplay.test.ts",
+                      "bytes":  2224,
+                      "sha256":  "b63df55e7173593509449c75ad55ab9d4aefd5d54d65a3fd87cad343fa973d01"
+                  },
+                  {
+                      "path":  "src/neonPulseV2.css",
+                      "bytes":  23113,
+                      "sha256":  "31dff4fb55afb58e0ec6577ff98cdb6bc3fc1bcf74d6b87086f228c337555fe7"
+                  },
+                  {
+                      "path":  "qa/pulse-armory-e2e.mjs",
+                      "bytes":  13531,
+                      "sha256":  "ff7e67255d20130344a7e2def173e570017c57f474e9a830940d5e85f71199d0"
+                  },
+                  {
+                      "path":  "qa/mobile-e2e.mjs",
+                      "bytes":  21717,
+                      "sha256":  "7de298c04a7befd01d509e27ebd6dc4dc0711fb96240034df1375659f8954ebb"
+                  },
+                  {
+                      "path":  "qa/appearance-e2e.mjs",
+                      "bytes":  46855,
+                      "sha256":  "d3f90b5b7f0ed122374caa45313475ce7e1a18694ec208b2a26a2ee983f72f8b"
+                  },
+                  {
+                      "path":  "src/lib/runtimeDiagnostics.ts",
+                      "bytes":  6066,
+                      "sha256":  "ef9fa12f087938c221c8c962c425a1d93d73d003e5895cca63f95960d6ccad19"
+                  },
+                  {
+                      "path":  "src/lib/runtimeDiagnostics.test.ts",
+                      "bytes":  3912,
+                      "sha256":  "180ad133cc6fdee2f3b0f68286e2737432757dbe971c84ff7dcbd43938970df5"
+                  },
+                  {
+                      "path":  "src/components/RuntimeDiagnosticsPanel.tsx",
+                      "bytes":  4568,
+                      "sha256":  "75c97c214610d2d5bb04c71e97fff959b23f0f60b8b1a0ee364c3a82ed303cfb"
+                  }
+              ],
+    "fileCount":  13,
+    "sourceBytes":  209753
+}
