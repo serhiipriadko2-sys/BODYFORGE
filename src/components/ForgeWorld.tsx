@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   ArrowRight, CheckCircle2, ChevronRight, Coins, Crown, Flame, Footprints,
   Gift, Globe2, Hammer, LockKeyhole, Medal, Shirt, ShieldCheck,
   Swords, Target, Timer, UserRound, Zap,
 } from 'lucide-react';
-import GameAvatar from './GameAvatar';
+import GameAvatar, { type AvatarFocus } from './GameAvatar';
+const AvatarLab = lazy(() => import('./AvatarLab'));
+import type { AvatarLook } from '../lib/avatarLook';
 import { canClaimLogin, canClaimQuest, hasClaimedDailyReward } from '../lib/game';
 import {
   LOGIN_COINS, MUSCLES, OUTFITS, QUEST_COINS, QUEST_XP, TOWER_COINS,
@@ -93,10 +95,18 @@ interface StudioProps {
   profile: Profile;
   onUpgrade: (muscle: Muscle) => void;
   onOutfit: (outfit: Outfit) => void;
+  look: AvatarLook;
+  onLookChange: (look: AvatarLook) => void;
+  lookStatus: 'ready' | 'invalid' | 'unavailable';
+  lookMessage: string;
+  active?: boolean;
   paused?: boolean;
   busy?: boolean;
 }
-export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false, busy = false }: StudioProps) {
+export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, lookStatus, lookMessage,
+  paused = false, busy = false, active = false }: StudioProps) {
+  const [focus, setFocus] = useState<AvatarFocus>('full');
+  const [yaw, setYaw] = useState(-.21);
   const game = profile.game;
   const sum = MUSCLES.reduce((total, muscle) => total + game.muscles[muscle.id], 0);
   return (
@@ -107,13 +117,20 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, paused = false, busy
       </div>
       {busy && <p role="status">Сохраняем прогресс. Дождись завершения записи, прежде чем улучшать мышцы или менять одежду.</p>}
       <div className="studio-layout">
-        <div className="studio-preview"><span className="preview-kicker">ЭВОЛЮЦИЯ БОЙЦА</span>
-          <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit} paused={paused}/>
+        <div className="studio-preview" data-studio-focus={focus} data-studio-trim={look.trim}>
+          <span className="preview-kicker">BODYFORGE // AVATAR SYSTEM · 01</span>
+          <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {focus === 'portrait' ? 'ПОРТРЕТ' : 'ПОЛНЫЙ РОСТ'}</div>
+          <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}
+            paused={paused} look={look} focus={focus} yaw={yaw}/>
           <strong>{game.nickname}</strong>
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
         </div>
         <div className="studio-content">
+          {active && <Suspense fallback={<div className="armory-lab-wait" role="status">Загружаем редактор внешности…</div>}>
+            <AvatarLab look={look} onChange={onLookChange} focus={focus} onFocus={setFocus}
+              yaw={yaw} onYaw={setYaw} message={lookMessage} readStatus={lookStatus}/>
+          </Suspense>}
           <div className="forge-subheading"><Hammer size={18}/> ПРОКАЧКА МЫШЦ <span>МАКСИМУМ 5</span></div>
           <div className="muscle-grid">
             {MUSCLES.map((muscle) => {

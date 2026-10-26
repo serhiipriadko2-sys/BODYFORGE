@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "qa:mobile": "node qa/mobile-e2e.mjs",
     "qa:appearance": "node qa/appearance-e2e.mjs",
+    "qa:pulse-armory": "node qa/pulse-armory-e2e.mjs",
     "qa:kinetic": "node qa/kinetic-e2e.mjs",
     "qa:tower20": "node qa/tower20-e2e.mjs",
     "qa:privacy": "node qa/privacy-server-e2e.mjs",

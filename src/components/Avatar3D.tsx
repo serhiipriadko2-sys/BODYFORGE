@@ -6,6 +6,8 @@ import { disposeThreeTree } from '../lib/threeResources';
 import { runtimeDiagnostics } from '../lib/runtimeDiagnostics';
 import Avatar from './Avatar';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
+import { DEFAULT_AVATAR_LOOK, lookColors, type AvatarLook } from '../lib/avatarLook';
+import type { AvatarFocus } from './GameAvatar';
 
 interface Avatar3DProps {
   build: BodyBuild;
@@ -13,9 +15,12 @@ interface Avatar3DProps {
   outfit: Outfit;
   paused?: boolean;
   className?: string;
+  look?: AvatarLook;
+  focus?: AvatarFocus;
+  yaw?: number;
 }
 
-type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit'>;
+type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look'>;
 
 interface ImportedFigure {
   root: THREE.Group;
@@ -23,13 +28,21 @@ interface ImportedFigure {
   shorts: THREE.MeshStandardMaterial;
   trim: THREE.MeshStandardMaterial;
   shoes: THREE.MeshStandardMaterial;
+  shirt: THREE.MeshStandardMaterial;
+  skin: THREE.MeshStandardMaterial;
+  hair: THREE.MeshStandardMaterial;
+  visor: THREE.Mesh;
+  visorMaterial: THREE.MeshStandardMaterial;
+  visorEdge: THREE.Mesh;
+  visorEdgeMaterial: THREE.MeshStandardMaterial;
 }
 
 /**
  * Mobile-first procedural humanoid: real shaded three-dimensional meshes.
  * No external image CDN, animated rig, or access to the camera stream.
  */
-export function Avatar3D({ build, muscles, outfit, paused = false, className = '' }: Avatar3DProps) {
+export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21,
+  paused = false, className = '' }: Avatar3DProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const runtime = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -40,11 +53,14 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     stopped: () => void;
     redraw: () => void;
     syncMotion: () => void;
+    setView: (next: AvatarFocus) => void;
+    setYaw: (next: number) => void;
+    setAccent: (color: string) => void;
   } | null>(null);
   const pausedRef = useRef(paused);
-  const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit });
+  const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit, look });
   const importedRef = useRef<ImportedFigure | null>(null);
-  figureSettingsRef.current = { build, muscles, outfit };
+  figureSettingsRef.current = { build, muscles, outfit, look };
   const [available, setAvailable] = useState(true);
   const [modelSource, setModelSource] = useState<'procedural' | 'cc0'>('procedural');
 
@@ -62,7 +78,7 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
     let intersectsViewport = true;
     let visible = !document.hidden;
     let disposed = false;
-    let rotation = -0.21;
+    let rotation = yaw;
     let activePointer: number | null = null;
     let pointerX = 0;
     let isDragging = false;
@@ -118,6 +134,28 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       const figureRoot = new THREE.Group();
       figureRoot.rotation.y = rotation;
       stage.add(figureRoot);
+      const setView = (next: AvatarFocus) => {
+        if (next === 'portrait') {
+          camera.position.set(0, 4.37, 2.55);
+          camera.lookAt(0, 4.42, 0);
+        } else {
+          camera.position.set(0, 2.40, 8.35);
+          camera.lookAt(0, 2.38, 0);
+        }
+        element.dataset.avatarView = next;
+        redraw();
+      };
+      const setYaw = (next: number) => {
+        rotation = THREE.MathUtils.clamp(Number.isFinite(next) ? next : -.21, -1.02, 1.02);
+        figureRoot.rotation.y = rotation;
+        redraw();
+      };
+      const setAccent = (color: string) => {
+        const safe = /^#[0-9a-f]{6}$/i.test(color) ? color : '#55e3f2';
+        edgeMaterial.color.set(safe);
+        rim.color.set(safe);
+        redraw();
+      };
 
       function redraw() {
         // ResizeObserver, GLB loading and profile updates can redraw without RAF.
@@ -221,6 +259,9 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       }
       const currentRuntime = {
         renderer,
+        setView,
+        setYaw,
+        setAccent,
         scene,
         camera,
         figureRoot,
@@ -254,6 +295,9 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
         },
       };
       runtime.current = currentRuntime;
+      setView(focus);
+      setYaw(yaw);
+      setAccent(lookColors(look).trim);
       onVisibility();
 
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
@@ -302,8 +346,9 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
   useEffect(() => {
     const state = runtime.current;
     if (!state) return;
+    state.setAccent(lookColors(look).trim);
     if (importedRef.current) {
-      styleImportedFigure(importedRef.current, { build, muscles, outfit });
+      styleImportedFigure(importedRef.current, { build, muscles, outfit, look });
       state.redraw();
       return;
     }
@@ -311,23 +356,29 @@ export function Avatar3D({ build, muscles, outfit, paused = false, className = '
       state.figureRoot.remove(state.current);
       disposeThreeTree(state.current);
     }
-    const mesh = makeFigure({ build, muscles, outfit });
+    const mesh = makeFigure({ build, muscles, outfit, look });
     state.figureRoot.add(mesh);
     state.current = mesh;
     state.redraw();
-  }, [build, muscles.arms, muscles.core, muscles.legs, muscles.back, outfit]);
+  }, [build, muscles.arms, muscles.core, muscles.legs, muscles.back, outfit, look]);
+
+  useEffect(() => {
+    runtime.current?.setView(focus);
+    runtime.current?.setYaw(yaw);
+  }, [focus, yaw]);
 
   if (!available) {
     return (
       <div className={`avatar-3d-fallback ${className}`} data-3d-status="fallback">
-        <Avatar workouts={0} build={build} muscles={muscles} outfit={outfit}/>
+        <Avatar workouts={0} build={build} muscles={muscles} outfit={outfit} look={look}/>
         <span>Устройство не поддерживает 3D — включён облегчённый персонаж</span>
       </div>
     );
   }
 
   return (
-    <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}>
+    <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
+      data-look-skin={look.skin} data-look-hair={look.hair} data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
       <div className="avatar-3d-embers" aria-hidden="true" />
       <canvas ref={canvas} tabIndex={0} aria-keyshortcuts="ArrowLeft ArrowRight"
         aria-label="Объёмный 3D-персонаж BODYFORGE. Поверни пальцем или клавишами со стрелками влево и вправо." role="img" />
@@ -378,6 +429,8 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   const shoes = new THREE.MeshStandardMaterial({
     color: 0x17222b, roughness: .72, metalness: .06,
   });
+  const shirt = new THREE.MeshStandardMaterial({ color: 0x18232e, roughness: .91, metalness: .015,
+    side: THREE.DoubleSide });
 
   const outfitGroup = new THREE.Group();
   body.add(outfitGroup);
@@ -391,6 +444,21 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     return mesh;
   };
   const sphere = new THREE.SphereGeometry(1, 28, 18);
+  // Fitted technical jersey over the CC0 anatomical torso. It deliberately
+  // exists for every paid outfit, and has no effect on earned stats.
+  add('technical-jersey', new THREE.LatheGeometry([
+    new THREE.Vector2(.475, 2.57), new THREE.Vector2(.53, 2.68),
+    new THREE.Vector2(.545, 3.04), new THREE.Vector2(.58, 3.23),
+    new THREE.Vector2(.66, 3.51), new THREE.Vector2(.67, 3.67),
+    new THREE.Vector2(.57, 3.80), new THREE.Vector2(.32, 3.94),
+  ], 48), shirt, 0, 0, 0, 1, 1, .76);
+  for (const side of [-1, 1]) {
+    add('jersey-sleeve', sphere, shirt, side * .67, 3.65, -.018, .245, .235, .245);
+    const piping = add('jersey-sleeve-piping',
+      new THREE.CylinderGeometry(.219, .224, .014, 32), trim,
+      side * .72, 3.465, .012, 1, 1, .97);
+    piping.rotation.z = side * .18;
+  }
   // Softly rounded athletic shorts, with independent thigh openings rather
   // than a rigid rectangular box covering the anatomical base mesh.
   add('training-shorts', new THREE.LatheGeometry([
@@ -413,15 +481,30 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   // Neutral, close-cut hair material: facial features remain those of
   // the original anatomical GLB rather than handmade spheres.
   const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .94 });
-  add('short-hair',new THREE.SphereGeometry(.292,32,16,0,Math.PI*2,0,Math.PI*.43),
-    hair,0,4.525,.02);
+  // One tapered hair cap instead of disconnected spheres; preserve the face.
+  add('short-hair',new THREE.SphereGeometry(.314,40,18,0,Math.PI*2,0,Math.PI*.45),
+    hair,0,4.565,-.005);
 
-  const imported: ImportedFigure = { root, bones, shorts, trim, shoes };
+  // Thin tinted glass with an independent emissive rim, not an opaque bar.
+  const visorMaterial = new THREE.MeshStandardMaterial({ color: '#163448', metalness: .12, roughness: .22,
+    transparent: true, opacity: .42, depthWrite: false });
+  const visor = add('holo-visor-glass', new THREE.BoxGeometry(.62, .094, .04), visorMaterial, 0, 4.38, .34);
+  const visorEdgeMaterial = new THREE.MeshStandardMaterial({ color: '#55e3f2', metalness: .36, roughness: .24,
+    emissive: '#55e3f2', emissiveIntensity: .3 });
+  const visorEdge = add('holo-visor-frame', new THREE.BoxGeometry(.64, .015, .053), visorEdgeMaterial, 0, 4.43, .35);
+  const imported: ImportedFigure = { root, bones, shorts, trim, shoes, shirt, skin, hair, visor, visorMaterial, visorEdge, visorEdgeMaterial };
   styleImportedFigure(imported, settings);
   return imported;
 }
 
-function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit }: FigureParams) {
+function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: FigureParams) {
+  const colors = lookColors(look);
+  imported.skin.color.set(colors.skin);
+  imported.hair.color.set(colors.hair);
+  imported.visorEdgeMaterial.color.set(colors.trim);
+  imported.visorEdgeMaterial.emissive.set(colors.trim);
+  imported.visor.visible = look.visor;
+  imported.visorEdge.visible = look.visor;
   const arms = muscles.arms ?? 0;
   const core = muscles.core ?? 0;
   const legs = muscles.legs ?? 0;
@@ -429,9 +512,9 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit 
   imported.root.scale.x = build === 'solid' ? 1.055 : 1;
   imported.shorts.color.setHex(outfit === 'ember' ? 0x764d39 :
     outfit === 'steel' ? 0x354e61 : 0x202a35);
-  imported.trim.color.setHex(outfit === 'ember' ? 0xb68a58 :
-    outfit === 'steel' ? 0x708b9d : 0x374350);
+  imported.trim.color.set(colors.trim);
   imported.shoes.color.setHex(outfit === 'steel' ? 0x2c4457 : 0x17222b);
+  imported.shirt.color.setHex(outfit === 'ember' ? 0x423130 : outfit === 'steel' ? 0x233647 : 0x18232e);
   for (const bone of imported.bones) {
     const name = bone.name.toLowerCase();
     let factor = 1;
@@ -446,7 +529,9 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit 
   }
 }
 
-function makeFigure({ build, muscles, outfit }: FigureParams): THREE.Group {
+function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: FigureParams): THREE.Group {
+  const colors = lookColors(look);
+  const base = new THREE.Color(colors.skin);
   const arms = muscles.arms ?? 0;
   const core = muscles.core ?? 0;
   const legs = muscles.legs ?? 0;
@@ -456,19 +541,20 @@ function makeFigure({ build, muscles, outfit }: FigureParams): THREE.Group {
   const sphere = new THREE.SphereGeometry(1, 32, 24);
   // Restrained PBR skin and anatomy. Growth still follows game.muscles;
   // unlike the previous spherical joints, the figure reads as one human.
-  const skin = new THREE.MeshStandardMaterial({ color: 0xb28468, roughness: .78, metalness: 0 });
-  const warmSkin = new THREE.MeshStandardMaterial({ color: 0xbb8e73, roughness: .76, metalness: 0 });
-  const skinShade = new THREE.MeshStandardMaterial({ color: 0x956650, roughness: .83, metalness: 0 });
-  const hair = new THREE.MeshStandardMaterial({ color: 0x202329, roughness: .94 });
+  const skin = new THREE.MeshStandardMaterial({ color: base, roughness: .78, metalness: 0 });
+  const warmSkin = new THREE.MeshStandardMaterial({ color: base.clone().lerp(new THREE.Color(0xffffff), .07), roughness: .76, metalness: 0 });
+  const skinShade = new THREE.MeshStandardMaterial({ color: base.clone().lerp(new THREE.Color(0x000000), .22), roughness: .83, metalness: 0 });
+  const hair = new THREE.MeshStandardMaterial({ color: colors.hair, roughness: .94 });
   const faceDetail = new THREE.MeshStandardMaterial({ color: 0x382a28, roughness: .92 });
   const outfitColor = outfit === 'ember' ? 0x976742 : outfit === 'steel' ? 0x476275 : 0x1b2733;
-  const outfitAccent = outfit === 'ember' ? 0xe6b46e : outfit === 'steel' ? 0xaccad8 : 0x9b805c;
   const fabric = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: .71, metalness: .09 });
   const fabricShadow = new THREE.MeshStandardMaterial({ color: outfit === 'ember' ? 0x511e16 : 0x19242b, roughness: .72 });
   const trim = new THREE.MeshStandardMaterial({
-    color: outfitAccent, metalness: outfit === 'base' ? .45 : .82, roughness: .22,
+    color: colors.trim, metalness: outfit === 'base' ? .45 : .82, roughness: .22,
   });
   const shoe = new THREE.MeshStandardMaterial({ color: outfit === 'steel' ? 0x43525a : 0x1f272a, roughness: .55 });
+  const jersey = new THREE.MeshStandardMaterial({ color: outfit === 'ember' ? 0x423130 : outfit === 'steel' ? 0x233647 : 0x18232e,
+    roughness: .9, side: THREE.DoubleSide });
   const shoeSole = new THREE.MeshStandardMaterial({ color: 0xd8c5aa, roughness: .68 });
 
   function ball(name: string, x: number, y: number, z: number, sx: number, sy: number, sz: number,
@@ -547,6 +633,17 @@ function makeFigure({ build, muscles, outfit }: FigureParams): THREE.Group {
   torso.scale.z = .67;
   group.add(torso);
   ball('abdomen',0,2.97,.16+solid*.03,waist*.89,.37,.125+solid*.03,skin);
+  // The same universal default workout jersey on procedural devices.
+  const shirtGeometry = new THREE.LatheGeometry([
+    new THREE.Vector2(waist*.85,2.56),new THREE.Vector2(waist+ .055,2.71),
+    new THREE.Vector2(waist+ .075,3.08),new THREE.Vector2(.59+spread,3.35),
+    new THREE.Vector2(shoulderRadius+.035,3.66),new THREE.Vector2(.45,3.86),
+    new THREE.Vector2(.25,3.99),
+  ],32);
+  const jerseyBody = new THREE.Mesh(shirtGeometry,jersey);
+  jerseyBody.name='technical-jersey';
+  jerseyBody.scale.z=.79;
+  group.add(jerseyBody);
   const chestMass=.022+back*.015;
   for(const side of [-1,1]){
     ball('pectoral',side*(.27+back*.008),3.52,.255,.282+chestMass,.145+back*.011,.119+chestMass*.4,skin);
@@ -567,6 +664,7 @@ function makeFigure({ build, muscles, outfit }: FigureParams): THREE.Group {
   // Shoulders and arms are individually reshaped with the "arms" stat.
   for(const side of [-1,1]){
     const sx=side*(shoulderRadius+.08);
+    ball('shirt-sleeve',sx,3.66,.0,.24,.222,.253,jersey);
     ball('deltoid',sx,3.66,.0,.228+arms*.018,.237+arms*.017,.23+arms*.017,skin);
     limb('upper-arm',[sx,3.53,.005],[side*(.86+back*.012),2.88,.075],
       .174+arms*.020,.167+arms*.018,skin);
@@ -595,6 +693,19 @@ function makeFigure({ build, muscles, outfit }: FigureParams): THREE.Group {
   hairCap.position.set(0,4.575,.064);
   group.add(hairCap);
   ball('hair-side',-.185,4.68,.055,.085,.14,.16,hair);
+  if (look.visor) {
+    const tinted = new THREE.MeshStandardMaterial({ color: '#203749', metalness: .12, roughness: .25,
+      transparent: true, opacity: .42, depthWrite: false });
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(.61, .085, .04), tinted);
+    visor.name = 'holographic-visor';
+    visor.position.set(0, 4.52, .366);
+    group.add(visor);
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(.62, .013, .05),
+      new THREE.MeshStandardMaterial({ color: colors.trim, emissive: colors.trim, emissiveIntensity: .27 }));
+    rim.name = 'visor-edge';
+    rim.position.set(0, 4.57, .385);
+    group.add(rim);
+  }
 
   // Outfits have visible 3D details instead of a texture-only color change.
   if(outfit!=='base'){

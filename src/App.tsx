@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, ArrowRight, Award, CameraOff, Check, ChevronRight,
   CircleHelp, Clock3, Coins, Dumbbell, Flame, Info,
@@ -9,6 +9,8 @@ import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
+const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
+import { useAvatarLook } from './hooks/useAvatarLook';
 import AppearancePanel from './components/AppearancePanel';
 import BrandMark from './components/BrandMark';
 import ForgeGlyph from './components/ForgeGlyph';
@@ -161,6 +163,7 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
 function App() {
   const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, journalEntries, quarantined, quarantine,
     beginWorkout, completeWorkout, openCurrent, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
+  const { look: avatarLook, readStatus: avatarLookStatus, message: avatarLookMessage, update: updateAvatarLook } = useAvatarLook();
   const [mode, setMode] = useState<Mode>('idle');
   const [snapshot, setSnapshot] = useState<CounterSnapshot>(FIRST_SNAPSHOT);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -897,7 +900,7 @@ function App() {
                 <span className="kinetic-axis" aria-hidden="true">MOVE / BUILD / EVOLVE</span>
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
                 <GameAvatar workouts={workoutCount} build={profile.game.build}
-                  muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown}/>
+                  muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown} look={avatarLook}/>
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
@@ -1038,6 +1041,10 @@ function App() {
             </article>
           </section>
 
+          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
+            <ProgressPulseBoard profile={profile} now={today} onTraining={() => goTraining('training')}
+              onAvatar={() => navigate('forge')}/>
+          </Suspense>}
           {profile.game.created && <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training')}/>}
           <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {
@@ -1052,7 +1059,8 @@ function App() {
             }}
             onTraining={() => goTraining('training')}/>
           {profile.game.created && <StepsBoard now={today}/>}
-          <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving}
+          <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
+            look={avatarLook} onLookChange={updateAvatarLook} lookStatus={avatarLookStatus} lookMessage={avatarLookMessage}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
             onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
           <TowerBoard profile={profile}

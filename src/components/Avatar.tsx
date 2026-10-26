@@ -1,15 +1,17 @@
 import { useId } from 'react';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
+import { DEFAULT_AVATAR_LOOK, lookColors, type AvatarLook } from '../lib/avatarLook';
 
 interface AvatarProps {
   workouts: number;
   build?: BodyBuild;
   muscles?: Partial<Record<Muscle, number>>;
   outfit?: Outfit;
+  look?: AvatarLook;
 }
 
 /** Human character; coin-funded upgrades change muscle definition independently. */
-export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'base' }: AvatarProps) {
+export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'base', look = DEFAULT_AVATAR_LOOK }: AvatarProps) {
   const id = useId().replace(/:/g, '');
   const fallback = Math.min(4, Math.max(0, workouts));
   const armLevel = muscles?.arms ?? fallback;
@@ -26,7 +28,12 @@ export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'ba
   const chestOpacity = 0.26 + backLevel * 0.08;
   const shortsLight = outfit === 'ember' ? '#cf5f31' : outfit === 'steel' ? '#77929b' : '#554038';
   const shortsDark = outfit === 'ember' ? '#531f16' : outfit === 'steel' ? '#23333b' : '#241915';
-  const accent = outfit === 'steel' ? '#c6e4ee' : outfit === 'ember' ? '#ffa46b' : '#dd8950';
+  const colors = lookColors(look);
+  const accent = colors.trim;
+  const blend = (base: string, target: number, fraction: number) => '#'+[1,3,5].map((index) => {
+    const old = Number.parseInt(base.slice(index, index + 2), 16);
+    return Math.round(old + (target - old) * fraction).toString(16).padStart(2, '0');
+  }).join('');
 
   return (
     <svg className="fighter-svg" viewBox="0 0 390 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label={`Персонаж BODYFORGE. Телосложение: ${build === 'solid' ? 'крепкое' : 'стройное'}, мышцы ${armLevel + coreLevel + legLevel + backLevel} очков, форма ${outfit}`}>
@@ -37,14 +44,14 @@ export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'ba
           <stop offset="100%" stopColor="#ff8c43" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`${id}-skin`} x1=".1" x2=".95" y1=".05" y2=".9">
-          <stop offset="0%" stopColor="#f4c09c" />
-          <stop offset="40%" stopColor="#d49071" />
-          <stop offset="82%" stopColor="#ae6953" />
-          <stop offset="100%" stopColor="#784534" />
+          <stop offset="0%" stopColor={blend(colors.skin, 255, .21)} />
+          <stop offset="40%" stopColor={colors.skin} />
+          <stop offset="82%" stopColor={blend(colors.skin, 0, .13)} />
+          <stop offset="100%" stopColor={blend(colors.skin, 0, .28)} />
         </linearGradient>
         <linearGradient id={`${id}-leg`} x1="0" x2="1" y1="0" y2=".6">
-          <stop offset="0%" stopColor="#d49378" />
-          <stop offset="100%" stopColor="#8e503c" />
+          <stop offset="0%" stopColor={colors.skin} />
+          <stop offset="100%" stopColor={blend(colors.skin, 0, .25)} />
         </linearGradient>
         <linearGradient id={`${id}-shorts`} x1="0" x2="1" y1="0" y2="1">
           <stop offset="0%" stopColor={shortsLight} />
@@ -123,13 +130,15 @@ export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'ba
       <ellipse cx="158" cy="100" rx="8" ry="14" fill="#b57759" />
       <ellipse cx="232" cy="100" rx="8" ry="14" fill="#b57759" />
       <path d="M154 75Q156 46 195 42Q232 46 236 79L232 109Q229 131 207 144L183 144Q161 133 158 109Z" fill={`url(#${id}-skin)`} stroke="#84503d" strokeWidth="2" />
-      <path d="M153 78Q145 50 166 39Q180 31 193 36Q212 25 232 44Q247 56 235 82Q230 71 224 63Q209 69 197 58Q178 72 158 68Z" fill="#25201c" />
-      <path d="M158 66Q170 46 189 52M207 45Q226 44 235 61" fill="none" stroke="#6a5145" strokeWidth="3" strokeOpacity=".5" />
+      <path d="M153 78Q145 50 166 39Q180 31 193 36Q212 25 232 44Q247 56 235 82Q230 71 224 63Q209 69 197 58Q178 72 158 68Z" fill={colors.hair} />
+      <path d="M158 66Q170 46 189 52M207 45Q226 44 235 61" fill="none" stroke={blend(colors.hair, 255, .23)} strokeWidth="3" strokeOpacity=".5" />
       <path d="M171 92l16-3M203 89l16 3" stroke="#332925" strokeWidth="4" strokeLinecap="round" />
       <path d="M175 98h10M205 98h10" stroke="#2a1a13" strokeWidth="3" strokeLinecap="round" />
       <path d="M195 100l-4 16h7" fill="none" stroke="#935b45" strokeWidth="2" strokeLinecap="round" />
       <path d="M185 127q10 5 20 0" fill="none" stroke="#6a3c32" strokeWidth="2" strokeLinecap="round" />
       <path d="M181 144q15 5 28 0" stroke="#834836" strokeWidth="2" fill="none" />
+
+      {look.visor && <g aria-hidden="true"><rect x="162" y="88" width="66" height="21" rx="9" fill={colors.trim} fillOpacity=".3" stroke={colors.trim} strokeWidth="2"/><path d="M166 96h58" stroke={colors.trim} strokeWidth="2" strokeOpacity=".7"/></g>}
 
       {/* Upgrade aura */}
       {power > 0 && (

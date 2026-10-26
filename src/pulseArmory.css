@@ -1,0 +1,254 @@
+/*
+ * PULSE ARMORY / BODYFORGE v0.4 — an original mobile-first identity.
+ * The reference is visual mood, never copied pixels, assets, or invented health
+ * readings. Saved workout analytics and free cosmetics are strictly separated
+ * from earned gear, the camera session and reward journaling.
+ */
+:root[data-bf-palette] {
+  --pulse-electric: var(--bf-accent);
+  --pulse-copy: var(--bf-accent-copy);
+  --pulse-ice: #65e5f3;
+  --pulse-orchid: #c6a0ff;
+  --pulse-night: #081019;
+  --pulse-surface: #141e2a;
+  --pulse-edge: #2c4053;
+  --pulse-white: #f3f8fc;
+  --pulse-muted: #b6c9d4;
+}
+.app-shell {
+  background:
+    radial-gradient(ellipse 70% 35% at 74% -4%, rgb(var(--bf-accent-rgb) / .09), transparent 85%),
+    radial-gradient(ellipse 50% 40% at -25% 58%, rgb(84 193 255 / .042), transparent 80%),
+    #081019;
+}
+.topbar,.mobile-nav {
+  border-color: #2b4256;
+}
+.topbar { box-shadow:0 1px 0 rgb(127 212 230 / .06); }
+.mobile-nav { box-shadow:0 18px 44px rgb(0 0 0 / .48), 0 0 0 1px rgb(82 213 222 / .05); }
+.currency-pill { border:1px solid #355366; }
+.currency-pill svg { color:var(--pulse-ice); }
+.app-shell[data-screen="dashboard"] .dashboard-player {
+  border:1px solid #2b4052; padding:10px 12px; background:#121e29;
+  border-radius:20px; box-shadow:inset 0 1px rgb(255 255 255 / .04);
+}
+.dashboard-player-track>div { background:linear-gradient(90deg, var(--pulse-electric), var(--pulse-ice)); }
+.character-card,.challenge-card,.forge-section,.forge-onboarding,.records-card,.tips-card {
+  border:1px solid #2e4255;
+  box-shadow:0 18px 52px rgb(0 0 0 / .20), inset 0 1px rgb(255 255 255 / .025);
+}
+.avatar-stage {
+  background:
+    radial-gradient(circle at 50% 73%, rgb(86 242 233 / .19) 0, rgb(86 242 233 / .03) 29%, transparent 60%),
+    radial-gradient(ellipse at 53% 17%, rgb(111 125 255 / .12), transparent 70%),
+    linear-gradient(180deg,#122431,#0c1521 82%);
+  border:1px solid #2b5870;
+  overflow:hidden;
+}
+.avatar-stage::before,.studio-preview::before {
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(90deg,transparent 49.7%,rgb(127 238 253 / .055) 49.8% 50.2%,transparent 50.3%),
+    repeating-linear-gradient(0deg,transparent,transparent 35px,rgb(134 236 244 / .035) 36px);
+}
+.kinetic-orbit { border-color:rgb(80 225 239 / .25); }
+.kinetic-orbit::before { border-color:rgb(80 225 239 / .20); }
+.kinetic-orbit i,.kinetic-orbit b { background:var(--pulse-ice); }
+.power-label,.avatar-3d-drag,.avatar-3d-label {
+  background:rgb(10 23 31 / .85);border-color:#375e70;
+  color:#d4eaf2;
+}
+.avatar-stage .avatar-3d-shell,.studio-preview .avatar-3d-shell { isolation:isolate; }
+.avatar-3d-shell canvas { touch-action:pan-y; }
+.mobile-quickstart { border:1px solid rgb(121 240 200 / .18); }
+.app-shell[data-screen="dashboard"] .character-card { background:linear-gradient(180deg,#172331 0%,#121a26 100%); }
+.app-shell[data-screen="dashboard"] .character-footer { background:rgba(10,20,30,.95); }
+.app-shell[data-screen="dashboard"] .character-header h2 span { color:var(--pulse-ice); }
+.app-shell[data-screen="dashboard"] .character-card .mobile-quickstart>button {
+  box-shadow:0 6px 22px rgb(var(--bf-accent-rgb) / .20);
+}
+
+/* Separately loaded panels; no secondary-screen UI in initial JS. */
+.pulse-lazy-placeholder, .armory-lab-wait {
+  display: grid; place-items: center; min-height: 125px;
+  color: #b9dce9; border: 1px dashed #426079; border-radius: 18px;
+  background: #10202f; font-size: 12px; text-align: center; padding: 18px;
+}
+/* Dashboard / source-backed progress, 7 actual calendar days. */
+.pulse-dashboard {
+  --pulse-card-bg:#15212d;
+  display:grid;gap:13px;padding:22px;
+  color:var(--pulse-white);
+  background:linear-gradient(140deg,#162431 0%,#111a26 75%);
+  border:1px solid #30475a;border-radius:30px 8px 30px 30px;
+  box-shadow:0 20px 56px rgb(0 0 0 / .20);
+  min-width:0;
+}
+.pulse-head { display:flex;align-items:flex-start;justify-content:space-between;gap:16px; }
+.pulse-eyebrow { display:inline-flex;align-items:center;gap:7px;font:800 10px var(--bf-font-body);letter-spacing:.13em;color:var(--pulse-ice); }
+.pulse-eyebrow i,.armory-live-dot {display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pulse-electric);box-shadow:0 0 12px rgb(var(--bf-accent-rgb) / .42);}
+.pulse-head h2 {margin:8px 0 8px;font-size:clamp(24px,3.6vw,39px);line-height:1.18;color:var(--pulse-white);}
+.pulse-head h2 em {color:var(--pulse-ice);}
+.pulse-head p {margin:0;max-width:52ch;font-size:12px;line-height:1.6;color:var(--pulse-muted);}
+.pulse-head-mark {display:flex;align-items:center;gap:6px;padding:9px 11px;color:var(--pulse-ice);font-size:10px;font-weight:800;border:1px solid #365368;border-radius:100px;white-space:nowrap;}
+.pulse-top-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px; }
+.pulse-ring-card,.pulse-trend-card {
+  display:flex;flex-direction:column;gap:12px;min-width:0;
+  border:1px solid #2e4357;border-radius:23px 5px 23px 23px;background:#0f1c28;padding:17px;
+}
+.pulse-card-heading {display:flex;align-items:center;gap:7px;color:#c9d9e5;font-size:10px;font-weight:900;letter-spacing:.07em;}
+.pulse-card-heading svg {color:var(--pulse-ice);}
+.pulse-ring-layout {display:flex;align-items:center;gap:15px;min-height:175px;}
+.pulse-gauge {position:relative;width:168px;aspect-ratio:1;flex:none;}
+.pulse-gauge svg {display:block;width:100%;height:100%;overflow:visible;}
+.pulse-gauge circle:nth-child(2) {filter:drop-shadow(0 0 8px rgb(var(--bf-accent-rgb) / .25));}
+.pulse-gauge-label {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;text-align:center;}
+.pulse-gauge-label small {font-size:10px;font-weight:900;letter-spacing:.07em;color:#b0cedc;}
+.pulse-gauge-label strong {font:800 39px var(--bf-font-display);letter-spacing:-.09em;color:var(--pulse-white);}
+.pulse-gauge-label strong span {font:700 16px var(--bf-font-body);color:var(--pulse-electric);}
+.pulse-ring-copy {display:flex;align-items:flex-start;gap:10px;flex-direction:column;}
+.pulse-ring-copy strong {max-width:18ch;color:#fff;font-size:clamp(15px,1.5vw,19px);line-height:1.35;}
+.pulse-ring-copy p {margin:0;color:#b3c7d4;font-size:12px;line-height:1.55;}
+.pulse-inline-link {display:inline-flex;align-items:center;gap:5px;background:var(--pulse-electric);color:var(--bf-accent-ink);min-height:44px;border:0;border-radius:12px;padding:8px 11px;font-weight:900;font-size:11px;}
+.pulse-trend-total {display:flex;align-items:baseline;gap:9px;}
+.pulse-trend-total strong {font:800 42px var(--bf-font-display);letter-spacing:-.07em;color:var(--pulse-white);}
+.pulse-trend-total span {max-width:14ch;color:var(--pulse-muted);font-size:11px;line-height:1.35;}
+.pulse-chart {height:115px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;align-items:end;}
+.pulse-chart-day {height:100%;display:flex;align-items:stretch;flex-direction:column;gap:8px;min-width:0;}
+.pulse-chart-rail {display:flex;align-items:flex-end;justify-content:center;height:88px;background:linear-gradient(180deg,transparent,#162632);border-radius:8px 8px 4px 4px;overflow:hidden;}
+.pulse-chart-bar {display:block;width:min(100%,21px);height:3px;min-height:3px;border-radius:6px 6px 2px 2px;background:#3d5769;}
+.pulse-chart-bar.active {background:linear-gradient(180deg,var(--pulse-electric),var(--pulse-ice));box-shadow:0 0 18px rgb(var(--bf-accent-rgb) / .28);}
+.pulse-chart-day small {color:#a6bbca;text-align:center;font-size:9px;font-weight:800;}
+.pulse-data-note {font-size:10px;color:#a8becb;line-height:1.4;}
+.pulse-metric-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.pulse-metric {display:flex;align-items:flex-start;flex-direction:column;gap:8px;min-width:0;padding:15px;background:#1b2b39;border:1px solid #334b5e;border-radius:20px 4px 20px 20px;}
+.pulse-metric>svg {color:var(--pulse-electric);}
+.pulse-metric>span {color:#b3cad9;font-size:9px;font-weight:850;letter-spacing:.065em;}
+.pulse-metric>strong {font:750 28px var(--bf-font-display);color:#fff;letter-spacing:-.06em;}
+.pulse-metric>strong small {font:700 13px var(--bf-font-body);color:#aebdcc;}
+.pulse-metric>small {color:#b2c6d2;font-size:11px;}
+.pulse-metric button {display:inline-flex;align-items:center;gap:5px;padding:0;min-height:28px;background:none;color:var(--pulse-ice);border:0;font-size:11px;font-weight:800;}
+.pulse-metric .pulse-avatar-cta {color:var(--pulse-ice);}
+
+/* Avatar Lab — independently persisted physical-looking cosmetics. */
+.armory-lab {
+  display:flex;flex-direction:column;gap:15px;
+  border:1px solid #35526c;background:linear-gradient(150deg,#0c1d2d,#142538);
+  border-radius:25px 5px 25px 25px;padding:18px;color:var(--pulse-white);
+}
+.armory-lab-heading span {display:flex;align-items:center;gap:7px;color:var(--pulse-ice);font-size:10px;font-weight:900;letter-spacing:.1em;}
+.armory-lab-heading h3 {font-size:clamp(20px,2.2vw,29px);line-height:1.25;margin:9px 0;color:#fff;}
+.armory-lab-heading h3 em {color:#77e9f4;}
+.armory-lab-heading p {color:#b7cbda;line-height:1.65;font-size:12px;margin:0;}
+.armory-viewport-controls {display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;}
+.armory-view-tabs {display:flex;gap:5px;padding:5px;border-radius:14px;border:1px solid #3a5369;background:#0b1926;}
+.armory-view-tabs button {display:flex;align-items:center;gap:6px;min-height:40px;padding:9px 13px;border-radius:10px;border:1px solid transparent;background:transparent;color:#bfd3e1;font-weight:900;font-size:10px;}
+.armory-view-tabs button[aria-pressed="true"] {background:var(--pulse-ice);color:#062333;}
+.armory-yaw-controls {display:flex;align-items:center;gap:4px;color:#adc4d2;font-size:10px;font-weight:800;}
+.armory-yaw-controls button {display:grid;place-items:center;width:42px;height:42px;border:1px solid #36536c;border-radius:10px;background:#183145;color:#e5f9fc;}
+.armory-settings {display:grid;gap:18px;}
+.armory-swatches {min-width:0;border:0;padding:0;margin:0;}
+.armory-swatches legend {width:100%;display:flex;align-items:center;gap:9px;margin-bottom:10px;padding:0;color:#edf6fc;font-weight:900;font-size:12px;}
+.armory-swatches legend>span {display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#1a3d4c;color:#65e5f3;font-size:10px;}
+.armory-swatches legend>small {margin-left:auto;color:#a7c0d1;font-size:9px;font-weight:800;letter-spacing:.04em;}
+.armory-swatch-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;}
+.armory-swatch-grid.four {grid-template-columns:repeat(4,minmax(0,1fr));}
+.armory-swatch-grid button {position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;min-height:69px;padding:8px 3px 5px;background:#172d3e;color:#c9dce8;border:1px solid #38556b;border-radius:13px 4px 13px 13px;cursor:pointer;}
+.armory-swatch-grid button[aria-pressed="true"] {border-color:var(--pulse-ice);background:#1c3c4b;box-shadow:inset 0 0 0 1px var(--pulse-ice);}
+.armory-swatch-grid button i {display:block;width:29px;height:29px;flex:none;border-radius:50%;border:2px solid #ffffff88;box-shadow:0 3px 8px #0004;}
+.armory-swatch-grid button svg {position:absolute;right:3px;top:3px;padding:2px;color:#062333;background:var(--pulse-ice);border-radius:50%;}
+.armory-swatch-grid button span {font-size:9px;font-weight:750;overflow-wrap:anywhere;text-align:center;line-height:1.25;}
+.armory-visor {display:flex;align-items:center;gap:11px;min-height:71px;width:100%;padding:11px;background:#152e3e;border:1px solid #35586c;border-radius:15px;color:#eef8fc;text-align:left;}
+.armory-visor-icon {display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:13px;background:#244c59;color:var(--pulse-ice);}
+.armory-visor>span:nth-child(2) {display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;}
+.armory-visor strong {font-size:11px;letter-spacing:.03em;}
+.armory-visor small {font-size:10px;line-height:1.4;color:#bad0df;}
+.armory-toggle {display:flex;align-items:center;flex:none;width:42px;height:24px;padding:3px;background:#425c6b;border-radius:14px;}
+.armory-toggle i {width:18px;height:18px;border-radius:50%;background:#ebf6f7;transition:transform .18s ease;}
+.armory-visor[aria-pressed="true"] .armory-toggle {background:#57c7d7;}
+.armory-visor[aria-pressed="true"] .armory-toggle i {transform:translateX(18px);background:#082934;}
+.armory-status {display:flex;align-items:flex-start;gap:8px;padding:11px;border:1px dashed #42637b;border-radius:12px;background:#0f2434;color:#bad3e1;font-size:11px;line-height:1.55;}
+.armory-status svg {flex:none;color:var(--pulse-ice);margin-top:2px;}
+.armory-alert,.armory-message {font-size:11px;line-height:1.5;color:#ffe0a4;margin:0;}
+.armory-lab-footer {display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid #344b5e;padding-top:13px;}
+.armory-lab-footer>span {display:flex;align-items:center;gap:5px;font-size:9px;color:#b5cddd;font-weight:900;}
+.armory-lab-footer button {display:flex;align-items:center;gap:5px;border:0;background:none;color:var(--pulse-ice);min-height:35px;font-size:10px;font-weight:900;}
+
+/* Model presentation behaves like a physical product viewer. */
+#forge .forge-heading>span {color:var(--pulse-ice);}
+#forge .forge-heading h2 em {color:var(--pulse-ice);}
+#forge .studio-preview {
+  position:relative;overflow:hidden;
+  border:1px solid #325c77;border-radius:27px 6px 27px 27px;
+  background:radial-gradient(ellipse at 50% 70%,rgb(45 224 238 / .15),transparent 65%),
+    linear-gradient(155deg,#152b3d 0%,#0a1624 90%);
+  isolation:isolate;
+}
+#forge .studio-preview .preview-kicker {align-self:start;z-index:2;color:#bbd7e8;font-size:9px;letter-spacing:.09em;}
+#forge .studio-preview .avatar-3d-slot {position:relative;z-index:1;width:100%;}
+#forge .studio-preview .avatar-3d-shell {height:100%;}
+#forge .studio-preview .avatar-3d-label {display:none;} /* Studio's LIVE 3D badge is the single source label. */
+#forge .studio-preview .avatar-3d-drag {display:none;} /* Editor has dedicated visible rotation buttons. */
+#forge .studio-preview[data-studio-focus="portrait"] .avatar-3d-slot {
+  border-radius:19px;overflow:hidden;
+}
+#forge .studio-preview[data-studio-focus="portrait"] .avatar-3d-idle .fighter-svg,
+#forge .studio-preview[data-studio-focus="portrait"] .avatar-3d-fallback .fighter-svg {
+  transform:scale(1.9) translateY(16%);transform-origin:50% 25%;
+}
+#forge .studio-preview>strong {position:relative;z-index:2;color:var(--pulse-white);}
+#forge .studio-wallet {position:relative;z-index:2;}
+#forge .armory-studio-badge {position:absolute;left:14px;top:40px;display:flex;align-items:center;gap:6px;z-index:3;color:#8ce5ed;font-size:9px;font-weight:900;letter-spacing:.06em;background:#0c2435;border:1px solid #365b70;border-radius:25px;padding:6px 9px;}
+#forge .forge-subheading {color:#a6eaf6;}
+#forge .muscle-card button:not(:disabled) {box-shadow:0 0 0 1px rgb(255 255 255 / .09);}
+
+/* Clear, consistent keyboard and reduced-motion contracts. */
+.pulse-dashboard button:focus-visible,.armory-lab button:focus-visible {outline:3px solid var(--pulse-ice);outline-offset:2px;}
+:root[data-bf-contrast="high"] .pulse-ring-card,
+:root[data-bf-contrast="high"] .pulse-trend-card,
+:root[data-bf-contrast="high"] .pulse-metric,
+:root[data-bf-contrast="high"] .armory-lab,
+:root[data-bf-contrast="high"] .armory-swatches button {border-color:#a8d8e5;}
+:root[data-bf-contrast="high"] :is(.pulse-data-note,.armory-status,.pulse-ring-copy p,.armory-lab-heading p) {color:#e2f4fa;}
+@media (prefers-reduced-motion:reduce) {.armory-toggle i {transition:none;} .pulse-gauge circle {filter:none;}}
+@media (max-width:1100px) and (min-width:741px) {
+  .pulse-ring-layout {flex-wrap:wrap;}
+  .pulse-gauge {width:140px;}
+}
+@media (max-width:740px) {
+  .app-shell[data-screen="dashboard"] .content>#pulse-progress {order:3;}
+  .app-shell[data-screen="dashboard"] .content>#daily-plan {order:4;}
+  .app-shell[data-screen="dashboard"] .content>#quests {order:5;}
+  .app-shell[data-screen="dashboard"] .content>#step-log {order:6;}
+  .app-shell[data-screen="dashboard"] .content>.lower-grid {order:7;}
+  .app-shell[data-screen="dashboard"] .content>.footer {order:8;}
+  .pulse-dashboard {padding:14px;border-radius:24px 7px 24px 24px;gap:12px;}
+  .pulse-head h2 {font-size:24px;}
+  .pulse-head-mark {font-size:9px;padding:8px 9px;}
+  .pulse-top-grid {grid-template-columns:1fr;}
+  .pulse-ring-card,.pulse-trend-card {padding:14px;}
+  .pulse-ring-layout {gap:14px;justify-content:flex-start;}
+  .pulse-gauge {width:150px;}
+  .pulse-ring-copy {flex:1;min-width:92px;}
+  .pulse-ring-copy strong {font-size:14px;}
+  .pulse-metric-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .pulse-metric-grid>.pulse-metric:last-child {grid-column:1/-1;}
+  .pulse-metric {padding:13px;gap:7px;}
+  .pulse-metric>strong {font-size:23px;}
+  .armory-lab {padding:13px;border-radius:20px 6px 20px 20px;}
+  .armory-viewport-controls {align-items:stretch;}
+  .armory-view-tabs {flex:1;}
+  .armory-view-tabs button {flex:1;justify-content:center;padding-inline:8px;}
+  .armory-yaw-controls {margin-left:auto;}
+  #forge .studio-preview>.avatar-3d-slot {height:330px;min-height:315px;}
+}
+@media (max-width:380px) {
+  .pulse-gauge {width:131px;}
+  .pulse-gauge-label strong {font-size:31px;}
+  .pulse-ring-copy strong {font-size:13px;}
+  .pulse-ring-copy p {font-size:11px;}
+  .pulse-head-mark {align-self:flex-start;}
+  .armory-yaw-controls {width:100%;justify-content:flex-end;}
+  .armory-swatch-grid button {min-height:64px;}
+  .armory-swatch-grid button span {font-size:8px;}
+}
