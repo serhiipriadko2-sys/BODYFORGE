@@ -19,7 +19,8 @@
     "qa:bundle": "node qa/bundle-on-demand.mjs",
     "qa:finish-save": "node qa/finish-save-e2e.mjs",
     "qa:multitab": "node qa/multitab-e2e.mjs",
-    "qa:journal": "node qa/journal-e2e.mjs"
+    "qa:journal": "node qa/journal-e2e.mjs",
+    "qa:experience": "node qa/training-experience-e2e.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.1.1",

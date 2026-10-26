@@ -10,6 +10,12 @@ import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
 import AppearancePanel from './components/AppearancePanel';
+import { ExerciseCatalog } from './components/ExerciseCatalog';
+import DailyPlanBoard from './components/DailyPlanBoard';
+import StepsBoard from './components/StepsBoard';
+import type { ExerciseId } from './lib/trainingCatalog';
+import { canStartCameraExercise } from './lib/trainingCatalog';
+import './trainingExperience.css';
 import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
 import StorageRecovery, { ResultQuarantineNotice } from './components/StorageRecovery';
 import './recovery.css';
@@ -171,6 +177,7 @@ function App() {
   const [cameraModuleUnavailable, setCameraModuleUnavailable] = useState(false);
   const [showFullFrame, setShowFullFrame] = useState(false);
   const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
+  const [previewExercise, setPreviewExercise] = useState<ExerciseId>('squat');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
   const [today, setToday] = useState(() => new Date());
   // A daily reward must unlock after local midnight even if the app stays open.
@@ -794,6 +801,8 @@ function App() {
   }
 
   function goTraining(requestedMode: WorkoutMode = 'training') {
+    // Tower, ghost and quick-start always use the only tested camera detector.
+    setPreviewExercise('squat');
     navigate('challenge');
     void start(requestedMode);
   }
@@ -898,6 +907,9 @@ function App() {
               <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ГОРНА</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
               <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> {workoutMode === 'tower' ? `БАШНЯ · ЭТАЖ ${selectedFloor.floor}` : workoutMode === 'ghost' ? 'БОЙ С ТЕНЬЮ' : 'ЗАКАЛКА №01 / СИЛА НОГ'}</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
 
+              <ExerciseCatalog selected={previewExercise} onSelect={setPreviewExercise}
+                busy={mode === 'active' || mode === 'loading'} />
+
               {(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) && (
                 <div className="camera-preflight" role="status">
                   <WifiOff size={19} />
@@ -998,7 +1010,9 @@ function App() {
               </div>
 
               {mode === 'error' && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
-              {mode === 'idle' && <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>}
+              {mode === 'idle' && (canStartCameraExercise(previewExercise)
+                ? <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>
+                : <button className="primary-button" onClick={() => setPreviewExercise('squat')}><CameraOff size={20} /> ВЕРНУТЬСЯ К ПРИСЕДАНИЯМ <ArrowRight size={20} /></button>)}
               {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
               {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
               {mode === 'error' && (profile.game.created
@@ -1013,6 +1027,7 @@ function App() {
             </article>
           </section>
 
+          {profile.game.created && <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training')}/>}
           <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {
               const now = new Date();
@@ -1025,6 +1040,7 @@ function App() {
               setProfile((previous) => claimDailyQuest(previous, now));
             }}
             onTraining={() => goTraining('training')}/>
+          {profile.game.created && <StepsBoard now={today}/>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
             onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
