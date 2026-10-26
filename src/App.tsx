@@ -3,13 +3,15 @@ import {
   Activity, ArrowRight, Award, CameraOff, Check, ChevronRight,
   CircleHelp, Clock3, Coins, Dumbbell, Flame, Info,
   Hammer, Medal, Play, RotateCcw, ShieldCheck, Smartphone, Target,
-  Trophy, Volume2, VolumeX, WifiOff, X, Zap, Swords, Globe2, UserRound,
+  Trophy, Volume2, VolumeX, WifiOff, X, Zap, UserRound,
 } from 'lucide-react';
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
 import AppearancePanel from './components/AppearancePanel';
+import BrandMark from './components/BrandMark';
+import ForgeGlyph from './components/ForgeGlyph';
 import { ExerciseCatalog } from './components/ExerciseCatalog';
 import DailyPlanBoard from './components/DailyPlanBoard';
 import StepsBoard from './components/StepsBoard';
@@ -133,8 +135,8 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className="brand" aria-label="BODYFORGE">
-      <div className="brand-symbol"><Hammer size={26} strokeWidth={2.8} /><i /></div>
-      {!compact && <div className="brand-copy"><strong>BODY<span>FORGE</span></strong><small>КУЗНИЦА ТЕЛА / EST. 2026</small></div>}
+      <div className="brand-symbol"><BrandMark size={34} /></div>
+      {!compact && <div className="brand-copy"><strong>BODY<span>FORGE</span></strong><small>ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ</small></div>}
     </div>
   );
 }
@@ -832,11 +834,11 @@ function App() {
         <Brand />
         <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
         <nav className="nav-items" aria-label="Навигация">
-          <button disabled={!canNavigate} className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
-          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')}><Target size={19} /> <span>Тренировка</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')}><UserRound size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')}><Swords size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')}><Globe2 size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')}><ForgeGlyph name="home" size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
+          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')}><ForgeGlyph name="scan" size={19} /> <span>Тренировка</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')}><ForgeGlyph name="body" size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')}><ForgeGlyph name="tower" size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')}><ForgeGlyph name="orbit" size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-quote"><div className="quote-mark"><Hammer size={30} /></div><p>ЖАР<br /><span>ПРЕВРАЩАЕТ</span><br />ЖЕЛЕЗО В СИЛУ.</p><div className="quote-line" /></div>
@@ -859,7 +861,7 @@ function App() {
           <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
           {profile.game.created && (
             <section className="dashboard-player" aria-label="Прогресс бойца">
-              <div className="dashboard-player-icon"><UserRound size={23} /></div>
+              <div className="dashboard-player-icon"><ForgeGlyph name="body" size={25} /></div>
               <div className="dashboard-player-info">
                 <span>ТВОЙ БОЕЦ · {getRank(workoutCount)}</span>
                 <strong>{profile.game.nickname}</strong>
@@ -888,16 +890,18 @@ function App() {
           <section className="cards-grid" aria-label="Герой и испытание">
             <article className="character-card">
               <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
-              <div className="character-header"><div><div className="character-subtitle">{profile.game.created ? profile.game.nickname : 'ВЫКОВАНО ТВОИМИ УСИЛИЯМИ'}</div><h2>ТВОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
+              <div className="character-header"><div><div className="character-subtitle">ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ</div><h2>ТВОЯ <span>ЭВОЛЮЦИЯ.</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
               <div className="avatar-stage">
                 <div className="forge-furnace" aria-hidden="true" /><div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
+                <div className="kinetic-orbit" aria-hidden="true"><i /><b /></div>
+                <span className="kinetic-axis" aria-hidden="true">MOVE / BUILD / EVOLVE</span>
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
                 <GameAvatar workouts={workoutCount} build={profile.game.build}
                   muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown}/>
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-                <div className="quickstart-copy"><span>ТВОЙ СЕГОДНЯШНИЙ ШАГ</span><strong>20 ПРИСЕДАНИЙ</strong>
+                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
                   <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
                 <button type="button" disabled={!profile.game.created || !canNavigate}
                   onClick={() => goTraining('training')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
@@ -939,7 +943,7 @@ function App() {
                 <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
                 <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} style={{ transform: cameraMirrored ? 'scaleX(-1)' : 'none' }} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
-                {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><Hammer size={74} strokeWidth={1.1} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
+                {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><ForgeGlyph name="scan" size={74} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
                 {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модуль и модель распознавания. Для первого запуска нужен интернет.</span></div>}
                 {mode === 'active' && cameraBusy && <div className="camera-switch-overlay" role="status">
                   <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
@@ -1073,15 +1077,15 @@ function App() {
               <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
             </div>
           </section>
-          <footer className="footer"><span><span className="footer-mark"><Hammer size={13} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>СТАЛЬ НЕ РОЖДАЕТСЯ ГОТОВОЙ.</span></footer>
+          <footer className="footer"><span><span className="footer-mark"><BrandMark size={18} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ.</span></footer>
         </main>
       </div>
       <nav className="mobile-nav" aria-label="Мобильная навигация">
-        <button type="button" disabled={!canNavigate} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21}/><span>ГОРН</span></button>
-        <button type="button" aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21}/><span>КАМЕРА</span></button>
-        <button type="button" disabled={!canNavigate} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><UserRound size={21}/><span>ГЕРОЙ</span></button>
-        <button type="button" disabled={!canNavigate} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><Swords size={21}/><span>БАШНЯ</span></button>
-        <button type="button" disabled={!canNavigate} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><Globe2 size={21}/><span>ОНЛАЙН</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><ForgeGlyph name="home" size={21}/><span>ГОРН</span></button>
+        <button type="button" aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><ForgeGlyph name="scan" size={21}/><span>КАМЕРА</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><ForgeGlyph name="body" size={21}/><span>ГЕРОЙ</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><ForgeGlyph name="tower" size={21}/><span>БАШНЯ</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><ForgeGlyph name="orbit" size={21}/><span>ОНЛАЙН</span></button>
       </nav>
       <div className="screen-grain" aria-hidden="true" />
       <div className="sr-only" aria-live="polite">{mode === 'complete' ? isSaving

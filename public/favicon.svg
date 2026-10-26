@@ -1,15 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="BODYFORGE кузница тела">
-  <defs>
-    <linearGradient id="iron" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffbd76"/>
-      <stop offset=".58" stop-color="#ee7c38"/>
-      <stop offset="1" stop-color="#a63e20"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="11" fill="#17100d"/>
-  <path d="M3 3h58v58H3z" fill="none" stroke="#895235" stroke-width="2"/>
-  <path d="M11 24h42l-6 11H29l-4 10H17l3-11c-6-2-9-5-9-10z" fill="url(#iron)"/>
-  <path d="M19 45h26l3 8H15z" fill="#d56c34"/>
-  <path d="M31 12l-3 9h7l2-9z" fill="#ffd09b"/>
-  <path d="M45 12v6M42 15h6" stroke="#ffb274" stroke-width="2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="BODYFORGE">
+  <rect width="64" height="64" rx="16" fill="#0c1114"/>
+  <g fill="#b8ff6b" transform="translate(5 5) scale(.84)">
+    <path fill-rule="evenodd" d="M8 11h18l9 9v7l-5 5 5 5v7l-9 9H8V11Zm9 9v8h7l3-3v-2l-3-3h-7Zm0 16v8h7l3-3v-2l-3-3h-7Z"/>
+    <path d="M41 11h17v9H49v9h8v8h-8v16h-8V11Z"/>
+    <path d="m35 27 5 5-5 5-5-5 5-5Z"/>
+  </g>
 </svg>
