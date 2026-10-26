@@ -8,6 +8,7 @@ import Avatar from './Avatar';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 import { DEFAULT_AVATAR_LOOK, HAIR_STYLES, lookColors, type AvatarLook, type HairStyle } from '../lib/avatarLook';
 import { createAvatarHair } from '../lib/avatarHair';
+import { paintFittedBody } from '../lib/avatarSurfaceFit';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 
@@ -28,11 +29,9 @@ type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look'>
 interface ImportedFigure {
   root: THREE.Group;
   bones: THREE.Bone[];
-  shorts: THREE.MeshStandardMaterial;
-  trim: THREE.MeshStandardMaterial;
-  shoes: THREE.MeshStandardMaterial;
-  shirt: THREE.MeshStandardMaterial;
-  skin: THREE.MeshStandardMaterial;
+  surfaces: THREE.SkinnedMesh[];
+  /** Neutral vertex-colored fabric follows the original GLB skin weights. */
+  surfaceMaterial: THREE.MeshStandardMaterial;
   hair: THREE.MeshStandardMaterial;
   hairStyles: Record<HairStyle, THREE.Group>;
   visor: THREE.Mesh;
@@ -392,6 +391,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 
   return (
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
+      data-outfit-fit={modelSource === "cc0" ? "skinned-surface" : "procedural"}
       data-look-skin={look.skin} data-look-hair={look.hair} data-look-hair-style={look.hairStyle ?? 'crop'}
       data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
       <div className="avatar-3d-embers" aria-hidden="true" />
@@ -404,122 +404,119 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 }
 
 /** Anatomical CC0 GLB display. It is never sampled from the phone camera.
- * Cloth is added before the model replaces its procedural fallback. */
+ * Fabric is painted on the original skinned surface; hair/visor use head bone. */
 function buildImportedFigure(source: THREE.Group, settings: FigureParams): ImportedFigure {
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
 
-  // CC0 MakeHuman is authored in metres and has its feet at y=0.
+  // This pinned CC0 MakeHuman GLB is authored in metres, with feet at zero.
+  // Normalize the original skinned mesh ONCE. Its vertex coordinates and bone
+  // weights remain untouched, so subsequent fitted colors follow every limb.
   const box = new THREE.Box3().setFromObject(source);
-  const bounds = box.getSize(new THREE.Vector3());
-  if (bounds.y <= 0.1 || !Number.isFinite(bounds.y)) {
+  const dimensions = box.getSize(new THREE.Vector3());
+  if (!Number.isFinite(dimensions.y) || dimensions.y <= .1) {
     throw new Error('CC0 character has invalid dimensions');
   }
-  const scale = 4.75 / bounds.y;
+  const scale = 4.75 / dimensions.y;
   const centre = box.getCenter(new THREE.Vector3());
   source.scale.setScalar(scale);
   source.position.set(-centre.x * scale, -box.min.y * scale + .055, -centre.z * scale);
   body.add(source);
 
-  const skin = new THREE.MeshStandardMaterial({
-    color: 0xc59473, metalness: 0, roughness: .84,
+  // A skinned MATERIAL on the original anatomical surface replaces the old
+  // detached spheres, cylinders and lathe-based shirt/shorts/shoes. This is a
+  // close-fitting base layer, not a claim of separately modelled loose cloth.
+  const surfaceMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff, vertexColors: true, metalness: 0, roughness: .88,
+    side: THREE.FrontSide,
   });
+  const surfaces: THREE.SkinnedMesh[] = [];
   const bones: THREE.Bone[] = [];
+  let headBone: THREE.Bone | null = null;
   source.traverse((node) => {
-    if (node instanceof THREE.Bone) bones.push(node);
-    if (node instanceof THREE.Mesh) {
-      node.material = skin;
+    if (node instanceof THREE.Bone) {
+      bones.push(node);
+      if (node.name.toLowerCase() === 'head') headBone = node;
+    }
+    if (node instanceof THREE.SkinnedMesh) {
+      if (!node.geometry.getAttribute('position') || !node.geometry.getAttribute('skinIndex')) {
+        throw new Error('CC0 skinned mesh lacks positions or skin weights');
+      }
+      surfaces.push(node);
+      node.material = surfaceMaterial;
       node.castShadow = false;
       node.receiveShadow = true;
     }
   });
-
-  const shorts = new THREE.MeshStandardMaterial({
-    color: 0x202a35, metalness: 0.02, roughness: .93, side: THREE.DoubleSide,
-  });
-  const trim = new THREE.MeshStandardMaterial({
-    color: 0x374350, roughness: .85, metalness: .025,
-  });
-  const shoes = new THREE.MeshStandardMaterial({
-    color: 0x17222b, roughness: .72, metalness: .06,
-  });
-  const shirt = new THREE.MeshStandardMaterial({ color: 0x18232e, roughness: .91, metalness: .015,
-    side: THREE.DoubleSide });
-
-  const outfitGroup = new THREE.Group();
-  body.add(outfitGroup);
-  const add = (name: string, geometry: THREE.BufferGeometry, material: THREE.Material,
-    x: number, y: number, z: number, sx = 1, sy = 1, sz = 1) => {
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.name = name;
-    mesh.position.set(x, y, z);
-    mesh.scale.set(sx, sy, sz);
-    outfitGroup.add(mesh);
-    return mesh;
-  };
-  const sphere = new THREE.SphereGeometry(1, 28, 18);
-  // Rounded upper yoke covers the bare shoulder seam seen in portrait view.
-  add('jersey-shoulder-yoke', sphere, shirt, 0, 3.78, -.015, .685, .195, .31);
-  // Fitted technical jersey over the CC0 anatomical torso. It deliberately
-  // exists for every paid outfit, and has no effect on earned stats.
-  add('technical-jersey', new THREE.LatheGeometry([
-    new THREE.Vector2(.475, 2.57), new THREE.Vector2(.53, 2.68),
-    new THREE.Vector2(.545, 3.04), new THREE.Vector2(.58, 3.23),
-    new THREE.Vector2(.66, 3.51), new THREE.Vector2(.67, 3.67),
-    new THREE.Vector2(.57, 3.80), new THREE.Vector2(.32, 3.94),
-  ], 48), shirt, 0, 0, 0, 1, 1, .76);
-  for (const side of [-1, 1]) {
-    add('jersey-sleeve', sphere, shirt, side * .70, 3.63, -.018, .19, .187, .222);
-    const piping = add('jersey-sleeve-piping',
-      new THREE.CylinderGeometry(.219, .224, .014, 32), trim,
-      side * .72, 3.465, .012, 1, 1, .97);
-    piping.rotation.z = side * .18;
-  }
-  // Softly rounded athletic shorts, with independent thigh openings rather
-  // than a rigid rectangular box covering the anatomical base mesh.
-  add('training-shorts', new THREE.LatheGeometry([
-    new THREE.Vector2(.54, 2.10),
-    new THREE.Vector2(.59, 2.16),
-    new THREE.Vector2(.60, 2.34),
-    new THREE.Vector2(.54, 2.49),
-    new THREE.Vector2(.475, 2.60),
-  ], 48), shorts, 0, 0, .012, 1, 1, .82);
-  add('training-waistband',new THREE.CylinderGeometry(.48,.49,.050,40),trim,0,2.565,.015,1,1,.85);
-  for (const side of [-1, 1]) {
-    add('short-leg', new THREE.CylinderGeometry(.29, .31, .29, 40), shorts,
-      side * .34, 2.055, .035, 1, 1, .88);
-    add('short-seam',new THREE.CylinderGeometry(.306,.306,.014,40),trim,
-      side * .34,1.907,.035,1,1,.88);
-    add('training-shoe',sphere,shoes,side * .36,.145,.19,.255,.14,.37);
-    add('shoe-sole',sphere,trim,side * .36,.067,.21,.26,.05,.38);
+  if (surfaces.length === 0 || !headBone) {
+    surfaceMaterial.dispose();
+    throw new Error('CC0 rig cannot provide skinned body and head anchor');
   }
 
-  // Neutral, close-cut hair material: facial features remain those of
-  // the original anatomical GLB rather than handmade spheres.
+  // The real head bone is at approximately (0,4.35,-.26) *after*
+  // normalization, whereas the procedural hero's head was assumed to be at
+  // (0,4.58,0). That was the actual source of floating hair and visor.
+  const outfitAnchor = new THREE.Group();
+  body.add(outfitAnchor);
+  body.updateMatrixWorld(true);
+  const headPosition = outfitAnchor.worldToLocal(
+    (headBone as THREE.Bone).getWorldPosition(new THREE.Vector3()),
+  );
+
   const hair = new THREE.MeshStandardMaterial({ color: 0x191b21, roughness: .94 });
-  // All three hairstyles share the same validated hair material. Switching
-  // visibility avoids remounting a large CC0 mesh and reallocating the GPU.
-  const hairStyles = Object.fromEntries(HAIR_STYLES.map(({ id }) =>
-    [id, createAvatarHair(id, hair, -.005)])) as Record<HairStyle, THREE.Group>;
-  for (const style of Object.values(hairStyles)) outfitGroup.add(style);
+  const hairStyles = {} as Record<HairStyle, THREE.Group>;
+  for (const { id } of HAIR_STYLES) {
+    const style = createAvatarHair(id, hair);
+    // Shrink the procedural hairstyle to the measured MakeHuman skull.
+    // Keep its world-space silhouette, then reparent to the actual head bone.
+    style.scale.set(.72, .79, .74);
+    const prototypeY = id === 'buzz' ? 4.620 : 4.576;
+    style.position.set(
+      headPosition.x,
+      headPosition.y + .325 - prototypeY * .79,
+      headPosition.z,
+    );
+    outfitAnchor.add(style);
+    (headBone as THREE.Bone).attach(style);
+    hairStyles[id] = style;
+  }
 
-  // Thin tinted glass with an independent emissive rim, not an opaque bar.
-  const visorMaterial = new THREE.MeshStandardMaterial({ color: '#163448', metalness: .12, roughness: .22,
-    transparent: true, opacity: .42, depthWrite: false });
-  const visor = add('holo-visor-glass', new THREE.BoxGeometry(.62, .094, .04), visorMaterial, 0, 4.38, .34);
-  const visorEdgeMaterial = new THREE.MeshStandardMaterial({ color: '#55e3f2', metalness: .36, roughness: .24,
-    emissive: '#55e3f2', emissiveIntensity: .3 });
-  const visorEdge = add('holo-visor-frame', new THREE.BoxGeometry(.64, .015, .053), visorEdgeMaterial, 0, 4.43, .35);
-  const imported: ImportedFigure = { root, bones, shorts, trim, shoes, shirt, skin, hair,
-    hairStyles, visor, visorMaterial, visorEdge, visorEdgeMaterial };
+  // The visor is fitted over the forehead/eye line, not the model origin.
+  const visorRoot = new THREE.Group();
+  visorRoot.position.copy(headPosition).add(new THREE.Vector3(0, .055, .255));
+  outfitAnchor.add(visorRoot);
+  const visorMaterial = new THREE.MeshStandardMaterial({
+    color: '#183648', metalness: .12, roughness: .24,
+    transparent: true, opacity: .38, depthWrite: false,
+  });
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(.470, .077, .025), visorMaterial);
+  visor.name = 'holo-visor-glass';
+  visorRoot.add(visor);
+  const visorEdgeMaterial = new THREE.MeshStandardMaterial({
+    color: '#55e3f2', metalness: .36, roughness: .24,
+    emissive: '#55e3f2', emissiveIntensity: .3,
+  });
+  const visorEdge = new THREE.Mesh(new THREE.BoxGeometry(.483, .012, .035), visorEdgeMaterial);
+  visorEdge.name = 'holo-visor-frame';
+  visorEdge.position.y = .044;
+  visorRoot.add(visorEdge);
+  (headBone as THREE.Bone).attach(visorRoot);
+
+  const imported: ImportedFigure = {
+    root, bones, surfaces, surfaceMaterial, hair, hairStyles,
+    visor, visorMaterial, visorEdge, visorEdgeMaterial,
+  };
   styleImportedFigure(imported, settings);
   return imported;
 }
 
 function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: FigureParams) {
   const colors = lookColors(look);
-  imported.skin.color.set(colors.skin);
+  // Outfit follows the *same skinned GLB positions*, not independent meshes.
+  for (const surface of imported.surfaces) {
+    paintFittedBody(surface.geometry, { skin: colors.skin, trim: colors.trim, outfit });
+  }
   imported.hair.color.set(colors.hair);
   for (const style of HAIR_STYLES) imported.hairStyles[style.id].visible = style.id === (look.hairStyle ?? 'crop');
   imported.visorEdgeMaterial.color.set(colors.trim);
@@ -531,11 +528,6 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   const legs = muscles.legs ?? 0;
   const back = muscles.back ?? 0;
   imported.root.scale.x = build === 'solid' ? 1.055 : 1;
-  imported.shorts.color.setHex(outfit === 'ember' ? 0x764d39 :
-    outfit === 'steel' ? 0x354e61 : 0x202a35);
-  imported.trim.color.set(colors.trim);
-  imported.shoes.color.setHex(outfit === 'steel' ? 0x2c4457 : 0x17222b);
-  imported.shirt.color.setHex(outfit === 'ember' ? 0x423130 : outfit === 'steel' ? 0x233647 : 0x18232e);
   for (const bone of imported.bones) {
     const name = bone.name.toLowerCase();
     let factor = 1;
