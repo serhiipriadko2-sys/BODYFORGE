@@ -1,0 +1,200 @@
+/* BODYFORGE / configurable dark materials. Glass belongs to controls; content
+   and the camera stay opaque. No animated blur, shaders or external assets. */
+:root[data-bf-palette] {
+  color-scheme: dark;
+  --bf-night: #0a1018;
+  --bf-surface-solid: #161e29;
+  --bf-surface: var(--bf-surface-solid);
+  --bf-raised: #202a37;
+  --bf-outline: #3c4b5f;
+  --bf-copy: #f2f5fa;
+  --bf-muted: #b4c0cf;
+  --bf-glass: rgb(14 21 32 / .92);
+  --bf-gold: var(--bf-accent-copy);
+  --bf-bright: var(--bf-accent-copy);
+  --bg: var(--bf-night); --panel: var(--bf-surface-solid); --panel-raised: var(--bf-raised);
+  --edge: var(--bf-outline); --lime: var(--bf-accent-copy); --lime-bright: var(--bf-accent-copy);
+  --white: var(--bf-copy); --muted: var(--bf-muted); --coal: var(--bf-night);
+  --steel: var(--bf-surface-solid); --steel-bright: var(--bf-raised); --iron-edge: var(--bf-outline);
+  --ember: var(--bf-accent-copy); --ember-bright: var(--bf-accent-copy); --ash: var(--bf-muted); --ivory: var(--bf-copy);
+  --forge-edge: var(--bf-outline); --forge-top: var(--bf-raised); --forge-bottom: var(--bf-night);
+  --forge-glow: var(--bf-accent); --forge-text: var(--bf-copy); --forge-muted: var(--bf-muted);
+}
+:root[data-bf-contrast="high"] {
+  --bf-copy: #ffffff; --bf-muted: #d8e2ee; --bf-outline: #8797ab;
+  --bf-surface-solid: #101722; --bf-raised: #182230;
+}
+body { background: var(--bf-night); }
+.app-shell {
+  background: radial-gradient(ellipse 70% 34% at 80% 0%, rgb(var(--bf-accent-rgb) / .08), transparent 85%), var(--bf-night);
+}
+.app-shell::before, .screen-grain { display: none; }
+h1,h2,h3 { font-family: 'Manrope', system-ui, sans-serif; letter-spacing: -.04em; }
+.sidebar { background: #0d141e; border-color: var(--bf-outline); }
+.sidebar::before, .topbar::after, .forge-section::before, .forge-onboarding::before, .intro::before { display: none; }
+.brand-symbol { background: var(--bf-accent); color: var(--bf-accent-ink); border: 0; box-shadow: none; transform: none; }
+.brand-symbol i { background: var(--bf-accent-ink); border-color: var(--bf-accent-ink); }
+.brand-copy small,.sidebar-section-label,.sidebar-version,.nav-item,.breadcrumbs,.breadcrumbs strong,
+.character-subtitle,.character-level,.character-detail-row,.xp-foot,.quickstart-copy>span,
+.preview-spec,.setup-avatar-preview>span,.forge-field,.footer,.recent-history { color: var(--bf-muted); }
+.nav-item.selected,.nav-item:hover { background: var(--bf-raised); color: var(--bf-accent-copy); border-color: var(--bf-outline); box-shadow: none; }
+.nav-item.selected { box-shadow: inset 3px 0 var(--bf-accent-copy); }
+.topbar { background: var(--bf-surface-solid); border-color: var(--bf-outline); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.topbar-right { gap: 12px; }
+.currency-pill,.level-hex,.sidebar-quote,.intro-badge,.studio-wallet { background: var(--bf-raised); border-color: var(--bf-outline); box-shadow: none; }
+.currency-pill strong,.topbar-level strong,.mobile-brand>strong,.character-header h2,.forge-heading h2,
+.build-options button strong,.quest-card strong,.muscle-card strong,.outfit-item strong,.tower-floor strong,.ghost-panel strong,
+.online-caution strong,.online-feature-grid strong,.quickstart-copy>strong { color: var(--bf-copy); }
+.currency-pill svg,.level-hex svg,.quote-mark,.sidebar-quote p span,.brand-copy strong span,
+.character-level strong,.challenge-type,.section-index,.forge-heading>span,.preview-kicker,
+.quest-reward,.outfit-price,.floor-time,.tower-kicker,.online-feature-grid small,.dashboard-player-stats strong,
+.quickstart-copy>small,.forge-subheading,.intro-mark,.character-header h2 span { color: var(--bf-accent-copy); }
+.online-dot,.record-dot,.nav-selected-dot,.quote-line,.tag-dot { background: var(--bf-accent-copy); }
+.intro { background: var(--bf-surface-solid); border-color: var(--bf-outline); box-shadow: none; }
+.intro h1 { font-size: clamp(36px, 4vw, 60px); line-height: 1.08; }
+.intro h1>span,.intro p,.forge-heading p { color: var(--bf-muted); }
+.character-card,.challenge-card,.records-card,.tips-card,.forge-onboarding,.forge-section {
+  background: var(--bf-surface-solid); border-color: var(--bf-outline); border-radius: 24px;
+  box-shadow: 0 12px 36px rgb(0 0 0 / .16), inset 0 1px rgb(255 255 255 / .035);
+}
+.character-header h2 { font-size: clamp(26px, 2.8vw, 39px); line-height: 1.15; }
+.character-header h2,.forge-heading h2,.challenge-heading h2,.intro h1 { font-family:'Manrope',system-ui,sans-serif; }
+.character-header h2 span { color: var(--bf-copy); }
+.character-level,.topbar-level strong { font-family: 'Manrope', sans-serif; }
+.tag,.tag.outlined { background: var(--bf-raised); color: var(--bf-accent-copy); border-color: var(--bf-outline); }
+.tag.lime-tag { background: var(--bf-accent); color: var(--bf-accent-ink); border-color: transparent; }
+.avatar-stage,.setup-avatar-preview,.studio-preview {
+  background: radial-gradient(ellipse 48% 50% at 50% 45%, rgb(var(--bf-accent-rgb) / .11), transparent 88%), #101923;
+  border-color: var(--bf-outline); box-shadow: none;
+}
+.forge-furnace { background: none; border-color: rgb(var(--bf-accent-rgb) / .13); box-shadow: none; }
+.arena-dashes { opacity: .025; }
+.power-label,.avatar-3d-drag,.avatar-3d-label { background: #101923; border-color: var(--bf-outline); color: var(--bf-muted); }
+.avatar-stage .avatar-3d-drag { left:12px; right:auto; bottom:12px; transform:none; max-width:calc(100% - 154px); white-space:normal; font-size:8px; line-height:1.5; padding:7px 8px; }
+.character-detail-row svg,.xp-heading svg { color:var(--bf-accent-copy); }
+.xp-track,.dashboard-player-track,.muscle-pips i { background: #303847; border-color: var(--bf-outline); }
+.xp-progress,.dashboard-player-track>div,.muscle-pips i.filled { background: var(--bf-accent); border-color: var(--bf-accent); box-shadow: none; }
+.xp-heading,.xp-heading strong,.xp-heading strong small { color: var(--bf-copy); }
+.build-options button,.quest-card,.muscle-card,.outfit-item,.tower-floor,.tower-challenge,.ghost-panel,
+.online-caution,.online-feature-grid>div,.mobile-quickstart,.dashboard-player {
+  background: var(--bf-raised); border-color: var(--bf-outline); color: var(--bf-copy); box-shadow: none;
+}
+.build-options button.selected,.outfit-item.active,.tower-floor.active { border-color: var(--bf-accent-copy); background: var(--bf-raised); box-shadow: inset 0 0 0 1px var(--bf-accent-copy); }
+.build-options button span,.quest-card p,.muscle-card span,.outfit-item small,.tower-floor small,.tower-challenge p,
+.ghost-panel p,.online-caution p,.online-feature-grid span,.forge-field { color: var(--bf-muted); }
+.quest-icon,.tower-crown,.ghost-symbol,.floor-index,.dashboard-player-icon { background: #182330; color: var(--bf-accent-copy); border-color: var(--bf-outline); box-shadow: none; }
+.forge-field input,.camera-source-select select { background: #101923; color: var(--bf-copy); border-color: var(--bf-outline); }
+.primary-button,.forge-solid-button,.quest-button,.muscle-card button,.ghost-panel>button,.mobile-quickstart>button {
+  background: var(--bf-accent); color: var(--bf-accent-ink); border: 1px solid transparent;
+  border-radius: 14px; box-shadow: none; text-shadow: none; min-height: 44px;
+}
+.primary-button:hover,.forge-solid-button:hover,.mobile-quickstart>button:hover { background: var(--bf-accent); filter:none; box-shadow:inset 0 0 0 1px var(--bf-accent-copy); }
+.secondary-button { background: var(--bf-raised); border-color: var(--bf-outline); color: var(--bf-copy); }
+.primary-button::before,.primary-button::after,.forge-solid-button::before,.forge-solid-button::after { display: none; }
+.quest-button:disabled,.muscle-card button:disabled,.ghost-panel>button:disabled { background: var(--bf-raised); color: var(--bf-muted); border-color: var(--bf-outline); }
+.camera-control-deck,.camera-control-header,.camera-lenses,.camera-source-select,.camera-zoom-control,.training-settings { border-color: var(--bf-outline); }
+.camera-control-deck { background: #101923; }
+.camera-lenses button,.camera-frame-toggle { background: var(--bf-raised); color: var(--bf-copy); border-color: var(--bf-outline); }
+.camera-lenses button.selected,.camera-frame-toggle.selected { border-color: var(--bf-accent-copy); color: var(--bf-accent-copy); background: var(--bf-raised); }
+.camera-control-help,.framing-primer,.portrait-notice,.training-settings>span { color: var(--bf-muted); }
+.training-visual,.camera-feed,.pose-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
+.mobile-nav { background: var(--bf-surface-solid); border: 1px solid var(--bf-outline); box-shadow: 0 8px 32px #0006; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.mobile-nav button { color: var(--bf-muted); border-radius: 18px; }
+.mobile-nav button.active { background: var(--bf-raised); color: var(--bf-accent-copy); border: 0; box-shadow: inset 0 -2px var(--bf-accent-copy); }
+.mobile-nav button.active::before { display: none; }
+.storage-recovery { background: var(--bf-night); }
+.storage-panel { background: var(--bf-surface-solid); border-color: var(--bf-outline); border-radius: 24px; }
+.storage-panel h1,.storage-panel button { color: var(--bf-copy); }
+.storage-panel p,.storage-panel small { color: var(--bf-muted); }
+.storage-panel button { background: var(--bf-raised); border-color: var(--bf-outline); }
+.storage-panel .forge-solid-button { background: var(--bf-accent); color: var(--bf-accent-ink); }
+
+/* Native modal supplies inert background, keyboard containment and Escape. */
+.appearance-trigger,.appearance-close { width:44px; height:44px; flex:none; display:grid; place-items:center; border:1px solid var(--bf-outline); border-radius:50%; background:var(--bf-raised); color:var(--bf-copy); }
+.appearance-trigger:hover,.appearance-close:hover { border-color:var(--bf-accent-copy); }
+.appearance-dialog { width:min(440px,calc(100% - 24px)); max-height:calc(100dvh - 32px); padding:24px; margin:auto; overflow:auto; overscroll-behavior:contain; border:1px solid var(--bf-outline); border-radius:28px; color:var(--bf-copy); background:var(--bf-surface-solid); box-shadow:0 24px 90px #0008; }
+.appearance-dialog::backdrop { background:rgb(0 0 0 / .65); }
+.appearance-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.appearance-heading>div>span { font-size:10px; letter-spacing:.08em; color:var(--bf-muted); }
+.appearance-heading h2 { margin:6px 0 0; font-size:28px; }
+.appearance-intro,.appearance-note,.appearance-message { font-size:12px; line-height:1.6; color:var(--bf-muted); }
+.appearance-intro { margin:16px 0 20px; }
+.appearance-dialog fieldset { min-width:0; padding:0; margin:0 0 20px; border:0; }
+.appearance-dialog legend { margin:0 0 10px; font-size:14px; font-weight:800; }
+.appearance-palette { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.appearance-palette button { min-height:48px; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:700; background:var(--bf-raised); color:var(--bf-copy); border:1px solid var(--bf-outline); border-radius:14px; }
+.appearance-palette button[aria-pressed="true"] { border-color:var(--bf-accent-copy); box-shadow:inset 0 0 0 1px var(--bf-accent-copy); }
+.appearance-palette i { width:14px; height:14px; flex:none; border-radius:50%; border:1px solid #ffffff70; }
+.appearance-custom { display:grid; grid-template-columns:60px minmax(0,1fr) auto; gap:10px; align-items:end; margin-bottom:20px; }
+.appearance-custom label { display:flex; flex-direction:column; gap:7px; font-size:10px; color:var(--bf-muted); }
+.appearance-custom input { width:100%; min-width:0; height:44px; padding:8px; border:1px solid var(--bf-outline); border-radius:10px; background:#101923; color:var(--bf-copy); }
+.appearance-custom input[type="color"] { padding:4px; }
+.appearance-custom button { height:44px; padding:8px 12px; font-size:12px; border:0; border-radius:10px; background:var(--bf-accent); color:var(--bf-accent-ink); }
+.appearance-validation { color:#ffb9ba; font-size:12px; line-height:1.5; }
+.appearance-material { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.appearance-material label { min-width:0; min-height:64px; display:flex; gap:8px; align-items:center; padding:10px; border:1px solid var(--bf-outline); border-radius:14px; cursor:pointer; }
+.appearance-material span { min-width:0; overflow-wrap:anywhere; }
+.appearance-material label:has(:checked) { border-color:var(--bf-accent-copy); }
+.appearance-material span,.appearance-contrast>span { font-size:13px; font-weight:700; }
+.appearance-dialog small { display:block; margin-top:4px; font-size:11px; line-height:1.4; color:var(--bf-muted); font-weight:400; }
+.appearance-dialog input[type="radio"],.appearance-dialog input[type="checkbox"] { accent-color:var(--bf-accent); flex:none; width:20px; height:20px; }
+.appearance-contrast { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:56px; cursor:pointer; }
+.appearance-note { margin:16px 0; font-size:11px; }
+.appearance-preview { display:grid; gap:7px; padding:16px; border:1px solid var(--bf-outline); border-radius:18px; background:var(--bf-raised); }
+.appearance-preview>span { font-size:9px; letter-spacing:.08em; color:var(--bf-muted); }
+.appearance-preview strong { font-size:20px; }
+.appearance-preview i { justify-self:start; padding:8px 12px; border-radius:20px; background:var(--bf-accent); color:var(--bf-accent-ink); font-size:11px; font-style:normal; font-weight:700; }
+.appearance-message { min-height:2.8em; margin:14px 0 8px; }
+.appearance-reset { min-height:44px; width:100%; padding:10px 14px; background:var(--bf-raised); color:var(--bf-copy); border:1px solid var(--bf-outline); border-radius:12px; font-size:12px; }
+.appearance-dialog button:focus-visible,.appearance-dialog input:focus-visible,.appearance-trigger:focus-visible { outline:2px solid var(--bf-accent-copy); outline-offset:3px; }
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  :root[data-bf-material="glass"][data-bf-contrast="standard"] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-glass); backdrop-filter:blur(16px) saturate(115%); -webkit-backdrop-filter:blur(16px) saturate(115%); }
+}
+@media (prefers-reduced-transparency:reduce) {
+  :root[data-bf-material][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-surface-solid); backdrop-filter:none; -webkit-backdrop-filter:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto; }
+  .app-shell *,.appearance-dialog,.appearance-dialog * { animation:none !important; transition:none !important; }
+}
+@media (max-width:740px) {
+  .topbar { height:64px; min-height:64px; padding:0 14px; gap:8px; }
+  .topbar-right { gap:6px; }
+  .mobile-brand { min-width:0; gap:7px; }
+  .mobile-brand>strong { font-size:15px; letter-spacing:.2px; }
+  .mobile-brand .brand-symbol { width:27px; height:27px; flex-basis:27px; }
+  .topbar-level { padding-left:6px; gap:4px; }
+  .topbar-level strong { font-size:16px; }
+  .currency-pill { padding:0 8px; }
+  .appearance-trigger { width:44px; height:44px; }
+  .content { padding:14px 14px 116px; }
+  .app-shell[data-screen="dashboard"] .dashboard-player { background:var(--bf-surface-solid); border-color:var(--bf-outline); border-radius:20px; padding:12px; }
+  .dashboard-player-info>span,.dashboard-player-stats span { font-size:10px; color:var(--bf-muted); }
+  .dashboard-player-info>strong { color:var(--bf-copy); }
+  .character-card,.forge-onboarding,.forge-section,.challenge-card { border-radius:24px; }
+  .character-header { padding-top:12px; }
+  .character-header h2 { font-size:27px; }
+  .character-subtitle { font-size:10px; }
+  .section-index { font-size:9px; letter-spacing:.05em; }
+  .avatar-stage { height:clamp(285px,79vw,345px); min-height:285px; margin:5px 8px 0; border-radius:20px; border:0; }
+  .mobile-quickstart { margin:12px 4px 4px; border-radius:20px; padding:12px; }
+  .quickstart-copy>span { font-size:9px; }
+  .quickstart-copy>small { font-size:10px; }
+  .mobile-quickstart>button { font-size:10px; min-width:124px; }
+  .character-footer { padding:14px; }
+  .character-detail-row,.xp-foot { font-size:10px; }
+  .forge-heading h2 { font-size:28px; line-height:1.2; }
+  .forge-heading p { font-size:12px; }
+  .quest-card p,.muscle-card span,.outfit-item small { font-size:11px; }
+  .quest-button { min-height:44px; }
+  .mobile-nav { left:12px; right:12px; bottom:max(10px,env(safe-area-inset-bottom)); width:auto; height:68px; border-radius:26px; padding:6px; gap:3px; }
+  .mobile-nav button { min-width:0; min-height:52px; gap:5px; font-size:10px; }
+}
+@media (max-width:359px) {
+  .mobile-brand>strong { font-size:12px; }
+  .mobile-brand .brand-symbol { display:none; }
+  .topbar { padding-inline:10px; }
+  .appearance-dialog { padding:18px; }
+  .appearance-custom { grid-template-columns:50px minmax(0,1fr); }
+  .appearance-custom>button { grid-column:1/-1; }
+}

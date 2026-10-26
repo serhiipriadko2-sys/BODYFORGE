@@ -121,8 +121,8 @@ try{
   console.log('PREMIUM_HOME',JSON.stringify(premium));
   check(premium.player && premium.firstRect>0,'home has real fighter status and 3D hero');
   const primaryCta=await read("(()=>{const c=document.querySelector('.character-card .mobile-quickstart button')?.getBoundingClientRect(),n=document.querySelector('.mobile-nav')?.getBoundingClientRect();return {visible:!!c,withinViewport:!!c&&!!n&&c.top>=0&&c.bottom<n.top,bodyBg:getComputedStyle(document.body).backgroundColor}})()");
-  check(primaryCta.visible&&primaryCta.withinViewport&&primaryCta.bodyBg==='rgb(5, 14, 25)',
-    'golden training CTA visible above bottom navigation on compact premium home');
+  check(primaryCta.visible&&primaryCta.withinViewport&&primaryCta.bodyBg==='rgb(10, 16, 24)',
+    'training CTA visible above bottom navigation on configurable dark home');
   await screenshot('bf-qa-mobile-home-premium.png');
   await cdp('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
   await sleep(280);

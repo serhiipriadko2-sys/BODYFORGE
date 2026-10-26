@@ -9,6 +9,7 @@ import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
 import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
+import AppearancePanel from './components/AppearancePanel';
 import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
 import StorageRecovery, { ResultQuarantineNotice } from './components/StorageRecovery';
 import './recovery.css';
@@ -815,11 +816,11 @@ function App() {
         <Brand />
         <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
         <nav className="nav-items" aria-label="Навигация">
-          <button disabled={!canNavigate} className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
-          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} onClick={() => navigate('challenge')}><Target size={19} /> <span>Тренировка</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} onClick={() => navigate('forge')}><UserRound size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} onClick={() => navigate('tower')}><Swords size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
-          <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} onClick={() => navigate('online')}><Globe2 size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'dashboard' ? ' selected' : ''}`} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')}><Activity size={19} /> <span>Горн</span><span className="nav-selected-dot" /></button>
+          <button className={`nav-item${section === 'challenge' ? ' selected' : ''}`} aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')}><Target size={19} /> <span>Тренировка</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')}><UserRound size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')}><Swords size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')}><Globe2 size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-quote"><div className="quote-mark"><Hammer size={30} /></div><p>ЖАР<br /><span>ПРЕВРАЩАЕТ</span><br />ЖЕЛЕЗО В СИЛУ.</p><div className="quote-line" /></div>
@@ -832,6 +833,7 @@ function App() {
           <div className="mobile-brand"><Brand compact /><strong>BODYFORGE</strong></div>
           <div className="breadcrumbs"><span>КУЗНИЦА ТЕЛА</span><ChevronRight size={15} /><strong>ГЛАВНЫЙ ГОРН</strong></div>
           <div className="topbar-right">
+            <AppearancePanel disabled={isCameraShown}/>
             <div className="currency-pill"><Coins size={17} /><strong>{profile.coins}</strong><span className="desktop-word">МОНЕТ</span></div>
             <div className="topbar-level"><div className="level-hex"><Zap size={17} fill="currentColor" /></div><div><small>УРОВЕНЬ ГЕРОЯ</small><strong>{String(level).padStart(2, '0')}</strong></div></div>
           </div>
@@ -861,7 +863,7 @@ function App() {
             <div className="intro-copy">
               <div className="eyebrow"><span className="tiny-spark" /> BODYFORGE / КУЗНИЦА ТЕЛА</div>
               <h1>КУЙ <em>СВОЁ</em><br /><span>ТЕЛО.</span></h1>
-              <p>Ты не просто тренируешься — ты выковываешь нового себя. Каждое движение закаляет тело и делает твоего бойца сильнее.</p>
+              <p>Реальные тренировки. Опыт, экипировка и рост твоего 3D-бойца.</p>
               <div className="intro-mark"><Hammer size={16} /><span>КАЖДОЕ ПОВТОРЕНИЕ — УДАР МОЛОТА</span></div>
             </div>
             <div className="intro-badge"><div className="intro-badge-icon"><Flame size={26} /></div><div><strong>ГОРН РАЗОГРЕТ</strong><span>ПЕРВОЕ ИСПЫТАНИЕ ГОТОВО</span></div></div>
@@ -870,7 +872,7 @@ function App() {
           <section className="cards-grid" aria-label="Герой и испытание">
             <article className="character-card">
               <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
-              <div className="character-header"><div><div className="character-subtitle">{profile.game.created ? profile.game.nickname : 'ВЫКОВАНО ТВОИМИ УСИЛИЯМИ'}</div><h2>СТАЛЬНОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
+              <div className="character-header"><div><div className="character-subtitle">{profile.game.created ? profile.game.nickname : 'ВЫКОВАНО ТВОИМИ УСИЛИЯМИ'}</div><h2>ТВОЙ <span>БОЕЦ</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
               <div className="avatar-stage">
                 <div className="forge-furnace" aria-hidden="true" /><div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
@@ -1052,11 +1054,11 @@ function App() {
         </main>
       </div>
       <nav className="mobile-nav" aria-label="Мобильная навигация">
-        <button type="button" disabled={!canNavigate} onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21}/><span>ГОРН</span></button>
-        <button type="button" onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21}/><span>КАМЕРА</span></button>
-        <button type="button" disabled={!canNavigate} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><UserRound size={21}/><span>ГЕРОЙ</span></button>
-        <button type="button" disabled={!canNavigate} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><Swords size={21}/><span>БАШНЯ</span></button>
-        <button type="button" disabled={!canNavigate} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><Globe2 size={21}/><span>ОНЛАЙН</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => navigate('dashboard')} className={section === 'dashboard' ? 'active' : ''}><Activity size={21}/><span>ГОРН</span></button>
+        <button type="button" aria-current={section === 'challenge' ? 'page' : undefined} onClick={() => navigate('challenge')} className={section === 'challenge' ? 'active' : ''}><Play size={21}/><span>КАМЕРА</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><UserRound size={21}/><span>ГЕРОЙ</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><Swords size={21}/><span>БАШНЯ</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><Globe2 size={21}/><span>ОНЛАЙН</span></button>
       </nav>
       <div className="screen-grain" aria-hidden="true" />
       <div className="sr-only" aria-live="polite">{mode === 'complete' ? isSaving

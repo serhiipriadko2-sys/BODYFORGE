@@ -5,6 +5,10 @@ import './index.css';
 import './forge.css';
 import './world.css';
 import './premium.css';
+import './appearance.css';
+import { applyAppearance, loadAppearance } from './lib/appearance';
+
+applyAppearance(loadAppearance().settings);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
