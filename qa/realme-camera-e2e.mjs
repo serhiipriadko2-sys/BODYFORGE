@@ -46,13 +46,13 @@ try{
  const first=await sample();await sleep(5000);const second=await sample();
  report.measurements.front={first,second,diagnostics:await diagnostics()};
  check(first.live===1&&second.live===1&&second.videoTime>first.videoTime,'real front stream supplies fresh frames');
- check(second.facingMode==='user'&&second.sourceVerification==='matched','front lens verified from actual track settings');
+ check(second.facingMode==='user'&&second.sourceVerification==='confirmed','front lens verified from actual track settings');
  check(report.measurements.front.diagnostics.camera.frames>0,'real MediaPipe inference ran on the phone');
  report.measurements.videoInputCount=await js('(async()=>(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="videoinput").length)()');
  await click('.camera-lenses button:nth-child(2)');
  await until('!document.querySelector(".camera-switch-overlay")&&document.querySelector("video")?.srcObject?.getVideoTracks()[0]?.getSettings().facingMode==="environment"','rear switch',30000);
  const rear=await sample();report.measurements.rear=rear;
- check(rear.live===1&&rear.ended>=1&&rear.sourceVerification==='matched','rear selection ends previous front stream and verifies actual lens');
+ check(rear.live===1&&rear.ended>=1&&rear.sourceVerification==='confirmed','rear selection ends previous front stream and verifies actual lens');
  await sleep(3000);
  report.measurements.rearDiagnostics=await diagnostics();
  // Leave a real stream active for an optional owner-driven background/return check.
@@ -74,7 +74,7 @@ try{
  report.status='PASS';
 }catch(error){report.status='FAIL';report.error=error.message;process.exitCode=1;
 }finally{
- if(socket?.readyState===1){try{report.measurements.events=await js('window.__bfUsbCameraQa?.events??[]');report.measurements.final=await sample();await js(`(()=>{const q=window.__bfUsbCameraQa;if(!q)return;document.querySelector('#challenge .secondary-button')?.click();for(const t of q.tracks)t.stop();for(const undo of q.restore.reverse())undo();q.restore=[];return true})()`);report.cleanup=true}catch{report.cleanup=false}socket.close()}
+ if(socket?.readyState===1){try{report.measurements.events=await js('window.__bfUsbCameraQa?.events??[]');report.measurements.final=await sample();await js(`(()=>{const q=window.__bfUsbCameraQa;if(!q)return;document.querySelector('#challenge .secondary-button')?.click();for(const t of q.tracks)t.stop();for(const undo of q.restore.reverse())undo();q.restore=[];return true})()`);report.measurements.afterCleanup=await sample();report.cleanup=report.measurements.afterCleanup.live===0}catch{report.cleanup=false}socket.close()}
  for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error('Owned QA closed'))}pending.clear();
  report.finishedAt=new Date().toISOString();const output=path.resolve('.iskra/reports/realme-camera-'+report.startedAt.replace(/[:.]/g,'-')+'.json');const bytes=Buffer.from(JSON.stringify(report,null,2)+'\n');fs.writeFileSync(output,bytes);console.log('REPORT',JSON.stringify({path:output,status:report.status,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')}));
 }
