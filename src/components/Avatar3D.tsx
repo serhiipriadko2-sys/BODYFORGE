@@ -193,6 +193,11 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
               camera.updateProjectionMatrix();
             }
             renderer.render(scene, camera);
+            runtimeDiagnostics.recordAvatarFrame(telemetryId, performance.now(), {
+              drawCalls: renderer.info.render.calls,
+              geometries: renderer.info.memory.geometries,
+              textures: renderer.info.memory.textures,
+            });
           }
         }
       }
@@ -265,11 +270,6 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           lastDraw = time;
           if (!isDragging) figureRoot.position.y = Math.sin(time / 1500) * .022;
           redraw();
-          if (renderer) runtimeDiagnostics.recordAvatarFrame(telemetryId, time, {
-            drawCalls: renderer.info.render.calls,
-            geometries: renderer.info.memory.geometries,
-            textures: renderer.info.memory.textures,
-          });
         }
       }
       const frameLoop = new ActiveFrameLoop(
@@ -281,6 +281,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         // Idle / hidden 3D must not schedule another RAF. Manual drag and
         // model updates still redraw on demand, including reduced-motion mode.
         const running = visible && !pausedRef.current && !motionPreference.matches && !disposed;
+        runtimeDiagnostics.setAvatarAnimating(telemetryId, running);
         frameLoop.setActive(running);
         element.dataset.renderLoop = running ? 'running' : 'paused';
       }

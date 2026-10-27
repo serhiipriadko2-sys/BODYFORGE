@@ -33,11 +33,13 @@ describe('privacy-preserving performance diagnostics', () => {
   it('does not misreport FPS from large inactivity gaps or mixed avatar instances', () => {
     const state = new RuntimeDiagnostics();
     const hero = state.attachAvatar();
+    state.setAvatarAnimating(hero, true);
     [100, 140, 180, 220].forEach((time) => state.recordAvatarFrame(hero, time));
     expect(state.snapshot().avatar.observedFps).toBe(25);
     state.recordAvatarFrame(hero, 10_000);
     expect(state.snapshot().avatar.observedFps).toBeNull();
     const forge = state.attachAvatar();
+    state.setAvatarAnimating(forge, true);
     [10000, 10050, 10100, 10150].forEach((time) => state.recordAvatarFrame(forge, time));
     expect(state.snapshot().avatar.observedFps).toBe(20);
     state.detachAvatar(forge);
@@ -83,5 +85,50 @@ describe('privacy-preserving performance diagnostics', () => {
     state.recordGlbLoad(id, 999);
     expect(state.snapshot().avatar.frames).toBe(0);
     expect(state.snapshot().avatar.glbLoadMs).toBeNull();
+  });
+
+  it('counts on-demand draws and GPU resources without inventing an animation rate', () => {
+    const state = new RuntimeDiagnostics();
+    const id = state.attachAvatar();
+    for (const time of [100, 101, 102, 103]) {
+      state.recordAvatarFrame(id, time, { drawCalls: 12, geometries: 8, textures: 4 });
+    }
+    expect(state.snapshot().avatar).toMatchObject({
+      frames: 4, drawCalls: 12, geometries: 8, textures: 4,
+      active: true, animating: false, observedFps: null,
+    });
+  });
+
+  it('clears stale cadence on a short pause and samples the resumed loop afresh', () => {
+    const state = new RuntimeDiagnostics();
+    const id = state.attachAvatar();
+    state.setAvatarAnimating(id, true);
+    [100, 140, 180, 220].forEach((time) => state.recordAvatarFrame(id, time));
+    expect(state.snapshot().avatar.observedFps).toBe(25);
+    state.setAvatarAnimating(id, false);
+    expect(state.snapshot().avatar.observedFps).toBeNull();
+    state.recordAvatarFrame(id, 250);
+    state.setAvatarAnimating(id, true);
+    state.recordAvatarFrame(id, 280);
+    expect(state.snapshot().avatar.observedFps).toBeNull();
+    [330, 380, 430].forEach((time) => state.recordAvatarFrame(id, time));
+    expect(state.snapshot().avatar.observedFps).toBe(20);
+    expect(state.snapshot().avatar.frames).toBe(9);
+  });
+
+  it('preserves the sampling window on repeated sync and rejects late state changes after disposal', () => {
+    const state = new RuntimeDiagnostics();
+    const id = state.attachAvatar();
+    for (const time of [100, 140, 180, 220]) {
+      state.setAvatarAnimating(id, true);
+      state.recordAvatarFrame(id, time);
+    }
+    expect(state.snapshot().avatar.observedFps).toBe(25);
+    state.detachAvatar(id);
+    state.setAvatarAnimating(id, true);
+    state.recordAvatarFrame(id, 260);
+    expect(state.snapshot().avatar).toMatchObject({
+      active: false, animating: false, observedFps: null, frames: 4,
+    });
   });
 });

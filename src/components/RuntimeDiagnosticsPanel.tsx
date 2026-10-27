@@ -53,15 +53,17 @@ export default function RuntimeDiagnosticsPanel() {
               <strong data-camera-frames={stats.camera.frames}>{stats.camera.frames}</strong></div>
             <div><span>Обработка кадров/с</span>
               <strong>{fmt(stats.camera.observedHz, ' Гц')}</strong></div>
-            <div><span>3D · отрисовок/с</span>
+            <div><span>3D · кадров/с в цикле</span>
               <strong data-avatar-fps={stats.avatar.observedFps ?? 'none'}>{fmt(stats.avatar.observedFps)}</strong></div>
+            <div><span>Кадров последней 3D-сцены</span>
+              <strong data-avatar-frames={stats.avatar.frames} data-avatar-animating={stats.avatar.animating}>{stats.avatar.frames}</strong></div>
             <div><span>Последняя загрузка GLB</span>
               <strong data-glb-load={stats.avatar.glbLoadMs ?? 'none'}>{fmt(stats.avatar.glbLoadMs, ' мс')}</strong></div>
-            <div><span>GPU: геометрии / текстуры</span>
+            <div><span>Последняя 3D-сцена: геометрии / текстуры</span>
               <strong>{fmt(stats.avatar.geometries)} / {fmt(stats.avatar.textures)}</strong></div>
           </div>
-          <p className="perf-hint">Цифры приблизительные: зависят от телефона, режима энергосбережения и кэша. Для 95-го процентиля нужно не менее 20 обработанных кадров. «—» означает недостаток измерений. Это не оценка техники приседаний.</p>
-          <label className="perf-export-label" htmlFor="perf-report">Только числовые показатели · JSON</label>
+          <p className="perf-hint">Цифры приблизительные: зависят от телефона, режима энергосбережения и кэша. Частота 3D показывается только при работающем цикле; ручные повороты учитываются в числе кадров. Это частота отправки кадров рендереру, а не измерение времени GPU. Для 95-го процентиля нужно не менее 20 обработанных кадров. «—» означает паузу или недостаток измерений. Это не оценка техники приседаний.</p>
+          <label className="perf-export-label" htmlFor="perf-report">Показатели устройства · JSON</label>
           <textarea id="perf-report" className="perf-export" readOnly
             aria-label="Отчёт производительности без личных данных"
             value={JSON.stringify(stats, null, 2)} rows={5}/>

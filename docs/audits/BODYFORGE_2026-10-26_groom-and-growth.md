@@ -60,7 +60,26 @@ voice=ISKRA; phase=BUILD/VERIFY; intent=BODYFORGE_GROOM_AND_GROWTH
 
 ## E. Verify
 
-Финальный протокол QA и SHA-256 receipt дополняются после завершения последовательного браузерного прогона.
+[FACT] Итоговый прогон 26.10.2026 завершён. Все перечисленные команды имеют exit 0:
+
+| Команда | Фактический результат |
+|---|---|
+| `npm test -- --maxWorkers=1 --no-file-parallelism` | 420/420, 33 файла |
+| `npm run build` | PASS; lazy Avatar3D ≈645 kB, остаётся предупреждение о размере chunk |
+| `npm run qa:avatar-quality` | 35 PASS; 9 скриншотов, 0/max5, legacy/texture/GPU fallback, сохранения |
+| `npm run qa:avatar-observers` | 21 PASS |
+| `npm run qa:avatar` | 13 PASS, backgroundDraws=0 |
+| `npm run qa:mobile` | 57 PASS |
+| `npm run qa:tower20` | 17 PASS; синтетические 20 повторов и награда |
+| `npm run qa:privacy` | 12 приватных URL HTTP403, приложение HTTP200 |
+| `npm run qa:pulse-armory` | 54 PASS |
+| `git diff --check` | exit 0 |
+
+Read-back 27.10.2026 перед следующей доработкой: **126/126 файлов полностью совпали** с проверенным source snapshot; рабочее дерево чистое. Обнаружен внешний commit `1d4eb979a520d42e20d3147fead394bc4aff99da` от 26.10, включивший локальную реализацию. Агент его не создавал. Это доказательство локального commit, а не push/deploy.
+
+Приватные инструкции остаются gitignored, HTTP-защита не изменялась. Браузерные тесты использовали только собственные временные профили и синтетические данные; камера владельца и его сохранения не использовались. GLB и skin JPEG перечитаны с прежними SHA-256. После Vitest существующий Vite watcher обновлялся через mtime `vite.config.ts`, без изменения его байтов: это устраняло старые optimized-module URL после сброса кэша Vitest.
+
+Полный перечень артефактов этой и последующей диагностической итерации: локальный `.iskra/receipts/BODYFORGE_AVATAR_20261027.json`. Он содержит размеры, SHA-256 и результаты команд; это инженерный receipt, не Guard/Archive запись.
 
 Промежуточная ошибка: после успешных 420 unit tests первая сборка получила exit 2 из-за TypeScript `unknown` в новом тестовом hash-обходе. Исправлен доступ к атрибутам через типизированный `getAttribute`; отдельный `npx tsc -b` exit 0. Затем полный набор и production build выполнены заново. Ошибка не скрыта и не выдаётся за успешную сборку.
 

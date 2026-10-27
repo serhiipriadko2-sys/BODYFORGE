@@ -29,8 +29,8 @@ async function ev(expression){
  return r.result.value;
 }
 const obj=async exp=>JSON.parse(await ev('JSON.stringify('+exp+')'));
-async function until(expression,label){
- const deadline=Date.now()+10000;
+async function until(expression,label,timeoutMs=10000){
+ const deadline=Date.now()+timeoutMs;
  while(Date.now()<deadline){if(await ev(expression))return;await sleep(100);}
  throw Error('TIMEOUT '+label);
 }
@@ -61,6 +61,11 @@ try{
  await sleep(200);
  await click('#tower .forge-solid-button');
  console.log('TOWER_START',JSON.stringify(await obj("({screen:document.querySelector('.app-shell').dataset.screen,mode:document.querySelector('#challenge')?.textContent?.slice(0,70)})")));
+ // Model/network startup must not consume the budget for 323 synthetic pose
+ // samples. Both waits stay bounded; exercise completion still requires 20 reps.
+ const startupAt=Date.now();
+ await until("!document.querySelector('.loading-overlay') && window.__bfMockPoseStats?.().used>0",'pose model started processing fresh frames',45000);
+ console.log('POSE_READY',JSON.stringify({startupMs:Date.now()-startupAt}));
  let final=null;
  for(let i=0;i<115;i++){
    await sleep(520);

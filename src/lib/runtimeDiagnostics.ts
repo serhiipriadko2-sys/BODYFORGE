@@ -26,7 +26,9 @@ export interface DiagnosticsSnapshot {
     drawCalls: number | null;
     geometries: number | null;
     textures: number | null;
+    /** A scene is attached; this does not mean an animation loop is running. */
     active: boolean;
+    animating: boolean;
   };
 }
 
@@ -36,6 +38,7 @@ interface AvatarSession {
   previousAt: number | null;
   loadedMs: number | null;
   gpu: GpuCounters | null;
+  animating: boolean;
 }
 
 const SAMPLE_LIMIT = 120;
@@ -63,18 +66,19 @@ function frequency(gaps: number[]): number | null {
 function avatarSnapshot(run: AvatarSession, active: boolean): DiagnosticsSnapshot['avatar'] {
   return {
     frames: run.frames,
-    observedFps: frequency(run.intervals),
+    observedFps: active && run.animating ? frequency(run.intervals) : null,
     glbLoadMs: run.loadedMs,
     drawCalls: run.gpu?.drawCalls ?? null,
     geometries: run.gpu?.geometries ?? null,
     textures: run.gpu?.textures ?? null,
     active,
+    animating: active && run.animating,
   };
 }
 
 const EMPTY_AVATAR: DiagnosticsSnapshot['avatar'] = {
   frames: 0, observedFps: null, glbLoadMs: null,
-  drawCalls: null, geometries: null, textures: null, active: false,
+  drawCalls: null, geometries: null, textures: null, active: false, animating: false,
 };
 
 export class RuntimeDiagnostics {
@@ -111,22 +115,32 @@ export class RuntimeDiagnostics {
   attachAvatar(): number {
     const id = ++this.nextAvatarId;
     this.avatarRuns.set(id, {
-      frames: 0, intervals: [], previousAt: null, loadedMs: null, gpu: null,
+      frames: 0, intervals: [], previousAt: null, loadedMs: null, gpu: null, animating: false,
     });
     this.latestAvatarId = id;
     return id;
   }
 
+  /** Reset cadence across explicit pauses, even when they last less than 2s. */
+  setAvatarAnimating(id: number, animating: boolean): void {
+    const run = this.avatarRuns.get(id);
+    if (!run || run.animating === animating) return;
+    run.animating = animating;
+    run.intervals = [];
+    run.previousAt = null;
+  }
+
+  /** Call after a successful renderer.render, including on-demand renders. */
   recordAvatarFrame(id: number, timestampMs: number, gpu?: GpuCounters): void {
     const run = this.avatarRuns.get(id);
     if (!run || !Number.isFinite(timestampMs) || timestampMs < 0) return;
     run.frames++;
-    if (run.previousAt !== null) {
+    if (run.animating && run.previousAt !== null) {
       const gap = timestampMs - run.previousAt;
       if (gap > 0 && gap <= 2000) sample(run.intervals, gap);
       else if (gap > 2000 || gap <= 0) run.intervals = [];
     }
-    run.previousAt = timestampMs;
+    run.previousAt = run.animating ? timestampMs : null;
     if (gpu && Object.values(gpu).every((value) => Number.isInteger(value) && value >= 0)) {
       run.gpu = { ...gpu };
     }

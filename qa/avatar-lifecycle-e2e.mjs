@@ -47,6 +47,7 @@ async function until(expression, label) {
 const canvas = "document.querySelector('#onboarding canvas')";
 const loop = canvas + '?.dataset.renderLoop';
 const draws = "window.__avatarDraws.get(window.__avatarCanvas) || 0";
+const avatarStats = () => js("(async()=> (await import('/src/lib/runtimeDiagnostics.ts')).runtimeDiagnostics.snapshot().avatar)()");
 try {
   let port;
   for (let i = 0; i < 100; i++) {
@@ -90,6 +91,8 @@ try {
   await until(loop + "==='running'", 'visible animation');
   await js('window.__avatarCanvas=' + canvas + ';true');
   check(await js(draws + '>0'), 'anatomical GLB renders actual WebGL draw calls');
+  await until("(async()=>{const a=(await import('/src/lib/runtimeDiagnostics.ts')).runtimeDiagnostics.snapshot().avatar;return a.animating&&a.frames>=4&&a.observedFps!==null})()", 'measured running loop');
+  check((await avatarStats()).drawCalls > 0, 'diagnostics read GPU counters after actual rendering');
 
   // A runtime OS/browser preference change must be observed without a reload.
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -98,6 +101,8 @@ try {
   await until("matchMedia('(prefers-reduced-motion: reduce)').matches && " + loop + "==='paused'", 'live reduced-motion event and stopped RAF');
   observations.reducedMotionLoop = await js(loop);
   check(observations.reducedMotionLoop === 'paused', 'live reduced-motion change stops the avatar RAF');
+  check((await avatarStats()).observedFps === null && !(await avatarStats()).animating,
+    'paused loop clears stale FPS immediately');
   const still = await js(draws);
   await sleep(250);
   check(await js(draws) === still, 'reduced motion keeps the static 3D without recurring draws');
@@ -112,6 +117,7 @@ try {
   await js("Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))");
   await until(loop + "==='paused'", 'background pause');
   const hidden = await js(draws);
+  const hiddenFrames = (await avatarStats()).frames;
   await js(canvas + ".style.width='96%'");
   await sleep(350);
   observations.backgroundDraws = (await js(draws)) - hidden;
@@ -119,6 +125,7 @@ try {
   await js("document.querySelector('.build-options button:nth-child(2)').click()");
   await sleep(250);
   check(await js(draws) === hidden, 'background body-build update performs zero GPU draw calls');
+  check((await avatarStats()).frames === hiddenFrames, 'background attempts do not fabricate rendered frames');
   await js("Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'))");
   await until(loop + "==='running'", 'foreground resume');
   await sleep(200);
@@ -129,25 +136,34 @@ try {
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await until(loop + "==='paused'", 'reduced motion again');
   const beforeUpdate = await js(draws);
+  const recordedBeforeUpdate = (await avatarStats()).frames;
   await js("document.querySelector('.build-options button:first-child').click()");
   await sleep(250);
   check(await js(draws) > beforeUpdate, 'visible body-build change redraws in reduced motion');
+  check((await avatarStats()).frames > recordedBeforeUpdate, 'diagnostics count real manual renders with reduced motion');
+  check((await avatarStats()).observedFps === null, 'manual draws do not fabricate continuous FPS');
   check(await js(loop) === 'paused', 'manual update does not restart the reduced-motion loop');
   const beforeKeyboard = await js(draws);
+  const framesBeforeKeyboard = (await avatarStats()).frames;
   await js(canvas + '.focus()');
   await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await sleep(100);
   check(await js(draws) > beforeKeyboard && await js(loop) === 'paused',
     'keyboard arrow rotates the 3D hero without starting a reduced-motion RAF');
+  check((await avatarStats()).frames > framesBeforeKeyboard, 'diagnostics include the keyboard render');
   await js("document.querySelector('.mobile-nav button:nth-child(2)').click()");
   await until("!document.querySelector('#onboarding canvas')", 'avatar unmount');
   const stopped = await js(draws);
   await sleep(250);
   check(await js(draws) === stopped, 'unmounted GLB avatar stops drawing');
+  check(!(await avatarStats()).active && !(await avatarStats()).animating && (await avatarStats()).observedFps === null,
+    'disposed scene retains no live FPS or animation state');
   await js("document.querySelector('.mobile-nav button:first-child').click()");
   await until("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'", 'GLB remount');
   check(await js(loop) === 'paused', 'remounted GLB respects the current reduced-motion setting');
+  check((await avatarStats()).frames > 0 && (await avatarStats()).drawCalls > 0 && (await avatarStats()).observedFps === null,
+    'static GLB load has measured renders and GPU counters without claiming FPS');
   check(errors.length === 0, 'no uncaught browser runtime exceptions');
   console.log('BODYFORGE_AVATAR_LIFECYCLE_PASS', JSON.stringify({ assertions, observations, errors }));
 } catch (error) {
