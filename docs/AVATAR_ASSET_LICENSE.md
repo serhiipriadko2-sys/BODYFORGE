@@ -1,5 +1,15 @@
 # BODYFORGE 3D avatar — source and license
 
+Current primary derivative: `public/assets/bodyforge-athlete-detail.glb`.
+Hair-card adaptation and exact CC0 source hashes are documented in
+`public/assets/athlete-groom-source.md`; packed source is
+`art/bodyforge-athlete-detail.blend`. The previous refined model is retained.
+
+Previous refined derivative: `public/assets/bodyforge-athlete-realistic.glb`.
+Authoring, eye/skin provenance and map semantics are documented in
+`public/assets/athlete-realism-source.md`; editable source is
+`art/bodyforge-athlete-realistic.blend`. The original assets below are retained.
+
 Asset: `public/assets/male-base-mesh-base_male.glb` (4,498,248 bytes).
 
 Original: [Male base mesh — Rigged A-pose](https://www.innerscene.com/tools/library/3d-parts/male-base-mesh-3d-person-rigged-a-pose-380e6d89), Innerscene, adapted from MakeHuman assets. Published as **CC0 1.0 (public domain)** on the source page, checked 2026-10-20.

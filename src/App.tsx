@@ -8,19 +8,20 @@ import {
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import CameraControls from './components/CameraControls';
-import RuntimeDiagnosticsPanel from './components/RuntimeDiagnosticsPanel';
+
 const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
+const ProgressBackupPanel = lazy(() => import('./components/ProgressBackupPanel'));
 import { useAvatarLook } from './hooks/useAvatarLook';
 import AppearancePanel from './components/AppearancePanel';
 import BrandMark from './components/BrandMark';
 import Avatar from './components/Avatar';
 import ForgeQuickDeck from './components/ForgeQuickDeck';
 import ForgeGlyph from './components/ForgeGlyph';
-import { ExerciseCatalog } from './components/ExerciseCatalog';
+
 import DailyPlanBoard from './components/DailyPlanBoard';
 import StepsBoard from './components/StepsBoard';
-import type { ExerciseId } from './lib/trainingCatalog';
-import { canStartCameraExercise } from './lib/trainingCatalog';
+import { canStartCameraExercise, exerciseGuide, type ExerciseId } from './lib/trainingCatalog';
+import { ExerciseMotionCounter, exerciseMetric } from './lib/exerciseCounter';
 import './trainingExperience.css';
 import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
 import StorageRecovery, { ResultQuarantineNotice } from './components/StorageRecovery';
@@ -37,7 +38,7 @@ import {
   getProfileTotals, COIN_REWARD, formatTime, getLevel,
   getLevelProgress, getRank, TARGET_REPS, XP_REWARD,
 } from './lib/progression';
-import type { WorkoutSession } from './lib/workoutJournal';
+import type { CompletedWorkoutResult, WorkoutSession } from './lib/workoutJournal';
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, portraitCameraConstraints,
@@ -45,6 +46,11 @@ import {
   type CameraDeviceOption, type CameraOrientation, type CameraSource, type CameraZoom,
 } from './lib/camera';
 import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
+import { WorkoutWakeLock } from './lib/workoutWakeLock';
+
+// Train-only panels stay out of the first mobile download.
+const ExerciseCatalog = lazy(() => import('./components/ExerciseCatalog').then(({ ExerciseCatalog }) => ({ default: ExerciseCatalog })));
+const RuntimeDiagnosticsPanel = lazy(() => import('./components/RuntimeDiagnosticsPanel'));
 
 type Mode = 'idle' | 'loading' | 'active' | 'complete' | 'error';
 
@@ -114,7 +120,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
   if (mirrored) { ctx.translate(width, 0); ctx.scale(-1, 1); }
   ctx.lineWidth = Math.max(3, width / 240);
   ctx.lineCap = 'round';
-  const segments = [[11, 12], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
+  const segments = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
   for (const [a, b] of segments) {
     const one = points[a];
     const two = points[b];
@@ -125,7 +131,7 @@ function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement,
     ctx.lineTo(two.x * width, two.y * height);
     ctx.stroke();
   }
-  for (const index of [11, 12, 23, 24, 25, 26, 27, 28]) {
+  for (const index of [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]) {
     const point = points[index];
     if (!point || (point.visibility ?? 1) < 0.4) continue;
     ctx.beginPath();
@@ -145,8 +151,8 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function CounterCircle({ count, active }: { count: number; active: boolean }) {
-  const progress = Math.min(1, count / TARGET_REPS);
+function CounterCircle({ count, active, target, label }: { count: number; active: boolean; target: number; label: string }) {
+  const progress = Math.min(1, count / target);
   const radius = 68;
   const circumference = 2 * Math.PI * radius;
   return (
@@ -157,7 +163,7 @@ function CounterCircle({ count, active }: { count: number; active: boolean }) {
           strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} transform="rotate(-90 90 90)" />
         <circle cx="90" cy="90" r="55" stroke="#ffad6b" strokeOpacity=".09" strokeWidth="1" strokeDasharray="3 7" fill="none" />
       </svg>
-      <div className="counter-inner"><span className="counter-number">{count}</span><span className="counter-divider" /><span className="counter-target">/ {TARGET_REPS}</span><small>ПРИСЕДАНИЙ</small></div>
+      <div className="counter-inner"><span className="counter-number">{count}</span><span className="counter-divider" /><span className="counter-target">/ {target}</span><small>{label}</small></div>
     </div>
   );
 }
@@ -167,6 +173,24 @@ function App() {
     beginWorkout, completeWorkout, openCurrent, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
   const { look: avatarLook, readStatus: avatarLookStatus, message: avatarLookMessage, update: updateAvatarLook } = useAvatarLook();
   const [mode, setMode] = useState<Mode>('idle');
+  const keepScreenAwake = mode === 'loading' || mode === 'active';
+  // Keep the phone awake during the camera workout when the browser permits it.
+  // The optional lock never controls counting, permissions, or reward storage.
+  useEffect(() => {
+    const wake = new WorkoutWakeLock(() => {
+      if (!window.isSecureContext || !navigator.wakeLock?.request) {
+        return Promise.reject(new Error('Screen Wake Lock unavailable'));
+      }
+      return navigator.wakeLock.request('screen');
+    });
+    const refresh = () => wake.setEnabled(keepScreenAwake && !document.hidden);
+    refresh();
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      wake.setEnabled(false);
+    };
+  }, [keepScreenAwake]);
   const [snapshot, setSnapshot] = useState<CounterSnapshot>(FIRST_SNAPSHOT);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState('');
@@ -185,6 +209,7 @@ function App() {
   const [showFullFrame, setShowFullFrame] = useState(false);
   const [workoutMode, setWorkoutMode] = useState<WorkoutMode>('training');
   const [previewExercise, setPreviewExercise] = useState<ExerciseId>('squat');
+  const [activeExercise, setActiveExercise] = useState<ExerciseId>('squat');
   const [lastChallenge, setLastChallenge] = useState<{ mode: WorkoutMode; victory: boolean | null } | null>(null);
   const [today, setToday] = useState(() => new Date());
   const observedDay = useRef(localDay(today));
@@ -220,6 +245,8 @@ function App() {
   const switchingRef = useRef(false);
   const zoomBusyRef = useRef(false);
   const counterRef = useRef(new SquatCounter());
+  const motionRef = useRef<ExerciseMotionCounter | null>(null);
+  const activeExerciseRef = useRef<ExerciseId>('squat');
   const workoutModeRef = useRef<WorkoutMode>('training');
   const splitsRef = useRef<number[]>([]);
   const kneeTrackerRef = useRef(new StableKneeTracker());
@@ -248,7 +275,9 @@ function App() {
     setPoseGuidance(poseGuidanceRef.current.reset());
     setTrackingSide(null);
     setPoseFound(false);
-    setSnapshot(counterRef.current.recalibrate());
+    setSnapshot(activeExerciseRef.current === 'squat'
+      ? counterRef.current.recalibrate()
+      : motionRef.current?.recalibrate().snapshot ?? FIRST_SNAPSHOT);
   }, []);
 
   const stopCapture = useCallback(() => {
@@ -439,6 +468,7 @@ function App() {
   const cancel = useCallback(() => {
     stopCapture();
     counterRef.current.reset();
+    motionRef.current?.reset();
     kneeTrackerRef.current.reset();
     setPoseGuidance(poseGuidanceRef.current.reset());
     setTrackingSide(null);
@@ -474,10 +504,16 @@ function App() {
     }
     workoutModeRef.current = requestedMode;
     setWorkoutMode(requestedMode);
+    const exerciseId: ExerciseId = requestedMode === 'training' ? previewExercise : 'squat';
+    activeExerciseRef.current = exerciseId;
+    setActiveExercise(exerciseId);
+    motionRef.current = exerciseId === 'squat' ? null : new ExerciseMotionCounter(exerciseId);
+    if (['pushup', 'crunch', 'leg-raise', 'plank'].includes(exerciseId)) setShowFullFrame(true);
     splitsRef.current = [];
     setLastChallenge(null);
     stopCapture();
     counterRef.current.reset();
+    motionRef.current?.reset();
     kneeTrackerRef.current.reset();
     setPoseGuidance(poseGuidanceRef.current.reset());
     setTrackingSide(null);
@@ -522,7 +558,7 @@ function App() {
     let stream: MediaStream | null = null;
     let landmarker: PoseLandmarker | null = null;
     try {
-      const session = await beginWorkout(requestedMode);
+      const session = await beginWorkout(requestedMode, exerciseId);
       if (requestId !== requestIdRef.current) return;
       if (!session) {
         stopCapture();
@@ -605,18 +641,38 @@ function App() {
             runtimeDiagnostics.recordInference(performance.now() - inferenceStarted, time);
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points, mirroredRef.current);
-            const measured = kneeTrackerRef.current.update(points ?? [], liveVideo.videoWidth / liveVideo.videoHeight);
-            setPoseGuidance(poseGuidanceRef.current.update(points, measured.angle, time));
+            const currentId = activeExerciseRef.current;
+            const ratio = liveVideo.videoWidth / liveVideo.videoHeight;
+            let next: CounterSnapshot;
+            if (currentId === 'squat') {
+              const measured = kneeTrackerRef.current.update(points ?? [], ratio);
+              setPoseGuidance(poseGuidanceRef.current.update(points, measured.angle, time));
+              setTrackingSide(measured.side);
+              next = counterRef.current.update(measured.angle, time, measured.side);
+            } else {
+              const detector = motionRef.current;
+              if (!detector) throw Error('Exercise detector unavailable');
+              const reading = detector.update(points ?? [], time, ratio);
+              next = reading.snapshot;
+              setTrackingSide(reading.side);
+              const genericGuidance: PoseGuidance = reading.tracking
+                ? { kind: 'tracked', title: 'СУСТАВЫ В КАДРЕ',
+                    instruction: exerciseGuide(currentId).coaching, warning: false }
+                : { kind: 'angle-unavailable', title: 'НЕ ВИЖУ НУЖНЫЕ СУСТАВЫ',
+                    instruction: exerciseGuide(currentId).camera + '. ' + exerciseGuide(currentId).placement[1], warning: true };
+              setPoseGuidance(genericGuidance);
+            }
             setPoseFound(Boolean(points?.length));
-            setTrackingSide(measured.side);
-            const next = counterRef.current.update(measured.angle, time, measured.side);
             setSnapshot(next);
+            const target = exerciseGuide(currentId).target;
             if (next.counted) {
-              if (startedAtRef.current !== null) splitsRef.current.push(Math.max(0, time - startedAtRef.current));
-              if (soundEnabled) playRepCue(audioRef.current, next.count >= TARGET_REPS);
+              if (currentId !== 'plank' && startedAtRef.current !== null)
+                splitsRef.current.push(Math.max(0, time - startedAtRef.current));
+              if (soundEnabled && (currentId !== 'plank' || next.count % 5 === 0 || next.count >= target))
+                playRepCue(audioRef.current, next.count >= target);
             }
             if (next.calibrated && startedAtRef.current === null) startedAtRef.current = time;
-            if (next.count >= TARGET_REPS) {
+            if (next.count >= target) {
               const durationMs = Math.max(1, time - (startedAtRef.current ?? time));
               setElapsedMs(durationMs);
               setLastResultMs(durationMs);
@@ -629,14 +685,17 @@ function App() {
                 : selectedMode === 'ghost' && profile.game.bestGhost
                   ? durationMs < profile.game.bestGhost.durationMs : null;
               setLastChallenge({ mode: selectedMode, victory });
-              // Freeze once outside React's updater (which StrictMode may invoke twice).
+              // Freeze completion once, outside React's updater (StrictMode may invoke twice).
               const finishedAt = new Date();
-              const result = { ...session, durationMs, finishedAt: finishedAt.toISOString(), repetitions: 20 as const,
-                splitsMs: [...splitsRef.current] };
+              const completed: CompletedWorkoutResult = {
+                ...session, durationMs, finishedAt: finishedAt.toISOString(),
+                repetitions: currentId === 'plank' ? 0 : 20,
+                ...(currentId === 'plank' ? { holdSeconds: 30 as const } : { splitsMs: [...splitsRef.current] }),
+              };
               setToday(new Date());
               stopCapture();
               setMode('complete');
-              void completeWorkout(result);
+              void completeWorkout(completed);
               return;
             }
           } catch (failure) {
@@ -651,7 +710,9 @@ function App() {
           stallReportedRef.current = true;
           setFrameStalled(true);
           kneeTrackerRef.current.reset();
-          setSnapshot(counterRef.current.recalibrate());
+          setSnapshot(activeExerciseRef.current === 'squat'
+      ? counterRef.current.recalibrate()
+      : motionRef.current?.recalibrate().snapshot ?? FIRST_SNAPSHOT);
           setPoseGuidance(poseGuidanceRef.current.reset());
           setTrackingSide(null);
           setPoseFound(false);
@@ -672,7 +733,7 @@ function App() {
       stopCapture();
       setMode('error');
     }
-  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture, storageStatus, isSaving, mode, beginWorkout, completeWorkout]);
+  }, [stopCapture, soundEnabled, profile.game, connectCamera, cameraSource, interruptCapture, storageStatus, isSaving, mode, beginWorkout, completeWorkout, previewExercise]);
 
   /** Zoom uses the real capture track, never CSS stretching of the skeleton. */
   const changeCameraZoom = useCallback(async (requested: number) => {
@@ -796,6 +857,9 @@ function App() {
   const workoutCount = totals.workouts;
   const isCameraShown = mode === 'loading' || mode === 'active';
   const displayTime = mode === 'complete' ? (lastResultMs ?? 0) : elapsedMs;
+  const selectedExercise = mode === 'idle' || mode === 'error' ? previewExercise : activeExercise;
+  const exercise = exerciseGuide(selectedExercise);
+  const diagnostic = exerciseMetric(selectedExercise);
 
   function navigate(id: string) {
     if ((mode === 'active' || mode === 'loading') && id !== 'challenge') return;
@@ -815,8 +879,8 @@ function App() {
   }
 
   function goTraining(requestedMode: WorkoutMode = 'training') {
-    // Tower, ghost and quick-start always use the only tested camera detector.
-    setPreviewExercise('squat');
+    // Competitive tower and ghost remain squat-only; free training uses the selected exercise.
+    if (requestedMode !== 'training') setPreviewExercise('squat');
     navigate('challenge');
     void start(requestedMode);
   }
@@ -828,6 +892,8 @@ function App() {
     : mode === 'active' && workoutMode === 'ghost' && profile.game.bestGhost
       ? ghostRepetitions(profile.game.bestGhost.splitsMs, elapsedMs) : 0;
   const canNavigate = mode !== 'active' && mode !== 'loading';
+  const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading' ||
+    window.matchMedia('(min-width: 741px)').matches;
 
   if (storageStatus !== 'ready') return <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
     writeIssue={writeIssue} isSaving={isSaving} profile={profile} pendingResult={pendingResult} journalEntries={journalEntries}
@@ -912,13 +978,13 @@ function App() {
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
+                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>{exercise.target} {exercise.unit === 'seconds' ? 'СЕКУНД ПЛАНКИ' : exercise.name.toUpperCase()}</strong>
                   <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
                 <button type="button" disabled={!profile.game.created || !canNavigate}
                   onClick={() => goTraining('training')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
               </div>
               <div className="character-footer">
-                <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПРИСЕДАНИЙ <strong>{repetitionsDone}</strong></span></div>
+                <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПОВТОРОВ <strong>{repetitionsDone}</strong></span></div>
                 <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
                 <div className="xp-track"><div className="xp-progress" style={{ width: `${levelPercent}%` }} /></div>
                 <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО НОВОЙ ЗАКАЛКИ: {250 - (profile.xp % 250)} XP</span></div>
@@ -927,16 +993,18 @@ function App() {
 
             <article className={`challenge-card${isCameraShown ? ' challenge-card-live' : ''}`} id="challenge">
               <div className="card-topline"><span className="section-index">02 / ИСПЫТАНИЕ ГОРНА</span><span className={`tag ${mode === 'active' ? 'live-tag' : 'lime-tag'}`}><span className="tag-dot" /> {mode === 'active' ? 'ИДЁТ ТРЕНИРОВКА' : mode === 'complete' ? 'ВЫПОЛНЕНО' : 'ДОСТУПНО'}</span></div>
-              <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> {workoutMode === 'tower' ? `БАШНЯ · ЭТАЖ ${selectedFloor.floor}` : workoutMode === 'ghost' ? 'БОЙ С ТЕНЬЮ' : 'ЗАКАЛКА №01 / СИЛА НОГ'}</div><h2>20 <span>ПРИСЕДАНИЙ</span></h2><p>Двадцать ударов по своей слабости. Камера следит за каждым полным движением и останавливает испытание автоматически.</p></div></div>
+              <div className="challenge-heading"><div><div className="challenge-type"><Hammer size={16} /> {workoutMode === 'tower' ? `БАШНЯ · ЭТАЖ ${selectedFloor.floor}` : workoutMode === 'ghost' ? 'БОЙ С ТЕНЬЮ' : exercise.focus.toUpperCase()}</div><h2>{exercise.target} <span>{exercise.unit === 'seconds' ? 'СЕКУНД · ПЛАНКА' : exercise.name.toUpperCase()}</span></h2><p>{exercise.coaching} Камера завершит подход после полной цели.</p></div></div>
 
-              <ExerciseCatalog selected={previewExercise} onSelect={setPreviewExercise}
-                busy={mode === 'active' || mode === 'loading'} />
+              {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем упражнения…</div>}>
+                <ExerciseCatalog selected={previewExercise} onSelect={setPreviewExercise}
+                  busy={mode === 'active' || mode === 'loading'} />
+              </Suspense>}
 
               {(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) && (
                 <div className="camera-preflight" role="status">
                   <WifiOff size={19} />
                   <div><strong>КАМЕРА ТРЕБУЕТ HTTPS</strong>
-                    <span>По текущему HTTP-адресу доступен интерфейс, но браузер не разрешает распознавание приседаний. Для камеры нужен защищённый HTTPS-адрес.</span>
+                    <span>По текущему HTTP-адресу доступен интерфейс, но браузер не разрешает распознавание упражнений. Для камеры нужен защищённый HTTPS-адрес.</span>
                   </div>
                 </div>
               )}
@@ -948,11 +1016,11 @@ function App() {
                 onChoose={(source) => { void chooseCamera(source); }}
                 onRefresh={() => { void refreshCameraDevices(); }}
                 onZoom={(value) => { void changeCameraZoom(value); }}/>
-              <div className="framing-primer"><Smartphone size={16}/><span>Для приседаний установи телефон <strong>сбоку</strong> и дальше от себя. В кадре должны быть таз, колено и стопа хотя бы одной ноги.</span></div>
+              <div className="framing-primer"><Smartphone size={16}/><span>{exercise.placement[1]}</span></div>
 
               <div className={`training-visual${isCameraShown ? ' training-visual-camera' : ''}${mode === 'complete' ? ' training-visual-done' : ''}${showFullFrame ? ' camera-fit-whole' : ''}`} data-camera-format="9:16">
                 <div className="portrait-frame-label"><span><Smartphone size={13} /> ВЕРТИКАЛЬНЫЙ КАДР / 9:16</span><span>{mode === 'active' ? formatTime(elapsedMs) : 'FORGE CAM · 01'}</span></div>
-                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} style={{ transform: cameraMirrored ? 'scaleX(-1)' : 'none' }} playsInline muted autoPlay aria-label="Вертикальное окно видеозахвата для отслеживания приседаний" />
+                <video ref={videoRef} className={`camera-feed${isCameraShown ? ' camera-visible' : ''}`} style={{ transform: cameraMirrored ? 'scaleX(-1)' : 'none' }} playsInline muted autoPlay aria-label="Видео с камеры для отслеживания упражнения" />
                 <canvas ref={canvasRef} className={`pose-overlay${isCameraShown ? ' pose-visible' : ''}`} aria-hidden="true" />
                 {!isCameraShown && mode !== 'complete' && <div className="scan-backdrop" aria-hidden="true"><div className="scan-corners"><ForgeGlyph name="scan" size={74} /></div><div className="scan-circle" /><div className="scan-instruction">РАЗМЕСТИ ТЕЛО В ВЕРТИКАЛЬНОМ КАДРЕ</div></div>}
                 {mode === 'loading' && <div className="loading-overlay"><div className="spinner" /><strong>НАСТРАИВАЕМ КАМЕРУ</strong><span>Загружаем модуль и модель распознавания. Для первого запуска нужен интернет.</span></div>}
@@ -960,20 +1028,23 @@ function App() {
                   <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
                 </div>}
                 {mode === 'complete' ? (
-                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span role="status">{isSaving ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
+                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span role="status">{isSaving ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ' : exercise.unit === 'seconds' ? '30 СЕКУНД УДЕРЖАНИЯ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
                 ) : (
-                  <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} /></div>
+                  <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} target={exercise.target} label={exercise.unit === 'seconds' ? 'СЕКУНД' : 'ПОВТОРЕНИЙ'} /></div>
                 )}
                 {mode === 'active' && (
-                  <div className={`pose-hud${snapshot.angle === null ? ' pose-hud-lost' : ''}`} aria-label="Диагностика распознавания приседаний">
+                  <div className={`pose-hud${snapshot.angle === null ? ' pose-hud-lost' : ''}`} aria-label="Диагностика распознавания упражнения">
                     <span className="pose-hud-step">
-                      {snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' :
-                        snapshot.phase === 'ready' ? 'ГОТОВ К ПРИСЕДУ' :
-                          snapshot.phase === 'descending' ? 'ОПУСКАЙСЯ' : 'ВЫПРЯМИСЬ'}
+                      {selectedExercise !== 'squat'
+                        ? snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' : snapshot.phase === 'ready' ? 'ГОТОВ К ДВИЖЕНИЮ' :
+                            selectedExercise === 'plank' ? 'УДЕРЖИВАЙ ПЛАНКУ' : snapshot.phase === 'descending' ? 'ДВИЖЕНИЕ' : 'ВЕРНИСЬ В НАЧАЛО'
+                        : snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' :
+                            snapshot.phase === 'ready' ? 'ГОТОВ К ПРИСЕДУ' : snapshot.phase === 'descending' ? 'ОПУСКАЙСЯ' : 'ВЫПРЯМИСЬ'}
                     </span>
-                    <div className="pose-hud-angle"><span>КОЛЕНО</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></div>
+                    <div className="pose-hud-angle"><span>{diagnostic.name}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}${diagnostic.unit}`}</strong></div>
                     <div className="pose-hud-target">
                       {snapshot.angle === null ? 'ПОПРАВЬ КАДР' :
+                        selectedExercise !== 'squat' ? exercise.coaching :
                         snapshot.depthTarget === null ? 'ВСТАНЬ ПРЯМО' :
                         snapshot.phase === 'bottom' ? `ВСТАТЬ ≥ ${snapshot.returnTarget}°` :
                           `ПРИСЕСТЬ ≤ ${snapshot.depthTarget}°`}
@@ -1013,10 +1084,10 @@ function App() {
                 </div>
               )}
               <div className="live-feedback" aria-live="polite">
-                {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{poseGuidance.warning && snapshot.angle === null ? poseGuidance.instruction : FEEDBACK[snapshot.feedback]}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}°`}</strong></>
+                {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{poseGuidance.warning && snapshot.angle === null ? poseGuidance.instruction : selectedExercise === 'squat' ? FEEDBACK[snapshot.feedback] : snapshot.feedback === 'great' ? 'Засчитано!' : snapshot.feedback === 'find-body' ? exercise.placement[1] : snapshot.phase === 'calibrate' ? exercise.placement[2] : snapshot.phase === 'ready' ? exercise.coaching : snapshot.phase === 'bottom' ? 'Вернись в исходную позу' : 'Продолжай движение'}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}${diagnostic.unit}`}</strong></>
                   : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
-                    : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>{isSaving ? '20 повторов засчитаны. Дождись сохранения результата.' : 'Всё засчитано. Герой стал сильнее!'}</span></>
-                      : <><Smartphone size={17} /><span>Поставь телефон вертикально, сбоку от себя. Тело и стопы должны быть видны.</span></>}
+                    : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>{isSaving ? 'Цель достигнута. Дождись сохранения результата.' : 'Всё засчитано. Герой стал сильнее!'}</span></>
+                      : <><Smartphone size={17} /><span>{exercise.placement[1]}</span></>}
               </div>
               {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>{showFullFrame ? 'Камера отдаёт широкий поток. Показываем весь кадр с полями — держи таз, колено и стопу в кадре.' : 'Камера отдаёт широкий поток. Показываем его центр в вертикальной рамке — стой посередине.'}</span></div>}
               <div className="challenge-stats"><div><span>ВРЕМЯ</span><strong><Clock3 size={16} /> {formatTime(displayTime)}</strong></div><span className="stats-separator" /><div><span>НАГРАДА</span><strong className="reward-color"><Zap size={15} /> +{XP_REWARD} XP</strong></div><span className="stats-separator" /><div><span>МОНЕТЫ</span><strong className="reward-color"><Coins size={15} /> +{COIN_REWARD}</strong></div></div>
@@ -1045,7 +1116,9 @@ function App() {
               )}
               {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
-              <RuntimeDiagnosticsPanel />
+              {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем диагностику…</div>}>
+                <RuntimeDiagnosticsPanel />
+              </Suspense>}
             </article>
           </section>
 
@@ -1084,11 +1157,11 @@ function App() {
             <div className="records-card">
               <div className="lower-card-header"><div><span className="section-index">03 / ЛЕТОПИСЬ КУЗНИ</span><h3>СЛЕДЫ <em>ТВОЕЙ СИЛЫ</em></h3></div><Award size={22} /></div>
               <div className="record-list">
-                <div className="record-item"><div className="record-icon"><Dumbbell size={22} /></div><div><strong>{repetitionsDone}</strong><span>ВСЕГО ПРИСЕДАНИЙ</span></div></div>
+                <div className="record-item"><div className="record-icon"><Dumbbell size={22} /></div><div><strong>{repetitionsDone}</strong><span>ВСЕГО ПОВТОРЕНИЙ</span></div></div>
                 <div className="record-item"><div className="record-icon"><Medal size={22} /></div><div><strong>{workoutCount}</strong><span>ИСПЫТАНИЙ ПРОЙДЕНО</span></div></div>
                 <div className="record-item"><div className="record-icon"><Clock3 size={22} /></div><div><strong className="time-record">{best === null ? '— : —' : formatTime(best)}</strong><span>ЛУЧШЕЕ ВРЕМЯ</span></div></div>
               </div>
-              <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{TARGET_REPS} приседаний</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
+              <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{workout.exerciseId === 'plank' ? '30 сек. планки' : `${workout.repetitions} · ${exerciseGuide(workout.exerciseId ?? 'squat').name.toLowerCase()}`}</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
             </div>
             <div className="tips-card"><div className="lower-card-header"><div><span className="section-index">ПЕРЕД УДАРОМ</span><h3>ПОДГОТОВЬ <em>КАДР</em></h3></div><CircleHelp size={22} /></div>
               <div className="tip-row"><div className="tip-number">01</div><div><strong>Телефон вертикально, сбоку</strong><span>Снимай в портретном положении 9:16. Целиком должны быть видны таз, колени и стопы.</span></div></div>
@@ -1097,6 +1170,10 @@ function App() {
               <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
             </div>
           </section>
+          {profile.game.created && section === 'dashboard' && <Suspense fallback={null}>
+            <ProgressBackupPanel profile={profile} pendingResult={pendingResult}
+              disabled={isSaving || !canNavigate}/>
+          </Suspense>}
           <footer className="footer"><span><span className="footer-mark"><BrandMark size={18} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ.</span></footer>
         </main>
       </div>

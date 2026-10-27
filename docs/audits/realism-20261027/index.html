@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BODYFORGE · Сравнение 3D</title>
+<style>
+  :root { color-scheme:dark; font-family:system-ui,sans-serif; color:#e4ecf4; background:#0b1420; }
+  body { margin:0; padding:24px 16px; } main { max-width:680px; margin:auto; }
+  h1 { font-size:clamp(24px,5vw,36px); margin:8px 0; letter-spacing:-.04em; }
+  p { color:#acbbc9; line-height:1.6; } .eyebrow { color:#60e4d4; font-size:12px; letter-spacing:.15em; }
+  .compare { position:relative; max-width:390px; margin:24px auto; border:1px solid #405365; border-radius:20px; overflow:hidden; }
+  .compare img { width:100%; height:auto; display:block; } #after { position:absolute; inset:0; clip-path:inset(0 50% 0 0); }
+  .tag { position:absolute; top:12px; background:#08121ee8; padding:7px 12px; border-radius:20px; font-size:12px; }
+  .new { left:12px; color:#60e4d4; } .old { right:12px; }
+  .controls { max-width:390px; margin:auto; } input { width:100%; margin:18px 0; accent-color:#60e4d4; }
+  .buttons { display:flex; gap:10px; } button { flex:1; min-height:44px; color:inherit; background:#172a3b; border:1px solid #405365; border-radius:12px; font:inherit; cursor:pointer; }
+  a { color:#60e4d4; } .note { font-size:13px; }
+</style>
+<main>
+  <span class="eyebrow">BODYFORGE / 3D · 27.10.2026</span>
+  <h1>Более естественный персонаж</h1>
+  <p>Сравнение реальных кадров приложения: уточнённая форма лица, глаза и губы с текстурами, отдельные волоски бровей, новая причёска и студийный PBR-свет.</p>
+  <div class="compare">
+    <img src="before.png" width="390" height="844" alt="Предыдущая 3D-модель в приложении">
+    <img id="after" src="after.png" width="390" height="844" alt="Новая Blender-редакция в том же приложении">
+    <span class="tag new">ПОСЛЕ</span><span class="tag old">ДО</span>
+  </div>
+  <div class="controls">
+    <label for="reveal">Доля новой версии</label>
+    <input id="reveal" type="range" min="0" max="100" value="50">
+    <div class="buttons"><button type="button" data-value="0">Только до</button><button type="button" data-value="100">Только после</button></div>
+  </div>
+  <p class="note">Снимки 390 × 844, синтетический профиль. Они показывают совместный эффект геометрии, материалов и освещения. Художественный фотореализм и производительность физического телефона пока требуют дальнейшей работы и измерений.</p>
+  <p><a href="/">Открыть проверенную версию приложения</a></p>
+</main>
+<script>
+  const slider=document.querySelector('#reveal'), picture=document.querySelector('#after');
+  function reveal(){picture.style.clipPath=`inset(0 ${100-Number(slider.value)}% 0 0)`;}
+  slider.addEventListener('input',reveal);
+  document.querySelectorAll('[data-value]').forEach(button=>button.addEventListener('click',()=>{slider.value=button.dataset.value;reveal();}));
+  reveal();
+</script>
+</html>

@@ -2,6 +2,7 @@ import {
   beatTowerFloor, freshGame, normalizeGame, storeGhost,
   type GameState, type WorkoutMode,
 } from './game';
+import { isExerciseId, type ExerciseId } from './trainingCatalog';
 
 export const TARGET_REPS = 20;
 export const XP_REWARD = 120;
@@ -18,11 +19,15 @@ export interface Workout {
   repetitions: number;
   xp: number;
   mode?: WorkoutMode;
+  /** Absent on legacy records, which are squats. */
+  exerciseId?: ExerciseId;
+  /** Recorded only for timed plank sessions; never counted as repetitions. */
+  holdSeconds?: number;
   /** Measured finish times, in ms from calibrated start, for each rep. */
   splitsMs?: number[];
 }
 
-export interface ProfileTotals { workouts: number; repetitions: number; bestDurationMs: number | null }
+export interface ProfileTotals { workouts: number; repetitions: number; bestDurationMs: number | null; holdSeconds?: number }
 
 export interface Profile {
   /** Stable local identity; assigned under the write lock before a workout. */
@@ -75,20 +80,27 @@ export function formatTime(milliseconds: number): string {
 }
 
 export function bestTime(workouts: Workout[]): number | null {
-  const valid = workouts.filter((workout) => workout.repetitions === TARGET_REPS && workout.durationMs > 0);
+  const valid = workouts.filter((workout) => (!workout.exerciseId || workout.exerciseId === 'squat') && workout.repetitions === TARGET_REPS && workout.durationMs > 0);
   return valid.length ? Math.min(...valid.map((workout) => workout.durationMs)) : null;
 }
 
-export interface WorkoutOptions { mode?: WorkoutMode; splitsMs?: number[]; sessionId?: string }
+export interface WorkoutOptions { mode?: WorkoutMode; splitsMs?: number[]; sessionId?: string; exerciseId?: ExerciseId; holdSeconds?: number }
 
 export function getProfileTotals(profile: Profile): ProfileTotals {
-  const history = { workouts: profile.workouts.length, repetitions: profile.workouts.reduce((sum, w) => sum + w.repetitions, 0), bestDurationMs: bestTime(profile.workouts) };
+  const recentReps = profile.workouts.reduce((sum, w) => sum + w.repetitions, 0);
+  const recentHold = profile.workouts.reduce((sum, w) => sum + (w.holdSeconds ?? 0), 0);
+  const history: ProfileTotals = { workouts: profile.workouts.length, repetitions: recentReps,
+    bestDurationMs: bestTime(profile.workouts), ...(recentHold ? { holdSeconds: recentHold } : {}) };
   const t = profile.totals;
   if (!t || !Number.isSafeInteger(t.workouts) || t.workouts < history.workouts ||
-      !Number.isSafeInteger(t.repetitions) || t.repetitions !== t.workouts * TARGET_REPS ||
+      !Number.isSafeInteger(t.repetitions) || t.repetitions < recentReps || t.repetitions > t.workouts * TARGET_REPS ||
+      (t.holdSeconds !== undefined && (!Number.isSafeInteger(t.holdSeconds) || t.holdSeconds < recentHold || t.holdSeconds > t.workouts * 30)) ||
       (t.bestDurationMs !== null && (!Number.isFinite(t.bestDurationMs) || t.bestDurationMs <= 0))) return history;
   const candidates = [t.bestDurationMs, history.bestDurationMs].filter((v): v is number => v !== null);
-  return { workouts: t.workouts, repetitions: t.repetitions, bestDurationMs: candidates.length ? Math.min(...candidates) : null };
+  const holdSeconds = Math.max(t.holdSeconds ?? 0, recentHold);
+  return { workouts: t.workouts, repetitions: t.repetitions,
+    bestDurationMs: candidates.length ? Math.min(...candidates) : null,
+    ...(holdSeconds ? { holdSeconds } : {}) };
 }
 
 function validWorkoutSplits(splits: unknown, durationMs: number): splits is number[] {
@@ -120,6 +132,12 @@ export function addCompletedWorkout(
   if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('Время тренировки должно быть положительным');
   if (options.sessionId !== undefined && !validWorkoutId(options.sessionId)) throw new Error('Invalid workout session ID');
   if (ambiguousWorkoutIds(profile)) throw new Error('Reward identity ledger requires recovery');
+  const exerciseId = options.exerciseId ?? 'squat';
+  if (!isExerciseId(exerciseId)) throw new Error('Unknown exercise');
+  if (exerciseId !== 'squat' && options.mode !== undefined && options.mode !== 'training') throw new Error('Only squats support competitive modes');
+  if (exerciseId === 'plank' ? options.holdSeconds !== 30 : options.holdSeconds !== undefined) throw new Error('Invalid timed hold');
+  const creditedReps = exerciseId === 'plank' ? 0 : TARGET_REPS;
+  const creditedHold = exerciseId === 'plank' ? 30 : 0;
   const credited = creditedWorkoutIds(profile.creditedWorkoutIds, profile.workouts);
   if (options.sessionId && credited.has(options.sessionId)) return profile;
   const totals = getProfileTotals(profile);
@@ -129,9 +147,11 @@ export function addCompletedWorkout(
     id: options.sessionId ?? `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`,
     finishedAt: now.toISOString(),
     durationMs,
-    repetitions: TARGET_REPS,
+    repetitions: creditedReps,
     xp: XP_REWARD,
     mode: options.mode ?? 'training',
+    ...(exerciseId !== 'squat' ? { exerciseId } : {}),
+    ...(creditedHold ? { holdSeconds: creditedHold } : {}),
     ...(validSplits ? { splitsMs: [...splits] } : {}),
   };
   const updated: Profile = {
@@ -141,9 +161,11 @@ export function addCompletedWorkout(
     coins: profile.coins + COIN_REWARD,
     workouts: [workout, ...profile.workouts].slice(0, 60),
     game: normalizeGame(profile.game),
-    totals: { workouts: totals.workouts + 1, repetitions: totals.repetitions + TARGET_REPS, bestDurationMs: Math.min(totals.bestDurationMs ?? durationMs, durationMs) },
+    totals: { workouts: totals.workouts + 1, repetitions: totals.repetitions + creditedReps,
+      bestDurationMs: exerciseId === 'squat' ? Math.min(totals.bestDurationMs ?? durationMs, durationMs) : totals.bestDurationMs,
+      ...((totals.holdSeconds ?? 0) + creditedHold ? { holdSeconds: (totals.holdSeconds ?? 0) + creditedHold } : {}) },
   };
-  const withGhost = validSplits ? storeGhost(updated, durationMs, splits) : updated;
+  const withGhost = exerciseId === 'squat' && validSplits ? storeGhost(updated, durationMs, splits) : updated;
   return options.mode === 'tower' ? beatTowerFloor(withGhost, durationMs) : withGhost;
 }
 
@@ -163,13 +185,18 @@ export function parseProfile(value: unknown): Profile {
     return typeof item.id === 'string' && typeof item.finishedAt === 'string'
       && Number.isFinite(Date.parse(item.finishedAt))
       && typeof item.durationMs === 'number' && Number.isFinite(item.durationMs) && item.durationMs > 0
-      && item.repetitions === TARGET_REPS && typeof item.xp === 'number' && Number.isFinite(item.xp) && item.xp >= 0;
+      && ((item.exerciseId === 'plank' && item.repetitions === 0 && item.holdSeconds === 30) ||
+        ((item.exerciseId === undefined || (isExerciseId(item.exerciseId) && item.exerciseId !== 'plank')) &&
+          item.repetitions === TARGET_REPS && item.holdSeconds === undefined)) &&
+      typeof item.xp === 'number' && Number.isFinite(item.xp) && item.xp >= 0;
   });
   const workouts = history.slice(0, 60).map((workout) => {
-    const { splitsMs, mode, ...rest } = workout;
+    const { splitsMs, mode, exerciseId, holdSeconds, ...rest } = workout;
     return {
       ...rest,
       ...(mode === 'training' || mode === 'tower' || mode === 'ghost' ? { mode } : {}),
+      ...(exerciseId && isExerciseId(exerciseId) ? { exerciseId } : {}),
+      ...(exerciseId === 'plank' ? { holdSeconds } : {}),
       ...(validWorkoutSplits(splitsMs, workout.durationMs) ? { splitsMs: [...splitsMs] } : {}),
     };
   });

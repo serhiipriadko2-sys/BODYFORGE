@@ -4,7 +4,7 @@ import * as THREE from 'three';
  * U crosses the fibres, V follows the clumps. This adds lighting relief only,
  * never opacity/sorting or network resources. Dispose with the scene subtree.
  */
-export function createAvatarHairMaterial(color: THREE.ColorRepresentation): THREE.MeshStandardMaterial {
+export function createAvatarHairMaterial(color: THREE.ColorRepresentation, realistic = false): THREE.MeshStandardMaterial {
   const width = 128, height = 64;
   const data = new Uint8Array(width * height * 4);
   for (let y = 0; y < height; y++) {
@@ -28,7 +28,28 @@ export function createAvatarHairMaterial(color: THREE.ColorRepresentation): THRE
   bump.minFilter = THREE.LinearMipmapLinearFilter;
   bump.generateMipmaps = true;
   bump.needsUpdate = true;
-  return new THREE.MeshStandardMaterial({
-    color, roughness: .79, metalness: 0, bumpMap: bump, bumpScale: .001,
-  });
+  const base = { color, roughness: realistic ? .70 : .79, metalness: 0, bumpMap: bump, bumpScale: .001 };
+  return realistic ? new THREE.MeshPhysicalMaterial({
+    ...base, anisotropy: .35, anisotropyRotation: Math.PI / 2, specularIntensity: .30,
+  }) : new THREE.MeshStandardMaterial(base);
+}
+
+/** CC0 card atlas uses alpha testing with depth writes, not blended sorting.
+ * Enable clipping only after its color/alpha map arrives; failed requests leave
+ * a usable opaque fallback. The scalp-fitted buzz has its own untextured material.
+ */
+export function applyAvatarHairMap(material: THREE.MeshStandardMaterial, texture: THREE.Texture, kind: 'albedo' | 'normal') {
+  texture.flipY = false;
+  texture.colorSpace = kind === 'albedo' ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+  if (kind === 'albedo') {
+    material.map = texture;
+    material.alphaTest = .38;
+    material.alphaToCoverage = true;
+    material.side = THREE.DoubleSide;
+    material.bumpScale = .0002;
+  } else {
+    material.normalMap = texture;
+    material.normalScale.set(.45, .45);
+  }
+  material.needsUpdate = true;
 }

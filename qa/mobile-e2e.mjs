@@ -15,7 +15,7 @@ const chrome=spawn(chromePath,[
   'about:blank',
 ],{stdio:'ignore'});
 const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
-let socket,seq=0;const pending=new Map();
+let socket,seq=0,pageLoads=0;const pending=new Map();
 async function endpoint(){
   for(let i=0;i<75;i++){
     if(chrome.exitCode!==null)throw Error('Owned Chrome exited '+chrome.exitCode);
@@ -45,6 +45,13 @@ async function until(expression,label,timeoutMs=20000){
   throw Error('TIMEOUT '+label);
 }
 async function read(expression){return JSON.parse(await js('JSON.stringify('+expression+')'));}
+async function reloadApp(){
+  const previous=pageLoads;
+  await cdp('Page.reload',{ignoreCache:true});
+  const deadline=Date.now()+30000;
+  while(pageLoads<=previous){if(Date.now()>=deadline)throw Error('TIMEOUT new document load');await sleep(80);}
+  await until('!!document.querySelector(".app-shell .mobile-nav button:nth-child(3)")','profile hydrated and navigation ready after reload',30000);
+}
 async function screenshot(name){
   const shot=await cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   const file=path.join(os.tmpdir(),name);
@@ -66,12 +73,28 @@ try{
   await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});
   socket.addEventListener('message',e=>{
     const m=JSON.parse(e.data.toString());
+    if(m.method==='Page.loadEventFired')pageLoads++;
     if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}
     if(m.method==='Runtime.exceptionThrown')console.log('BROWSER_EXCEPTION',(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,270));
     if(m.method==='Runtime.consoleAPICalled'&&m.params?.type==='error')
       console.log('BROWSER_ERROR',JSON.stringify(m.params.args?.map(a=>a.value??a.description).slice(0,2)).slice(0,440));
   });
   await cdp('Runtime.enable');await cdp('Page.enable');
+  // Disposable fake Wake Lock: prove the actual app requests and releases it.
+  // No system-wide settings or the owner's real screen state are changed.
+  await cdp('Page.addScriptToEvaluateOnNewDocument',{source:`
+    window.__bfWakeLog = {requests: 0, releases: 0};
+    Object.defineProperty(navigator, 'wakeLock', {configurable: true, value: {
+      request: async (type) => {
+        if (type !== 'screen') throw Error('Unexpected Wake Lock request');
+        window.__bfWakeLog.requests++;
+        let released = false;
+        return {release: async () => {
+          if (!released) { released = true; window.__bfWakeLog.releases++; }
+        }};
+      },
+    }});
+  `});
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
   await cdp('Page.navigate',{url:origin+'/'});
   await sleep(3400);
@@ -82,6 +105,9 @@ try{
   console.log('INITIAL',JSON.stringify(s).slice(0,470));
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
   check(s.three.includes('active'),'WebGL 3D hero active');
+  const initialPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx'))})");
+  check(!initialPanels.catalog && !initialPanels.diagnostics,
+    'training-only panels are not downloaded on mobile home');
   let photoHuman=false;
   for(let i=0;i<70;i++){
     photoHuman=await js("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'");
@@ -92,17 +118,21 @@ try{
   check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
     'visible 3D character schedules animation frames');
   await js("document.querySelector('#onboarding canvas').style.display='none'");
-  await sleep(500);
+  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'", 'hidden 3D animation paused', 4500);
   check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'"),
     'off-screen or hidden avatar suspends animation frame loop');
   await js("document.querySelector('#onboarding canvas').style.removeProperty('display')");
-  await sleep(500);
+  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'", 'visible 3D animation resumed', 4500);
   check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
     'avatar resumes animation after becoming visible');
   await screenshot('bf-qa-mobile-setup.png');
   // First launch: tapping Camera before fighter setup must not silently jump
   // to the home screen. The user should see why they cannot train yet.
   await click('.mobile-nav button:nth-child(2)');
+  await until("!!document.querySelector('#challenge .bf-catalog-trigger') && !!document.querySelector('#challenge .perf-toggle')", 'training panels loaded', 6000);
+  const requestedPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx'))})");
+  check(requestedPanels.catalog && requestedPanels.diagnostics,
+    'training-only panels are downloaded after opening the camera tab');
   await click('#challenge .primary-button');
   const notCreated=await read("({screen:document.querySelector('.app-shell').dataset.screen,error:document.querySelector('.camera-error[role=alert]')?.textContent||'',cta:document.querySelector('#challenge .primary-button')?.textContent||''})");
   console.log('NO_FIGHTER_CAMERA',JSON.stringify(notCreated));
@@ -117,6 +147,51 @@ try{
   s=await snapshot();
   console.log('CREATED',JSON.stringify(s).slice(0,440));
   check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');
+  // The local backup is opt-in. Prepare asynchronously, then download from a
+  // second direct click; inspect only this disposable browser's fake export.
+  await until("!!document.querySelector('#progress-backup [data-action=prepare-progress]:not(:disabled)')", 'backup panel ready', 12000);
+  const beforeBackup = await js("localStorage.getItem('bodyforge:pilot:v1')");
+  await js(`(()=>{
+    const actualUrl = URL.createObjectURL.bind(URL);
+    const actualClick = HTMLAnchorElement.prototype.click;
+    window.__bfExportBlobs = new Map();
+    URL.createObjectURL = (blob) => {
+      const uri = actualUrl(blob);
+      if (blob.type.includes('application/json')) window.__bfExportBlobs.set(uri, blob);
+      return uri;
+    };
+    HTMLAnchorElement.prototype.click = function() {
+      if (this.download.startsWith('bodyforge-backup-')) {
+        window.__bfExportSample = { filename: this.download, blob: window.__bfExportBlobs.get(this.href) };
+        return;
+      }
+      return actualClick.call(this);
+    };
+    return true;
+  })()`);
+  await click('#progress-backup [data-action=prepare-progress]');
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'", 'backup data assembled', 12000);
+  check(!!(await js("document.querySelector('#progress-backup .progress-install-help summary')?.textContent.includes('УСТАНОВИТЬ')")),
+    'mobile app offers an accessible install guide');
+  await js("window.dispatchEvent(new StorageEvent('storage', {key:'bodyforge:avatar-look:v1',newValue:'changed-in-another-tab'}));true");
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='idle'", 'stale cross-tab backup invalidated', 3000);
+  check(!!(await js("document.querySelector('#progress-backup [role=status]')?.textContent.includes('другой вкладке')")),
+    'changed settings invalidate a prepared download');
+  await click('#progress-backup [data-action=prepare-progress]');
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'", 'refreshed backup assembled', 12000);
+  await click('#progress-backup [data-action=download-progress]');
+  const saved = JSON.parse(await js(`(async()=>{
+    const sample = window.__bfExportSample;
+    const value = JSON.parse(await sample.blob.text());
+    return JSON.stringify({name:sample.filename,format:value.exportFormat,version:value.exportSchemaVersion,
+      rawProfile:value.storedProfileRaw,lookStatus:value.auxiliaryReadStatus?.avatarLook,
+      durableStatus:value.durableReadStatus, complete:value.complete});
+  })()`));
+  check(saved.name.startsWith('bodyforge-backup-') && saved.format==='bodyforge-manual-backup'
+    && saved.version===1 && saved.rawProfile===beforeBackup && saved.lookStatus==='ready',
+    'two-click local backup preserves the actual profile and settings');
+  check((await js("localStorage.getItem('bodyforge:pilot:v1')"))===beforeBackup,
+    'export does not rewrite user progress or rewards');
   const premium=await read("({player:!!document.querySelector('.dashboard-player'),dark:!!document.querySelector('link[href*=premium]')||getComputedStyle(document.body).backgroundColor,firstRect:document.querySelector('.character-card')?.getBoundingClientRect().top})");
   console.log('PREMIUM_HOME',JSON.stringify(premium));
   check(premium.player && premium.firstRect>0,'home has real fighter status and 3D hero');
@@ -150,7 +225,7 @@ try{
   check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
   // QA-only wallet top-up in this disposable Chrome profile. Never changes actual user data.
   await js("(()=>{const key='bodyforge:pilot:v1',p=JSON.parse(localStorage.getItem(key));p.coins=180;localStorage.setItem(key,JSON.stringify(p));return true})()");
-  await cdp('Page.reload',{ignoreCache:true});await sleep(1850);
+  await reloadApp();
   await click('.mobile-nav button:nth-child(3)');
   await until('document.querySelector("#forge .muscle-card button")?.disabled===false', 'purchased improvement available after profile reload');
   await click('#forge .muscle-card button');
@@ -163,7 +238,7 @@ try{
   s=await snapshot();
   check(s.game.outfit==='ember'&&s.coins===95,'outfit purchase persists color choice');
   await screenshot('bf-qa-mobile-forge-upgraded.png');
-  await cdp('Page.reload',{ignoreCache:true});await sleep(1700);
+  await reloadApp();
   s=await snapshot();
   check(!s.setup&&s.game.muscles.arms===1&&s.game.outfit==='ember'&&s.coins===95,'save survives reload');
   // Session-only diagnostics reset on Page.reload, by design. Open the hero
@@ -183,14 +258,20 @@ try{
   const camera=await read("({screen:document.querySelector('.app-shell').dataset.screen,card:document.querySelector('#challenge')?.getBoundingClientRect().top,button:!!document.querySelector('#challenge .primary-button'),ratio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
   console.log('CAMERA_TAB',JSON.stringify(camera));
   check(camera.screen==='challenge'&&camera.card<340&&camera.button&&Math.abs(camera.ratio-9/16)<.006,'mobile camera tab with portrait stage');
-  check(await js("document.querySelector('.framing-primer')?.textContent.includes('сбоку') === true"),
+  const framingCopy = await js("document.querySelector('.framing-primer')?.textContent || ''");
+  check(/боком|сбоку|45°/i.test(framingCopy) && /колен/i.test(framingCopy) && /стоп/i.test(framingCopy),
     'camera offers side-view and full-leg framing before the workout');
   await click('.perf-toggle');
   const preflightDiagnostics = await read("({open:!!document.querySelector('[data-diagnostics=open]'),glb:document.querySelector('[data-glb-load]')?.dataset.glbLoad,privacy:document.querySelector('.perf-body')?.textContent.includes('Никакие кадры камеры')})");
   console.log('PREFLIGHT_DIAGNOSTICS',JSON.stringify(preflightDiagnostics));
   check(preflightDiagnostics.open&&Number(preflightDiagnostics.glb)>0&&preflightDiagnostics.privacy,
     'device diagnostics offers a locally measured GLB load and privacy notice');
+  check((await read('window.__bfWakeLog')).requests === 0,
+    'screen lock remains off before starting a workout');
   await click('#challenge .primary-button');
+  await until('window.__bfWakeLog.requests >= 1', 'screen wake lock requested', 10000);
+  check((await read('window.__bfWakeLog')).releases === 0,
+    'phone screen wake lock stays held during camera startup');
   for(let i=0;i<60;i++){await sleep(250);const mode=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',loading:!!document.querySelector('.loading-overlay')})");if(mode.active||mode.error){console.log('CAMERA_START',JSON.stringify(mode));check(mode.active&&!mode.error,'camera starts after 3D navigation');break;}if(i===59)throw Error('Camera did not start after 15 s');}
   const context=await read("({active3d:[...document.querySelectorAll('[data-3d-status=active]')].length,stageRatio:(()=>{const b=document.querySelector('.training-visual').getBoundingClientRect();return b.width/b.height})()})");
   console.log('CAMERA_GPU',JSON.stringify(context));
@@ -251,6 +332,9 @@ try{
   }
   check(changed,'live switch back to front camera resumes tracking');
   await click('#challenge .secondary-button');
+  await until('window.__bfWakeLog.releases >= window.__bfWakeLog.requests', 'wake lock released on stop', 10000);
+  check((await read('window.__bfWakeLog')).releases >= 1,
+    'stopping the camera releases the screen wake lock');
   const stopped=await read("({video:!!document.querySelector('.camera-visible'),rewards:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp})");
   check(!stopped.video&&stopped.rewards===0,'manual camera stop grants no XP');
   await cdp('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
@@ -263,7 +347,7 @@ try{
 }catch(error){
   console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12;
   if(socket?.readyState===1)try{
-    console.log('FAILURE_STATE',await js("JSON.stringify({url:location.href,screen:document.querySelector('.app-shell')?.dataset.screen,storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus,loading:!!document.querySelector('.avatar-3d-wait')})"));
+    console.log('FAILURE_STATE',await js("JSON.stringify({url:location.href,screen:document.querySelector('.app-shell')?.dataset.screen,storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus,loading:!!document.querySelector('.avatar-3d-wait'),message:document.body.innerText.slice(0,2000)})"));
   }catch{}
 }
 finally{socket?.close();chrome.kill();await sleep(400);try{fs.rmSync(profile,{recursive:true,force:true})}catch{}}

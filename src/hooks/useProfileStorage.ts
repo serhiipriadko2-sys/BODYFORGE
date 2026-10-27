@@ -6,6 +6,7 @@ import { prepareWorkoutSession, readResultJournal, readQuarantinedResults, sameW
 import { replayDurableWorkouts, quarantineDurableWorkouts } from '../lib/durableWorkout';
 import { readDurableJournal } from '../lib/durableJournal';
 import type { WorkoutMode } from '../lib/game';
+import type { ExerciseId } from '../lib/trainingCatalog';
 
 export type StorageStatus = 'ready' | 'checking' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
 const uiStatus = (state: ProfileLoadResult): StorageStatus => state.status === 'empty' ? 'ready' : state.status;
@@ -200,7 +201,7 @@ export function useProfileStorage() {
     return () => { active = false; };
   }, [reconcileToken, replay]);
 
-  const beginWorkout = useCallback(async (mode: WorkoutMode): Promise<WorkoutSession | null> => {
+  const beginWorkout = useCallback(async (mode: WorkoutMode, exerciseId: ExerciseId = 'squat'): Promise<WorkoutSession | null> => {
     if (volatileResult.current) { setStatus('unavailable'); return null; }
     const response = await runWrite(async (context) => {
       if (loadProfileState().revision !== revision.current) { setStatus('conflict'); return null; }
@@ -208,7 +209,7 @@ export function useProfileStorage() {
       if (!context.isCurrent()) return null;
       applyJournal(reconciled);
       if (reconciled.status !== 'saved') return null;
-      const result = prepareWorkoutSession(revision.current, mode);
+      const result = prepareWorkoutSession(revision.current, mode, exerciseId);
       if (result.status !== 'ready') { setStatus(result.status); return null; }
       accept(result.state);
       return result.session;

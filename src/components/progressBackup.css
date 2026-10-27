@@ -1,0 +1,97 @@
+/* Local-only progress backup. This card never blocks training or profile writes. */
+.progress-backup-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-width: 0;
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid #38566a;
+  border-radius: 13px;
+  background: linear-gradient(128deg, #162635, #121b26);
+  color: #e6f4fc;
+}
+.progress-backup-card > div { min-width: 0; }
+.progress-backup-card .section-index {
+  display: block;
+  color: #a9c5d7;
+  font-size: 10px;
+  letter-spacing: .075em;
+}
+.progress-backup-card h3 {
+  margin: 9px 0;
+  font-size: clamp(17px, 2.4vw, 22px);
+  line-height: 1.25;
+  letter-spacing: .02em;
+  color: #f1fafc;
+}
+.progress-backup-card p {
+  max-width: 70ch;
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d0e0ed;
+}
+.progress-backup-card small {
+  display: block;
+  margin-top: 9px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #afc5d4;
+}
+.progress-backup-actions {
+  flex: 0 1 300px;
+  width: 100%;
+}
+.progress-backup-actions button {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 15px;
+  border-radius: 9px;
+  border: 1px solid #88d9c7;
+  background: #77dfc8;
+  color: #092621;
+  font: 800 11px/1.45 'Manrope', sans-serif;
+  letter-spacing: .015em;
+  cursor: pointer;
+  white-space: normal;
+}
+.progress-backup-actions button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-backup-actions button:disabled {
+  opacity: .58;
+  cursor: wait;
+}
+.progress-backup-actions [role='status'] {
+  min-height: 1em;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.progress-install-help {
+  margin-top: 13px;
+  border-top: 1px solid #365165;
+  padding-top: 10px;
+}
+.progress-install-help summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  color: #a4f0da;
+  line-height: 1.5;
+}
+.progress-install-help summary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-install-help p { margin: 7px 0; }
+.progress-install-help strong { color: #eef9fe; }
+.app-shell[data-screen="dashboard"] .content > .progress-backup-card { order: 8; }
+.app-shell[data-screen="dashboard"] .content > .footer { order: 9; }
+@media (max-width: 740px) {
+  .progress-backup-card { flex-direction: column; align-items: stretch; gap: 13px; }
+  .progress-backup-actions { flex-basis: auto; }
+}

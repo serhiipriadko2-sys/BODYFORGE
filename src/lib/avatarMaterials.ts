@@ -18,12 +18,12 @@ export function importedSurfaceRole(name: string, geometry: THREE.BufferGeometry
   if (['base_male_bodyhigh-poly', 'BODYFORGE_Eyes'].includes(name) && position.count === 1076 &&
       close(bounds.min.y, 1.6609) && close(bounds.max.y, 1.6915) &&
       close(bounds.min.z, .1213) && close(bounds.max.z, .1466)) return 'eyes';
-  if (['base_2', 'BODYFORGE_Lips'].includes(name) && [2210, 2225].includes(position.count) &&
+  if (['base_2', 'BODYFORGE_Lips'].includes(name) && [2210, 2225, 2320].includes(position.count) &&
       close(bounds.min.y, 1.5880) && close(bounds.max.y, 1.6141) &&
       close(bounds.max.x, .0281) && close(bounds.max.z, .1646)) return 'lips';
-  if ((['base_3', 'BODYFORGE_NailsHands'].includes(name) && [639, 647].includes(position.count) &&
+  if ((['base_3', 'BODYFORGE_NailsHands'].includes(name) && [639, 647, 650].includes(position.count) &&
        close(bounds.min.y, .9602) && close(bounds.max.y, 1.0616)) ||
-      (['base_4', 'BODYFORGE_NailsFeet'].includes(name) && [1195, 1222].includes(position.count) &&
+      (['base_4', 'BODYFORGE_NailsFeet'].includes(name) && [1195, 1222, 1230].includes(position.count) &&
        close(bounds.min.y, .0137) && close(bounds.max.y, .0229))) return 'nails';
   return 'body';
 }
@@ -129,12 +129,17 @@ export function tintAvatarNails(geometry: THREE.BufferGeometry, skinColor: strin
 }
 
 /** The source base_2 is the lip surface, verified in the rendered portrait. */
-export function tintAvatarLips(geometry: THREE.BufferGeometry, skinColor: string): void {
+export function tintAvatarLips(geometry: THREE.BufferGeometry, skinColor: string, textured = false): void {
   const colors = writableColors(geometry);
   const color = new THREE.Color(skinColor);
-  color.r *= .91;
-  color.g *= .66;
-  color.b *= .69;
+  if (textured) {
+    const reference = new THREE.Color('#edbf9d');
+    color.r /= reference.r; color.g /= reference.g; color.b /= reference.b;
+  } else {
+    color.r *= .91;
+    color.g *= .66;
+    color.b *= .69;
+  }
   for (let i = 0; i < colors.count; i++) colors.setXYZ(i, color.r, color.g, color.b);
   colors.needsUpdate = true;
 }

@@ -57,7 +57,8 @@ export function maskAthleteOcclusion(root: THREE.Object3D): AthleteOcclusionResu
   const body = root.getObjectByName('BODYFORGE_Body');
   if (!(body instanceof THREE.SkinnedMesh)) return result;
   const position = body.geometry.getAttribute('position');
-  if (!position || position.itemSize !== 3 || position.count !== 64607 ||
+  const realistic = body.userData.BODYFORGE_realism === 'v1';
+  if (!position || position.itemSize !== 3 || position.count !== (realistic ? 65895 : 64607) ||
       !body.geometry.index || body.geometry.groups.length > 0 || !body.skeleton) return result;
   for (const [name, vertices] of GARMENTS) {
     const garment = root.getObjectByName(name);
@@ -74,7 +75,7 @@ export function maskAthleteOcclusion(root: THREE.Object3D): AthleteOcclusionResu
   const targets: THREE.SkinnedMesh[] = [body];
   const nipples = root.getObjectByName('BODYFORGE_SkinNipples');
   if (nipples instanceof THREE.SkinnedMesh && nipples.skeleton === body.skeleton &&
-      nipples.geometry.getAttribute('position')?.count === 457 && nipples.geometry.index?.count === 624 * 3 &&
+      nipples.geometry.getAttribute('position')?.count === (realistic ? 458 : 457) && nipples.geometry.index?.count === 624 * 3 &&
       nipples.geometry.groups.length === 0) targets.push(nipples);
 
   for (const mesh of targets) {

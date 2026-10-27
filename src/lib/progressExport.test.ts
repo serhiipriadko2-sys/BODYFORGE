@@ -3,6 +3,10 @@ import { freshGame } from './game';
 import { parseProfile, PROFILE_BACKUP_KEY, STORAGE_KEY, type Profile } from './progression';
 import { RESULT_JOURNAL_PREFIX, RESULT_QUARANTINE_PREFIX, type CompletedWorkoutResult } from './workoutJournal';
 import { createProgressExport } from './progressExport';
+import { AVATAR_LOOK_KEY } from './avatarLook';
+import { APPEARANCE_KEY } from './appearance';
+import { MANUAL_STEPS_KEY } from './stepsLog';
+import { DAILY_PLAN_KEY } from './dailyPlan';
 
 const result = (): CompletedWorkoutResult => ({
   schemaVersion: 1, profileId: 'export-profile', sessionId: 'export-session', mode: 'tower', floor: 1,
@@ -88,5 +92,50 @@ describe('local progress export evidence', () => {
     expect(setItem).not.toHaveBeenCalled();
     expect(removeItem).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('exports raw avatar look, appearance, steps and daily plan without rewriting unknown versions', () => {
+    const originals = new Map<string, string>([
+      [AVATAR_LOOK_KEY, '{"version":99,"hair":"unknown"}\n'],
+      [APPEARANCE_KEY, '  {"version":1,"customAccent":"#ABCDEF"}  '],
+      [MANUAL_STEPS_KEY, '{broken steps'],
+      [DAILY_PLAN_KEY, '{"version":2,"future":true}'],
+    ]);
+    const { getItem, setItem, removeItem } = storage(originals);
+    const snapshot = createProgressExport(parseProfile(null), null);
+    expect(snapshot.storedAuxiliaryRaw).toEqual({
+      avatarLook: originals.get(AVATAR_LOOK_KEY),
+      appearance: originals.get(APPEARANCE_KEY),
+      manualSteps: originals.get(MANUAL_STEPS_KEY),
+      dailyPlan: originals.get(DAILY_PLAN_KEY),
+    });
+    expect(Object.values(snapshot.auxiliaryReadStatus)).toEqual(['ready', 'ready', 'ready', 'ready']);
+    expect(getItem).toHaveBeenCalledWith(AVATAR_LOOK_KEY);
+    expect(getItem).toHaveBeenCalledWith(APPEARANCE_KEY);
+    expect([...originals]).toHaveLength(4);
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
+  });
+
+  it('marks only unreadable settings unavailable and preserves readable ones', () => {
+    const settings = new Map<string, string>([
+      [AVATAR_LOOK_KEY, '{"version":1,"visor":true}'],
+      [MANUAL_STEPS_KEY, '{"version":1,"day":"2026-10-27","count":100,"source":"manual"}'],
+    ]);
+    const { getItem, setItem, removeItem } = storage(settings);
+    getItem.mockImplementation((key) => {
+      if (key === APPEARANCE_KEY) throw new DOMException('permission denied', 'SecurityError');
+      return settings.get(key) ?? null;
+    });
+    const snapshot = createProgressExport(parseProfile(null), null);
+    expect(snapshot.storageReadStatus).toBe('ready');
+    expect(snapshot.auxiliaryReadStatus).toMatchObject({
+      appearance: 'unavailable', avatarLook: 'ready', manualSteps: 'ready', dailyPlan: 'ready',
+    });
+    expect(snapshot.storedAuxiliaryRaw.avatarLook).toBe(settings.get(AVATAR_LOOK_KEY));
+    expect(snapshot.storedAuxiliaryRaw.appearance).toBeNull();
+    expect(snapshot.storedAuxiliaryRaw.manualSteps).toBe(settings.get(MANUAL_STEPS_KEY));
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
   });
 });

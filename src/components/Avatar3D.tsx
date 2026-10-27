@@ -12,8 +12,10 @@ import { paintFittedBody } from '../lib/avatarSurfaceFit';
 import { createAvatarMaterials, importedSurfaceRole, paintAvatarEyes, tintAvatarNails, tintAvatarLips, type AvatarMaterials } from '../lib/avatarMaterials';
 import { applyAthleticPose } from '../lib/avatarPose';
 import { applyAvatarGrowth } from '../lib/avatarGrowth';
-import { createAvatarHairMaterial } from '../lib/avatarHairMaterial';
+import { applyAvatarHairMap, createAvatarHairMaterial } from '../lib/avatarHairMaterial';
 import { maskAthleteOcclusion } from '../lib/avatarOcclusion';
+import { createAvatarStudio } from '../lib/avatarStudio';
+import { applyAvatarDetailMap, type AvatarDetailMap } from '../lib/avatarDetailMaps';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 
@@ -39,7 +41,10 @@ interface ImportedFigure {
   garments: THREE.SkinnedMesh[];
   materials: AvatarMaterials;
   hair: THREE.MeshStandardMaterial;
-  hairStyles: Record<HairStyle, THREE.Group>;
+  buzzHair: THREE.MeshStandardMaterial;
+  hairStyles: Record<HairStyle, THREE.Object3D>;
+  realistic: boolean;
+  groomed: boolean;
   visor: THREE.Mesh;
   visorMaterial: THREE.MeshStandardMaterial;
   visorEdge: THREE.Mesh;
@@ -76,6 +81,10 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
   const [modelSource, setModelSource] = useState<'procedural' | 'cc0'>('procedural');
   const [modelAsset, setModelAsset] = useState<'procedural' | 'legacy' | 'athlete'>('procedural');
   const [skinMapReady, setSkinMapReady] = useState(false);
+  const [realistic, setRealistic] = useState(false);
+  const [groomed, setGroomed] = useState(false);
+  const [hairMaps, setHairMaps] = useState(0);
+  const [detailMaps, setDetailMaps] = useState(0);
 
   useEffect(() => {
     pausedRef.current = paused;
@@ -94,6 +103,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     }
     const telemetryId = runtimeDiagnostics.attachAvatar();
     let renderer: THREE.WebGLRenderer | null = null;
+    let studio: THREE.WebGLRenderTarget | null = null;
     let intersectsViewport = true;
     let visible = !document.hidden;
     let disposed = false;
@@ -118,18 +128,25 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.05;
       const scene = new THREE.Scene();
+      try {
+        studio = createAvatarStudio(renderer);
+        scene.environment = studio.texture;
+        scene.environmentIntensity = .28;
+      } catch (error) {
+        console.warn('BODYFORGE studio IBL unavailable; keeping direct lights:', error);
+      }
       const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 60);
       camera.position.set(0, 2.40, 8.35);
       camera.lookAt(0, 2.38, 0);
-      const hemisphere = new THREE.HemisphereLight(0xb8cce4, 0x182031, .95);
+      const hemisphere = new THREE.HemisphereLight(0xcbd4df, 0x202735, .40);
       scene.add(hemisphere);
-      const warm = new THREE.DirectionalLight(0xffe6d4, 2.6);
+      const warm = new THREE.DirectionalLight(0xfff1e4, 2.4);
       warm.position.set(-4.5, 7, 6);
       scene.add(warm);
-      const cool = new THREE.DirectionalLight(0x5c99ff, 2.15);
+      const cool = new THREE.DirectionalLight(0x80adf2, 1.55);
       cool.position.set(4, 5, -3);
       scene.add(cool);
-      const rim = new THREE.PointLight(0xf1b560, 16, 11);
+      const rim = new THREE.PointLight(0xf1b560, 7, 11);
       rim.position.set(-2.6, 2.35, -2);
       scene.add(rim);
 
@@ -262,13 +279,17 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         onVisibility();
       }, { threshold: .01 });
       observer.observe(element);
-      const resize = new ResizeObserver(redraw);
+      // ResizeObserver also fires when CSS display:none collapses the canvas.
+      // Re-evaluate visibility rather than only redrawing: otherwise RAF may
+      // continue until IntersectionObserver eventually reports a change.
+      const resize = new ResizeObserver(onVisibility);
       resize.observe(element);
 
       function animate(time: number) {
         if (time - lastDraw > 42) {
           lastDraw = time;
-          if (!isDragging) figureRoot.position.y = Math.sin(time / 1500) * .022;
+          // Keep the soles on the pedestal; moving the whole rig up/down
+          // looked like floating and was not anatomical breathing.
           redraw();
         }
       }
@@ -316,6 +337,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           observer.disconnect();
           resize.disconnect();
           disposeThreeTree(scene);
+          scene.environment = null;
+          studio?.dispose();
+          studio = null;
           runtimeDiagnostics.detachAvatar(telemetryId);
           // Keep the canvas context valid across React StrictMode's
           // development-only effect cleanup/remount cycle.
@@ -331,7 +355,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
       // clothing and materials are ready; procedural human remains the fallback.
       const glbStartedAt = performance.now();
-      const loadFigure = (url:string, fallback?:string) => new GLTFLoader().load(
+      const loadFigure = ([url, ...fallback]: readonly string[]) => new GLTFLoader().load(
         url,
         (gltf) => {
           if (disposed || runtime.current !== currentRuntime) {
@@ -349,8 +373,26 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             importedRef.current = imported;
             setModelSource('cc0');
             setModelAsset(imported.garments.length > 0 ? 'athlete' : 'legacy');
+            setRealistic(imported.realistic);
+            setGroomed(imported.groomed);
+            setSkinMapReady(false);
+            setDetailMaps(0);
+            setHairMaps(0);
+            if (imported.groomed) {
+              for (const [kind, file] of [['albedo', 'athlete-hair.png'], ['normal', 'athlete-hair-normal.png']] as const) {
+                new THREE.TextureLoader().load('/assets/' + file, (texture) => {
+                  if (disposed || currentRuntime.current !== imported.root) {
+                    texture.dispose();
+                    return;
+                  }
+                  applyAvatarHairMap(imported.hair, texture, kind);
+                  setHairMaps((count) => count + 1);
+                  redraw();
+                }, undefined, () => { /* Keep the opaque haircut if an optional map fails. */ });
+              }
+            }
             if (imported.garments.length > 0) {
-              new THREE.TextureLoader().load('/assets/athlete-skin.jpg', (texture) => {
+              new THREE.TextureLoader().load(imported.realistic ? '/assets/athlete-skin-detail.jpg' : '/assets/athlete-skin.jpg', (texture) => {
                 if (disposed || currentRuntime.current !== imported.root) {
                   texture.dispose();
                   return;
@@ -360,27 +402,46 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                 texture.colorSpace = THREE.SRGBColorSpace;
                 texture.anisotropy = Math.min(4, renderer?.capabilities.getMaxAnisotropy() ?? 1);
                 imported.materials.body.map = texture;
+                if (imported.realistic) {
+                  imported.materials.lips.map = texture;
+                  imported.materials.lips.roughness = .40;
+                  imported.materials.lips.needsUpdate = true;
+                }
                 imported.materials.body.needsUpdate = true;
                 styleImportedFigure(imported, figureSettingsRef.current);
                 setSkinMapReady(true);
                 redraw();
               }, undefined, () => { /* Local material remains usable offline. */ });
+              if (imported.realistic) {
+                for (const [kind, file] of [['normal', 'athlete-normal.png'], ['orm', 'athlete-orm.png'], ['eyes', 'athlete-eyes.jpg']] as const) {
+                  new THREE.TextureLoader().load('/assets/' + file, (texture) => {
+                    if (disposed || currentRuntime.current !== imported.root) {
+                      texture.dispose();
+                      return;
+                    }
+                    applyAvatarDetailMap(imported.materials, kind as AvatarDetailMap, texture);
+                    setDetailMaps((count) => count + 1);
+                    redraw();
+                  }, undefined, () => { /* A missing detail map retains the base material. */ });
+                }
+              }
             }
             runtimeDiagnostics.recordGlbLoad(telemetryId, performance.now() - glbStartedAt);
             redraw();
           } catch (error) {
             console.warn('CC0 avatar unavailable, retaining procedural fallback:', error);
             disposeThreeTree(gltf.scene);
-            if (fallback) loadFigure(fallback);
+            if (fallback.length) loadFigure(fallback);
           }
         },
         undefined,
-        () => { if (!disposed && fallback) loadFigure(fallback); },
+        () => { if (!disposed && fallback.length) loadFigure(fallback); },
       );
-      loadFigure('/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb');
+      loadFigure(['/assets/bodyforge-athlete-detail.glb', '/assets/bodyforge-athlete-realistic.glb', '/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb']);
     } catch (error) {
       console.error('BODYFORGE 3D renderer unavailable:', error);
       renderer?.dispose();
+      studio?.dispose();
       runtimeDiagnostics.detachAvatar(telemetryId);
       if (!disposed) setAvailable(false);
     }
@@ -428,6 +489,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
       data-avatar-asset={modelAsset}
       data-skin-map={skinMapReady ? 'ready' : 'basic'}
+      data-avatar-revision={groomed ? 'detail-v2' : realistic ? 'realistic-v1' : 'base'}
+      data-hair-maps={hairMaps}
+      data-detail-maps={detailMaps}
       data-outfit-fit={modelAsset === 'athlete' ? 'skinned-garment' : modelSource === "cc0" ? "skinned-surface" : "procedural"}
       data-look-skin={look.skin} data-look-hair={look.hair} data-look-hair-style={look.hairStyle ?? 'crop'}
       data-look-trim={look.trim} data-look-visor={look.visor ? "on" : "off"}>
@@ -450,7 +514,12 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   // This pinned CC0 MakeHuman GLB is authored in metres, with feet at zero.
   // Normalize the original skinned mesh ONCE. Its vertex coordinates and bone
   // weights remain untouched, so subsequent fitted colors follow every limb.
-  const box = new THREE.Box3().setFromObject(source);
+  // Hair length must not change body normalization or camera framing.
+  source.updateWorldMatrix(true, true);
+  const box = new THREE.Box3();
+  source.traverse((node) => {
+    if (node instanceof THREE.Mesh && !node.name.startsWith('BODYFORGE_Hair_')) box.expandByObject(node);
+  });
   const dimensions = box.getSize(new THREE.Vector3());
   if (!Number.isFinite(dimensions.y) || dimensions.y <= .1) {
     throw new Error('CC0 character has invalid dimensions');
@@ -458,7 +527,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   const scale = 4.75 / dimensions.y;
   const centre = box.getCenter(new THREE.Vector3());
   source.scale.setScalar(scale);
-  source.position.set(-centre.x * scale, -box.min.y * scale + .055, -centre.z * scale);
+  source.position.set(-centre.x * scale, -box.min.y * scale + .028, -centre.z * scale);
   body.add(source);
 
   // The derived GLB supplies real skinned garments. The original GLB remains
@@ -468,6 +537,9 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   const nailSurfaces: THREE.SkinnedMesh[] = [];
   const lipSurfaces: THREE.SkinnedMesh[] = [];
   const garments: THREE.SkinnedMesh[] = [];
+  const authoredHair: Partial<Record<HairStyle, THREE.SkinnedMesh>> = {};
+  let realistic = false;
+  let groomed = false;
   let headBone: THREE.Bone | null = null;
   source.traverse((node) => {
     if (node instanceof THREE.Bone) {
@@ -476,6 +548,15 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     if (node instanceof THREE.SkinnedMesh) {
       if (!node.geometry.getAttribute('position') || !node.geometry.getAttribute('skinIndex')) {
         throw new Error('CC0 skinned mesh lacks positions or skin weights');
+      }
+      if (node.name === 'BODYFORGE_Body') {
+        realistic = node.userData.BODYFORGE_realism === 'v1';
+        groomed = node.userData.BODYFORGE_groom === 'v2';
+      }
+      const style = /^BODYFORGE_Hair_(crop|buzz|swept)$/.exec(node.name)?.[1] as HairStyle | undefined;
+      if (style) {
+        authoredHair[style] = node;
+        return;
       }
       const garment = /^BODYFORGE_(Shirt|Shorts|Shoes|ChestMark|Brows)$/.test(node.name);
       const role = garment ? 'garment' : importedSurfaceRole(node.name, node.geometry);
@@ -516,9 +597,18 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
     (headBone as THREE.Bone).getWorldPosition(new THREE.Vector3()),
   );
 
-  const hair = createAvatarHairMaterial(0x191b21);
-  const hairStyles = {} as Record<HairStyle, THREE.Group>;
+  const hair = createAvatarHairMaterial(0x191b21, realistic);
+  const buzzHair = groomed ? createAvatarHairMaterial(0x191b21, true) : hair;
+  const hairStyles = {} as Record<HairStyle, THREE.Object3D>;
+  const useAuthoredHair = HAIR_STYLES.every(({ id }) => authoredHair[id]);
   for (const { id } of HAIR_STYLES) {
+    if (useAuthoredHair) {
+      const style = authoredHair[id]!;
+      style.material = id === 'buzz' ? buzzHair : hair;
+      hairStyles[id] = style;
+      continue;
+    }
+    if (authoredHair[id]) authoredHair[id]!.visible = false;
     const style = createAvatarHair(id, hair);
     // Shrink the procedural hairstyle to the measured MakeHuman skull.
     // Keep its world-space silhouette, then reparent to the actual head bone.
@@ -556,7 +646,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams): Impor
   (headBone as THREE.Bone).attach(visorRoot);
 
   const imported: ImportedFigure = {
-    root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, hairStyles,
+    root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, buzzHair, hairStyles, realistic, groomed,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
   };
   applyAthleticPose(source);
@@ -587,7 +677,7 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
     }
   }
   for (const surface of imported.nailSurfaces) tintAvatarNails(surface.geometry, colors.skin);
-  for (const surface of imported.lipSurfaces) tintAvatarLips(surface.geometry, colors.skin);
+  for (const surface of imported.lipSurfaces) tintAvatarLips(surface.geometry, colors.skin, !!imported.materials.lips.map);
   for (const garment of imported.garments) {
     const material = garment.material as THREE.MeshStandardMaterial;
     const shirt = garment.name === 'BODYFORGE_Shirt';
@@ -598,6 +688,7 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
         (shirt ? '#453130' : '#764d39') : (shirt ? '#17212d' : '#161d27'));
   }
   imported.hair.color.set(colors.hair);
+  imported.buzzHair.color.set(colors.hair);
   for (const style of HAIR_STYLES) imported.hairStyles[style.id].visible = style.id === (look.hairStyle ?? 'crop');
   imported.visorEdgeMaterial.color.set(colors.trim);
   imported.visorEdgeMaterial.emissive.set(colors.trim);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Activity, BookOpen, Camera, ChevronDown, LockKeyhole, ShieldCheck, Smartphone } from 'lucide-react';
+import { Activity, Camera, ChevronDown, ShieldCheck, Smartphone } from 'lucide-react';
 import { EXERCISE_GUIDES, exerciseGuide, canStartCameraExercise, type ExerciseId } from '../lib/trainingCatalog';
 
 interface CatalogProps { selected: ExerciseId; onSelect: (id: ExerciseId) => void; busy?: boolean }
@@ -18,25 +18,29 @@ export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogPro
         onClick={() => setCatalogOpen((value) => !value)} disabled={busy}>
         <span className="bf-catalog-trigger-icon"><Activity size={19}/></span>
         <span><small>ВЫБОР УПРАЖНЕНИЯ</small><strong>{guide.name}</strong></span>
-        <span className="bf-catalog-expand">{available ? 'СЧЁТЧИК' : 'ТОЛЬКО ГИД'} <ChevronDown size={16}/></span>
+        <span className="bf-catalog-expand">{available ? 'СЧЁТЧИК' : 'НЕДОСТУПНО'} <ChevronDown size={16}/></span>
       </button>
       {catalogOpen && (
-        <div className="bf-catalog-grid" role="group" aria-label="Выбери упражнение для просмотра инструкции">
+        <div className="bf-catalog-grid" role="group" aria-label="Выбери упражнение для камеры">
           {EXERCISE_GUIDES.map((item) => (
             <button key={item.id} type="button" disabled={busy}
               className={'bf-catalog-item' + (selected === item.id ? ' selected' : '')}
               data-exercise={item.id} aria-pressed={selected === item.id}
               onClick={() => { onSelect(item.id); setGuideOpen(true); }}>
-              {item.recognition === 'camera-tested' ? <Camera size={16}/> : <BookOpen size={16}/>}
+              <Camera size={16}/>
               <span>{item.name}</span>
-              <small>{item.recognition === 'camera-tested' ? 'СЧЁТЧИК' : 'ГИД'}</small>
+              <small>{item.unit === 'seconds' ? 'ТАЙМЕР' : 'СЧЁТЧИК'}</small>
             </button>
           ))}
         </div>
       )}
       <div className="bf-capability" data-recognition={guide.recognition}>
-        {available ? <><ShieldCheck size={15}/><span>Экспериментальный счётчик приседаний: полный подход — 20 повторений. Точность зависит от кадра и условий съёмки.</span></>
-          : <><LockKeyhole size={15}/><span>Гид доступен. Камера пока не считает «{guide.name.toLowerCase()}» и не начисляет за них XP. Для тренировки вернись к приседаниям.</span></>}
+        <ShieldCheck size={15}/>
+        <span>{guide.recognition === 'camera-tested'
+          ? 'Экспериментальный счётчик приседаний: 20 полных повторений. Точность зависит от кадра.'
+          : guide.unit === 'seconds'
+            ? 'Экспериментальный таймер: 30 секунд видимой планки. Алгоритм не проверен на всех пользователях и ракурсах.'
+            : 'Экспериментальный счётчик: 20 полных движений. Возможны пропуски и ложные срабатывания; нужна проверка на реальной камере.'}</span>
       </div>
       <button type="button" className="bf-guide-trigger" onClick={() => setGuideOpen((value) => !value)}
         disabled={busy} aria-expanded={guideOpen}>
@@ -54,7 +58,7 @@ export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogPro
             {guide.placement.map((tip) => <li key={tip}>{tip}</li>)}
           </ol>
           <p className="bf-guide-warning">{guide.coaching}</p>
-          <p className="bf-guide-privacy"><ShieldCheck size={14}/> Кадры обрабатываются на этом устройстве; BODYFORGE их не сохраняет.</p>
+          <p className="bf-guide-privacy"><ShieldCheck size={14}/> Видео обрабатывается на устройстве и не сохраняется приложением.</p>
         </div>
       )}
     </section>

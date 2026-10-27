@@ -18,7 +18,7 @@ export function applyAthleticPose(root: THREE.Object3D): boolean {
   if (!(left instanceof THREE.Bone) || !(right instanceof THREE.Bone)) return false;
   root.updateWorldMatrix(true, true);
   const axis = new THREE.Vector3(0, 0, 1);
-  for (const [bone, angle] of [[left, -24], [right, 24]] as const) {
+  for (const [bone, angle] of [[left, -34], [right, 34]] as const) {
     const world = bone.getWorldQuaternion(new THREE.Quaternion());
     const parent = bone.parent?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
     const delta = new THREE.Quaternion().setFromAxisAngle(axis, THREE.MathUtils.degToRad(angle));

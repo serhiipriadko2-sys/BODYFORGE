@@ -38,7 +38,7 @@ function eyeShape(root: THREE.Object3D): THREE.Vector3[] {
   return vertices.map((vertex) => vertex.sub(centre));
 }
 
-describe.each(['bodyforge-athlete.glb', 'male-base-mesh-base_male.glb'])('protected anatomy growth: %s', (file) => {
+describe.each(['bodyforge-athlete.glb', 'bodyforge-athlete-realistic.glb', 'bodyforge-athlete-detail.glb', 'male-base-mesh-base_male.glb'])('protected anatomy growth: %s', (file) => {
   it('grows torso and arms while preserving the complete head, wrist and foot world basis', async () => {
     const { root } = await fixture(file);
     applyAvatarGrowth(root, {});

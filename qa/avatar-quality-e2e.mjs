@@ -92,6 +92,7 @@ class Client {
     fs.writeFileSync(file, Buffer.from(result.data, 'base64'));
     observations.screenshots.push({ file, bytes: fs.statSync(file).size });
     console.log('SHOT', file, fs.statSync(file).size);
+    return result.data;
   }
   async close() {
     try { await fetch('http://127.0.0.1:' + port + '/json/close/' + this.target.id); }
@@ -127,11 +128,14 @@ try {
   await tab.until('document.querySelector(".studio-preview [data-avatar-source]")?.dataset.avatarSource==="cc0"','anatomical GLB rendered',35000);
   check(await tab.js('document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"'),'derived Blender athlete is the actual rendered asset');
   check(await tab.js('document.querySelector(".studio-preview [data-outfit-fit]")?.dataset.outfitFit==="skinned-garment"'),'real skinned garments selected');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2"','detailed Blender revision rendered');
+  await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"','CC0 hair alpha atlas and fibre normal loaded');
+  await tab.until('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="3"','normal, ORM and eye maps loaded');
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','local skin albedo applied');
   await sleep(500); await tab.screenshot('athlete-full');
   await tab.click('[data-avatar-view="portrait"]');
   await tab.until('document.querySelector(".studio-preview canvas")?.dataset.avatarView==="portrait"','portrait view');
-  await sleep(300); await tab.screenshot('athlete-portrait');
+  await sleep(300); const inkPortrait=await tab.screenshot('athlete-portrait');
   for(const style of ['buzz','swept','crop']) {
     await tab.click('[data-hair-style="'+style+'"]');
     await tab.until('document.querySelector(".studio-preview [data-look-hair-style]")?.dataset.lookHairStyle==='+JSON.stringify(style),'hair '+style);
@@ -144,14 +148,29 @@ try {
   await tab.viewport(390);
   await tab.click('[data-skin="deep"]'); await tab.click('[data-hair="silver"]');
   await tab.until('document.querySelector(".studio-preview [data-look-skin]")?.dataset.lookSkin==="deep"','skin material refreshed');
-  await sleep(200); await tab.screenshot('athlete-custom');
+  await sleep(200); const silverPortrait=await tab.screenshot('athlete-custom');
+  // This 390px portrait fixture has a fixed camera and framing. Sample only
+  // the central hair, above the forehead; UI dataset changes alone do not prove
+  // that the shader rendered the requested dye. Decode actual CDP screenshots.
+  const dye=await tab.js('(async()=>{async function mean(data){const blob=await(await fetch("data:image/png;base64,"+data)).blob();const bitmap=await createImageBitmap(blob);const c=new OffscreenCanvas(bitmap.width,bitmap.height);const ctx=c.getContext("2d");ctx.drawImage(bitmap,0,0);bitmap.close();const p=ctx.getImageData(176,332,40,10).data;let sum=0;for(let i=0;i<p.length;i+=4)sum+=(p[i]+p[i+1]+p[i+2])/3;return sum/(p.length/4)}return {ink:await mean('+JSON.stringify(inkPortrait)+'),silver:await mean('+JSON.stringify(silverPortrait)+')}})()');
+  check(dye.silver>dye.ink+20,'silver hair changes the actual rendered pixels');
+  observations.hairDyePixels=dye;
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'all cosmetic changes preserve game bytes');
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-source]")?.dataset.avatarSource==="cc0"','GLB returns after reload',35000);
   check(await tab.js('document.querySelector(".studio-preview [data-look-skin]")?.dataset.lookSkin==="deep"'),'saved skin survives reload');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'reload preserves game bytes');
   await tab.cdp('Network.enable');
-  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete.glb*']});
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-detail.glb*']});
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="realistic-v1"','previous refined model survives a missing detailed asset',35000);
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'refined fallback preserves game bytes');
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-detail.glb*','*bodyforge-athlete-realistic.glb*']});
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="base" && document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"','previous clothed athlete is retained when refined asset is missing',35000);
+  check(await tab.js('document.querySelector(".studio-preview [data-outfit-fit]")?.dataset.outfitFit==="skinned-garment"'),'previous athlete fallback keeps its real garments');
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'previous athlete fallback preserves game bytes');
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete*.glb*']});
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="legacy"','legacy GLB renders when derived asset is unavailable',35000);
   check(await tab.js('document.querySelector(".studio-preview [data-outfit-fit]")?.dataset.outfitFit==="skinned-surface"'),'legacy fallback keeps fitted surface outfit');
@@ -159,12 +178,26 @@ try {
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"','derived GLB returns after network recovery',35000);
   const blockedBefore = tab.blockedFailures;
-  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-skin.jpg*']});
+  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-skin*.jpg*']});
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"','3D geometry survives a missing albedo',35000);
   await waitFor(()=>tab.blockedFailures>blockedBefore,'skin texture failure observed by browser');
   check(await tab.js('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="basic"'),'missing skin texture retains a usable basic material');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'network fallback paths preserve game bytes');
+  const detailsBlockedBefore=tab.blockedFailures;
+  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-normal.png*','*athlete-orm.png*','*athlete-eyes.jpg*']});
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','refined geometry survives missing optional detail maps',35000);
+  await waitFor(()=>tab.blockedFailures>=detailsBlockedBefore+3,'all optional detail-map failures observed');
+  check(await tab.js('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="0"'),'missing detail maps retain the usable base materials');
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing optional maps preserve game bytes');
+  const hairBlockedBefore=tab.blockedFailures;
+  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-hair*.png*']});
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','detailed geometry survives missing hair maps',35000);
+  await waitFor(()=>tab.blockedFailures>=hairBlockedBefore+2,'both hair map failures observed');
+  check(await tab.js('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="0"'),'missing hair atlas retains opaque geometry');
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing hair maps preserve game bytes');
   // This profile belongs only to this test. Maximum cosmetic growth must be
   // inspected on the real rig as well as in the mathematical unit regression.
   await tab.cdp('Network.setBlockedURLs',{urls:[]});
@@ -175,6 +208,7 @@ try {
   await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(maxRaw)+');true');
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','max-growth synthetic rig with skin map',35000);
+  await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"','max-growth hair detail loaded',35000);
   await tab.click('[data-avatar-view="portrait"]');
   await sleep(250); await tab.screenshot('athlete-max-portrait');
   await tab.click('.armory-yaw-controls button:last-child');

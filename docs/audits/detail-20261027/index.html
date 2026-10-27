@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BODYFORGE — детализация персонажа</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a1018;color:#eaf1f8;font:16px/1.55 system-ui,sans-serif}main{max-width:1020px;margin:auto;padding:28px 18px 48px}h1{font-size:clamp(25px,5vw,42px);line-height:1.1;letter-spacing:-.04em}p{max-width:70ch;color:#afc1d1}.tag{color:#56dce9;font-weight:700;letter-spacing:.12em;font-size:12px}.layout{display:grid;grid-template-columns:minmax(0,390px) 1fr;gap:32px;align-items:start}.compare{position:relative;width:100%;aspect-ratio:390/844;border:1px solid #324657;border-radius:24px;overflow:hidden;background:#101926}.compare img{position:absolute;width:100%;height:100%;inset:0;object-fit:contain}.compare img:last-child{clip-path:inset(0 0 0 50%)}label{display:block;font-weight:650;margin:18px 0 8px}input{width:100%;accent-color:#53dfda;min-height:44px}select,a{min-height:44px}select{background:#172536;color:#eaf1f8;padding:10px;width:100%;border:1px solid #537084;border-radius:12px}a{color:#6fe3eb;display:inline-flex;align-items:center}strong{color:#f1f5f9}li{margin:12px 0}ul{padding-left:20px}.note{border-left:3px solid #bc9865;padding-left:16px}@media(max-width:700px){.layout{grid-template-columns:1fr}.compare{max-width:390px;margin:auto}}
+</style>
+<main>
+<div class="tag">BODYFORGE · LOCAL 3D REVIEW · 27.10.2026</div>
+<h1>Более естественные волосы.<br>Тот же игровой персонаж.</h1>
+<p>Здесь реальные скриншоты приложения из отдельного тестового профиля. Изображения не ретушировались. Это не студийные рендеры Blender.</p>
+<div class="layout">
+<div>
+<div class="compare"><img src="before.png" alt="Предыдущая модель в приложении"><img id="after" src="after.png" alt="Новая модель в приложении"></div>
+<label for="reveal">Раньше ← сравнение → сейчас</label>
+<input id="reveal" type="range" min="0" max="100" value="50" aria-label="Граница сравнения скриншотов">
+</div>
+<div>
+<label for="view">Новая модель</label>
+<select id="view"><option value="after.png">Короткая причёска · исходные цвета</option><option value="swept.png">Объёмная причёска</option><option value="silver.png">Серебристые волосы · тёмная кожа</option><option value="growth.png">Максимальная прокачка · ¾</option></select>
+<ul>
+<li>Авторская геометрия CC0 MakeHuman, подогнанная к голове. Текстура отдельных волосков и карта рельефа.</li>
+<li>Три причёски и существующие цвета; лицо, одежда и скелет сохранены.</li>
+<li>129 973 треугольника в комплекте вместо 151 771. Это размер геометрии, не замер FPS на телефоне.</li>
+</ul>
+<p class="note"><strong>Полный фотореализм ещё не достигнут.</strong> Следующие задачи — скульпт лица, веки и кожа. Производительность на настоящем Android пока не измерена.</p>
+<p>Первый вариант сравнивает одинаковые вид и профиль. Остальные варианты демонстрируют кастомизацию; параметры внешности в них отличаются.</p>
+<a href="/">Открыть приложение → Герой → Портрет</a><br>
+<a href="../BODYFORGE_2026-10-27_detail.md">Инженерный отчёт</a>
+</div>
+</div>
+</main>
+<script>
+const after=document.getElementById('after');
+document.getElementById('reveal').addEventListener('input',e=>after.style.clipPath=`inset(0 0 0 ${e.target.value}%)`);
+document.getElementById('view').addEventListener('change',e=>after.src=e.target.value);
+</script>
+</html>

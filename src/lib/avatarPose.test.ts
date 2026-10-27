@@ -12,7 +12,7 @@ async function actualRig(filename:string) {
 }
 
 describe('athletic stance on the actual pinned rig', () => {
-  it.each(['male-base-mesh-base_male.glb','bodyforge-athlete.glb'])('lowers both wrists without translating bones or changing feet/bind structure: %s', async (filename) => {
+  it.each(['male-base-mesh-base_male.glb','bodyforge-athlete.glb','bodyforge-athlete-realistic.glb','bodyforge-athlete-detail.glb'])('lowers both wrists without translating bones or changing feet/bind structure: %s', async (filename) => {
     const root = await actualRig(filename);
     const hands:THREE.Bone[] = [];
     root.traverse((node) => { if(node instanceof THREE.Bone && /^wrist[lr]$/i.test(node.name.replace(/[^a-z0-9]/gi,''))) hands.push(node); });
