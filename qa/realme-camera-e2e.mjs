@@ -15,7 +15,7 @@ function check(value,label){report.checks.push({label,pass:!!value});console.log
 function cdp(method,params={}){return new Promise((resolve,reject)=>{const id=++seq;const timer=setTimeout(()=>{pending.delete(id);reject(Error(method+' timeout'))},20000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}))})}
 async function js(expression){const r=await cdp('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value}
 async function until(expression,label,timeout=30000){const end=Date.now()+timeout;while(Date.now()<end){if(await js(expression))return;await sleep(200)}throw Error('TIMEOUT '+label)}
-async function click(selector){check(await js(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e||e.disabled)return false;e.click();return true})()`),'UI click '+selector)}
+async function click(selector){const point=await js(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e||e.disabled)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`);check(!!point,'UI tap '+selector);await cdp('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await cdp('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
 async function sample(){return js(`(()=>{const video=document.querySelector('#challenge video'),s=video?.srcObject,t=s?.getVideoTracks()[0],settings=t?.getSettings()||{};
  const q=window.__bfUsbCameraQa;return {visible:!document.hidden,videoTime:video?.currentTime,videoWidth:video?.videoWidth,videoHeight:video?.videoHeight,
  width:settings.width??null,height:settings.height??null,frameRate:settings.frameRate??null,facingMode:settings.facingMode??null,zoom:settings.zoom??null,
@@ -32,9 +32,9 @@ try{
  check(await js(`(()=>{try{const p=JSON.parse(localStorage.getItem(${JSON.stringify(key)}));return p.game.nickname==='QA REALME USB'&&p.workouts.length===0&&p.xp===0&&p.coins===0}catch{return false}})()`),'only known synthetic zero-workout profile');
  await until('!document.hidden','real phone foreground',60000);
  report.browser=await cdp('Browser.getVersion');
- await js(`(()=>{const q=window.__bfUsbCameraQa={tracks:[],copied:null,restore:[]};
+ await js(`(()=>{const q=window.__bfUsbCameraQa={tracks:[],copied:null,restore:[],events:[]};
  const media=navigator.mediaDevices,original=media.getUserMedia,desc=Object.getOwnPropertyDescriptor(media,'getUserMedia');
- Object.defineProperty(media,'getUserMedia',{configurable:true,value:async function(...args){const stream=await original.apply(this,args);q.tracks.push(...stream.getTracks());return stream}});
+ Object.defineProperty(media,'getUserMedia',{configurable:true,value:async function(...args){q.events.push({kind:'gum-start',atMs:performance.now()});try{const stream=await original.apply(this,args);q.events.push({kind:'gum-resolved',atMs:performance.now()});q.tracks.push(...stream.getTracks());return stream}catch(error){q.events.push({kind:'gum-error',name:error.name,atMs:performance.now()});throw error}}});
  q.restore.push(()=>{if(desc)Object.defineProperty(media,'getUserMedia',desc);else delete media.getUserMedia});
  const clipboard=navigator.clipboard,clipDesc=Object.getOwnPropertyDescriptor(clipboard,'writeText');Object.defineProperty(clipboard,'writeText',{configurable:true,value:async text=>{q.copied=String(text)}});
  q.restore.push(()=>{if(clipDesc)Object.defineProperty(clipboard,'writeText',clipDesc);else delete clipboard.writeText});return true})()`);
@@ -42,7 +42,7 @@ try{
  await until('!!document.querySelector(".camera-lenses")','camera controls mounted');
  await click('.camera-lenses button:nth-child(1)');
  await click('#challenge .primary-button');
- await until('!!document.querySelector(".live-tag")&&!document.querySelector(".loading-overlay")','real camera and MediaPipe startup',90000);
+ await until(`(()=>{const error=document.querySelector('.camera-error')?.textContent;if(error)throw Error(error);return !!document.querySelector('.live-tag')&&!document.querySelector('.loading-overlay')})()`,'real camera and MediaPipe startup',90000);
  const first=await sample();await sleep(5000);const second=await sample();
  report.measurements.front={first,second,diagnostics:await diagnostics()};
  check(first.live===1&&second.live===1&&second.videoTime>first.videoTime,'real front stream supplies fresh frames');
@@ -74,7 +74,7 @@ try{
  report.status='PASS';
 }catch(error){report.status='FAIL';report.error=error.message;process.exitCode=1;
 }finally{
- if(socket?.readyState===1){try{await js(`(()=>{const q=window.__bfUsbCameraQa;if(!q)return;document.querySelector('#challenge .secondary-button')?.click();for(const t of q.tracks)t.stop();for(const undo of q.restore.reverse())undo();q.restore=[];return true})()`);report.cleanup=true}catch{report.cleanup=false}socket.close()}
+ if(socket?.readyState===1){try{report.measurements.events=await js('window.__bfUsbCameraQa?.events??[]');report.measurements.final=await sample();await js(`(()=>{const q=window.__bfUsbCameraQa;if(!q)return;document.querySelector('#challenge .secondary-button')?.click();for(const t of q.tracks)t.stop();for(const undo of q.restore.reverse())undo();q.restore=[];return true})()`);report.cleanup=true}catch{report.cleanup=false}socket.close()}
  for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error('Owned QA closed'))}pending.clear();
  report.finishedAt=new Date().toISOString();const output=path.resolve('.iskra/reports/realme-camera-'+report.startedAt.replace(/[:.]/g,'-')+'.json');const bytes=Buffer.from(JSON.stringify(report,null,2)+'\n');fs.writeFileSync(output,bytes);console.log('REPORT',JSON.stringify({path:output,status:report.status,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')}));
 }
