@@ -43,6 +43,8 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.clearAllMocks(
 
 describe('manual BODYFORGE backup without changing game state', () => {
   it('prepares a complete raw snapshot with profile, appearance, look, steps and plan', async () => {
+    const corrupted = '{broken recovered original\\n';
+    values.set(`${STORAGE_KEY}:quarantine:0`, corrupted);
     const before = [...values];
     const now = new Date('2026-10-27T18:30:00.000Z');
     const prepared = await prepareProgressBackup(parseProfile(null), null, now);
@@ -53,6 +55,8 @@ describe('manual BODYFORGE backup without changing game state', () => {
       exportFormat: 'bodyforge-manual-backup', exportSchemaVersion: 1,
       exportedAt: now.toISOString(), durableReadStatus: 'ready',
       storedProfileRaw: original.profile,
+      profileQuarantineReadStatus: 'ready',
+      storedProfileQuarantineRaw: [{ key: `${STORAGE_KEY}:quarantine:0`, raw: corrupted }],
       storedAuxiliaryRaw: {
         avatarLook: original.avatar, appearance: original.appearance,
         manualSteps: original.steps, dailyPlan: original.plan,

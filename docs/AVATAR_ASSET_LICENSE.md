@@ -1,9 +1,23 @@
 # BODYFORGE 3D avatar — source and license
 
-Current primary derivative: `public/assets/bodyforge-athlete-detail.glb`.
+Current runtime primary: `public/assets/bodyforge-athlete-efficient.glb`
+(4,639,184 bytes; SHA-256 `df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e`).
+It is a compact glTF 2.0 attribute encoding of the original detailed athlete:
+no geometry, skeleton, material or texture assets were removed. The original
+`bodyforge-athlete-detail.glb` (6,038,680 bytes; SHA-256
+`16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6`)
+remains the first runtime fallback and editable source reference.
+
+Encoding uses normalized 16-bit joint weights and surface normals, plus 16-bit
+UVs where their source range permits, with the standard `KHR_mesh_quantization`
+glTF extension (supported by Three.js GLTFLoader). Source constraints and a
+reproducible, refusal-on-drift converter are in `scripts/pack-athlete-glb.py`.
+Independent Blender import comparison, browser fallback/appearance QA and
+nine matched screenshot comparisons are documented in
+`docs/audits/BODYFORGE_20261027_GLB_OPTIMIZATION_QA.md`.
 Hair-card adaptation and exact CC0 source hashes are documented in
-`public/assets/athlete-groom-source.md`; packed source is
-`art/bodyforge-athlete-detail.blend`. The previous refined model is retained.
+`public/assets/athlete-groom-source.md`; editable packed Blender scene:
+`art/bodyforge-athlete-detail.blend`. Older derivatives are retained.
 
 Previous refined derivative: `public/assets/bodyforge-athlete-realistic.glb`.
 Authoring, eye/skin provenance and map semantics are documented in

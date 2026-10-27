@@ -129,6 +129,9 @@ try {
   check(await tab.js('document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"'),'derived Blender athlete is the actual rendered asset');
   check(await tab.js('document.querySelector(".studio-preview [data-outfit-fit]")?.dataset.outfitFit==="skinned-garment"'),'real skinned garments selected');
   await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2"','detailed Blender revision rendered');
+  const chosenAsset = await tab.js("performance.getEntriesByType('resource').filter(e=>/bodyforge-athlete-(efficient|detail)\\.glb/.test(e.name)).map(e=>e.name.split('/').at(-1))");
+  check(chosenAsset.includes('bodyforge-athlete-efficient.glb') && !chosenAsset.includes('bodyforge-athlete-detail.glb'),
+    'new compact GLB renders directly rather than silently falling back to the old 6MB original');
   await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"','CC0 hair alpha atlas and fibre normal loaded');
   await tab.until('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="3"','normal, ORM and eye maps loaded');
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','local skin albedo applied');
@@ -161,11 +164,15 @@ try {
   check(await tab.js('document.querySelector(".studio-preview [data-look-skin]")?.dataset.lookSkin==="deep"'),'saved skin survives reload');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'reload preserves game bytes');
   await tab.cdp('Network.enable');
-  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-detail.glb*']});
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-efficient.glb*']});
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
-  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="realistic-v1"','previous refined model survives a missing detailed asset',35000);
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2"','original full-precision GLB survives loss of compact model',35000);
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'compact model failure cannot change game bytes');
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-efficient.glb*','*bodyforge-athlete-detail.glb*']});
+  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="realistic-v1"','previous refined model survives missing compact and detailed assets',35000);
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'refined fallback preserves game bytes');
-  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-detail.glb*','*bodyforge-athlete-realistic.glb*']});
+  await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-athlete-efficient.glb*','*bodyforge-athlete-detail.glb*','*bodyforge-athlete-realistic.glb*']});
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="base" && document.querySelector(".studio-preview [data-avatar-asset]")?.dataset.avatarAsset==="athlete"','previous clothed athlete is retained when refined asset is missing',35000);
   check(await tab.js('document.querySelector(".studio-preview [data-outfit-fit]")?.dataset.outfitFit==="skinned-garment"'),'previous athlete fallback keeps its real garments');

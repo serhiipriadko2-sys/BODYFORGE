@@ -105,8 +105,8 @@ try{
   console.log('INITIAL',JSON.stringify(s).slice(0,470));
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
   check(s.three.includes('active'),'WebGL 3D hero active');
-  const initialPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx'))})");
-  check(!initialPanels.catalog && !initialPanels.diagnostics,
+  const initialPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx')),controls:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/CameraControls.tsx'))})");
+  check(!initialPanels.catalog && !initialPanels.diagnostics && !initialPanels.controls,
     'training-only panels are not downloaded on mobile home');
   let photoHuman=false;
   for(let i=0;i<70;i++){
@@ -115,23 +115,23 @@ try{
     await sleep(200);
   }
   check(photoHuman,'licensed anatomical CC0 human 3D loaded instead of procedural fallback');
-  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
-    'visible 3D character schedules animation frames');
+  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='on-demand'"),
+    'visible static 3D hero uses on-demand GPU rendering without an idle animation loop');
   await js("document.querySelector('#onboarding canvas').style.display='none'");
-  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'", 'hidden 3D animation paused', 4500);
+  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'", 'hidden 3D rendering suspended', 4500);
   check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'"),
-    'off-screen or hidden avatar suspends animation frame loop');
+    'off-screen or hidden avatar suspends rendering');
   await js("document.querySelector('#onboarding canvas').style.removeProperty('display')");
-  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'", 'visible 3D animation resumed', 4500);
-  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='running'"),
-    'avatar resumes animation after becoming visible');
+  await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='on-demand'", 'visible 3D redraw enabled', 4500);
+  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='on-demand'"),
+    'avatar redraws after returning to the screen without perpetual RAF');
   await screenshot('bf-qa-mobile-setup.png');
   // First launch: tapping Camera before fighter setup must not silently jump
   // to the home screen. The user should see why they cannot train yet.
   await click('.mobile-nav button:nth-child(2)');
   await until("!!document.querySelector('#challenge .bf-catalog-trigger') && !!document.querySelector('#challenge .perf-toggle')", 'training panels loaded', 6000);
-  const requestedPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx'))})");
-  check(requestedPanels.catalog && requestedPanels.diagnostics,
+  const requestedPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx')),controls:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/CameraControls.tsx'))})");
+  check(requestedPanels.catalog && requestedPanels.diagnostics && requestedPanels.controls,
     'training-only panels are downloaded after opening the camera tab');
   await click('#challenge .primary-button');
   const notCreated=await read("({screen:document.querySelector('.app-shell').dataset.screen,error:document.querySelector('.camera-error[role=alert]')?.textContent||'',cta:document.querySelector('#challenge .primary-button')?.textContent||''})");
@@ -185,10 +185,13 @@ try{
     const value = JSON.parse(await sample.blob.text());
     return JSON.stringify({name:sample.filename,format:value.exportFormat,version:value.exportSchemaVersion,
       rawProfile:value.storedProfileRaw,lookStatus:value.auxiliaryReadStatus?.avatarLook,
+      profileQuarantineStatus:value.profileQuarantineReadStatus,
+      profileQuarantineCount:value.storedProfileQuarantineRaw?.length,
       durableStatus:value.durableReadStatus, complete:value.complete});
   })()`));
   check(saved.name.startsWith('bodyforge-backup-') && saved.format==='bodyforge-manual-backup'
-    && saved.version===1 && saved.rawProfile===beforeBackup && saved.lookStatus==='ready',
+    && saved.version===1 && saved.rawProfile===beforeBackup && saved.lookStatus==='ready'
+    && saved.profileQuarantineStatus==='ready' && saved.profileQuarantineCount===0,
     'two-click local backup preserves the actual profile and settings');
   check((await js("localStorage.getItem('bodyforge:pilot:v1')"))===beforeBackup,
     'export does not rewrite user progress or rewards');
@@ -291,6 +294,9 @@ try{
   console.log('PERF_DIAGNOSTICS',JSON.stringify(performanceReport));
   check(performanceReport.frames>0 && (performanceReport.p95===null ? performanceReport.frames<20 : performanceReport.p95>=0) && performanceReport.private && performanceReport.scroll<=390,
     'live MediaPipe timings appear on mobile without video or profile data');
+  const renderPolicy=await js("({mode:document.querySelector('[data-avatar-render-mode]')?.dataset.avatarRenderMode,help:document.querySelector('.perf-hint')?.textContent||''})");
+  check(renderPolicy.mode==='off' && renderPolicy.help.includes('Неподвижный 3D-боец'),
+    'diagnostics explain event-driven 3D and disabled GPU during camera inference');
   await js("document.querySelector('.perf-panel').scrollIntoView({block:'start'});true");
   await sleep(200);
   await screenshot('bf-qa-mobile-performance-panel.png');
@@ -315,7 +321,7 @@ try{
   let changed=false;
   for(let i=0;i<40;i++){
     await sleep(350);
-    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),busy:!!document.querySelector('.camera-switch-overlay')})");
+    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),front:document.querySelector('.camera-lenses button:nth-child(1)')?.getAttribute('aria-pressed'),message:document.querySelector('.camera-control-help')?.textContent?.trim().slice(0,150)||'',busy:!!document.querySelector('.camera-switch-overlay')})");
     if(status.error)throw Error('Camera switch broke capture: '+status.error);
     if(i%5===0)console.log('REAR_SWITCH_STEP',i,JSON.stringify(status));
     if(status.active&&status.selected==='true'&&!status.busy){changed=true;break;}

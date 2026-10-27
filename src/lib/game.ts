@@ -205,7 +205,9 @@ export function claimLogin(profile: Profile, now = new Date()): Profile {
 export function canClaimQuest(profile: Profile, now = new Date()): boolean {
   const day = localDay(now);
   return profile.game.created && validDay(day) !== null && !hasClaimedDailyReward(profile.game, 'quest', now)
-    && profile.workouts.some((workout) => localDay(new Date(workout.finishedAt)) === day);
+    && profile.workouts.some((workout) =>
+      (!workout.exerciseId || workout.exerciseId === 'squat') && workout.repetitions === 20 &&
+      Number.isFinite(Date.parse(workout.finishedAt)) && localDay(new Date(workout.finishedAt)) === day);
 }
 
 export function claimDailyQuest(profile: Profile, now = new Date()): Profile {

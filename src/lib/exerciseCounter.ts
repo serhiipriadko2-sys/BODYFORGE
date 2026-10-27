@@ -3,6 +3,8 @@ import { type ExerciseId } from './trainingCatalog';
 
 const CONFIDENCE = 0.5;
 const LOST_MS = 750;
+// An unobserved finish must never complete a repetition. Two slow frames remain acceptable.
+const PARTIAL_MOTION_GAP_MS = 400;
 const READY_MS = 160;
 const ENGAGED_MS = 100;
 const RETURN_MS = 90;
@@ -92,15 +94,28 @@ function jackReading(p: LandmarkSet, ratio: number): Reading | null {
 }
 function kneesReading(p: LandmarkSet): Reading | null {
   if (!visible(p, 23, 24, 25, 26, 27, 28)) return null;
-  const leftUp = p[25].y - p[23].y < .10;
-  const rightUp = p[26].y - p[24].y < .10;
-  const leftDown = p[25].y - p[23].y > .18;
-  const rightDown = p[26].y - p[24].y > .18;
-  if (leftUp && rightDown) return { metric: Math.max(0, (p[23].y - p[25].y) * 100), ready: false, engaged: true, side: 'left' };
-  if (rightUp && leftDown) return { metric: Math.max(0, (p[24].y - p[26].y) * 100), ready: false, engaged: true, side: 'right' };
+  // Normalize knee height by the visible straight supporting leg. Pixel/normalized
+  // Y thresholds used to fail simply because the athlete stepped farther away.
+  const leftLegHeight = p[27].y - p[23].y;
+  const rightLegHeight = p[28].y - p[24].y;
+  const leftDrop = p[25].y - p[23].y;
+  const rightDrop = p[26].y - p[24].y;
+  const leftDown = leftLegHeight >= .065 && leftDrop > leftLegHeight * .43;
+  const rightDown = rightLegHeight >= .065 && rightDrop > rightLegHeight * .43;
+  const leftUp = rightDown && leftDrop < rightLegHeight * .25;
+  const rightUp = leftDown && rightDrop < leftLegHeight * .25;
+  if (leftUp && !rightUp) return {
+    metric: Math.max(0, Math.min(120, (1 - leftDrop / rightLegHeight) * 100)),
+    ready: false, engaged: true, side: 'left',
+  };
+  if (rightUp && !leftUp) return {
+    metric: Math.max(0, Math.min(120, (1 - rightDrop / leftLegHeight) * 100)),
+    ready: false, engaged: true, side: 'right',
+  };
   return { metric: 0, ready: leftDown && rightDown, engaged: false, side: null };
 }
 function plankReading(p: LandmarkSet, ratio: number): Reading | null {
+  let invalidSide: Reading | null = null;
   for (const s of sides) {
     if (!visible(p, s.shoulder, s.elbow, s.hip, s.ankle)) continue;
     const a = measuredAngle(p, s.shoulder, s.hip, s.ankle, ratio);
@@ -109,9 +124,12 @@ function plankReading(p: LandmarkSet, ratio: number): Reading | null {
     const horizontal = Math.abs((shoulder.x - ankle.x) * ratio) >= Math.abs(shoulder.y - ankle.y) * 1.5;
     const support = elbow.y > shoulder.y + .025 &&
       Math.abs((elbow.x - shoulder.x) * ratio) < .27;
-    return { metric: a, ready: horizontal && support && a >= 157, engaged: horizontal && support && a >= 157, side: s.side };
+    const acceptable = horizontal && support && a >= 157;
+    const candidate = { metric: a, ready: acceptable, engaged: acceptable, side: s.side };
+    if (acceptable) return candidate;
+    invalidSide ??= candidate;
   }
-  return null;
+  return invalidSide;
 }
 
 /** Geometric prototypes. They measure 2-D projections, not medically verified technique. */
@@ -135,10 +153,10 @@ export interface ExerciseReading {
 }
 const metricNames: Record<Exclude<ExerciseId, 'squat'>, string> = {
   lunge: 'КОЛЕНО', pushup: 'ЛОКОТЬ', 'jumping-jack': 'РАЗВОДКА',
-  'high-knees': 'ПОДЪЁМ', crunch: 'КОРПУС', 'leg-raise': 'ТАЗ', plank: 'КОРПУС',
+  'high-knees': 'ВЫСОТА', crunch: 'КОРПУС', 'leg-raise': 'ТАЗ', plank: 'КОРПУС',
 };
 const metricUnits: Record<Exclude<ExerciseId, 'squat'>, string> = {
-  lunge: '°', pushup: '°', 'jumping-jack': '×', 'high-knees': '',
+  lunge: '°', pushup: '°', 'jumping-jack': '×', 'high-knees': '%',
   crunch: '°', 'leg-raise': '°', plank: '°',
 };
 
@@ -198,10 +216,18 @@ export class ExerciseMotionCounter {
   update(points: LandmarkSet, now: number, ratio = 1): ExerciseReading {
     if (!Number.isFinite(now) || now <= this.lastTime) return this.result('find-body', false, null);
     this.lastTime = now;
-    if (this.lastVisibleAt !== null && now - this.lastVisibleAt > LOST_MS) this.forgetPartial();
+    if (this.lastVisibleAt !== null && now - this.lastVisibleAt >
+        (this.id !== 'plank' && (this.phase === 'descending' || this.phase === 'bottom')
+          ? PARTIAL_MOTION_GAP_MS : LOST_MS)) this.forgetPartial();
     const reading = measureExercise(this.id, points, ratio, this.id === 'high-knees' || this.id === 'plank' ? null : this.lockedSide);
     if (!reading) {
-      if (this.id === 'plank') this.forgetPartial();
+      if (this.id === 'plank') {
+        // One noisy MediaPipe frame must not erase an honest hold. Pause rather
+        // than credit unseen time; longer tracking loss restarts from zero.
+        if (this.phase === 'bottom' && this.lastVisibleAt !== null && now - this.lastVisibleAt <= 300)
+          this.holdAt = null;
+        else this.forgetPartial();
+      }
       return this.result('find-body', false, null);
     }
     this.lastVisibleAt = now;
@@ -248,6 +274,11 @@ export class ExerciseMotionCounter {
         break;
       case 'descending':
         feedback = 'lower';
+        if (this.id === 'high-knees' && reading.engaged && reading.side !== this.lockedSide) {
+          this.forgetPartial();
+          feedback = 'stand';
+          break;
+        }
         if (reading.engaged && this.engagedAt !== null && now - this.engagedAt >= ENGAGED_MS) {
           this.phase = 'bottom';
           this.returnAt = null;
@@ -258,6 +289,11 @@ export class ExerciseMotionCounter {
         break;
       case 'bottom':
         feedback = 'rise';
+        if (this.id === 'high-knees' && reading.engaged && reading.side !== this.lockedSide) {
+          this.forgetPartial();
+          feedback = 'stand';
+          break;
+        }
         if (reading.ready) {
           this.returnAt ??= now;
           if (now - this.returnAt >= RETURN_MS &&

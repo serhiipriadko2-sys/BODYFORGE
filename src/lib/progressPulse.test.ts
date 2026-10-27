@@ -80,6 +80,19 @@ describe('pulse dashboard — derived from stored, verified sessions', () => {
     expect(activityPulse(items, new Date(NaN), 30).days).toHaveLength(0);
     expect(activityPulse(items, now, 31 as PulseRange).days).toHaveLength(0);
   });
+  it('includes saved plank holds as sessions without inventing repetitions', () => {
+    const now = new Date(2026, 9, 27, 12);
+    const squat = workout('squat', now);
+    const pushup = { ...workout('pushup', now), exerciseId: 'pushup' as const };
+    const plank: Workout = { ...workout('plank', now, 0), exerciseId: 'plank', holdSeconds: 30 };
+    const invalid: Workout = { ...plank, id: 'unverified', holdSeconds: 20 };
+    const data = weeklyPulse([squat, pushup, plank, plank, invalid], now);
+    expect(data).toMatchObject({ sessions: 3, reps: 40, holdSeconds: 30, activeDays: 1 });
+    expect(data.days[6]).toMatchObject({ sessions: 3, reps: 40, holdSeconds: 30 });
+    expect(comparePulsePeriods([plank], now, 7).current).toMatchObject({
+      sessions: 1, reps: 0, holdSeconds: 30,
+    });
+  });
   it('marks comparisons as insufficient when detailed history reaches 60 saved rows', () => {
     const now = new Date(2026, 9, 26, 12);
     const recent = Array.from({ length: 60 }, (_, i) => workout('id-' + i, new Date(2026, 9, 26, 8)));

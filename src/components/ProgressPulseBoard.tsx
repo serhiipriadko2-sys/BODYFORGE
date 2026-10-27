@@ -127,7 +127,7 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
         <div className="pulse-chart-summary" data-period-sessions={trend.sessions}
           data-weekly-sessions={range === 7 ? trend.sessions : undefined}>
           <strong>{trend.sessions}</strong>
-          <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {trend.reps} повторений</span>
+          <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {trend.reps} повторений{trend.holdSeconds ? ` · ${trend.holdSeconds} сек. планки` : ''}</span>
         </div>
         <div className="pulse-comparison" data-pulse-delta={historyLimited ? 'unavailable' : deltaSessions}
           data-prior-sessions={previous.sessions} aria-label={changeLabel}>
@@ -185,7 +185,7 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
           </div>
           <div className="pulse-day-values">
             <strong data-selected-sessions={selected?.sessions ?? 0}>{selected?.sessions ?? 0} подходов</strong>
-            <span>{selected?.reps ?? 0} повторений</span>
+            <span>{selected?.reps ?? 0} повторений{selected?.holdSeconds ? ` · ${selected.holdSeconds} сек. планки` : ''}</span>
           </div>
         </div>
         <p className="pulse-data-note">{trend.sessions === 0
@@ -214,7 +214,7 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
         <div className="pulse-metric"><Dumbbell size={18}/><span>ПОВТОРОВ ЗА {range} ДНЕЙ</span>
           <strong data-period-reps={trend.reps} data-weekly-reps={range === 7 ? trend.reps : undefined}>
             {trend.reps}
-          </strong></div>
+          </strong>{trend.holdSeconds > 0 && <small data-period-plank-seconds={trend.holdSeconds}>{trend.holdSeconds} сек. планки</small>}</div>
         <div className="pulse-metric"><Activity size={18}/><span>АКТИВНЫХ ДНЕЙ</span>
           <strong data-active-days={trend.activeDays}>{trend.activeDays}<small>/{range}</small></strong></div>
         <div className="pulse-metric pulse-metric-action"><Zap size={18}/><span>СЛЕДУЮЩИЙ ШАГ</span>

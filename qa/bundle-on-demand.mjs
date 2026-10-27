@@ -15,6 +15,7 @@ const only = (pattern, label) => {
 };
 const entryName = only(/^index-[\w-]+\.js$/, 'App entry');
 const poseName = only(/^vision_bundle-[\w-]+\.js$/, 'Pose library');
+const cameraControlsName = only(/^CameraControls-[\w-]+\.js$/, 'Camera controls');
 const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
 const entryBytes = fs.readFileSync(path.join(assets, entryName));
 const poseBytes = fs.readFileSync(path.join(assets, poseName));
@@ -30,6 +31,10 @@ const result = { entryBytes: entry, entryGzipBytes: entryGzip, cameraChunkBytes:
 if (entry >= baseline * 0.8) throw Error('Initial bundle regression: ' + JSON.stringify(result));
 if (pose < 100000 || pose > 300000) throw Error('Unexpected pose chunk size: ' + JSON.stringify(result));
 if (html.includes(poseName)) throw Error('Camera-only chunk was preloaded in index.html');
+if (html.includes(cameraControlsName)) throw Error('Mobile camera controls were preloaded in index.html');
+if (!entryBytes.toString('utf8').includes(cameraControlsName)) {
+  throw Error('Camera controls no longer use a dynamic import');
+}
 if (!entryBytes.toString('utf8').includes(poseName)) {
   throw Error('Initial app chunk no longer references its lazy camera chunk');
 }

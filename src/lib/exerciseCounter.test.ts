@@ -63,6 +63,12 @@ function runRep(counter: ExerciseMotionCounter, id: Kind, start: number, side: '
   return output;
 }
 
+const scaled = (points: PosePoint[], factor: number): PosePoint[] =>
+  points.map((point) => ({ ...point,
+    x: .5 + (point.x - .5) * factor,
+    y: .5 + (point.y - .5) * factor,
+  }));
+
 describe('geometric camera recognizers (synthetic landmark fixtures)', () => {
   it.each(['lunge','pushup','jumping-jack','high-knees','crunch','leg-raise'] as Kind[])(
     'counts one complete %s, rejects half cycle and stationary pose', (id) => {
@@ -84,6 +90,44 @@ describe('geometric camera recognizers (synthetic landmark fixtures)', () => {
       expect(shallow.update(frame(id,'ready'),700).snapshot.count).toBe(0);
     }
   );
+  it('calibrates and counts high knees when the athlete stands farther from camera', () => {
+    for (const factor of [1, .55, .38]) {
+      const c = new ExerciseMotionCounter('high-knees');
+      expect(measureExercise('high-knees', scaled(frame('high-knees', 'ready'), factor))?.ready).toBe(true);
+      expect(measureExercise('high-knees', scaled(frame('high-knees', 'active'), factor))?.engaged).toBe(true);
+      const steps = [
+        [0,'ready'], [100,'ready'], [200,'ready'],
+        [300,'active'], [430,'active'], [740,'ready'], [850,'ready'],
+      ] as const;
+      let last = c.update(scaled(frame('high-knees','ready'),factor),0);
+      for (const [time, phase] of steps.slice(1)) {
+        last=c.update(scaled(frame('high-knees',phase),factor),time);
+      }
+      expect(last.snapshot.count, 'scale ' + factor).toBe(1);
+    }
+  });
+  it('never finishes a high-knee repetition by replacing the raised knee mid-cycle', () => {
+    const c = new ExerciseMotionCounter('high-knees');
+    c.update(frame('high-knees','ready'),0);
+    c.update(frame('high-knees','ready'),200);
+    c.update(frame('high-knees','active','left'),300);
+    c.update(frame('high-knees','active','right'),430);
+    c.update(frame('high-knees','ready'),740);
+    expect(c.update(frame('high-knees','ready'),850).snapshot.count).toBe(0);
+  });
+  it('does not reward a motion whose return happened while joints were missing', () => {
+    const c = new ExerciseMotionCounter('pushup');
+    c.update(frame('pushup','ready'),0);
+    c.update(frame('pushup','ready'),200);
+    c.update(frame('pushup','active'),300);
+    c.update(frame('pushup','active'),430);
+    c.update(hidden(),550);
+    c.update(hidden(),700);
+    c.update(hidden(),870);
+    c.update(frame('pushup','ready'),950);
+    expect(c.update(frame('pushup','ready'),1100).snapshot.count).toBe(0);
+    expect(runRep(c,'pushup',1600).snapshot.count).toBe(1);
+  });
   it('counts alternating raised knees but not repeated pulses of the same knee', () => {
     const c = new ExerciseMotionCounter('high-knees');
     expect(runRep(c,'high-knees',0,'left').snapshot.count).toBe(1);
@@ -115,6 +159,27 @@ describe('geometric camera recognizers (synthetic landmark fixtures)', () => {
     expect(frozen.snapshot.count).toBe(30);
     const broken = c.update(frame('plank','active'),31500);
     expect(broken.snapshot.count).toBe(0);
+  });
+  it('uses a valid visible side of a plank when the other side is poorly aligned', () => {
+    const points = frame('plank', 'active');
+    assign(points, {
+      12:[.26,.55], 14:[.28,.68], 24:[.55,.56], 28:[.83,.57],
+    });
+    expect(measureExercise('plank',points)).toMatchObject({ side:'right', ready:true });
+  });
+  it('pauses a plank on one missing frame without credit, then resets prolonged loss', () => {
+    const c = new ExerciseMotionCounter('plank');
+    c.update(frame('plank','ready'),0);
+    c.update(frame('plank','ready'),400);
+    let output = c.update(frame('plank','ready'),500);
+    for(let t=600;t<=3500;t+=100) output=c.update(frame('plank','ready'),t);
+    expect(output.snapshot.count).toBe(3);
+    expect(c.update(hidden(),3600).snapshot.count).toBe(3);
+    expect(c.update(frame('plank','ready'),3700).snapshot.count).toBe(3);
+    expect(c.update(frame('plank','ready'),3800).snapshot.count).toBe(3);
+    expect(c.update(hidden(),3900).snapshot.count).toBe(3);
+    expect(c.update(hidden(),4200).snapshot.count).toBe(0);
+    expect(c.update(frame('plank','ready'),4300).snapshot.calibrated).toBe(false);
   });
   it('blocks a held plank after a long timestamp gap (no offline credit)', () => {
     const c = new ExerciseMotionCounter('plank');

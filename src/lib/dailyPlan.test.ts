@@ -54,4 +54,29 @@ describe('daily training plans', () => {
     expect(completedSquatsToday([], now)).toBe(0);
     expect(completedSquatsToday(workouts, new Date(Number.NaN))).toBe(0);
   });
+  it('does not let an invalid duplicate id hide a later valid completed squat', () => {
+    const now = new Date(2026, 9, 27, 12);
+    const full: Workout = { id:'duplicate', finishedAt:now.toISOString(),
+      durationMs:60000, repetitions:20, xp:120, exerciseId:'squat' };
+    const workouts: Workout[] = [
+      { ...full, repetitions: 1 },
+      { ...full, finishedAt:'not-a-date' },
+      full, { ...full, id:'second' }, { ...full, id:'second' },
+    ];
+    expect(completedSquatsToday(workouts,now)).toBe(40);
+  });
+  it('never awards squat-day progress for pushups, plank or other exercises', () => {
+    const today = new Date(2026, 9, 27, 12);
+    const base: Workout = { id: 'squat-legacy', finishedAt: today.toISOString(),
+      durationMs: 60000, repetitions: 20, xp: 120 };
+    const workouts: Workout[] = [
+      { ...base, id: 'pushup', exerciseId: 'pushup' },
+      { ...base, id: 'lunge', exerciseId: 'lunge' },
+      { ...base, id: 'plank', exerciseId: 'plank', repetitions: 0, holdSeconds: 30 },
+      base,
+      { ...base, id: 'squat-explicit', exerciseId: 'squat' },
+    ];
+    expect(completedSquatsToday(workouts, today)).toBe(40);
+    expect(completedSquatsToday(workouts.slice(0, 3), today)).toBe(0);
+  });
 });

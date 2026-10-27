@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints, VideoFrameGate, CameraFrameWatchdog } from './camera';
+import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, exerciseCameraConstraints, LANDSCAPE_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints, VideoFrameGate, CameraFrameWatchdog } from './camera';
 import { SquatCounter } from './squatCounter';
 
 describe('fresh camera observations', () => {
@@ -76,6 +76,25 @@ describe('portrait-first camera', () => {
     expect(cameraOrientation(0, 0)).toBe('unknown');
     expect(cameraOrientation(Number.NaN, 1080)).toBe('unknown');
   });
+});
+
+describe('exercise-specific frame orientation', () => {
+  it.each(['pushup', 'crunch', 'leg-raise', 'plank'] as const)(
+    'requests wide video for %s without forcing unsupported camera constraints', (id) => {
+      const video = exerciseCameraConstraints({ kind: 'facing', value: 'environment' }, id).video as MediaTrackConstraints;
+      expect(video.width).toEqual({ ideal: 1280 });
+      expect(video.height).toEqual({ ideal: 720 });
+      expect(video.aspectRatio).toEqual({ ideal: LANDSCAPE_ASPECT_RATIO });
+      expect(video.facingMode).toEqual({ ideal: 'environment' });
+      expect(video.width).not.toHaveProperty('exact');
+    },
+  );
+  it.each(['squat', 'lunge', 'jumping-jack', 'high-knees'] as const)(
+    'keeps portrait input for %s', (id) => {
+      expect(exerciseCameraConstraints({ kind: 'facing', value: 'user' }, id))
+        .toEqual(portraitCameraConstraints({ kind: 'facing', value: 'user' }));
+    },
+  );
 });
 
 describe('camera selection and device support', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Activity, Camera, ChevronDown, ShieldCheck, Smartphone } from 'lucide-react';
-import { EXERCISE_GUIDES, exerciseGuide, canStartCameraExercise, type ExerciseId } from '../lib/trainingCatalog';
+import { EXERCISE_GUIDES, exerciseGuide, exerciseCameraLayout, canStartCameraExercise, type ExerciseId } from '../lib/trainingCatalog';
 
 interface CatalogProps { selected: ExerciseId; onSelect: (id: ExerciseId) => void; busy?: boolean }
 
@@ -50,7 +50,7 @@ export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogPro
       {guideOpen && (
         <div className="bf-guide" data-camera-guide={selected}>
           <div className="bf-guide-visual" aria-hidden="true">
-            <div className="bf-guide-phone"><Smartphone size={44}/><span>{guide.camera.includes('горизонтальный') ? '16:9' : '9:16'}</span></div>
+            <div className="bf-guide-phone"><Smartphone size={44}/><span>{exerciseCameraLayout(selected) === 'landscape' ? '16:9' : '9:16'}</span></div>
             <div className="bf-guide-dots"><i/><i/><i/></div>
             <div className="bf-guide-pose"><span>ТЕЛО В КАДРЕ</span><strong>{guide.camera}</strong></div>
           </div>

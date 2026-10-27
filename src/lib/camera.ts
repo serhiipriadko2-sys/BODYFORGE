@@ -1,6 +1,9 @@
+import { exerciseCameraLayout, type ExerciseId } from './trainingCatalog';
+
 /** Browser camera preferences. The visible exercise frame always stays 9:16.
  * Device enumeration and optical zoom are optional: no camera type is invented. */
 export const PORTRAIT_ASPECT_RATIO = 9 / 16;
+export const LANDSCAPE_ASPECT_RATIO = 16 / 9;
 export type CameraSource =
   | { kind: 'facing'; value: 'user' | 'environment' }
   | { kind: 'device'; value: string };
@@ -80,6 +83,25 @@ export function portraitCameraConstraints(source: CameraSource = DEFAULT_CAMERA)
       height: { ideal: 1280 },
       aspectRatio: { ideal: PORTRAIT_ASPECT_RATIO },
       frameRate: { ideal: 24, max: 30 },
+    },
+  };
+}
+
+/** Prone movements need both arms and feet in the same source frame.
+ * Use only ideal browser constraints: unsupported camera formats still work. */
+export function exerciseCameraConstraints(
+  source: CameraSource = DEFAULT_CAMERA,
+  exerciseId: ExerciseId = 'squat',
+): MediaStreamConstraints {
+  const portrait = portraitCameraConstraints(source);
+  if (exerciseCameraLayout(exerciseId) !== 'landscape') return portrait;
+  return {
+    audio: false,
+    video: {
+      ...(portrait.video as MediaTrackConstraints),
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      aspectRatio: { ideal: LANDSCAPE_ASPECT_RATIO },
     },
   };
 }

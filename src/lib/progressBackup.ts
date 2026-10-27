@@ -2,6 +2,7 @@ import type { Profile } from './progression';
 import type { CompletedWorkoutResult } from './workoutJournal';
 import { createProgressExport } from './progressExport';
 import { readDurableJournal } from './durableJournal';
+import { readProfileQuarantine } from './profileQuarantineExport';
 
 export interface PreparedProgressBackup {
   readonly json: string;
@@ -17,9 +18,10 @@ export async function prepareProgressBackup(
   profile: Profile, pendingResult: CompletedWorkoutResult | null, now = new Date(),
 ): Promise<PreparedProgressBackup> {
   const local = createProgressExport(profile, pendingResult);
+  const profileQuarantine = readProfileQuarantine();
   const durable = await readDurableJournal();
   const complete = local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
-    && local.quarantineReadStatus === 'ready' && durable.status === 'ready'
+    && local.quarantineReadStatus === 'ready' && profileQuarantine.status === 'ready' && durable.status === 'ready'
     && Object.values(local.auxiliaryReadStatus).every((status) => status === 'ready');
   const json = JSON.stringify({
     exportFormat: 'bodyforge-manual-backup',
@@ -27,6 +29,8 @@ export async function prepareProgressBackup(
     exportedAt: now.toISOString(),
     complete,
     ...local,
+    storedProfileQuarantineRaw: profileQuarantine.entries,
+    profileQuarantineReadStatus: profileQuarantine.status,
     durableResults: durable.entries,
     durableReadStatus: durable.status,
   }, null, 2);

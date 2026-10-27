@@ -88,32 +88,39 @@ try {
   ` });
   await cdp('Page.navigate', { url: origin + '/' });
   await until("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'", 'real GLB load');
-  await until(loop + "==='running'", 'visible animation');
+  await until(loop + "==='on-demand'", 'visible scene uses event-driven rendering');
   await js('window.__avatarCanvas=' + canvas + ';true');
   check(await js(draws + '>0'), 'anatomical GLB renders actual WebGL draw calls');
-  await until("(async()=>{const a=(await import('/src/lib/runtimeDiagnostics.ts')).runtimeDiagnostics.snapshot().avatar;return a.animating&&a.frames>=4&&a.observedFps!==null})()", 'measured running loop');
-  check((await avatarStats()).drawCalls > 0, 'diagnostics read GPU counters after actual rendering');
+  check((await avatarStats()).frames > 0 && (await avatarStats()).drawCalls > 0,
+    'diagnostics record real GPU calls for the static avatar');
+  check(!(await avatarStats()).animating && (await avatarStats()).observedFps === null,
+    'static avatar does not claim continuous FPS');
 
-  // A runtime OS/browser preference change must be observed without a reload.
+  // The old renderer painted identical pixels ~24 times each second. A
+  // settled, fully loaded character must now make zero *additional* GPU calls.
+  await sleep(400);
+  const idle = await js(draws);
+  await sleep(350);
+  observations.idleDraws = (await js(draws)) - idle;
+  check(observations.idleDraws === 0, 'fully loaded, visible 3D makes zero idle GPU draw calls');
+
+  // OS reduced motion must not be required to save power. Both preferences
+  // keep the static figure on demand, with no animated FPS.
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-  // CDP acknowledgement precedes the browser's asynchronous media-query event.
-  // Await the observable state; still prove that no GPU draws recur below.
-  await until("matchMedia('(prefers-reduced-motion: reduce)').matches && " + loop + "==='paused'", 'live reduced-motion event and stopped RAF');
+  await until("matchMedia('(prefers-reduced-motion: reduce)').matches", 'reduced motion preference applied');
   observations.reducedMotionLoop = await js(loop);
-  check(observations.reducedMotionLoop === 'paused', 'live reduced-motion change stops the avatar RAF');
-  check((await avatarStats()).observedFps === null && !(await avatarStats()).animating,
-    'paused loop clears stale FPS immediately');
+  check(observations.reducedMotionLoop === 'on-demand', 'reduced motion preserves event-driven 3D');
   const still = await js(draws);
   await sleep(250);
-  check(await js(draws) === still, 'reduced motion keeps the static 3D without recurring draws');
+  check(await js(draws) === still, 'reduced motion keeps static 3D without recurring draws');
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
-  await until(loop + "==='running'", 'motion resumes');
+  await until("!matchMedia('(prefers-reduced-motion: reduce)').matches", 'normal motion preference applied');
   const resumed = await js(draws);
   await sleep(200);
-  check(await js(draws) > resumed, 'removing reduced motion resumes actual rendering');
+  check(await js(draws) === resumed, 'normal preference also makes zero idle GPU draw calls');
 
   // document.hidden is controlled only in this isolated page. Resize/model
-  // updates exercise the direct render path separately from the RAF guard.
+  // updates must respect visibility even without an idle RAF.
   await js("Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))");
   await until(loop + "==='paused'", 'background pause');
   const hidden = await js(draws);
@@ -127,14 +134,14 @@ try {
   check(await js(draws) === hidden, 'background body-build update performs zero GPU draw calls');
   check((await avatarStats()).frames === hiddenFrames, 'background attempts do not fabricate rendered frames');
   await js("Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'))");
-  await until(loop + "==='running'", 'foreground resume');
+  await until(loop + "==='on-demand'", 'foreground redraw enabled');
   await sleep(200);
   check(await js(draws) > hidden, 'returning foreground draws the updated 3D character');
   await js(canvas + ".style.removeProperty('width')");
 
-  // Reduced motion still permits explicit interactions and one-off updates.
+  // Explicit interactions still render once under reduced motion.
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-  await until(loop + "==='paused'", 'reduced motion again');
+  await until(loop + "==='on-demand'", 'event-driven render under reduced motion');
   const beforeUpdate = await js(draws);
   const recordedBeforeUpdate = (await avatarStats()).frames;
   await js("document.querySelector('.build-options button:first-child').click()");
@@ -142,15 +149,15 @@ try {
   check(await js(draws) > beforeUpdate, 'visible body-build change redraws in reduced motion');
   check((await avatarStats()).frames > recordedBeforeUpdate, 'diagnostics count real manual renders with reduced motion');
   check((await avatarStats()).observedFps === null, 'manual draws do not fabricate continuous FPS');
-  check(await js(loop) === 'paused', 'manual update does not restart the reduced-motion loop');
+  check(await js(loop) === 'on-demand', 'manual update does not start an idle animation loop');
   const beforeKeyboard = await js(draws);
   const framesBeforeKeyboard = (await avatarStats()).frames;
   await js(canvas + '.focus()');
   await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await sleep(100);
-  check(await js(draws) > beforeKeyboard && await js(loop) === 'paused',
-    'keyboard arrow rotates the 3D hero without starting a reduced-motion RAF');
+  check(await js(draws) > beforeKeyboard && await js(loop) === 'on-demand',
+    'keyboard arrow rotates the 3D hero without starting perpetual RAF');
   check((await avatarStats()).frames > framesBeforeKeyboard, 'diagnostics include the keyboard render');
   await js("document.querySelector('.mobile-nav button:nth-child(2)').click()");
   await until("!document.querySelector('#onboarding canvas')", 'avatar unmount');
@@ -161,7 +168,7 @@ try {
     'disposed scene retains no live FPS or animation state');
   await js("document.querySelector('.mobile-nav button:first-child').click()");
   await until("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'", 'GLB remount');
-  check(await js(loop) === 'paused', 'remounted GLB respects the current reduced-motion setting');
+  check(await js(loop) === 'on-demand', 'remounted GLB uses event-driven draws under reduced motion');
   check((await avatarStats()).frames > 0 && (await avatarStats()).drawCalls > 0 && (await avatarStats()).observedFps === null,
     'static GLB load has measured renders and GPU counters without claiming FPS');
   check(errors.length === 0, 'no uncaught browser runtime exceptions');

@@ -6,7 +6,7 @@ import type { PulseDay } from './progressPulse';
 describe('Aurora neon view-model: no invented progress or activity', () => {
   const newMuscles: GameState['muscles'] = { arms: 0, back: 0, core: 0, legs: 0 };
   const oneWeek: PulseDay[] = Array.from({length:7},(_,i)=>({
-    date:'2026-10-'+String(i+19),label:['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'][i],sessions:0,reps:0,
+    date:'2026-10-'+String(i+19),label:['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'][i],sessions:0,reps:0,holdSeconds:0,
   }));
 
   it('shows zero ring progress and four actual purchased muscle levels for a new fighter',()=>{
@@ -47,7 +47,7 @@ describe('Aurora neon view-model: no invented progress or activity', () => {
   it('shows all thirty real points but only seven spaced date labels', () => {
     const days: PulseDay[] = Array.from({length:30}, (_,i) => ({
       date: `2026-10-${String(i + 1).padStart(2, '0')}`,
-      label: 'ЧТ', sessions: i === 12 ? 3 : 0, reps: i === 12 ? 60 : 0,
+      label: 'ЧТ', sessions: i === 12 ? 3 : 0, reps: i === 12 ? 60 : 0, holdSeconds: 0,
     }));
     const chart = weeklySessionLine(days);
     expect(chart.points).toHaveLength(30);

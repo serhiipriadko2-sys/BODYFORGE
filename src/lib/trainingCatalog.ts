@@ -90,6 +90,29 @@ export function isExerciseId(value: unknown): value is ExerciseId {
   return typeof value === 'string' && EXERCISE_GUIDES.some((guide) => guide.id === value);
 }
 
+/** User-facing genitive form: «20 приседаний», not «20 приседания». */
+export function exerciseTargetLabel(id: ExerciseId): string {
+  const labels: Record<ExerciseId, string> = {
+    squat: 'ПРИСЕДАНИЙ',
+    lunge: 'ВЫПАДОВ',
+    pushup: 'ОТЖИМАНИЙ',
+    'jumping-jack': 'ПРЫЖКОВ С РАЗВЕДЕНИЕМ',
+    'high-knees': 'ПОДЪЁМОВ КОЛЕНЕЙ',
+    crunch: 'ПОДЪЁМОВ КОРПУСА',
+    'leg-raise': 'ПОДЪЁМОВ НОГ',
+    plank: 'СЕКУНД ПЛАНКИ',
+  };
+  return labels[id];
+}
+
+/** Stable camera layout contract; do not infer capability from translated guide text. */
+const LANDSCAPE_EXERCISES: ReadonlySet<ExerciseId> = new Set([
+  'pushup', 'crunch', 'leg-raise', 'plank',
+]);
+export function exerciseCameraLayout(id: ExerciseId): 'portrait' | 'landscape' {
+  return LANDSCAPE_EXERCISES.has(id) ? 'landscape' : 'portrait';
+}
+
 export function canStartCameraExercise(id: unknown): boolean {
   return isExerciseId(id);
 }

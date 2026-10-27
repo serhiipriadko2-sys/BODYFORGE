@@ -256,9 +256,11 @@ try {
   check((await current()).xp===360, 'failed model initialization grants no XP');
 
   await boot(undefined, undefined, '', ['*/src/components/Avatar3D.tsx*']);
-  await until("!!document.querySelector('[data-3d-status=fallback]')", 'lazy 3D failure fallback', 10000);
-  check(await js("document.querySelectorAll('.mobile-nav button').length===5"), 'missing 3D module cannot crash navigation');
+  // The 3D chunk is intentionally on-demand: below-fold avatars never load
+  // until scrolled into view. Trigger the import before testing its failure.
   await js("document.querySelector('.avatar-stage').scrollIntoView({block:'center',behavior:'instant'});true");
+  await until("!!document.querySelector('[data-3d-status=fallback]')", 'lazy 3D failure fallback', 15000);
+  check(await js("document.querySelectorAll('.mobile-nav button').length===5"), 'missing 3D module cannot crash navigation');
   await sleep(300);
   await shot('bf-audit-3d-fallback.png');
   await cdp('Emulation.setDeviceMetricsOverride', { width: 360, height: 780, deviceScaleFactor: 1, mobile: true });

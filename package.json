@@ -18,6 +18,7 @@
     "qa:resilience": "node qa/resilience-e2e.mjs",
     "qa:avatar": "node qa/avatar-lifecycle-e2e.mjs",
     "qa:avatar-quality": "node qa/avatar-quality-e2e.mjs",
+    "qa:athlete-glb": "node qa/athlete-efficient.mjs",
     "qa:avatar-observers": "node qa/avatar-observers-e2e.mjs",
     "qa:camera-runtime": "node qa/on-demand-camera-e2e.mjs",
     "qa:bundle": "node qa/bundle-on-demand.mjs",

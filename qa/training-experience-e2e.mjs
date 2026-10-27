@@ -119,7 +119,7 @@ try {
   check(await js("document.querySelector('[data-goal-target]').dataset.goalTarget==='40' && document.querySelector('[data-manual-steps]').dataset.manualSteps==='4321'"), 'saved plan and manual note survive reload');
   await click('.mobile-nav button:nth-child(2)');
   await until("!!document.querySelector('#challenge .bf-catalog-trigger')", 'catalog');
-  check(await js("document.querySelector('#challenge .bf-capability').dataset.recognition==='camera-tested'"), 'only squat camera detector is offered by default');
+  check(await js("document.querySelector('#challenge .bf-capability').dataset.recognition==='camera-tested'"), 'squat remains the default selected camera exercise');
   await click('.bf-catalog-trigger');
   check(await js("document.querySelectorAll('.bf-catalog-item').length===8"), 'all eight exercises have guides');
   await click('[data-exercise="pushup"]');
@@ -130,10 +130,11 @@ try {
   const guidePath = path.join(os.tmpdir(), 'bf-training-camera-guide.png');
   fs.writeFileSync(guidePath, Buffer.from(guideShot.data, 'base64'));
   console.log('SHOT', guidePath);
-  check(await js("document.querySelector('#challenge .primary-button')?.textContent.includes('ВЕРНУТЬСЯ К ПРИСЕДАНИЯМ') && document.querySelector('.bf-capability').dataset.recognition==='guide-only'"), 'unsupported exercise cannot start a false rewarded workout');
-  await click('#challenge .primary-button');
-  check(await js("document.querySelector('.bf-capability').dataset.recognition==='camera-tested' && document.querySelector('#challenge .primary-button')?.textContent.includes('НАЧАТЬ ЗАКАЛКУ')"), 'squat detector can be restored explicitly');
-  check(await js("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')).xp===0 && !document.querySelector('video.camera-visible')"), 'guide selection neither starts camera nor grants rewards');
+  check(await js("document.querySelector('.bf-capability').dataset.recognition==='camera-experimental' && document.querySelector('#challenge .primary-button')?.textContent.includes('НАЧАТЬ ЗАКАЛКУ') && document.querySelector('.bf-guide-phone span')?.textContent==='16:9'"), 'pushup has an experimental camera counter and correct horizontal guide');
+  check(await js("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')).xp===0 && !document.querySelector('video.camera-visible')"), 'choosing pushup does not start camera or grant rewards');
+  await click('[data-exercise="squat"]');
+  check(await js("document.querySelector('.bf-capability').dataset.recognition==='camera-tested' && document.querySelector('#challenge .primary-button')?.textContent.includes('НАЧАТЬ ЗАКАЛКУ') && document.querySelector('.bf-guide-phone span')?.textContent==='9:16'"), 'squat mode can be selected again with its portrait guide');
+  check(await js("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')).xp===0 && !document.querySelector('video.camera-visible')"), 'catalog navigation alone cannot create rewards');
   console.log('BODYFORGE_TRAINING_EXPERIENCE_PASS checks=' + passed);
 } catch (error) {
   console.error('BODYFORGE_TRAINING_EXPERIENCE_FAIL', error.stack || String(error));

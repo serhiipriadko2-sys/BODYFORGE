@@ -83,6 +83,19 @@ describe('tamagotchi game economy', () => {
     expect(claimDailyQuest(claimed, day)).toBe(claimed);
   });
 
+  it('requires actual squats for the squat-only daily quest even after other workouts', () => {
+    const started = player();
+    const pushup = addCompletedWorkout(started, 70000, day,
+      { exerciseId: 'pushup', mode: 'training', sessionId: 'daily-pushup' });
+    expect(canClaimQuest(pushup, day)).toBe(false);
+    const plank = addCompletedWorkout(pushup, 35000, day,
+      { exerciseId: 'plank', mode: 'training', holdSeconds: 30, sessionId: 'daily-plank' });
+    expect(canClaimQuest(plank, day)).toBe(false);
+    expect(claimDailyQuest(plank, day)).toBe(plank);
+    const squat = addCompletedWorkout(plank, 64000, day,
+      { mode: 'training', exerciseId: 'squat', sessionId: 'daily-squat' });
+    expect(canClaimQuest(squat, day)).toBe(true);
+  });
   it('rejects hostile or invalid saved upgrades and outfit selections', () => {
     const bad = normalizeGame({
       created: true, nickname: 'x', build: 'elf', muscles: { arms: 999, legs: -5 },

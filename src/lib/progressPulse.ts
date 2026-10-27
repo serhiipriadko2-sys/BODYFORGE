@@ -1,20 +1,21 @@
 import { localDay } from './game';
 import type { Workout } from './progression';
+import { isExerciseId } from './trainingCatalog';
 
 export type PulseRange = 7 | 30;
-export type PulseDay = { date: string; label: string; sessions: number; reps: number };
-export type PulseTrend = { days: PulseDay[]; sessions: number; reps: number; activeDays: number; peak: number };
+export type PulseDay = { date: string; label: string; sessions: number; reps: number; holdSeconds?: number };
+export type PulseTrend = { days: PulseDay[]; sessions: number; reps: number; holdSeconds: number; activeDays: number; peak: number };
 export type PulseComparison = {
   current: PulseTrend; previous: PulseTrend; deltaSessions: number;
   /** Only the 60 most recent workouts are retained as detailed history. */
   historyLimited: boolean;
 };
 
-const EMPTY: PulseTrend = { days: [], sessions: 0, reps: 0, activeDays: 0, peak: 0 };
+const EMPTY: PulseTrend = { days: [], sessions: 0, reps: 0, holdSeconds: 0, activeDays: 0, peak: 0 };
 
 /**
  * Exactly 7 or 30 LOCAL calendar days, not a rolling fixed 24-hour duration.
- * Only completed 20-rep sessions count. Dates, time zones, and DST are
+ * Only verified full sessions count (20 repetitions or 30 seconds of plank). Dates, time zones, and DST are
  * resolved using noon on the local calendar to avoid midnight transitions.
  * Rendering never writes to the game profile or creates reward entries.
  */
@@ -28,26 +29,30 @@ export function activityPulse(
     return {
       date: localDay(day),
       label: weekday.format(day).replace('.', '').toUpperCase(),
-      sessions: 0, reps: 0,
+      sessions: 0, reps: 0, holdSeconds: 0,
     };
   });
   const byDay = new Map(days.map(day => [day.date, day]));
   const seen = new Set<string>();
   for (const workout of workouts) {
     if (typeof workout.id !== 'string' || !workout.id.trim() || seen.has(workout.id)) continue;
-    if (workout.repetitions !== 20) continue;
+    const isPlank = workout.exerciseId === 'plank';
+    if (isPlank ? workout.repetitions !== 0 || workout.holdSeconds !== 30
+      : workout.repetitions !== 20 || (workout.exerciseId !== undefined && !isExerciseId(workout.exerciseId))) continue;
     const when = new Date(workout.finishedAt);
     if (!Number.isFinite(when.getTime())) continue;
     const day = byDay.get(localDay(when));
     if (!day) continue;
     seen.add(workout.id);
     day.sessions += 1;
-    day.reps += 20;
+    day.reps += isPlank ? 0 : 20;
+    day.holdSeconds = (day.holdSeconds ?? 0) + (isPlank ? 30 : 0);
   }
   return {
     days,
     sessions: days.reduce((count, day) => count + day.sessions, 0),
     reps: days.reduce((count, day) => count + day.reps, 0),
+    holdSeconds: days.reduce((seconds, day) => seconds + (day.holdSeconds ?? 0), 0),
     activeDays: days.filter(day => day.sessions > 0).length,
     peak: Math.max(0, ...days.map(day => day.sessions)),
   };

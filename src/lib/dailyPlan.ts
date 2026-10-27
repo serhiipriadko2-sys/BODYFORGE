@@ -4,7 +4,7 @@ import type { Workout } from './progression';
 export const DAILY_PLAN_KEY = 'bodyforge:daily-plan:v1';
 export const DEFAULT_DAILY_REPS = 20;
 export const MAX_DAILY_REPS = 200;
-// One saved BODYFORGE camera workout is always 20 squats in v0.3.
+// This daily target is specifically for squats; other completed exercise types do not qualify.
 export const GOAL_INCREMENT = 20;
 
 export interface DailyPlan {
@@ -59,11 +59,12 @@ export function completedSquatsToday(workouts: readonly Workout[], now: Date): n
   const ids = new Set<string>();
   let count = 0;
   for (const workout of workouts) {
-    if (typeof workout.id !== 'string' || ids.has(workout.id)) continue;
-    ids.add(workout.id);
+    if (typeof workout.id !== 'string' || !workout.id.trim() || ids.has(workout.id)) continue;
     const ended = new Date(workout.finishedAt);
     if (!Number.isFinite(ended.getTime()) || localDay(ended) !== day) continue;
-    if (!Number.isSafeInteger(workout.repetitions) || workout.repetitions !== 20) continue;
+    if ((workout.exerciseId !== undefined && workout.exerciseId !== 'squat') ||
+        !Number.isSafeInteger(workout.repetitions) || workout.repetitions !== 20) continue;
+    ids.add(workout.id);
     count += 20;
   }
   return count;

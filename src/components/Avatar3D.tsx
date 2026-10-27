@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ActiveFrameLoop } from '../lib/frameLoop';
 import { disposeThreeTree } from '../lib/threeResources';
 import { runtimeDiagnostics } from '../lib/runtimeDiagnostics';
 import Avatar from './Avatar';
@@ -112,8 +111,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     let activePointer: number | null = null;
     let pointerX = 0;
     let isDragging = false;
-    let lastDraw = 0;
-    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // The rig and lights are static between explicit UI interactions.
+    // Perpetual 24 FPS redraws waste GPU time without visible movement.
 
     try {
       renderer = new THREE.WebGLRenderer({
@@ -273,38 +272,24 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         if (visible) redraw();
       };
       document.addEventListener('visibilitychange', onVisibility);
-      motionPreference.addEventListener('change', onVisibility);
       const observer = new IntersectionObserver((entries) => {
         intersectsViewport = entries[0]?.isIntersecting === true;
         onVisibility();
       }, { threshold: .01 });
       observer.observe(element);
-      // ResizeObserver also fires when CSS display:none collapses the canvas.
-      // Re-evaluate visibility rather than only redrawing: otherwise RAF may
-      // continue until IntersectionObserver eventually reports a change.
+      // CSS visibility/size changes need a fresh draw when the stage returns.
+      // No idle RAF is scheduled for this static character.
       const resize = new ResizeObserver(onVisibility);
       resize.observe(element);
 
-      function animate(time: number) {
-        if (time - lastDraw > 42) {
-          lastDraw = time;
-          // Keep the soles on the pedestal; moving the whole rig up/down
-          // looked like floating and was not anatomical breathing.
-          redraw();
-        }
-      }
-      const frameLoop = new ActiveFrameLoop(
-        animate,
-        (callback) => window.requestAnimationFrame(callback),
-        (id) => window.cancelAnimationFrame(id),
-      );
       function syncMotion() {
-        // Idle / hidden 3D must not schedule another RAF. Manual drag and
-        // model updates still redraw on demand, including reduced-motion mode.
-        const running = visible && !pausedRef.current && !motionPreference.matches && !disposed;
-        runtimeDiagnostics.setAvatarAnimating(telemetryId, running);
-        frameLoop.setActive(running);
-        element.dataset.renderLoop = running ? 'running' : 'paused';
+        // There is no timeline animation in this scene: a repeated render
+        // would paint identical pixels. Turn idle RAF off entirely, including
+        // when reduced-motion is NOT requested. Pointer/keyboard, profile,
+        // GLB/texture and visibility callbacks still call redraw().
+        runtimeDiagnostics.setAvatarAnimating(telemetryId, false);
+        element.dataset.renderLoop = visible && !pausedRef.current && !disposed
+          ? 'on-demand' : 'paused';
       }
       const currentRuntime = {
         renderer,
@@ -320,7 +305,6 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         stopped: () => {
           if (disposed) return;
           disposed = true;
-          frameLoop.stop();
           element.dataset.renderLoop = 'stopped';
           if (runtime.current === currentRuntime) {
             runtime.current = null;
@@ -333,7 +317,6 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           element.removeEventListener('keydown', onArrowKey);
           element.removeEventListener('webglcontextlost', onContextLost);
           document.removeEventListener('visibilitychange', onVisibility);
-          motionPreference.removeEventListener('change', onVisibility);
           observer.disconnect();
           resize.disconnect();
           disposeThreeTree(scene);
@@ -437,7 +420,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         undefined,
         () => { if (!disposed && fallback.length) loadFigure(fallback); },
       );
-      loadFigure(['/assets/bodyforge-athlete-detail.glb', '/assets/bodyforge-athlete-realistic.glb', '/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb']);
+      // Compact attribute encoding keeps the 163-bone rig and all 129,973
+      // triangles. Keep the original full-precision GLB as the first fallback.
+      loadFigure(['/assets/bodyforge-athlete-efficient.glb', '/assets/bodyforge-athlete-detail.glb', '/assets/bodyforge-athlete-realistic.glb', '/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb']);
     } catch (error) {
       console.error('BODYFORGE 3D renderer unavailable:', error);
       renderer?.dispose();
