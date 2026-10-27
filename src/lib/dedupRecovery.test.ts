@@ -49,8 +49,16 @@ beforeEach(() => {
   durable.read.mockReset().mockResolvedValue({ status: 'ready', entries: [
     { ...entry, baseProfileRaw: null, state: 'settled' },
   ] });
-  durable.stage.mockReset().mockResolvedValue({ status: 'saved' });
-  durable.mark.mockReset().mockResolvedValue({ status: 'saved' });
+  durable.stage.mockReset().mockImplementation(async (entries: { key: string; raw: string }[]) => ({
+    status: 'saved', entries: entries.map((entry) => ({
+      key: entry.key, raw: entry.raw, baseProfileRaw: null, state: 'active' as const,
+    })),
+  }));
+  durable.mark.mockReset().mockImplementation(async (entries: { key: string; raw: string }[], state: 'settled' | 'quarantined') => ({
+    status: 'saved', entries: entries.map((entry) => ({
+      key: entry.key, raw: entry.raw, baseProfileRaw: null, state,
+    })),
+  }));
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
@@ -132,14 +140,35 @@ describe('ambiguous reward identity recovery', () => {
     expect(loadProfileState().status).toBe('ready');
   });
 
-  it('allows legacy profiles with an absent ledger without inventing past session identities', () => {
+  it('fails closed for an identified paid legacy profile with no dedup ledger', () => {
     const { creditedWorkoutIds: _ids, ...legacy } = completedProfile();
-    const { values } = storage(legacy);
+    const { values, setItem, removeItem } = storage(legacy);
     const original = values.get(STORAGE_KEY);
-    expect(loadProfileState()).toMatchObject({ status: 'ready', profile: {
-      profileId: PROFILE_ID, xp: legacy.xp, coins: legacy.coins, workouts: legacy.workouts } });
-    expect(loadProfileState().profile).not.toHaveProperty('creditedWorkoutIds');
+    const state = loadProfileState();
+    expect(state).toMatchObject({ status: 'recovery-required', backupAvailable: false,
+      profile: { profileId: PROFILE_ID, xp: legacy.xp, coins: legacy.coins,
+        workouts: legacy.workouts, creditedWorkoutIds: null } });
+    expect(() => addCompletedWorkout(state.profile, 65000, new Date(FINISHED_AT), {
+      sessionId: 'another-session', mode: 'training',
+    })).toThrow('Reward identity ledger requires recovery');
+    expect(saveProfile(state.profile).status).toBe('recovery-required');
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
     expect(values.get(STORAGE_KEY)).toBe(original);
+  });
+
+  it('keeps an anonymous legacy save with no dedup ledger readable and unchanged', () => {
+    const { creditedWorkoutIds: _ids, profileId: _profileId, ...anonymous } = completedProfile();
+    const { values, setItem } = storage(anonymous);
+    const original = values.get(STORAGE_KEY);
+    const state = loadProfileState();
+    expect(state.status).toBe('ready');
+    expect(state.profile).toMatchObject({ xp: anonymous.xp,
+      coins: anonymous.coins, workouts: anonymous.workouts });
+    expect(state.profile).not.toHaveProperty('profileId');
+    expect(state.profile).not.toHaveProperty('creditedWorkoutIds');
+    expect(values.get(STORAGE_KEY)).toBe(original);
+    expect(setItem).not.toHaveBeenCalled();
   });
 
   it('restores a trusted backup explicitly, preserving the damaged raw and old reward identity', async () => {

@@ -103,11 +103,17 @@ function frame(id, state, side, ratio) {
   return points;
 }
 async function install() {
-  const source = await ev("(async()=>await(await fetch('/src/App.tsx')).text())()");
-  const match = source.match(/\/node_modules\/\.vite\/deps\/@mediapipe_tasks-vision\.js\?v=[a-z0-9]+/i);
-  if (!match) throw Error('MediaPipe Vite URL missing');
+  // Support the Vite dev server and the frozen production preview. The latter
+  // has no HMR and is suitable for long camera-hold regression tests.
+  const mainScript = await ev("document.querySelector('script[type=module][src]')?.getAttribute('src')");
+  const sourcePath = mainScript?.startsWith('/assets/') ? mainScript : '/src/App.tsx';
+  const source = await ev("(async()=>await(await fetch(" + JSON.stringify(sourcePath) + ")).text())()");
+  const devMatch = source.match(/\/node_modules\/\.vite\/deps\/@mediapipe_tasks-vision\.js\?v=[a-z0-9]+/i);
+  const buildMatch = source.match(/vision_bundle-[a-z0-9_-]+\.js/i);
+  const modulePath = devMatch?.[0] ?? (buildMatch ? '/assets/' + buildMatch[0] : null);
+  if (!modulePath) throw Error('MediaPipe module URL missing from dev or built app');
   const script =
-    '(async()=>{const mp=await import(' + JSON.stringify(match[0]) + ');' +
+    '(async()=>{const mp=await import(' + JSON.stringify(modulePath) + ');' +
     'const make=' + frame.toString() + ';window.__bfMakeFrame=make;' +
     'window.__rig={id:"squat",t:null,frames:0,freeze:false,hiddenJoint:-1,select(id){this.id=id;this.t=null;this.frames=0;this.freeze=false;this.hiddenJoint=-1;}};' +
     'mp.PoseLandmarker.prototype.detectForVideo=function(video,t){' +
@@ -159,7 +165,19 @@ try {
     await click('#challenge .primary-button');
     await until('window.__rig?.frames>=5',id+' camera started',30000);
     if(id==='plank'){
-      await until("!!document.querySelector('.completion-stage')",'30s plank held',43000);
+      try {
+        await until("!!document.querySelector('.completion-stage')",'30s plank held',43000);
+      } catch (error) {
+        const state = await obj(
+          "({frames:window.__rig?.frames,videoTime:document.querySelector('video')?.currentTime," +
+          "videoReady:document.querySelector('video')?.readyState,stage:!!document.querySelector('.completion-stage')," +
+          "count:document.querySelector('.counter-number')?.textContent,feedback:document.querySelector('.feedback-text')?.textContent," +
+          "guidance:document.querySelector('.pose-camera-coach')?.textContent,mode:document.querySelector('#challenge')?.dataset?.mode," +
+          "error:document.querySelector('.camera-error')?.textContent,profile:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').workouts?.length})"
+        );
+        console.log('PLANK_CAPTURE_DIAGNOSTICS',JSON.stringify(state));
+        throw error;
+      }
       completed++;
       await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').workouts?.length==="+completed,
         'plank saved',15000);

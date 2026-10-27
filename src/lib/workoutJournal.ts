@@ -23,6 +23,8 @@ export interface JournalEntry { key: string; raw: string; result: CompletedWorko
 export type JournalOutcome = {
   status: 'saved' | 'unavailable' | 'mismatch' | 'invalid' | 'recovery-required' | 'conflict';
   state: ProfileLoadResult;
+  /** Internal acknowledgement only; absent until strict settled read-back. */
+  settledSessionIds?: string[];
 };
 const validId = (id: unknown): id is string => typeof id === 'string' && id.trim().length > 0 && id.length <= 128;
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;

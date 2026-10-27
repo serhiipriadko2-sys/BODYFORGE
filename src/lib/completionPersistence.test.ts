@@ -62,7 +62,7 @@ describe('completion persistence before profile lock acquisition', () => {
 
   it('rejects missing, changed-payload and changed-base read-backs', async () => {
     for (const entries of [[], [{ ...row(), raw: '{different}' }], [{ ...row(), baseProfileRaw: 'other revision' }]]) {
-      const operation = createCompletionPersistence(result, context, vi.fn(async () => ({ status: 'saved', entries })))!;
+      const operation = createCompletionPersistence(result, context, vi.fn(async () => ({ status: 'saved' as const, entries })))!;
       expect((await operation.stage()).status).toBe('unavailable');
       expect(operation.acknowledged).toBeNull();
     }

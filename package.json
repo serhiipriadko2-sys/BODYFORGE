@@ -21,6 +21,7 @@
     "qa:athlete-glb": "node qa/athlete-efficient.mjs",
     "qa:avatar-observers": "node qa/avatar-observers-e2e.mjs",
     "qa:camera-runtime": "node qa/on-demand-camera-e2e.mjs",
+    "qa:serve-stable": "node qa/stable-dev-server.mjs",
     "qa:exercise-catalog": "node qa/eight-exercise-catalog-e2e.mjs",
     "qa:exercise-motion": "node qa/all-exercises-motion-e2e.mjs",
     "qa:bundle": "node qa/bundle-on-demand.mjs",

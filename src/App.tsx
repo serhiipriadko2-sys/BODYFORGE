@@ -182,7 +182,7 @@ function CounterCircle({ count, active, target, label }: { count: number; active
 }
 
 function App() {
-  const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, journalEntries, quarantined, quarantine,
+  const { profile, setProfile, status: storageStatus, backupAvailable, writeIssue, isSaving, pendingResult, completionPhase, journalEntries, quarantined, quarantine,
     beginWorkout, completeWorkout, openCurrent, retry: retryStorage, recover: recoverStorage, reload: reloadStorage } = useProfileStorage();
   const { look: avatarLook, readStatus: avatarLookStatus, message: avatarLookMessage, update: updateAvatarLook } = useAvatarLook();
   const [mode, setMode] = useState<Mode>('idle');
@@ -1066,7 +1066,15 @@ function App() {
                   <div className="spinner"/><span>ПЕРЕКЛЮЧАЕМ ОБЪЕКТИВ</span>
                 </div>}
                 {mode === 'complete' ? (
-                  <div className="completion-stage"><div className="completion-medal"><Trophy size={42} /></div><strong>ЗАКАЛКА ЗАВЕРШЕНА!</strong><span role="status">{isSaving ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ' : exercise.unit === 'seconds' ? '30 СЕКУНД УДЕРЖАНИЯ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span><div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div></div>
+                  <div className="completion-stage" data-result-persistence={completionPhase}>
+                    <div className="completion-medal"><Trophy size={42} /></div>
+                    <strong>{completionPhase === 'credited' ? 'ЗАКАЛКА ЗАВЕРШЕНА!' : 'УПРАЖНЕНИЕ ЗАВЕРШЕНО'}</strong>
+                    <span role="status">{completionPhase === 'saving-result' ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ'
+                      : completionPhase === 'durable-pending' ? 'РЕЗУЛЬТАТ СОХРАНЁН. ОЖИДАЕМ НАЧИСЛЕНИЯ НАГРАДЫ'
+                      : completionPhase === 'quarantined' ? 'РЕЗУЛЬТАТ ОТЛОЖЕН. НАГРАДА НЕ НАЧИСЛЕНА'
+                      : exercise.unit === 'seconds' ? '30 СЕКУНД УДЕРЖАНИЯ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span>
+                    {completionPhase === 'credited' && <div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div>}
+                  </div>
                 ) : (
                   <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} target={exercise.target} label={exercise.unit === 'seconds' ? 'СЕКУНД' : 'ПОВТОРЕНИЙ'} /></div>
                 )}
@@ -1114,7 +1122,7 @@ function App() {
                     `РЕКОРД: ${formatTime(profile.game.bestGhost?.durationMs ?? 0)}`}</span>
                 </div>
               )}
-              {mode === 'complete' && lastChallenge?.mode !== 'training' && lastChallenge && (
+              {mode === 'complete' && completionPhase === 'credited' && lastChallenge?.mode !== 'training' && lastChallenge && (
                 <div className={`battle-result ${lastChallenge.victory ? 'victory' : 'defeat'}`}>
                   <Trophy size={23}/>
                   <div><strong>{lastChallenge.victory ? 'ПОБЕДА!' : 'ПОПРОБУЙ ЕЩЁ'}</strong>

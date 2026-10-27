@@ -7,6 +7,7 @@ import { replayDurableWorkouts, quarantineDurableWorkouts } from '../lib/durable
 import { readDurableJournal } from '../lib/durableJournal';
 import type { WorkoutMode } from '../lib/game';
 import type { ExerciseId } from '../lib/trainingCatalog';
+import { createCompletionPersistence, type CompletionPersistence, type CompletionPhase, type PreparedWorkoutContext } from '../lib/completionPersistence';
 
 export type StorageStatus = 'ready' | 'checking' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
 const uiStatus = (state: ProfileLoadResult): StorageStatus => state.status === 'empty' ? 'ready' : state.status;
@@ -27,6 +28,14 @@ export function useProfileStorage() {
   const [quarantined, setQuarantined] = useState(readQuarantinedResults);
   const [pendingResult, setPendingResult] = useState<CompletedWorkoutResult | null>(null);
   const volatileResult = useRef<CompletedWorkoutResult | null>(null);
+  const preparedWorkout = useRef<PreparedWorkoutContext | null>(null);
+  const completionOperation = useRef<CompletionPersistence | null>(null);
+  const lastResolvedCompletion = useRef<CompletedWorkoutResult | null>(null);
+  const [completionPhase, setCompletionPhase] = useState<CompletionPhase>('idle');
+  const replayFlight = useRef<{ generation: number; promise: Promise<void> } | null>(null);
+  const mounted = useRef(false);
+  const pageActive = useRef(true);
+  const canContinue = useCallback(() => mounted.current && pageActive.current && !document.hidden, []);
   const [reconcileToken, requestReconcile] = useState(0);
   const revision = useRef(initial.revision);
   // Viewing a legacy/empty profile must not rewrite or seed storage.
@@ -55,12 +64,12 @@ export function useProfileStorage() {
     setIsSaving(true);
     const isCurrent = () => token === generation.current && !controller.signal.aborted;
     return withProfileWriteLock(async () => {
-      if (token !== generation.current || controller.signal.aborted) return;
+      if (!isCurrent()) return;
       const value = await operation({ signal: controller.signal, isCurrent });
       if (isCurrent()) { pending.current = null; setIsSaving(false); }
       return value;
     }, { signal: controller.signal }).then((result) => {
-      if (token !== generation.current || controller.signal.aborted) return { status: 'cancelled' as const };
+      if (!isCurrent()) return { status: 'cancelled' as const };
       pending.current = null;
       setIsSaving(false);
       if (result.status === 'unavailable') {
@@ -101,6 +110,8 @@ export function useProfileStorage() {
   }, [profile, status, save, cancelPending]);
 
   useEffect(() => {
+    mounted.current = true;
+    pageActive.current = true;
     const inspect = () => {
       try {
         if (localStorage.getItem(STORAGE_KEY) !== revision.current) {
@@ -112,8 +123,15 @@ export function useProfileStorage() {
     const changed = (event: StorageEvent) => {
       if (event.key === STORAGE_KEY || event.key === null) inspect();
     };
-    const returned = () => { if (!document.hidden) inspect(); };
+    const returned = () => {
+      if (!document.hidden) {
+        inspect();
+        if (volatileResult.current || !hydrated.current) requestReconcile(n => n + 1);
+      }
+    };
+    const shown = () => { pageActive.current = true; returned(); };
     const leaving = () => {
+      pageActive.current = false;
       if (pending.current) {
         cancelPending();
         setWriteIssue(null);
@@ -122,11 +140,15 @@ export function useProfileStorage() {
     };
     window.addEventListener('storage', changed);
     window.addEventListener('pagehide', leaving);
+    window.addEventListener('pageshow', shown);
     document.addEventListener('visibilitychange', returned);
     return () => {
+      mounted.current = false;
+      pageActive.current = false;
       cancelPending();
       window.removeEventListener('storage', changed);
       window.removeEventListener('pagehide', leaving);
+      window.removeEventListener('pageshow', shown);
       document.removeEventListener('visibilitychange', returned);
     };
   }, [cancelPending]);
@@ -153,18 +175,54 @@ export function useProfileStorage() {
     // A batch can credit our result but still report a different damaged record.
     // Clear RAM by its own verified identity, independently of the global issue.
     if (own && outcome.state.status === 'ready' && outcome.state.profile.profileId === own.profileId &&
+        outcome.settledSessionIds?.includes(own.sessionId) &&
         (outcome.state.profile.creditedWorkoutIds?.includes(own.sessionId) || outcome.state.profile.workouts.some((w) => w.id === own.sessionId))) {
       volatileResult.current = null;
+      lastResolvedCompletion.current = own;
+      completionOperation.current = null;
+      preparedWorkout.current = null;
       setPendingResult(null);
+      setCompletionPhase('credited');
     }
     if (outcome.status !== 'saved') {
       setStatus(outcome.status === 'mismatch' || outcome.status === 'invalid' ? 'pending-result' : outcome.status);
     }
   }, [accept]);
-  const replay = useCallback(() => runWrite(async (context) => {
-    const outcome = await replayDurableWorkouts(volatileResult.current, context);
-    if (context.isCurrent()) applyJournal(outcome);
-  }), [applyJournal, runWrite]);
+  const replay = useCallback((): Promise<void> => {
+    const existing = replayFlight.current;
+    if (existing && existing.generation === generation.current) return existing.promise;
+    const flight = { generation: generation.current, promise: Promise.resolve() };
+    replayFlight.current = flight;
+    flight.promise = (async () => {
+      const own = completionOperation.current;
+      if (own) {
+        if (canContinue()) setCompletionPhase(own.acknowledged ? 'durable-pending' : 'saving-result');
+        // Independent immutable IDB stage starts before any profile-lock wait.
+        // pagehide and normal UI writes never abort this operation deliberately.
+        const staged = await own.stage();
+        if (!canContinue() || flight.generation !== generation.current || completionOperation.current !== own) return;
+        if (staged.status !== 'saved') {
+          setStatus(staged.status === 'invalid' ? 'pending-result' : 'unavailable');
+          return;
+        }
+        if (own.acknowledged?.state === 'quarantined') {
+          lastResolvedCompletion.current = own.result;
+          volatileResult.current = null; completionOperation.current = null; preparedWorkout.current = null;
+          setPendingResult(null); setCompletionPhase('quarantined');
+        } else setCompletionPhase('durable-pending');
+      }
+      if (!canContinue() || flight.generation !== generation.current) return;
+      const queued = runWrite(async (context) => {
+        const foreground = { signal: context.signal, isCurrent: () => context.isCurrent() && canContinue() };
+        if (!foreground.isCurrent()) return;
+        const outcome = await replayDurableWorkouts(volatileResult.current, foreground);
+        if (foreground.isCurrent()) applyJournal(outcome);
+      });
+      flight.generation = generation.current;
+      await queued;
+    })().finally(() => { if (replayFlight.current === flight) replayFlight.current = null; });
+    return flight.promise;
+  }, [applyJournal, runWrite, canContinue]);
   useEffect(() => {
     let active = true;
     const token = generation.current;
@@ -212,13 +270,25 @@ export function useProfileStorage() {
       const result = prepareWorkoutSession(revision.current, mode, exerciseId);
       if (result.status !== 'ready') { setStatus(result.status); return null; }
       accept(result.state);
+      preparedWorkout.current = { session: { ...result.session }, baseProfileRaw: result.state.revision };
+      setCompletionPhase('idle');
       return result.session;
     });
     return response.status === 'completed' ? response.value ?? null : null;
   }, [accept, applyJournal, runWrite]);
   const completeWorkout = useCallback((result: CompletedWorkoutResult) => {
-    volatileResult.current = result;
-    setPendingResult(result);
+    if (lastResolvedCompletion.current && sameWorkoutResult(lastResolvedCompletion.current, result)) return Promise.resolve();
+    const existing = completionOperation.current;
+    if (existing && !sameWorkoutResult(existing.result, result)) {
+      setStatus('pending-result');
+      return Promise.resolve();
+    }
+    const own = existing ?? createCompletionPersistence(result, preparedWorkout.current);
+    if (!own) { setStatus('pending-result'); return Promise.resolve(); }
+    completionOperation.current = own;
+    volatileResult.current = own.result;
+    setPendingResult(own.result);
+    setCompletionPhase(own.acknowledged ? 'durable-pending' : 'saving-result');
     return replay();
   }, [replay]);
   const reload = useCallback(() => {
@@ -235,40 +305,62 @@ export function useProfileStorage() {
     // This action is offered only for a durable unresolved record, never to
     // silently discard a RAM-only result that failed to reach the journal.
     const journal = readResultJournal();
-    if (volatileResult.current && journal.status === 'ready' && journal.entries.some((e) => sameWorkoutResult(e.result, volatileResult.current))) {
+    if (volatileResult.current && (completionOperation.current?.acknowledged ||
+        (journal.status === 'ready' && journal.entries.some((e) => sameWorkoutResult(e.result, volatileResult.current))))) {
       volatileResult.current = null;
+      completionOperation.current = null;
+      preparedWorkout.current = null;
       setPendingResult(null);
     }
     accept(loadProfileState());
     if (volatileResult.current) setStatus('unavailable');
   }, [accept, cancelPending]);
-  const recover = useCallback((source: 'backup' | 'empty') => runWrite(async (context) => {
-    const state = recoverProfile(source);
-    accept(state);
-    if (state.status === 'ready' || state.status === 'empty') {
-      const outcome = await replayDurableWorkouts(volatileResult.current, context);
-      if (context.isCurrent()) applyJournal(outcome);
-    }
-  }), [accept, applyJournal, runWrite]);
+  const stageBeforeRecovery = useCallback(async () => {
+    const own = completionOperation.current, token = generation.current;
+    if (!own) return canContinue();
+    const staged = await own.stage();
+    if (!canContinue() || token !== generation.current || completionOperation.current !== own) return false;
+    if (staged.status !== 'saved') { setStatus(staged.status === 'invalid' ? 'pending-result' : 'unavailable'); return false; }
+    setCompletionPhase('durable-pending');
+    return true;
+  }, [canContinue]);
+  const recover = useCallback(async (source: 'backup' | 'empty') => {
+    if (!await stageBeforeRecovery()) return;
+    return runWrite(async (context) => {
+      const state = recoverProfile(source);
+      accept(state);
+      if (state.status === 'ready' || state.status === 'empty') {
+        const outcome = await replayDurableWorkouts(volatileResult.current, context);
+        if (context.isCurrent()) applyJournal(outcome);
+      }
+    });
+  }, [accept, applyJournal, runWrite, stageBeforeRecovery]);
   const retry = useCallback(() => {
     const journal = readResultJournal();
     return !hydrated.current || volatileResult.current || journal.status === 'unavailable' || journal.entries.length ? replay() : save(profile, true);
   }, [profile, replay, save]);
 
-  const quarantine = useCallback((expected: readonly JournalEntry[]) => runWrite(async (context) => {
-    const outcome = await quarantineDurableWorkouts(expected, context);
-    if (!context.isCurrent()) return;
-    if (outcome.status === 'saved' && volatileResult.current && expected.some((e) => sameWorkoutResult(e.result, volatileResult.current))) {
-      volatileResult.current = null;
-      setPendingResult(null);
-    }
-    applyJournal(outcome);
-    if (outcome.status === 'saved' && volatileResult.current) {
-      const retried = await replayDurableWorkouts(volatileResult.current, context);
-      if (context.isCurrent()) applyJournal(retried);
-    }
-  }), [applyJournal, runWrite]);
+  const quarantine = useCallback(async (expected: readonly JournalEntry[]) => {
+    if (!await stageBeforeRecovery()) return;
+    return runWrite(async (context) => {
+      const outcome = await quarantineDurableWorkouts(expected, context);
+      if (!context.isCurrent()) return;
+      if (outcome.status === 'saved' && volatileResult.current && expected.some((e) => sameWorkoutResult(e.result, volatileResult.current))) {
+        lastResolvedCompletion.current = volatileResult.current;
+        volatileResult.current = null;
+        completionOperation.current = null;
+        preparedWorkout.current = null;
+        setPendingResult(null);
+        setCompletionPhase('quarantined');
+      }
+      applyJournal(outcome);
+      if (outcome.status === 'saved' && volatileResult.current) {
+        const retried = await replayDurableWorkouts(volatileResult.current, context);
+        if (context.isCurrent()) applyJournal(retried);
+      }
+    });
+  }, [applyJournal, runWrite, stageBeforeRecovery]);
 
-  return { profile, setProfile: guardedSetProfile, status, backupAvailable, writeIssue, pendingResult, journalEntries, quarantined, quarantine, beginWorkout, completeWorkout, openCurrent,
+  return { profile, setProfile: guardedSetProfile, status, backupAvailable, writeIssue, pendingResult, completionPhase, journalEntries, quarantined, quarantine, beginWorkout, completeWorkout, openCurrent,
     isSaving: isSaving || status === 'checking' || (status === 'ready' && (saved.current !== profile || volatileResult.current !== null)), retry, recover, reload };
 }

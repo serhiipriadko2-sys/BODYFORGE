@@ -77,8 +77,10 @@ async function readProfile() { return JSON.parse(await js('localStorage.getItem(
 async function startTower() {
   await js(`(async()=>{
     const source=await(await fetch('/src/App.tsx')).text();
-    const start=source.indexOf('/node_modules/.vite/deps/@mediapipe_tasks-vision.js?v=');
-    if(start<0)throw Error('MediaPipe module URL missing');
+    const marker=source.indexOf('@mediapipe_tasks-vision.js?v=');
+    if(marker<0)throw Error('MediaPipe module URL missing');
+    const prefix=source.slice(0,marker);
+    const start=Math.max(prefix.lastIndexOf(String.fromCharCode(34)),prefix.lastIndexOf(String.fromCharCode(39)))+1;
     const url=source.slice(start).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];
     const mp=await import(url);
     const rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];

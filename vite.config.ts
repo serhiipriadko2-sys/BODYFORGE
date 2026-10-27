@@ -6,14 +6,11 @@ import react from '@vitejs/plugin-react';
 // Vite's built-in fs.deny protects module/file routes; early middleware also
 // blocks direct URL requests and preserves 403 instead of SPA fallback.
 function blockPrivateAgentFiles() {
-  return {
-    name: 'bodyforge-block-private-agent-files',
-    enforce: 'pre' as const,
-    configureServer(server: { middlewares: { use: (handler: (
+  const configure = (server: { middlewares: { use: (handler: (
       req: { url?: string },
       res: { statusCode: number; setHeader: (key: string, value: string) => void; end: (body: string) => void },
       next: () => void
-    ) => void) => void } }) {
+    ) => void) => void } }) => {
       server.middlewares.use((req, res, next) => {
         let pathname: string;
         try {
@@ -33,7 +30,12 @@ function blockPrivateAgentFiles() {
         }
         next();
       });
-    },
+  };
+  return {
+    name: 'bodyforge-block-private-agent-files',
+    enforce: 'pre' as const,
+    configureServer: configure,
+    configurePreviewServer: configure,
   };
 }
 

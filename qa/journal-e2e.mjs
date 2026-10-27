@@ -173,8 +173,10 @@ function isOneTower(profile, id) {
 async function startTower() {
   await page.js(`(async()=>{
     const source=await(await fetch('/src/App.tsx')).text();
-    const start=source.indexOf('/node_modules/.vite/deps/@mediapipe_tasks-vision.js?v=');
-    if(start<0)throw Error('MediaPipe module URL missing');
+    const marker=source.indexOf('@mediapipe_tasks-vision.js?v=');
+    if(marker<0)throw Error('MediaPipe module URL missing');
+    const prefix=source.slice(0,marker);
+    const start=Math.max(prefix.lastIndexOf(String.fromCharCode(34)),prefix.lastIndexOf(String.fromCharCode(39)))+1;
     const url=source.slice(start).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];
     const mp=await import(url),rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];
     const angles=[170,170,170,...Array.from({length:20},()=>rep).flat()];
@@ -214,6 +216,106 @@ async function crashPaused(tab = page) {
 }
 const primaryQuota = `(()=>{const set=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===${JSON.stringify(key)}&&JSON.parse(v).workouts.length>0)throw new DOMException('primary full','QuotaExceededError');return set.call(this,k,v)}})()`;
 
+async function stageContracts() {
+  for (const terminal of ['settled','quarantined']) {
+    await reset();
+    const input=envelope('stage-race-'+terminal,{mode:'training',floor:null});
+    const observed=await observer.js(`(async()=>{
+      const m=await import('/src/lib/durableJournal.ts');
+      const source=${JSON.stringify({key:resultKey(input.sessionId),raw:JSON.stringify(input)})};
+      const base=localStorage.getItem(${JSON.stringify(key)});
+      const native=IDBDatabase.prototype.transaction;
+      let armed=true,changed=false;
+      // Queue a real second transaction BEFORE the stage's readonly verification.
+      IDBDatabase.prototype.transaction=function(...args){
+        const tx=native.apply(this,args);
+        if(armed&&args[1]==='readwrite'){
+          armed=false;
+          tx.addEventListener('complete',()=>{
+            const update=native.call(this,'results','readwrite',{durability:'strict'});
+            const store=update.objectStore('results'),request=store.get(source.key);
+            request.onsuccess=()=>store.put({...request.result,state:${JSON.stringify(terminal)}});
+            update.oncomplete=()=>{changed=true};
+          },{once:true});
+        }
+        return tx;
+      };
+      let staged;
+      try{staged=await m.stageDurableResults([source],base)}finally{IDBDatabase.prototype.transaction=native}
+      const duplicate=await m.stageDurableResults([source],'later revision');
+      const conflict=await m.stageDurableResults([{...source,raw:'conflicting bytes'}],base);
+      const rows=await m.readDurableJournal();
+      const resurrection=${JSON.stringify(terminal)}==='quarantined'?await m.markDurableResults([source],'settled'):null;
+      return {staged,duplicate,conflict,changed,rows,resurrection,primaryUnchanged:localStorage.getItem(${JSON.stringify(key)})===base};
+    })()`);
+    check(observed.changed&&observed.staged.status==='saved'&&observed.staged.entries[0].state===terminal,
+      'strict staging acknowledges a concurrent active to '+terminal+' read-back');
+    check(observed.duplicate.status==='saved'&&observed.duplicate.entries[0].baseProfileRaw===JSON.stringify(player),
+      'same-payload stage preserves original base and terminal '+terminal+' state');
+    check(observed.conflict.status==='invalid'&&observed.rows.entries[0].raw===JSON.stringify(input)&&observed.primaryUnchanged,
+      'conflicting staged payload never overwrites the result or profile');
+    if(terminal==='quarantined')check(observed.resurrection.status==='invalid','quarantined tombstone never returns to settled');
+  }
+}
+
+async function foregroundReconciliation() {
+  await reset();
+  const input=envelope('hidden-startup',{mode:'training',floor:null});
+  await observer.js(`(async()=>{const m=await import('/src/lib/durableJournal.ts');return m.stageDurableResults([${JSON.stringify({key:resultKey(input.sessionId),raw:JSON.stringify(input)})}],localStorage.getItem(${JSON.stringify(key)}))})()`);
+  const visibility="window.__qaHidden=true;Object.defineProperty(document,'hidden',{configurable:true,get:()=>window.__qaHidden});";
+  page=await newPage(false,visibility);
+  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='checking'",'hidden startup defers reward reconciliation');
+  check((await readProfile()).xp===0,'hidden startup does not start a new reward write');
+  await page.js("window.__qaHidden=false;document.dispatchEvent(new Event('visibilitychange'));true");
+  await waitAward(input.sessionId);
+  check((await readProfile()).xp===120,'foreground resumes durable startup without a RAM completion');
+
+  await reset();page=await newPage();
+  await observer.js(`window.__held=new Promise(resolve=>window.__release=resolve);window.__holding=false;void navigator.locks.request(${JSON.stringify(key+':write')},async()=>{window.__holding=true;await window.__held});true`);
+  await observer.until('window.__holding===true','hold lock for ordinary profile mutation');
+  await click('#quests .quest-button');
+  await page.js(visibility+"document.dispatchEvent(new Event('visibilitychange'));true");
+  await observer.js('window.__release();true');
+  await waitFor(async()=>(await readProfile()).coins===10,'ordinary profile save settles in the background');
+  await page.js("window.__qaHidden=false;document.dispatchEvent(new Event('visibilitychange'));true");
+  await page.until("document.querySelector('[data-action=prepare-progress]')?.disabled===false",'ordinary profile save clears its saving flag after foreground');
+  check((await readProfile()).coins===10,'foreground never duplicates the ordinary reward');
+}
+
+async function interruptedQueuedCompletion(kind) {
+  await reset(); page=await newPage(); await startTower();
+  const before=await observer.js(`({primary:localStorage.getItem(${JSON.stringify(key)}),backup:localStorage.getItem(${JSON.stringify(key+':backup')})})`);
+  await observer.js(`window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(${JSON.stringify(key+':write')},async()=>{window.__holding=true;await window.__held});true`);
+  await observer.until('window.__holding===true','second tab holds profile lock before '+kind);
+  await page.until("document.querySelector('.completion-stage')?.dataset.resultPersistence==='durable-pending'",'real App strictly staged 20-rep completion before '+kind,65000);
+  const staged=(await durableEntries()).find(e=>e.state==='active');
+  check(!!staged,'durable completion exists before '+kind);
+  const result=JSON.parse(staged.raw);
+  const current=await observer.js(`({primary:localStorage.getItem(${JSON.stringify(key)}),backup:localStorage.getItem(${JSON.stringify(key+':backup')})})`);
+  check(current.primary===before.primary&&current.backup===before.backup&&staged.baseProfileRaw===before.primary,
+    kind+' boundary changes neither primary nor backup and retains prepared revision');
+  let holderSurvived=true;
+  if(kind==='reload')await reload();
+  else if(kind==='close'){await page.close();page=await newPage()}
+  else {
+    void page.cdp('Page.crash',{},5000).catch(()=>{});
+    await waitFor(()=>page.crashed,'actual pre-lock renderer crash');
+    crashes++;check(page.crashed,'actual renderer crash after strict stage and before manual lock release');
+    await page.close();
+    if(observer.crashed){holderSurvived=false;await observer.close();observer=await newPage(true)}
+    page=await newPage();
+  }
+  if(holderSurvived){
+    check((await readProfile()).xp===0,'no reward while second tab still holds lock after '+kind);
+    await observer.js('window.__release();true');
+  }
+  await waitAward(result.sessionId);
+  check(isOneTower(await readProfile(),result.sessionId),kind+' recovers exactly one original session and original floor reward');
+  await reload();await reload();
+  check(isOneTower(await readProfile(),result.sessionId),'two more reloads do not duplicate '+kind+' recovery');
+  observations['prelock-'+kind]={sessionId:result.sessionId,profileId:result.profileId,floor:result.floor,holderSurvived};
+}
+
 async function queuedCompletion() {
   await reset(); page = await newPage(); await startTower();
   // Session preparation already completed. Block only its eventual finish write.
@@ -221,11 +323,13 @@ async function queuedCompletion() {
   await observer.until('window.__holding===true', 'observer holds finish-write lock');
   await page.until("!!document.querySelector('.completion-stage')", '20th rep queues its journal write', 65000);
   check(await page.js('window.__poseCalls>=320'), 'queued completion follows the complete synthetic 20-rep workout');
-  check(await page.js("document.querySelector('.completion-stage [role=status]')?.textContent.includes('СОХРАНЯЕМ РЕЗУЛЬТАТ')"),
+  check(await page.js("document.querySelector('.completion-stage [role=status]')?.textContent.includes('РЕЗУЛЬТАТ')"),
     'accessible completion status announces the unconfirmed save');
   await waitFor(async()=> (await durableEntries()).some(e=>e.state==='active'), 'strict durable result before profile lock release',5000);
   const staged=(await durableEntries()).find(e=>e.state==='active');
   const queued=JSON.parse(staged.raw);
+  await page.until("document.querySelector('.completion-stage')?.dataset.resultPersistence==='durable-pending'", 'UI acknowledges durable result separately from reward');
+  check(await page.js("!document.querySelector('.completion-rewards')"),'uncredited completion never shows awarded XP');
   check(queued.profileId===player.profileId&&queued.floor===1&&queued.repetitions===20,'pre-lock record keeps original profile, session and floor');
   check((await readProfile()).xp === 0 && (await journals()).length === 0, 'held profile lock changes no rewards or local reward journal');
   await click('#challenge .primary-button');
@@ -381,7 +485,12 @@ try {
 
   if (process.argv.includes('--dedup-only')) { await dedupRecovery(); await hotDedupRecovery(); }
   else {
-  if (!process.argv.includes('--recovery-only')) await queuedCompletion();
+  if (!process.argv.includes('--recovery-only')) {
+    await stageContracts();
+    await foregroundReconciliation();
+    await queuedCompletion();
+    for(const kind of ['reload','close','crash'])await interruptedQueuedCompletion(kind);
+  }
   if (!process.argv.includes('--queue-only') && !process.argv.includes('--recovery-only')) {
 
   // A real App finish reaches journal read-back, then the renderer is killed.

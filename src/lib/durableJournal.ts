@@ -11,7 +11,9 @@ export interface DurableJournalEntry {
 }
 interface StoredEntry extends DurableJournalEntry { schemaVersion: 1 }
 type EntryInput = Pick<DurableJournalEntry, 'key' | 'raw'>;
-type WriteResult = { status: 'saved' | 'invalid' | 'unavailable' };
+export type DurableWriteResult = { status: 'saved'; entries: DurableJournalEntry[] }
+  | { status: 'invalid' | 'unavailable' };
+type TransactionResult = { status: 'saved' | 'invalid' | 'unavailable' };
 type ReadResult = { status: 'ready' | 'unavailable'; entries: DurableJournalEntry[] };
 const validInput = (value: unknown): value is EntryInput => !!value && typeof value === 'object'
   && typeof (value as EntryInput).key === 'string' && (value as EntryInput).key.startsWith(RESULT_JOURNAL_PREFIX)
@@ -89,7 +91,7 @@ export async function readDurableJournal(): Promise<ReadResult> {
 }
 
 async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: string | null,
-  state: 'settled' | 'quarantined' | null, signal?: AbortSignal): Promise<WriteResult> {
+  state: 'settled' | 'quarantined' | null, signal?: AbortSignal): Promise<DurableWriteResult> {
   if (signal?.aborted) return { status: 'unavailable' };
   if (!Array.isArray(entries) || entries.some((entry) => !validInput(entry))
       || (baseProfileRaw !== null && typeof baseProfileRaw !== 'string')) return { status: 'invalid' };
@@ -98,13 +100,13 @@ async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: stri
     if (unique.has(entry.key) && unique.get(entry.key)!.raw !== entry.raw) return { status: 'invalid' };
     unique.set(entry.key, { key: entry.key, raw: entry.raw });
   }
-  if (!unique.size) return { status: 'saved' };
+  if (!unique.size) return { status: 'saved', entries: [] };
   const db = await openDatabase(signal);
   if (!db || signal?.aborted) { db?.close(); return { status: 'unavailable' }; }
   const expected = new Map<string, StoredEntry>();
-  const acknowledged = await new Promise<WriteResult>((resolve) => {
-    let done = false, issue: WriteResult['status'] = 'unavailable', tx: IDBTransaction | undefined;
-    const finish = (status: WriteResult['status']) => {
+  const acknowledged = await new Promise<TransactionResult>((resolve) => {
+    let done = false, issue: TransactionResult['status'] = 'unavailable', tx: IDBTransaction | undefined;
+    const finish = (status: TransactionResult['status']) => {
       if (done) return;
       done = true; clearTimeout(timer); signal?.removeEventListener('abort', abort); db.close(); resolve({ status });
     };
@@ -147,28 +149,37 @@ async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: stri
       }
     } catch { abort(); }
   });
-  if (acknowledged.status !== 'saved') return acknowledged;
+  if (acknowledged.status !== 'saved') return { status: acknowledged.status };
   if (signal?.aborted) return { status: 'unavailable' };
   // A request success is insufficient: only transaction complete plus a new
   // readonly transaction can authorize the caller to credit localStorage.
   const checked = await readDurableJournal();
   if (checked.status !== 'ready' || signal?.aborted) return { status: 'unavailable' };
   const actual = new Map(checked.entries.map((entry) => [entry.key, entry]));
+  const entriesReadBack: DurableJournalEntry[] = [];
   for (const row of expected.values()) {
     const found = actual.get(row.key);
-    if (!found || found.raw !== row.raw || found.state !== row.state || found.baseProfileRaw !== row.baseProfileRaw) return { status: 'unavailable' };
+    const rank = { active: 0, settled: 1, quarantined: 2 };
+    // A different tab may settle/quarantine an immutable result between strict
+    // commit and read-back. Staging accepts only monotonic advancement; marking
+    // still requires the exact requested terminal state.
+    if (!found || found.raw !== row.raw || found.baseProfileRaw !== row.baseProfileRaw ||
+        (state === null ? rank[found.state] < rank[row.state] : found.state !== row.state)) return { status: 'unavailable' };
+    entriesReadBack.push(found);
   }
-  return { status: 'saved' };
+  return { status: 'saved', entries: entriesReadBack };
 }
 
-/** Caller holds the shared write lock until the returned promise settles. */
+/** Immutable inserts are serialized by the IDB transaction itself and may run
+ * before the profile Web Lock. This operation never changes a stored payload,
+ * revives a tombstone, or writes rewards. */
 export function stageDurableResults(entries: readonly EntryInput[], baseProfileRaw: string | null,
-  signal?: AbortSignal): Promise<WriteResult> {
+  signal?: AbortSignal): Promise<DurableWriteResult> {
   return writeEntries(entries, baseProfileRaw, null, signal);
 }
 /** Settled rows stay durable: localStorage itself can roll back on browser crash. */
 export function markDurableResults(entries: readonly EntryInput[], state: 'settled' | 'quarantined',
-  signal?: AbortSignal): Promise<WriteResult> {
+  signal?: AbortSignal): Promise<DurableWriteResult> {
   if (state !== 'settled' && state !== 'quarantined') return Promise.resolve({ status: 'invalid' });
   return writeEntries(entries, null, state, signal);
 }

@@ -20,6 +20,16 @@ const result = (changes: Partial<CompletedWorkoutResult> = {}): CompletedWorkout
 });
 interface RecordEntry { key: string; raw: string; profileId: string | null; state: 'active' | 'settled' | 'quarantined'; baseProfileRaw?: string }
 let records: Map<string, RecordEntry>;
+// Mock the actual strict IndexedDB API: a saved acknowledgement includes
+// records read back after commit, not just an optimistic status flag.
+function verified(entries: readonly { key: string }[]) {
+  return { status: 'saved' as const, entries: entries.map(({ key }) => {
+    const record = records.get(key);
+    if (!record) throw Error('Mock durable read-back is missing ' + key);
+    return { key: record.key, raw: record.raw,
+      baseProfileRaw: record.baseProfileRaw ?? null, state: record.state };
+  }) };
+}
 function storage(profile: Profile | null = player()) {
   const values = new Map<string, string>();
   if (profile !== null) values.set(STORAGE_KEY, JSON.stringify(parseProfile(profile)));
@@ -52,12 +62,12 @@ beforeEach(() => {
       records.set(entry.key, { key: entry.key, raw: entry.raw, profileId: entry.result?.profileId ?? null,
         state: 'active', ...(baseProfileRaw === null ? {} : { baseProfileRaw }) });
     }
-    return { status: 'saved' };
+    return verified(entries);
   });
   durable.mark.mockReset().mockImplementation(async (entries: { key: string; raw: string }[], state: RecordEntry['state']) => {
     if (entries.some((entry) => !records.has(entry.key) || records.get(entry.key)!.raw !== entry.raw)) return { status: 'invalid' };
     for (const entry of entries) records.set(entry.key, { ...records.get(entry.key)!, state });
-    return { status: 'saved' };
+    return verified(entries);
   });
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
@@ -80,7 +90,7 @@ describe('strict journal before local reward', () => {
     durable.stage.mockImplementation(async (entries: JournalEntry[]) => {
       await staged;
       for (const entry of entries) records.set(entry.key, { ...entry, profileId: entry.result!.profileId, state: 'active' });
-      return { status: 'saved' };
+      return verified(entries);
     });
     const pending = replayDurableWorkouts(result(), context());
     await Promise.resolve();
@@ -137,7 +147,7 @@ describe('strict journal before local reward', () => {
     durable.stage.mockImplementation(async (entries: JournalEntry[]) => {
       await staged;
       for (const entry of entries) records.set(entry.key, { ...entry, profileId: entry.result!.profileId, state: 'active' });
-      return { status: 'saved' };
+      return verified(entries);
     });
     let current = true;
     const controller = new AbortController();
@@ -172,6 +182,29 @@ describe('strict journal before local reward', () => {
     expect(records.get(active.key)?.state).toBe('active');
   });
 
+  it('refuses a missing settled receipt and retries without paying the workout twice', async () => {
+    const { values } = storage();
+    durable.mark.mockResolvedValueOnce({ status: 'saved', entries: [] });
+    const first = await replayDurableWorkouts(result(), context());
+    expect(first.status).toBe('unavailable');
+    expect(first.settledSessionIds).toBeUndefined();
+    expect(disk(values)).toMatchObject({ xp: 185, coins: 165 });
+    expect(records.get(asEntry(result()).key)?.state).toBe('active');
+    const earned = values.get(STORAGE_KEY);
+    const retry = await replayDurableWorkouts(null, context());
+    expect(retry).toMatchObject({ status: 'saved', settledSessionIds: [result().sessionId] });
+    expect(values.get(STORAGE_KEY)).toBe(earned);
+    expect(records.get(asEntry(result()).key)?.state).toBe('settled');
+  });
+
+  it('handles a malformed saved acknowledgement without throwing or claiming settlement', async () => {
+    storage();
+    durable.mark.mockResolvedValue({ status: 'saved' });
+    await expect(replayDurableWorkouts(result(), context())).resolves.toMatchObject({
+      status: 'unavailable',
+    });
+  });
+
   it('retains an active durable receipt when settling acknowledgement fails after local reward', async () => {
     const { values } = storage();
     durable.mark.mockResolvedValue({ status: 'unavailable' });
@@ -180,7 +213,7 @@ describe('strict journal before local reward', () => {
     expect(records.get(asEntry(result()).key)?.state).toBe('active');
     durable.mark.mockImplementation(async (entries: { key: string }[]) => {
       for (const entry of entries) records.set(entry.key, { ...records.get(entry.key)!, state: 'settled' });
-      return { status: 'saved' };
+      return verified(entries);
     });
     const awarded = values.get(STORAGE_KEY);
     expect((await replayDurableWorkouts(null, context())).status).toBe('saved');
@@ -206,6 +239,18 @@ describe('durable owner deferral before local journal cleanup', () => {
     durable.mark.mockResolvedValue({ status: 'unavailable' });
     expect((await quarantineDurableWorkouts(expected, context())).status).toBe('unavailable');
     expect([...values]).toEqual(baseline);
+    expect(removeItem).not.toHaveBeenCalled();
+    expect(records.get(entry.key)?.state).toBe('active');
+  });
+
+  it('does not remove local originals without read-back of the quarantine tombstone', async () => {
+    const { values, removeItem } = storage();
+    const entry = asEntry(result({ profileId: OTHER_PROFILE_ID }));
+    values.set(entry.key, entry.raw);
+    const expected = readResultJournal().entries;
+    durable.mark.mockResolvedValue({ status: 'saved', entries: [] });
+    expect((await quarantineDurableWorkouts(expected, context())).status).toBe('unavailable');
+    expect(values.get(entry.key)).toBe(entry.raw);
     expect(removeItem).not.toHaveBeenCalled();
     expect(records.get(entry.key)?.state).toBe('active');
   });

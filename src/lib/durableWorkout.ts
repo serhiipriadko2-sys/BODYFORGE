@@ -13,6 +13,25 @@ function decoded(raw: string): CompletedWorkoutResult | null {
   try { return resultJournalEntry(JSON.parse(raw))?.result ?? null; } catch { return null; }
 }
 
+/** A success flag alone is not durable proof. Require the exact keys and
+ * immutable values to be read back at the requested terminal state. */
+function verifiedTerminalRows(
+  acknowledgement: Awaited<ReturnType<typeof markDurableResults>>,
+  expected: readonly { key: string; raw: string }[],
+  terminal: 'settled' | 'quarantined',
+) {
+  if (acknowledgement.status !== 'saved' || !Array.isArray(acknowledgement.entries)
+      || acknowledgement.entries.length !== expected.length) return null;
+  const pending = new Map(expected.map(({ key, raw }) => [key, raw]));
+  if (pending.size !== expected.length) return null;
+  for (const entry of acknowledgement.entries) {
+    if (!entry || entry.state !== terminal || !pending.has(entry.key)
+        || pending.get(entry.key) !== entry.raw) return null;
+    pending.delete(entry.key);
+  }
+  return pending.size === 0 ? acknowledgement.entries : null;
+}
+
 function preserveQuarantine(entry: { key: string; raw: string }): boolean {
   const key = RESULT_QUARANTINE_PREFIX + encodeURIComponent(entry.key);
   const raw = JSON.stringify({ schemaVersion: 1, sourceKey: entry.key, raw: entry.raw });
@@ -62,8 +81,15 @@ export async function replayDurableWorkouts(pending: CompletedWorkoutResult | nu
     return entry.state !== 'quarantined' && result && credited(outcome.state, result);
   });
   const acknowledgement = await markDurableResults(settled, 'settled', context.signal);
-  if (!context.isCurrent() || acknowledgement.status !== 'saved') return failed();
-  return outcome;
+  const confirmed = verifiedTerminalRows(acknowledgement, settled, 'settled');
+  if (!context.isCurrent() || !confirmed) return failed();
+  const settledSessionIds: string[] = [];
+  for (const entry of confirmed) {
+    const result = decoded(entry.raw);
+    if (!result) return failed('invalid');
+    settledSessionIds.push(result.sessionId);
+  }
+  return { ...outcome, settledSessionIds };
 }
 
 /** The durable deferral is recorded first, so a restart cannot resurrect a
@@ -80,6 +106,6 @@ export async function quarantineDurableWorkouts(expected: readonly JournalEntry[
   const staged = await stageDurableResults(expected, state.revision, context.signal);
   if (!context.isCurrent() || staged.status !== 'saved') return failed();
   const marked = await markDurableResults(expected, 'quarantined', context.signal);
-  if (!context.isCurrent() || marked.status !== 'saved') return failed();
+  if (!context.isCurrent() || !verifiedTerminalRows(marked, expected, 'quarantined')) return failed();
   return quarantineWorkoutResults(expected);
 }
