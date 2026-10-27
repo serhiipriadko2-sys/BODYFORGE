@@ -321,10 +321,13 @@ try{
   let changed=false;
   for(let i=0;i<40;i++){
     await sleep(350);
-    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),front:document.querySelector('.camera-lenses button:nth-child(1)')?.getAttribute('aria-pressed'),message:document.querySelector('.camera-control-help')?.textContent?.trim().slice(0,150)||'',busy:!!document.querySelector('.camera-switch-overlay')})");
+    const status=await read("({active:!!document.querySelector('.camera-visible'),error:document.querySelector('.camera-error')?.textContent||'',selected:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),front:document.querySelector('.camera-lenses button:nth-child(1)')?.getAttribute('aria-pressed'),verification:document.querySelector('.camera-control-deck')?.dataset.cameraSourceVerification,message:document.querySelector('.camera-control-help')?.textContent?.trim().slice(0,170)||'',busy:!!document.querySelector('.camera-switch-overlay')})");
     if(status.error)throw Error('Camera switch broke capture: '+status.error);
     if(i%5===0)console.log('REAR_SWITCH_STEP',i,JSON.stringify(status));
-    if(status.active&&status.selected==='true'&&!status.busy){changed=true;break;}
+    if(status.active&&!status.busy&&(
+      (status.verification==='mismatch'&&status.selected==='false'&&status.message.includes('другой объектив'))||
+      (status.verification!=='mismatch'&&status.selected==='true'&&status.message.includes(status.verification==='confirmed'?'подтвердил':'не подтвердил'))
+    )){changed=true;break;}
   }
   check(changed,'live switch to rear camera resumes tracking');
   await screenshot('bf-qa-mobile-lenses.png');
@@ -337,6 +340,35 @@ try{
     if(status.active&&status.selected==='true'&&!status.busy){changed=true;break;}
   }
   check(changed,'live switch back to front camera resumes tracking');
+  // Force a browser that ignores ideal facingMode, and verify the UI refuses
+  // to claim the rear lens is selected. Do not expose deviceId to the UI.
+  await js(`(()=>{
+    const proto=MediaStreamTrack.prototype;
+    const original=proto.getSettings;
+    window.__bfRestoreCameraSettings=()=>{proto.getSettings=original};
+    proto.getSettings=function(){return {...original.call(this),facingMode:'user',deviceId:'qa-wrong-device'}};
+    return true;
+  })()`);
+  await click('.camera-lenses button:nth-child(2)');
+  await until("document.querySelector('.camera-control-deck')?.dataset.cameraSourceVerification==='mismatch'", 'ignored lens preference detected', 14000);
+  const mismatch=await read("({pressed:document.querySelector('.camera-lenses button:nth-child(2)')?.getAttribute('aria-pressed'),message:document.querySelector('.camera-control-help')?.textContent||'',active:!!document.querySelector('.camera-visible')})");
+  check(mismatch.active&&mismatch.pressed==='false'&&mismatch.message.includes('другой объектив')&&!mismatch.message.includes('qa-wrong-device'),
+    'ignored camera preference warns without claiming a rear lens or leaking device ID');
+  await js("window.__bfRestoreCameraSettings();true");
+  // A privacy-restricted browser may reject getSettings(). A working video
+  // stream must not be discarded just because camera metadata is unavailable.
+  await js(`(()=>{
+    const proto=MediaStreamTrack.prototype;
+    const original=proto.getSettings;
+    window.__bfRestoreCameraSettings=()=>{proto.getSettings=original};
+    proto.getSettings=function(){throw new DOMException('metadata denied','SecurityError')};
+    return true;
+  })()`);
+  await click('.camera-lenses button:nth-child(1)');
+  await until("document.querySelector('.camera-control-deck')?.dataset.cameraSourceVerification==='unverified' && document.querySelector('.camera-control-help')?.textContent.includes('не подтвердил')", 'privacy-hidden camera settings allowed', 14000);
+  check(await js("!!document.querySelector('.camera-visible') && document.querySelector('.camera-lenses button:nth-child(1)')?.getAttribute('aria-pressed')==='true'"),
+    'missing camera metadata does not interrupt capture or invent a verified lens');
+  await js("window.__bfRestoreCameraSettings();true");
   await click('#challenge .secondary-button');
   await until('window.__bfWakeLog.releases >= window.__bfWakeLog.requests', 'wake lock released on stop', 10000);
   check((await read('window.__bfWakeLog')).releases >= 1,

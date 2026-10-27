@@ -109,7 +109,7 @@ async function install() {
   const script =
     '(async()=>{const mp=await import(' + JSON.stringify(match[0]) + ');' +
     'const make=' + frame.toString() + ';window.__bfMakeFrame=make;' +
-    'window.__rig={id:"squat",t:null,frames:0,freeze:false,select(id){this.id=id;this.t=null;this.frames=0;this.freeze=false;}};' +
+    'window.__rig={id:"squat",t:null,frames:0,freeze:false,hiddenJoint:-1,select(id){this.id=id;this.t=null;this.frames=0;this.freeze=false;this.hiddenJoint=-1;}};' +
     'mp.PoseLandmarker.prototype.detectForVideo=function(video,t){' +
     'const r=window.__rig;if(r.t===null)r.t=t;r.frames++;' +
     'const elapsed=t-r.t,cycle=Math.floor(elapsed/1300),p=elapsed%1300;' +
@@ -117,7 +117,7 @@ async function install() {
     'const side=r.id==="high-knees"&&cycle%2?"right":"left";' +
     'const points=make(r.id,state,side,video.videoWidth/video.videoHeight);' +
     'const scale=r.id==="high-knees" ? 0.45 : 1;' +
-    'return {landmarks:[points.map(p=>({...p,x:.5+(p.x-.5)*scale,y:.5+(p.y-.5)*scale}))]};};' +
+    'return {landmarks:[points.map((p,i)=>({...p,x:.5+(p.x-.5)*scale,y:.5+(p.y-.5)*scale,visibility:i===r.hiddenJoint?0:p.visibility}))]};};' +
     'return true;})()';
   assert(await ev(script), 'MediaPipe synthetic landmark rig installed');
 }
@@ -191,7 +191,14 @@ try {
     }
     assert(await score()>=1,id+' 1+ repetitions visible');
     if(id==='pushup'){
-      await until("!!document.querySelector('.completion-stage')",'20 pushups completed',45000);
+      await ev('window.__rig.hiddenJoint=13');
+      await until("document.querySelector('.pose-camera-coach')?.textContent.includes('НЕ ВИЖУ ЛОКОТЬ И КИСТЬ')",
+        'pushup camera shows missing elbow instead of generic message',5000);
+      assert(true,'pushup camera provides an actionable missing-elbow hint');
+      await ev('window.__rig.hiddenJoint=-1');
+      await until("!document.querySelector('.pose-camera-coach')",
+        'pushup hint recovers after elbow returns',6000);
+      await until("!!document.querySelector('.completion-stage')",'20 pushups completed',50000);
       completed++;
       await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').workouts?.length==="+completed,
         'pushup saved',12000);

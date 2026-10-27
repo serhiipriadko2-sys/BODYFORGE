@@ -10,6 +10,42 @@ export type CameraSource =
 
 export const DEFAULT_CAMERA: CameraSource = { kind: 'facing', value: 'user' };
 
+export type CameraSelectionVerification = 'confirmed' | 'unverified' | 'mismatch';
+
+/** facingMode uses an *ideal* constraint, so getUserMedia may open a different
+ * lens. Never claim the requested front/back camera was physically selected
+ * unless the track settings identify it. Device IDs stay local and are never
+ * included in user-facing messages or diagnostics. */
+export function verifyCameraSelection(
+  requested: CameraSource,
+  actual: Pick<MediaTrackSettings, 'facingMode' | 'deviceId'> | null | undefined,
+): CameraSelectionVerification {
+  if (!actual) return 'unverified';
+  if (requested.kind === 'device') {
+    const id = typeof actual.deviceId === 'string' ? actual.deviceId.trim() : '';
+    return !id ? 'unverified' : id === requested.value ? 'confirmed' : 'mismatch';
+  }
+  const facing = actual.facingMode;
+  if (facing !== 'user' && facing !== 'environment') return 'unverified';
+  return facing === requested.value ? 'confirmed' : 'mismatch';
+}
+
+export function cameraSelectionFeedback(
+  requested: CameraSource,
+  verification: CameraSelectionVerification,
+): string {
+  const name = requested.kind === 'device' ? 'выбранную камеру'
+    : requested.value === 'user' ? 'переднюю камеру' : 'заднюю камеру';
+  const workout = 'Повторы сохранены; удержание планки начинается заново.';
+  if (verification === 'mismatch') {
+    return `Браузер открыл другой объектив вместо ${name}. Проверь изображение и выбери камеру ещё раз. ${workout}`;
+  }
+  if (verification === 'unverified') {
+    return `Запросили ${name}, но браузер не подтвердил фактический объектив. Проверь изображение. ${workout}`;
+  }
+  return `Браузер подтвердил ${name}. Проверь обзор и вернись в исходную позу. ${workout}`;
+}
+
 /** RAF ticks are not camera observations. Accept each advancing source time
  * once; a newly connected stream starts its own video clock. */
 export class VideoFrameGate {

@@ -1,8 +1,9 @@
 import { Camera, CameraIcon, RefreshCw, Scan, ZoomIn } from 'lucide-react';
-import type { CameraDeviceOption, CameraSource, CameraZoom } from '../lib/camera';
+import type { CameraDeviceOption, CameraSource, CameraZoom, CameraSelectionVerification } from '../lib/camera';
 
 interface CameraControlsProps {
   source: CameraSource;
+  verification: CameraSelectionVerification;
   devices: CameraDeviceOption[];
   zoom: CameraZoom | null;
   active: boolean;
@@ -18,26 +19,28 @@ interface CameraControlsProps {
 const same = (a: CameraSource, b: CameraSource) => a.kind === b.kind && a.value === b.value;
 
 export default function CameraControls({
-  source, devices, zoom, active, busy, message, fullFrame, onToggleFullFrame,
+  source, verification, devices, zoom, active, busy, message, fullFrame, onToggleFullFrame,
   onChoose, onRefresh, onZoom,
 }: CameraControlsProps) {
   const wide = devices.find((camera) => camera.ultraWide);
   const main = devices.find((camera) =>
     !camera.ultraWide && /back|rear|environment|задн|основн/i.test(camera.label));
-  const selectedWide = (source.kind === 'device' && source.value === wide?.deviceId) ||
-    Boolean(active && zoom && zoom.current < .92 && (source.kind !== 'facing' || source.value === 'environment'));
+  const mismatch = active && verification === 'mismatch';
+  const selectedWide = !mismatch && ((source.kind === 'device' && source.value === wide?.deviceId) ||
+    Boolean(active && zoom && zoom.current < .92 && (source.kind !== 'facing' || source.value === 'environment')));
   const canOpticalWide = Boolean(active && zoom && zoom.min < .95 &&
     (source.kind !== 'facing' || source.value === 'environment'));
   const wideAvailable = Boolean(wide || canOpticalWide);
-  const selectedFront = same(source, { kind: 'facing', value: 'user' });
-  const selectedMain = !selectedWide && (
+  const selectedFront = !mismatch && same(source, { kind: 'facing', value: 'user' });
+  const selectedMain = !mismatch && !selectedWide && (
     same(source, { kind: 'facing', value: 'environment' }) ||
     (source.kind === 'device' && source.value === main?.deviceId)
   );
   const canChange = !busy;
 
   return (
-    <div className="camera-control-deck" aria-label="Настройки камеры">
+    <div className="camera-control-deck" aria-label="Настройки камеры"
+      data-camera-source-verification={active ? verification : 'idle'}>
       <div className="camera-control-header">
         <div><Camera size={18}/><strong>ОБЪЕКТИВ КАМЕРЫ</strong></div>
         <button type="button" className="camera-refresh" onClick={onRefresh}
@@ -65,7 +68,7 @@ export default function CameraControls({
       {devices.length > 0 && (
         <label className="camera-source-select">
           <span>ОБНАРУЖЕННЫЕ КАМЕРЫ</span>
-          <select value={source.kind === 'device' ? source.value : ''} disabled={!canChange}
+          <select value={!mismatch && source.kind === 'device' ? source.value : ''} disabled={!canChange}
             onChange={(event) => {
               const id = event.target.value;
               onChoose(id ? { kind: 'device', value: id } : { kind: 'facing', value: 'environment' });

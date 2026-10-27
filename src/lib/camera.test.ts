@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, exerciseCameraConstraints, LANDSCAPE_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints, VideoFrameGate, CameraFrameWatchdog } from './camera';
+import { cameraOrientation, portraitCameraConstraints, PORTRAIT_ASPECT_RATIO, exerciseCameraConstraints, LANDSCAPE_ASPECT_RATIO, cameraDeviceOptions, cameraZoomCapabilities, isUltraWideCamera, zoomConstraints, verifyCameraSelection, cameraSelectionFeedback, VideoFrameGate, CameraFrameWatchdog } from './camera';
 import { SquatCounter } from './squatCounter';
 
 describe('fresh camera observations', () => {
@@ -127,6 +127,29 @@ describe('camera selection and device support', () => {
       { deviceId: 'back-main', label: 'Back camera', ultraWide: false },
       { deviceId: 'back-ultra', label: 'Back Ultra Wide camera', ultraWide: true },
     ]);
+  });
+
+  it('checks the actual selected front/back lens instead of trusting ideal constraints', () => {
+    const front = { kind: 'facing', value: 'user' } as const;
+    const rear = { kind: 'facing', value: 'environment' } as const;
+    expect(verifyCameraSelection(front, { facingMode: 'user' })).toBe('confirmed');
+    expect(verifyCameraSelection(front, { facingMode: 'environment' })).toBe('mismatch');
+    expect(verifyCameraSelection(rear, { facingMode: 'environment' })).toBe('confirmed');
+    expect(verifyCameraSelection(rear, { facingMode: undefined })).toBe('unverified');
+    expect(verifyCameraSelection(front, null)).toBe('unverified');
+  });
+
+  it('checks exact device identity without publishing private camera device IDs', () => {
+    const selected = { kind: 'device', value: 'private-device-id' } as const;
+    expect(verifyCameraSelection(selected, { deviceId: 'private-device-id' })).toBe('confirmed');
+    expect(verifyCameraSelection(selected, { deviceId: 'another-camera' })).toBe('mismatch');
+    expect(verifyCameraSelection(selected, { deviceId: '' })).toBe('unverified');
+    for (const outcome of ['confirmed', 'unverified', 'mismatch'] as const) {
+      const message = cameraSelectionFeedback(selected, outcome);
+      expect(message.length).toBeGreaterThan(25);
+      expect(message).not.toContain(selected.value);
+      expect(message).not.toContain('another-camera');
+    }
   });
 
   it('exposes zoom only when supported by the actual track', () => {

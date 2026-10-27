@@ -10,6 +10,7 @@ import GameAvatar from './components/GameAvatar';
 
 const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
 const ProgressBackupPanel = lazy(() => import('./components/ProgressBackupPanel'));
+const StepsBoard = lazy(() => import('./components/StepsBoard'));
 import { useAvatarLook } from './hooks/useAvatarLook';
 import AppearancePanel from './components/AppearancePanel';
 import BrandMark from './components/BrandMark';
@@ -18,7 +19,6 @@ import ForgeQuickDeck from './components/ForgeQuickDeck';
 import ForgeGlyph from './components/ForgeGlyph';
 
 import DailyPlanBoard from './components/DailyPlanBoard';
-import StepsBoard from './components/StepsBoard';
 import { canStartCameraExercise, exerciseCameraLayout, exerciseGuide, exerciseTargetLabel, type ExerciseId } from './lib/trainingCatalog';
 import { ExerciseMotionCounter, exerciseMetric } from './lib/exerciseCounter';
 import './trainingExperience.css';
@@ -41,10 +41,13 @@ import type { CompletedWorkoutResult, WorkoutSession } from './lib/workoutJourna
 import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, exerciseCameraConstraints,
+  verifyCameraSelection, cameraSelectionFeedback,
   zoomConstraints, DEFAULT_CAMERA, VideoFrameGate, CameraFrameWatchdog,
   type CameraDeviceOption, type CameraOrientation, type CameraSource, type CameraZoom,
+  type CameraSelectionVerification,
 } from './lib/camera';
 import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
+import { ExerciseFramingTracker } from './lib/exerciseFraming';
 import { WorkoutWakeLock } from './lib/workoutWakeLock';
 
 // Train-only panels stay out of the first mobile download.
@@ -209,6 +212,7 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
   const [cameraSource, setCameraSource] = useState<CameraSource>(DEFAULT_CAMERA);
+  const [cameraVerification, setCameraVerification] = useState<CameraSelectionVerification>('unverified');
   const [cameraDevices, setCameraDevices] = useState<CameraDeviceOption[]>([]);
   const [cameraZoom, setCameraZoom] = useState<CameraZoom | null>(null);
   const [cameraBusy, setCameraBusy] = useState(false);
@@ -261,6 +265,7 @@ function App() {
   const splitsRef = useRef<number[]>([]);
   const kneeTrackerRef = useRef(new StableKneeTracker());
   const poseGuidanceRef = useRef(new PoseGuidanceTracker());
+  const exerciseFramingRef = useRef(new ExerciseFramingTracker());
   const startedAtRef = useRef<number | null>(null);
   const aliveRef = useRef(false);
   const requestIdRef = useRef(0);
@@ -282,7 +287,9 @@ function App() {
     stallReportedRef.current = false;
     lastInferenceAtRef.current = 0;
     kneeTrackerRef.current.reset();
-    setPoseGuidance(poseGuidanceRef.current.reset());
+    const resetPose = poseGuidanceRef.current.reset();
+    setPoseGuidance(activeExerciseRef.current === 'squat'
+      ? resetPose : exerciseFramingRef.current.reset(activeExerciseRef.current));
     setTrackingSide(null);
     setPoseFound(false);
     setSnapshot(activeExerciseRef.current === 'squat'
@@ -386,7 +393,12 @@ function App() {
       const track = stream.getVideoTracks()[0];
       if (!track) throw new DOMException('No video track', 'NotFoundError');
       {
-        const facing = track.getSettings().facingMode;
+        // Track settings are optional device metadata. A privacy-restricted
+        // browser must not lose an otherwise working workout if this throws.
+        let settings: MediaTrackSettings = {};
+        try { settings = track.getSettings() ?? {}; } catch { /* Keep capture alive. */ }
+        setCameraVerification(verifyCameraSelection(source, settings));
+        const facing = settings.facingMode;
         const mirrored = facing === 'user' || (facing !== 'environment' && source.kind === 'facing' && source.value === 'user');
         mirroredRef.current = mirrored;
         setCameraMirrored(mirrored);
@@ -480,7 +492,9 @@ function App() {
     counterRef.current.reset();
     motionRef.current?.reset();
     kneeTrackerRef.current.reset();
-    setPoseGuidance(poseGuidanceRef.current.reset());
+    const resetPose = poseGuidanceRef.current.reset();
+    setPoseGuidance(activeExerciseRef.current === 'squat'
+      ? resetPose : exerciseFramingRef.current.reset(activeExerciseRef.current));
     setTrackingSide(null);
     setPoseFound(false);
     startedAtRef.current = null;
@@ -525,7 +539,9 @@ function App() {
     counterRef.current.reset();
     motionRef.current?.reset();
     kneeTrackerRef.current.reset();
-    setPoseGuidance(poseGuidanceRef.current.reset());
+    const resetPose = poseGuidanceRef.current.reset();
+    setPoseGuidance(activeExerciseRef.current === 'squat'
+      ? resetPose : exerciseFramingRef.current.reset(activeExerciseRef.current));
     setTrackingSide(null);
     setPoseFound(false);
     startedAtRef.current = null;
@@ -665,12 +681,8 @@ function App() {
               const reading = detector.update(points ?? [], time, ratio);
               next = reading.snapshot;
               setTrackingSide(reading.side);
-              const genericGuidance: PoseGuidance = reading.tracking
-                ? { kind: 'tracked', title: 'СУСТАВЫ В КАДРЕ',
-                    instruction: exerciseGuide(currentId).coaching, warning: false }
-                : { kind: 'angle-unavailable', title: 'НЕ ВИЖУ НУЖНЫЕ СУСТАВЫ',
-                    instruction: exerciseGuide(currentId).camera + '. ' + exerciseGuide(currentId).placement[1], warning: true };
-              setPoseGuidance(genericGuidance);
+              // Per-exercise, debounced camera hints do not affect counting.
+              setPoseGuidance(exerciseFramingRef.current.update(currentId, points, time, ratio));
             }
             setPoseFound(Boolean(points?.length));
             setSnapshot(next);
@@ -723,7 +735,9 @@ function App() {
           setSnapshot(activeExerciseRef.current === 'squat'
       ? counterRef.current.recalibrate()
       : motionRef.current?.recalibrate().snapshot ?? FIRST_SNAPSHOT);
-          setPoseGuidance(poseGuidanceRef.current.reset());
+          const resetPose = poseGuidanceRef.current.reset();
+    setPoseGuidance(activeExerciseRef.current === 'squat'
+      ? resetPose : exerciseFramingRef.current.reset(activeExerciseRef.current));
           setTrackingSide(null);
           setPoseFound(false);
           drawSkeleton(canvasRef.current, liveVideo, undefined, mirroredRef.current);
@@ -795,6 +809,7 @@ function App() {
     const unchanged = cameraSource.kind === nextSource.kind && cameraSource.value === nextSource.value;
     if (mode !== 'active') {
       setCameraSource(nextSource);
+      setCameraVerification('unverified');
       if (nextSource.kind === 'device' &&
           cameraDevices.some((device) => device.deviceId === nextSource.value && device.ultraWide)) {
         setShowFullFrame(true);
@@ -812,6 +827,7 @@ function App() {
 
     switchingRef.current = true;
     setCameraBusy(true);
+    setCameraVerification('unverified');
     setCameraMessage('Переключаем объектив…');
     const requestId = requestIdRef.current;
     aliveRef.current = false;
@@ -833,14 +849,21 @@ function App() {
     };
 
     try {
-      await connectCamera(nextSource, requestId);
+      const openedStream = await connectCamera(nextSource, requestId);
       if (requestId !== requestIdRef.current) return;
+      let verification: CameraSelectionVerification = 'unverified';
+      try {
+        verification = verifyCameraSelection(nextSource, openedStream.getVideoTracks()[0]?.getSettings());
+      } catch {
+        // Browser privacy APIs may hide track metadata. Never infer a real lens.
+      }
+      setCameraVerification(verification);
       resume(nextSource);
       if (nextSource.kind === 'device' &&
           cameraDevices.some((device) => device.deviceId === nextSource.value && device.ultraWide)) {
         setShowFullFrame(true);
       }
-      setCameraMessage('Объектив выбран. Проверь обзор и вернись в исходную позу. Повторы сохранены; планка начинается заново.');
+      setCameraMessage(cameraSelectionFeedback(nextSource, verification));
     } catch (failure) {
       if (requestId !== requestIdRef.current) return;
       try {
@@ -1022,7 +1045,8 @@ function App() {
               )}
 
               {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем управление камерой…</div>}>
-                <CameraControls source={cameraSource} devices={cameraDevices} zoom={cameraZoom}
+                <CameraControls source={cameraSource} verification={cameraVerification}
+                  devices={cameraDevices} zoom={cameraZoom}
                   active={mode === 'active'} busy={mode === 'loading' || cameraBusy}
                   message={cameraMessage} fullFrame={showFullFrame}
                   onToggleFullFrame={() => setShowFullFrame((value) => !value)}
@@ -1163,7 +1187,9 @@ function App() {
               setProfile((previous) => claimDailyQuest(previous, now));
             }}
             onTraining={() => goTraining('training', 'squat')}/>
-          {profile.game.created && <StepsBoard now={today}/>}
+          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем шаги за день…</div>}>
+            <StepsBoard now={today}/>
+          </Suspense>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
             look={avatarLook} onLookChange={updateAvatarLook} lookStatus={avatarLookStatus} lookMessage={avatarLookMessage}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
