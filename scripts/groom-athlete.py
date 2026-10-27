@@ -4,30 +4,41 @@ Run with Blender --background --factory-startup --python-exit-code 1 --python.
 The source scene, face, UVs, clothing and original bind rig remain unchanged.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import math
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+ASSETS = ROOT / 'public/assets'
+SOURCE = ROOT / 'art/bodyforge-athlete-realistic.blend'
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from athlete_groom_inputs import SOURCE_SHA256, verify_groom_inputs
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--verify-inputs', action='store_true', help='verify checkout inputs only; no Blender or writes')
+parser.add_argument('--source-dir', type=Path, default=ROOT / 'art/sources/athlete-groom',
+                    help='directory containing the five pinned CC0 inputs and manifest.json')
+arguments = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else (
+    [] if '--python' in sys.argv or '-P' in sys.argv else sys.argv[1:])
+options = parser.parse_args(arguments)
+INPUTS = options.source_dir.resolve()
+try:
+    input_receipt = verify_groom_inputs(ROOT, INPUTS)
+except ValueError as exc:
+    parser.exit(1, str(exc) + '\nRestore the pinned checkout inputs; no Blender operation was started.\n')
+if options.verify_inputs:
+    print('GROOM_INPUTS_PASS ' + json.dumps(input_receipt))
+    raise SystemExit(0)
 
 import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
-ROOT = Path(__file__).resolve().parents[1]
-ASSETS = ROOT / 'public/assets'
-PRIVATE = ROOT / '.iskra/reports/athlete-source'
-SOURCE = ROOT / 'art/bodyforge-athlete-realistic.blend'
-EXPECTED = '5fda92f77defe426475e5518078803f2398b04457758bca280939d6497324dde'
-assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == EXPECTED
-PINNED = {
-    'short02.obj': '48f979114adfa712165a69cc55c45a70831af1fb3cba8e2a89120f0c87407b64',
-    'short04.obj': '676964a133ee35ffcea1195382bf75542da7a298931e4001bc7b0d7b707225de',
-    'short02_diffuse.png': '47fe33831a3929567c733356dd66243116e05df2ace1f884ddca0080b728229f',
-    'short04_diffuse.png': '0bef7fc0e403db5a40fabb2111ebfa6f7e8158e204c6e56b8da98e9ef527846e',
-    'short02_normal.png': '2cfac7619f8eec77dd90df979d912415058f4f0fc16940cba40a8eb1ae6d74b5',
-}
-for file, sha in PINNED.items():
-    assert hashlib.sha256((PRIVATE / file).read_bytes()).hexdigest() == sha, file
+EXPECTED = SOURCE_SHA256
 bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
 bpy.context.preferences.filepaths.save_version = 0
 bpy.context.scene.render.image_settings.file_format = 'PNG'
@@ -63,7 +74,7 @@ def atlas(normal=False):
             vector /= np.linalg.norm(vector, axis=-1, keepdims=True)
             data[:, :512, :3] = vector * .5 + .5
             continue
-        image = bpy.data.images.load(str(PRIVATE / (name + ('_normal.png' if normal else '_diffuse.png'))), check_existing=False)
+        image = bpy.data.images.load(str(INPUTS / (name + ('_normal.png' if normal else '_diffuse.png'))), check_existing=False)
         if normal:
             image.colorspace_settings.name = 'Non-Color'
         image.scale(512, 512)
@@ -152,7 +163,7 @@ def bind(name, vertices, faces, uvs, assigned_material):
 
 def authored(style, source, slot):
     vertices, source_uv, faces, corners = [], [], [], []
-    for line in (PRIVATE / (source + '.obj')).read_text(encoding='utf8').splitlines():
+    for line in (INPUTS / (source + '.obj')).read_text(encoding='utf8').splitlines():
         parts = line.split()
         if not parts:
             continue
@@ -266,8 +277,8 @@ BLEND = ROOT / 'art/bodyforge-athlete-detail.blend'
 bpy.ops.wm.save_as_mainfile(filepath=str(BLEND), compress=True)
 assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == EXPECTED
 report = {'blender': bpy.app.version_string, 'sourceSha256': EXPECTED, 'sourceUnchanged': True,
+          'verifiedInputs': input_receipt['inputs'],
           'grooms': [{'style': o['BODYFORGE_hairStyle'], 'source': o.get('BODYFORGE_sourceHair', 'scalp-fitted procedural buzz'), 'vertices': len(o.data.vertices)} for o in hair],
           'outputs': [{'path': str(p.relative_to(ROOT)), 'bytes': p.stat().st_size,
                        'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in [OUTPUT, BLEND, ASSETS / 'athlete-hair.png', ASSETS / 'athlete-hair-normal.png']]}
-(ROOT / '.iskra/reports/BODYFORGE_DETAIL_20261027.blender.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf8')
 print('DETAIL_AUTHOR_PASS ' + json.dumps(report))

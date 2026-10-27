@@ -90,6 +90,61 @@ describe('geometric camera recognizers (synthetic landmark fixtures)', () => {
       expect(shallow.update(frame(id,'ready'),700).snapshot.count).toBe(0);
     }
   );
+  it.each(['lunge', 'pushup', 'crunch', 'leg-raise'] as Kind[])(
+    'recognizes %s at a smaller full-body scale without phantom repetitions', (id) => {
+      for (const factor of [1, .55, .4]) {
+        const ready = scaled(frame(id, 'ready'), factor);
+        const active = scaled(frame(id, 'active'), factor);
+        expect(measureExercise(id, ready)?.ready, id + ' ready scale ' + factor).toBe(true);
+        expect(measureExercise(id, active)?.engaged, id + ' active scale ' + factor).toBe(true);
+        const counter = new ExerciseMotionCounter(id);
+        for (const [time, pose] of [[0, ready], [100, ready], [200, ready],
+          [300, active], [430, active], [740, ready], [850, ready]] as const) {
+          counter.update(pose, time);
+        }
+        expect(counter.update(ready, 950).snapshot.count, id + ' count scale ' + factor).toBe(1);
+        for (let time = 1050; time <= 1550; time += 100) {
+          expect(counter.update(ready, time).snapshot.count, id + ' stationary').toBe(1);
+        }
+      }
+    },
+  );
+  it.each(['pushup', 'crunch', 'leg-raise'] as Kind[])(
+    'recognizes a small %s using a wide 16:9 camera without duplicate counts', (id) => {
+      const ratio = 16 / 9;
+      const wide = (state: 'ready' | 'active') => scaled(frame(id, state), .4)
+        .map((p) => ({ ...p, x: .5 + (p.x - .5) / ratio }));
+      const ready = wide('ready');
+      const active = wide('active');
+      expect(measureExercise(id, ready, ratio)?.ready, id + ' wide ready').toBe(true);
+      expect(measureExercise(id, active, ratio)?.engaged, id + ' wide active').toBe(true);
+      const c = new ExerciseMotionCounter(id);
+      for (const [time, pose] of [[0, ready], [100, ready], [200, ready],
+        [300, active], [430, active], [740, ready], [850, ready]] as const) c.update(pose, time, ratio);
+      expect(c.update(ready, 950, ratio).snapshot.count).toBe(1);
+      for (let time = 1050; time <= 1450; time += 100) {
+        expect(c.update(ready, time, ratio).snapshot.count).toBe(1);
+      }
+    },
+  );
+  it('counts a valid 30-second plank with a smaller body in a wide frame', () => {
+    const ratio = 16 / 9;
+    const valid = scaled(frame('plank', 'ready'), .4)
+      .map((p) => ({ ...p, x: .5 + (p.x - .5) / ratio }));
+    expect(measureExercise('plank', valid, ratio)?.ready).toBe(true);
+    const c = new ExerciseMotionCounter('plank');
+    let reading = c.update(valid, 0, ratio);
+    for (let time = 100; time <= 31000; time += 100) reading = c.update(valid, time, ratio);
+    expect(reading.snapshot.count).toBe(30);
+    expect(c.update(scaled(frame('plank','active'),.4)
+      .map((p) => ({ ...p, x:.5+(p.x-.5)/ratio })), 31100, ratio).snapshot.count).toBe(0);
+  });
+  it('never treats a tiny or degenerate body silhouette as a verified angle', () => {
+    for (const id of ['lunge', 'pushup', 'crunch', 'leg-raise', 'plank'] as Kind[]) {
+      const tiny = scaled(frame(id, 'ready'), .12);
+      expect(measureExercise(id, tiny), id + ' tiny silhouette').toBeNull();
+    }
+  });
   it('counts jumping jacks at different distances and camera aspect ratios', () => {
     for (const ratio of [9 / 16, 1, 16 / 9]) {
       for (const factor of [1, .65, .5, .4]) {

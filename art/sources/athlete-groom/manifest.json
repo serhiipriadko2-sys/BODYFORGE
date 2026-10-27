@@ -1,0 +1,16 @@
+{
+  "schema": "bodyforge.groom-inputs.v1",
+  "license": "CC0-1.0",
+  "author": "makehuman_system",
+  "sourceListing": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html",
+  "sourceArchive": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "licenseEvidence": "The accompanying short02.mhmat and short04.mhmat state an explicit CC0 release in September 2020. The official listing marks these assets CC0. See README.md for the recorded notice and provenance.",
+  "files": [
+    { "path": "short02.obj", "archivePath": "hair/short02/short02.obj", "bytes": 139742, "sha256": "48f979114adfa712165a69cc55c45a70831af1fb3cba8e2a89120f0c87407b64" },
+    { "path": "short04.obj", "archivePath": "hair/short04/short04.obj", "bytes": 55152, "sha256": "676964a133ee35ffcea1195382bf75542da7a298931e4001bc7b0d7b707225de" },
+    { "path": "short02_diffuse.png", "archivePath": "hair/short02/short02_diffuse.png", "bytes": 3553543, "sha256": "47fe33831a3929567c733356dd66243116e05df2ace1f884ddca0080b728229f" },
+    { "path": "short04_diffuse.png", "archivePath": "hair/short04/short04_diffuse.png", "bytes": 2308132, "sha256": "0bef7fc0e403db5a40fabb2111ebfa6f7e8158e204c6e56b8da98e9ef527846e" },
+    { "path": "short02_normal.png", "archivePath": "hair/short02/short02_normal.png", "bytes": 1626745, "sha256": "2cfac7619f8eec77dd90df979d912415058f4f0fc16940cba40a8eb1ae6d74b5" }
+  ]
+}

@@ -82,6 +82,34 @@ describe('profile identity and frozen workout session', () => {
     expect(second.session.sessionId).not.toBe(prepared.session.sessionId);
   });
 
+  it('persists a legacy identity and every known reward ID together before returning a session', () => {
+    const { profileId: _id, ...legacy } = player();
+    const paid = addCompletedWorkout(legacy, 65000, new Date(FINISHED_AT), { sessionId: 'legacy-paid' });
+    const { creditedWorkoutIds: _ledger, ...withoutLedger } = paid;
+    const { values, setItem } = storage(withoutLedger);
+    const before = values.get(STORAGE_KEY);
+    expect(parseProfile(withoutLedger).profileId).toBeUndefined();
+    expect(values.get(STORAGE_KEY)).toBe(before);
+    expect(setItem).not.toHaveBeenCalled();
+
+    const prepared = prepareWorkoutSession(before!, 'training');
+    expect(prepared.status).toBe('ready');
+    if (prepared.status !== 'ready') throw Error('Expected migrated legacy session');
+    expect(disk(values)).toMatchObject({ profileId: prepared.session.profileId, creditedWorkoutIds: ['legacy-paid'], xp: paid.xp });
+    const primaryWrites = setItem.mock.calls.filter(([key]) => key === STORAGE_KEY);
+    expect(primaryWrites).toHaveLength(1);
+    expect(JSON.parse(primaryWrites[0][1])).toMatchObject({ profileId: prepared.session.profileId, creditedWorkoutIds: ['legacy-paid'] });
+  });
+
+  it('keeps a legacy ledger union when assigning its first profile identity', () => {
+    const { profileId: _id, ...legacy } = player();
+    const paid = addCompletedWorkout(legacy, 65000, new Date(FINISHED_AT), { sessionId: 'visible-paid' });
+    const { values } = storage({ ...paid, creditedWorkoutIds: ['older-paid'] });
+    const prepared = prepareWorkoutSession(values.get(STORAGE_KEY)!, 'training');
+    expect(prepared.status).toBe('ready');
+    expect(disk(values).creditedWorkoutIds).toEqual(expect.arrayContaining(['older-paid', 'visible-paid']));
+  });
+
   it('captures the current intended floor and keeps a stable existing profile identity', () => {
     const p = player();
     p.game.highestClearedFloor = 2;

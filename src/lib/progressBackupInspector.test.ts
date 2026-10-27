@@ -86,6 +86,21 @@ describe('local-only BODYFORGE backup inspection', () => {
     expect(damagedLedger.message).toContain('наград');
   });
 
+  it('refuses to certify an identified paid profile if its reward ledger is absent', () => {
+    const { creditedWorkoutIds: _ledger, ...missing } = { ...source, profileId: 'identified-fighter' };
+    const output = inspectProgressBackupJson(JSON.stringify(good({ storedProfileRaw: JSON.stringify(missing) })));
+    expect(output.state).toBe('incomplete');
+    expect(output.message).toContain('наград');
+    const noHistory = inspectProgressBackupJson(JSON.stringify(good({
+      storedProfileRaw: JSON.stringify({ ...missing, workouts: [] }),
+    })));
+    expect(noHistory.state).toBe('readable');
+    const historicTotals = inspectProgressBackupJson(JSON.stringify(good({
+      storedProfileRaw: JSON.stringify({ ...missing, workouts: [], totals: { workouts: 65 } }),
+    })));
+    expect(historicTotals.state).toBe('incomplete');
+  });
+
   it('rejects unsupported format, changed version, malformed JSON and fake timestamps', () => {
     expect(inspectProgressBackupJson('not json').state).toBe('invalid');
     expect(inspectProgressBackupJson('null').state).toBe('invalid');

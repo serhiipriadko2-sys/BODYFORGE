@@ -36,6 +36,7 @@ class Client {
     this.target = target;
     this.socket = new WebSocket(target.webSocketDebuggerUrl);
     this.seq = 0; this.requests = new Map(); this.errors = []; this.loads = 0; this.blockedFailures = 0;
+    this.networkRequests = new Map(); this.failedUrls = []; this.finishedRequests = new Set(); this.pausedResponses = [];
     this.ready = new Promise((resolve, reject) => {
       this.socket.addEventListener('open', resolve, { once: true });
       this.socket.addEventListener('error', reject, { once: true });
@@ -50,6 +51,10 @@ class Client {
       }
       if (message.method === 'Page.loadEventFired') this.loads++;
       if (message.method === 'Network.loadingFailed' && message.params.blockedReason) this.blockedFailures++;
+      if (message.method === 'Network.requestWillBeSent') this.networkRequests.set(message.params.requestId, message.params.request.url);
+      if (message.method === 'Network.loadingFailed') this.failedUrls.push(this.networkRequests.get(message.params.requestId));
+      if (message.method === 'Network.loadingFinished') this.finishedRequests.add(message.params.requestId);
+      if (message.method === 'Fetch.requestPaused') this.pausedResponses.push(message.params);
     });
     clients.add(this);
   }
@@ -103,6 +108,37 @@ async function newTab() {
   const target = await (await fetch('http://127.0.0.1:' + port + '/json/new?about:blank', { method: 'PUT' })).json();
   const tab = new Client(target);
   await tab.cdp('Runtime.enable'); await tab.cdp('Page.enable');
+  await tab.cdp('Network.enable');
+  await tab.cdp('Network.setCacheDisabled', { cacheDisabled: true });
+  // Test-owned GPU observation: inspect programs that actually draw hair, not
+  // just React's readiness attributes. No production hooks or camera access.
+  await tab.cdp('Page.addScriptToEvaluateOnNewDocument', { source: `
+    window.__hairQa = { draws: new WeakMap(), programs: new WeakMap() };
+    const seenPrograms = new WeakMap();
+    for (const type of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
+      if (!type) continue;
+      for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced']) {
+        const original = type.prototype[name];
+        if (!original) continue;
+        type.prototype[name] = function(...args) {
+          const result = original.apply(this, args);
+          window.__hairQa.draws.set(this.canvas, (window.__hairQa.draws.get(this.canvas) || 0) + 1);
+          const program = this.getParameter(this.CURRENT_PROGRAM);
+          if (program && !seenPrograms.has(program)) {
+            const sources = (this.getAttachedShaders(program) || []).map(shader => this.getShaderSource(shader) || '').join('\\n');
+            const enabled = name => new RegExp('^#define ' + name + '(?:\\\\s|$)', 'm').test(sources);
+            seenPrograms.set(program, enabled('USE_ANISOTROPY') ? {
+              albedo: enabled('USE_MAP'), normal: enabled('USE_NORMALMAP'), alphaTest: enabled('USE_ALPHATEST'),
+              doubleSided: enabled('DOUBLE_SIDED'),
+            } : null);
+          }
+          const hair = program && seenPrograms.get(program);
+          if (hair) window.__hairQa.programs.set(this.canvas, { ...hair, depthWrite: this.getParameter(this.DEPTH_WRITEMASK) });
+          return result;
+        };
+      }
+    }
+  ` });
   await tab.viewport(390);
   await tab.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   return tab;
@@ -198,13 +234,62 @@ try {
   await waitFor(()=>tab.blockedFailures>=detailsBlockedBefore+3,'all optional detail-map failures observed');
   check(await tab.js('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="0"'),'missing detail maps retain the usable base materials');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing optional maps preserve game bytes');
-  const hairBlockedBefore=tab.blockedFailures;
-  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-hair*.png*']});
-  await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
-  await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','detailed geometry survives missing hair maps',35000);
-  await waitFor(()=>tab.blockedFailures>=hairBlockedBefore+2,'both hair map failures observed');
-  check(await tab.js('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="0"'),'missing hair atlas retains opaque geometry');
-  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing hair maps preserve game bytes');
+  observations.hairFallbacks = [];
+  for (const scenario of [
+    { name: 'albedo-only', blocked: ['athlete-hair.png'], ready: 1, albedo: false, normal: true },
+    { name: 'normal-only', blocked: ['athlete-hair-normal.png'], ready: 1, albedo: true, normal: false },
+    { name: 'both', blocked: ['athlete-hair.png', 'athlete-hair-normal.png'], ready: 0, albedo: false, normal: false },
+  ]) {
+    const failedBefore = tab.failedUrls.length;
+    await tab.cdp('Network.setBlockedURLs', { urls: scenario.blocked.map(file => '*/assets/' + file + '*') });
+    await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"',
+      scenario.name + ' hair failure keeps the detailed scene', 35000);
+    await waitFor(() => scenario.blocked.every(file => tab.failedUrls.slice(failedBefore).some(url => url?.endsWith('/' + file))),
+      scenario.name + ' exact hair failures observed');
+    await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps===' + JSON.stringify(String(scenario.ready)),
+      scenario.name + ' successful companion map applied');
+    await tab.click('[data-hair-style="crop"]'); await tab.click('[data-avatar-view="portrait"]');
+    await tab.until('!!window.__hairQa.programs.get(document.querySelector(".studio-preview canvas"))', scenario.name + ' hair shader drawn');
+    const gpu = await tab.js('(()=>{const c=document.querySelector(".studio-preview canvas");return {draws:window.__hairQa.draws.get(c),...window.__hairQa.programs.get(c)}})()');
+    check(gpu.draws > 0 && gpu.albedo === scenario.albedo && gpu.normal === scenario.normal,
+      scenario.name + ' draws the actual surviving hair maps');
+    check(gpu.alphaTest === scenario.albedo && gpu.doubleSided === scenario.albedo && gpu.depthWrite === true,
+      scenario.name + ' uses clipped cards only with albedo, otherwise opaque depth-writing fallback');
+    check(await tab.js('localStorage.getItem(' + JSON.stringify(gameKey) + ')') === gameBefore, scenario.name + ' hair failure preserves game bytes');
+    check(tab.errors.length === 0, scenario.name + ' hair failure has no uncaught browser errors');
+    await tab.screenshot('athlete-hair-missing-' + scenario.name);
+    observations.hairFallbacks.push({ scenario: scenario.name, ...gpu });
+  }
+  // Hold the real image responses until GameAvatar has disposed its old scene.
+  // Releasing them must neither redraw that canvas nor contaminate a remount.
+  await tab.cdp('Network.setBlockedURLs', { urls: [] });
+  tab.pausedResponses = [];
+  await tab.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/athlete-hair*.png*', requestStage: 'Response' }] });
+  try {
+    await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
+    await waitFor(() => ['athlete-hair.png', 'athlete-hair-normal.png'].every(file =>
+      tab.pausedResponses.some(response => response.request.url.endsWith('/' + file) && response.responseStatusCode === 200)),
+      'both real hair responses held before image callbacks', 35000);
+    await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="0"', 'held hair responses have not been applied');
+    await tab.js('window.__oldHairCanvas=document.querySelector(".studio-preview canvas");true');
+    await tab.click('.mobile-nav button:first-child');
+    await tab.until('!document.querySelector(".studio-preview canvas")', 'leaving the studio unmounts its WebGL scene');
+    const draws = await tab.js('window.__hairQa.draws.get(window.__oldHairCanvas)||0');
+    const held = tab.pausedResponses.splice(0);
+    for (const response of held) await tab.cdp('Fetch.continueRequest', { requestId: response.requestId });
+    await tab.cdp('Fetch.disable');
+    await waitFor(() => held.every(response => response.networkId && tab.finishedRequests.has(response.networkId)),
+      'late hair responses actually finish after scene disposal');
+    await tab.js('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+    check(await tab.js('window.__hairQa.draws.get(window.__oldHairCanvas)||0') === draws, 'late hair callbacks never draw the disposed canvas');
+    check(tab.errors.length === 0, 'late hair callbacks produce no uncaught browser errors');
+    await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"', 'fresh scene applies both hair maps after late response cleanup', 35000);
+    check(await tab.js('localStorage.getItem(' + JSON.stringify(gameKey) + ')') === gameBefore, 'late hair cleanup and remount preserve game bytes');
+  } finally {
+    await tab.cdp('Fetch.disable');
+  }
   // This profile belongs only to this test. Maximum cosmetic growth must be
   // inspected on the real rig as well as in the mathematical unit regression.
   await tab.cdp('Network.setBlockedURLs',{urls:[]});

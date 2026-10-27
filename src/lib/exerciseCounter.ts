@@ -10,6 +10,9 @@ const ENGAGED_MS = 100;
 const RETURN_MS = 90;
 const REP_MS = 390;
 const HOLD_TARGET_SECONDS = 30;
+// Reject degenerate/noisy joints while allowing a valid full-body pose at a
+// greater camera distance. 0.065 excluded forearms and shins at ~40% scale.
+const MIN_SEGMENT_LENGTH = 0.04;
 // Shared minimum silhouette sizes for jumping-jack detection and framing advice.
 export const MIN_JACK_SHOULDER_WIDTH = .025;
 export const MIN_JACK_TORSO_HEIGHT = .045;
@@ -34,8 +37,8 @@ function angle(a: PosePoint, b: PosePoint, c: PosePoint, ratio: number): number 
 function measuredAngle(p: LandmarkSet, a: number, b: number, c: number, ratio: number): number | null {
   if (!visible(p, a, b, c)) return null;
   const pa = p[a], pb = p[b], pc = p[c];
-  if (Math.hypot((pa.x - pb.x) * ratio, pa.y - pb.y) < 0.065 ||
-      Math.hypot((pc.x - pb.x) * ratio, pc.y - pb.y) < 0.065) return null;
+  if (Math.hypot((pa.x - pb.x) * ratio, pa.y - pb.y) < MIN_SEGMENT_LENGTH ||
+      Math.hypot((pc.x - pb.x) * ratio, pc.y - pb.y) < MIN_SEGMENT_LENGTH) return null;
   return angle(pa, pb, pc, ratio);
 }
 const sides = [

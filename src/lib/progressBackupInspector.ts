@@ -57,9 +57,16 @@ function parseProfileForInspection(raw: string): { workouts: number; ambiguousRe
     // Unknown future schemas are preserved in the exported raw string; the
     // inspector does not parse them as an authorization to replay rewards.
     const ledger = value.creditedWorkoutIds;
-    const ambiguousRewards = 'creditedWorkoutIds' in value &&
-      (!Array.isArray(ledger) || !ledger.every((id: unknown) =>
-        typeof id === 'string' && id.trim().length > 0 && id.length <= 128));
+    const identified = typeof value.profileId === 'string' &&
+      value.profileId.trim().length > 0 && value.profileId.length <= 128;
+    const hasPaidHistory = value.workouts.length > 0 ||
+      (record(value.totals) && typeof value.totals.workouts === 'number' && value.totals.workouts > 0);
+    // An identified paid profile with no ledger cannot prove that an old
+    // session was never rewarded. Match progression's fail-closed recovery gate.
+    const ambiguousRewards = (!('creditedWorkoutIds' in value) && identified && hasPaidHistory) ||
+      ('creditedWorkoutIds' in value &&
+        (!Array.isArray(ledger) || !ledger.every((id: unknown) =>
+          typeof id === 'string' && id.trim().length > 0 && id.length <= 128)));
     return { workouts: value.workouts.length, ambiguousRewards };
   } catch { return null; }
 }

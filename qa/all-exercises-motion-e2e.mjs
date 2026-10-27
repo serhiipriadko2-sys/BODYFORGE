@@ -116,7 +116,7 @@ async function install() {
     'const state=r.id==="plank"||r.freeze||p<400||p>=740?"ready":"active";' +
     'const side=r.id==="high-knees"&&cycle%2?"right":"left";' +
     'const points=make(r.id,state,side,video.videoWidth/video.videoHeight);' +
-    'const scale=r.id==="high-knees" ? 0.45 : r.id==="jumping-jack" ? 0.40 : 1;' +
+    'const scale=r.id==="high-knees" ? 0.45 : ["jumping-jack","pushup","crunch","leg-raise","plank"].includes(r.id) ? 0.40 : 1;' +
     'return {landmarks:[points.map((p,i)=>({...p,x:.5+(p.x-.5)*scale,y:.5+(p.y-.5)*scale,visibility:i===r.hiddenJoint?0:p.visibility}))]};};' +
     'return true;})()';
   assert(await ev(script), 'MediaPipe synthetic landmark rig installed');

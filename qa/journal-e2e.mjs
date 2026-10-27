@@ -132,6 +132,11 @@ async function readProfile() { return JSON.parse(await observer.js('localStorage
 async function journals() {
   return observer.js(`Object.keys(localStorage).filter(k=>k.startsWith(${JSON.stringify(prefix)})).map(k=>({key:k,raw:localStorage.getItem(k)}))`);
 }
+async function durableEntries() {
+  const result=await observer.js("(async()=>{const {readDurableJournal}=await import('/src/lib/durableJournal.ts');return await readDurableJournal()})()");
+  if(result.status!=='ready')throw Error('Durable journal unavailable in observer');
+  return result.entries;
+}
 async function click(selector, tab = page) {
   check(await tab.js('(()=>{const b=document.querySelector(' + JSON.stringify(selector) + ');if(!b||b.disabled)return false;b.click();return true})()'), 'action: ' + selector);
   await sleep(100);
@@ -218,7 +223,11 @@ async function queuedCompletion() {
   check(await page.js('window.__poseCalls>=320'), 'queued completion follows the complete synthetic 20-rep workout');
   check(await page.js("document.querySelector('.completion-stage [role=status]')?.textContent.includes('СОХРАНЯЕМ РЕЗУЛЬТАТ')"),
     'accessible completion status announces the unconfirmed save');
-  check((await readProfile()).xp === 0 && (await journals()).length === 0, 'held lock leaves result pending in RAM without a fake durable acknowledgement');
+  await waitFor(async()=> (await durableEntries()).some(e=>e.state==='active'), 'strict durable result before profile lock release',5000);
+  const staged=(await durableEntries()).find(e=>e.state==='active');
+  const queued=JSON.parse(staged.raw);
+  check(queued.profileId===player.profileId&&queued.floor===1&&queued.repetitions===20,'pre-lock record keeps original profile, session and floor');
+  check((await readProfile()).xp === 0 && (await journals()).length === 0, 'held profile lock changes no rewards or local reward journal');
   await click('#challenge .primary-button');
   check(await page.js('window.__tracks.length===1 && window.__tracks.every(t=>t.readyState===\'ended\')'),
     'starting another workout cannot launch a second stream while the result waits');

@@ -136,7 +136,11 @@ export function prepareWorkoutSession(expectedRaw: string | null, mode: WorkoutM
   if (!state.profile.game.created || !['training', 'tower', 'ghost'].includes(mode) || !isExerciseId(exerciseId) ||
       (exerciseId !== 'squat' && mode !== 'training')) return { status: 'unavailable', state };
   if (!state.profile.profileId) {
-    const write = saveProfile({ ...state.profile, profileId: newId() }, { expectedRaw: state.revision });
+    // Establish a new identity and its known ledger in the same locked write.
+    // Legacy history cannot prove unknown older IDs, nor adopt pending IDs.
+    const knownIds = new Set([...(state.profile.creditedWorkoutIds ?? []),
+      ...state.profile.workouts.map((workout) => workout.id).filter(validId)]);
+    const write = saveProfile({ ...state.profile, profileId: newId(), creditedWorkoutIds: [...knownIds] }, { expectedRaw: state.revision });
     if (write.status !== 'saved') return { status: write.status, state: loadProfileState() };
     state = loadProfileState();
     if (state.status !== 'ready' || state.revision !== write.revision || !state.profile.profileId) return { status: 'unavailable', state };

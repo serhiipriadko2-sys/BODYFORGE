@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  addCompletedWorkout, EMPTY_PROFILE, loadProfile, parseProfile, persistProfile,
+  addCompletedWorkout, EMPTY_PROFILE, loadProfile, loadProfileState, parseProfile, persistProfile, saveProfile,
   PROFILE_BACKUP_KEY, recoverProfile, STORAGE_KEY, type Profile,
 } from './progression';
 import { buyOrEquipOutfit, canClaimQuest, claimDailyQuest, claimLogin, freshGame, normalizeGame, upgradeMuscle } from './game';
+import { reconcileWorkoutResults, RESULT_JOURNAL_PREFIX, type CompletedWorkoutResult } from './workoutJournal';
 
 const firstDay = new Date(2026, 9, 22, 12);
 const secondDay = new Date(2026, 9, 23, 12);
@@ -21,13 +22,61 @@ function storage() {
   vi.stubGlobal('window', {});
   vi.stubGlobal('localStorage', {
     getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => { values.set(key, value); },
+    setItem: vi.fn((key: string, value: string) => { values.set(key, value); }),
+    removeItem: vi.fn((key: string) => { values.delete(key); }),
+    key: (index: number) => [...values.keys()][index] ?? null,
+    get length() { return values.size; },
   });
   return values;
 }
 afterEach(() => vi.unstubAllGlobals());
 
 describe('durable workout reward identity', () => {
+  it('preserves an identified save with a missing ledger and never repays a session outside its last 60 workouts', () => {
+    const intact = { ...longHistory(), profileId: 'paid-profile' };
+    const { creditedWorkoutIds: _ledger, ...damaged } = intact;
+    expect(damaged.workouts.some((workout) => workout.id === 'completed-1')).toBe(false);
+    const values = storage();
+    const raw = JSON.stringify(damaged);
+    const backup = JSON.stringify(intact);
+    const result: CompletedWorkoutResult = { schemaVersion: 1, profileId: intact.profileId,
+      sessionId: 'completed-1', mode: 'training', floor: null, durationMs: 65000,
+      finishedAt: firstDay.toISOString(), repetitions: 20 };
+    values.set(STORAGE_KEY, raw);
+    values.set(PROFILE_BACKUP_KEY, backup);
+    values.set(RESULT_JOURNAL_PREFIX + result.sessionId, JSON.stringify(result));
+    const before = [...values];
+
+    expect(reconcileWorkoutResults().status).toBe('recovery-required');
+    expect(loadProfileState()).toMatchObject({ status: 'recovery-required', backupAvailable: true,
+      revision: raw, profile: { profileId: intact.profileId, xp: intact.xp, creditedWorkoutIds: null } });
+    expect(parseProfile(JSON.parse(raw)).creditedWorkoutIds).toBeNull();
+    expect(roundTrip(parseProfile(JSON.parse(raw))).creditedWorkoutIds).toBeNull();
+    expect(saveProfile({ ...damaged, coins: damaged.coins + 1 })).toEqual({ status: 'recovery-required' });
+    expect(() => addCompletedWorkout(damaged, 65000, firstDay, { sessionId: result.sessionId }))
+      .toThrow('Reward identity ledger requires recovery');
+    expect([...values]).toEqual(before);
+    expect(localStorage.setItem).not.toHaveBeenCalled();
+    expect(localStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it('keeps missing-ledger ambiguity when only lifetime workout totals survive', () => {
+    const intact = { ...longHistory(), profileId: 'paid-profile' };
+    const { creditedWorkoutIds: _ledger, ...missingLedger } = intact;
+    const loaded = parseProfile({ ...missingLedger, workouts: [] });
+    expect(loaded.totals?.workouts).toBe(65);
+    expect(loaded.creditedWorkoutIds).toBeNull();
+    expect(() => addCompletedWorkout(loaded, 65000, firstDay, { sessionId: 'completed-1' }))
+      .toThrow('Reward identity ledger requires recovery');
+  });
+
+  it('keeps a new identified wallet without workout history compatible', () => {
+    const empty = parseProfile({ ...player(), profileId: 'new-profile', xp: 500, coins: 900 });
+    expect(empty.creditedWorkoutIds).toBeUndefined();
+    expect(addCompletedWorkout(empty, 65000, firstDay, { sessionId: 'first-workout' }))
+      .toMatchObject({ profileId: 'new-profile', xp: 620, creditedWorkoutIds: ['first-workout'] });
+  });
+
   it('rejects an old tower result after the visible history rotates and the profile reloads', () => {
     const p = roundTrip(longHistory());
     expect(p.workouts).toHaveLength(60);

@@ -3,6 +3,14 @@
 Primary geometry: `bodyforge-athlete-detail.glb`. Packed editable source:
 `art/bodyforge-athlete-detail.blend`; authoring: `scripts/groom-athlete.py`.
 The previous `bodyforge-athlete-realistic.glb` remains a runtime fallback.
+The compact `bodyforge-athlete-efficient.glb` is the current runtime primary;
+it retains the detailed geometry with bounded attribute quantization.
+
+The five byte-exact CC0 authoring inputs are included in
+`art/sources/athlete-groom/`, with a public license/source/hash manifest and
+rebuild instructions in its `README.md`. `python -B scripts/groom-athlete.py
+--verify-inputs` checks all inputs without Blender or output writes. No private
+`.iskra/reports` input directory is required.
 
 The body, face, original triangle-corner UVs, bind weights and clothes are
 retained from that local derivative. `BODYFORGE_groom=v2` identifies this
