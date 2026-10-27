@@ -90,6 +90,43 @@ describe('geometric camera recognizers (synthetic landmark fixtures)', () => {
       expect(shallow.update(frame(id,'ready'),700).snapshot.count).toBe(0);
     }
   );
+  it('counts jumping jacks at different distances and camera aspect ratios', () => {
+    for (const ratio of [9 / 16, 1, 16 / 9]) {
+      for (const factor of [1, .65, .5, .4]) {
+        const ready = scaled(frame('jumping-jack', 'ready'), factor);
+        const active = scaled(frame('jumping-jack', 'active'), factor);
+        const context = 'scale ' + factor + ' ratio ' + ratio;
+        expect(measureExercise('jumping-jack', ready, ratio)?.ready, 'ready ' + context).toBe(true);
+        expect(measureExercise('jumping-jack', active, ratio)?.engaged, 'active ' + context).toBe(true);
+        const counter = new ExerciseMotionCounter('jumping-jack');
+        const sequence: [number, PosePoint[]][] = [
+          [0, ready], [100, ready], [200, ready], [300, active], [430, active],
+          [740, ready], [850, ready],
+        ];
+        for (const [at, pose] of sequence) counter.update(pose, at, ratio);
+        expect(counter.update(ready, 950, ratio).snapshot.count, 'count ' + context).toBe(1);
+      }
+    }
+  });
+  it('never counts jumping jacks with only arms raised or only feet separated', () => {
+    const fullStanding = frame('jumping-jack', 'ready');
+    const wide = frame('jumping-jack', 'active');
+    const armsOnly = fullStanding.map((p, i) => [15, 16].includes(i) ? wide[i] : p);
+    const feetOnly = fullStanding.map((p, i) => [27, 28].includes(i) ? wide[i] : p);
+    for (const ratio of [9 / 16, 16 / 9]) {
+      for (const factor of [.4, 1]) {
+        const standing = scaled(fullStanding, factor);
+        for (const partialRaw of [armsOnly, feetOnly]) {
+          const partial = scaled(partialRaw, factor);
+          expect(measureExercise('jumping-jack', partial, ratio)?.engaged).toBe(false);
+          const counter = new ExerciseMotionCounter('jumping-jack');
+          for (const [time, pose] of [[0,standing], [180,standing], [300,partial],
+            [430,partial], [800,standing], [930,standing]] as const) counter.update(pose, time, ratio);
+          expect(counter.update(standing,1000,ratio).snapshot.count).toBe(0);
+        }
+      }
+    }
+  });
   it('calibrates and counts high knees when the athlete stands farther from camera', () => {
     for (const factor of [1, .55, .38]) {
       const c = new ExerciseMotionCounter('high-knees');

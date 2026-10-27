@@ -8,6 +8,7 @@ export interface PreparedProgressBackup {
   readonly json: string;
   readonly filename: string;
   readonly complete: boolean;
+  readonly sourcesChangedDuringRead?: boolean;
 }
 
 /** Build evidence without touching any app storage or making network requests.
@@ -20,7 +21,12 @@ export async function prepareProgressBackup(
   const local = createProgressExport(profile, pendingResult);
   const profileQuarantine = readProfileQuarantine();
   const durable = await readDurableJournal();
-  const complete = local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
+  // IndexedDB reads are asynchronous. Check the other stores again before
+  // claiming a complete snapshot: another tab may have changed the wallet,
+  // journal or appearance while the durable read was in flight.
+  const sourcesChangedDuringRead = JSON.stringify(local) !== JSON.stringify(createProgressExport(profile, pendingResult))
+    || JSON.stringify(profileQuarantine) !== JSON.stringify(readProfileQuarantine());
+  const complete = !sourcesChangedDuringRead && local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
     && local.quarantineReadStatus === 'ready' && profileQuarantine.status === 'ready' && durable.status === 'ready'
     && Object.values(local.auxiliaryReadStatus).every((status) => status === 'ready');
   const json = JSON.stringify({
@@ -28,6 +34,7 @@ export async function prepareProgressBackup(
     exportSchemaVersion: 1,
     exportedAt: now.toISOString(),
     complete,
+    sourcesChangedDuringRead,
     ...local,
     storedProfileQuarantineRaw: profileQuarantine.entries,
     profileQuarantineReadStatus: profileQuarantine.status,
@@ -35,7 +42,7 @@ export async function prepareProgressBackup(
     durableReadStatus: durable.status,
   }, null, 2);
   const stamp = now.toISOString().replace(/[:.]/g, '-');
-  return { json, filename: `bodyforge-backup-${stamp}.json`, complete };
+  return { json, filename: `bodyforge-backup-${stamp}.json`, complete, sourcesChangedDuringRead };
 }
 
 /** Must be invoked synchronously from a real user click. The file is private:

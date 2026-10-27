@@ -89,6 +89,61 @@
 }
 .progress-install-help p { margin: 7px 0; }
 .progress-install-help strong { color: #eef9fe; }
+.progress-backup-file-checker {
+  margin-top: 12px;
+  border-top: 1px solid #365165;
+  padding-top: 11px;
+}
+.progress-backup-file-checker summary {
+  cursor: pointer;
+  color: #a4f0da;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.progress-backup-file-checker summary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-backup-file-checker label {
+  display: block;
+  margin: 9px 0 7px;
+  font-size: 11px;
+  color: #d0e0ed;
+  line-height: 1.6;
+}
+.progress-backup-file-checker input[type='file'] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid #4d7081;
+  border-radius: 8px;
+  color: #d0e0ed;
+  background: #111f2b;
+  font-size: 11px;
+}
+.progress-backup-file-checker input[type='file']::file-selector-button {
+  cursor: pointer;
+  margin-right: 9px;
+  padding: 9px 11px;
+  background: #77dfc8;
+  border: 0;
+  border-radius: 6px;
+  color: #092621;
+  font-weight: 800;
+}
+.progress-backup-file-checker input:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+.progress-backup-file-checker[data-inspection-state='incomplete'] [data-inspection-result],
+.progress-backup-file-checker[data-inspection-state='invalid'] [data-inspection-result] {
+  color: #ffd6ab;
+}
+.progress-backup-file-checker[data-inspection-state='readable'] [data-inspection-result] {
+  color: #a4f0da;
+}
 .app-shell[data-screen="dashboard"] .content > .progress-backup-card { order: 8; }
 .app-shell[data-screen="dashboard"] .content > .footer { order: 9; }
 @media (max-width: 740px) {

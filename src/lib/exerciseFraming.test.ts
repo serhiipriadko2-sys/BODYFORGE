@@ -60,6 +60,18 @@ describe('exercise-specific framing advice (never affects rewards)', () => {
       expect(report.instruction.length, id).toBeGreaterThan(15);
     }
   });
+  it('gives an actionable warning when a jumping-jack silhouette is too small to count', () => {
+    const p = ready('jumping-jack').map((joint) => ({
+      ...joint,
+      x: .5 + (joint.x - .5) * .12,
+      y: .5 + (joint.y - .5) * .12,
+    }));
+    const guidance = assessExerciseFraming('jumping-jack', p, 9 / 16);
+    expect(guidance).toMatchObject({
+      kind: 'angle-unavailable', title: 'ПОДОЙДИ БЛИЖЕ К КАМЕРЕ', warning: true,
+    });
+    expect(guidance.instruction).toContain('стопы');
+  });
   it('does not mix a left-side elbow with a right-side wrist to declare a complete pushup', () => {
     const p = ready('pushup');
     assign(p, {12:[.25,.45],14:[.27,.6],24:[.55,.5],28:[.79,.56]});

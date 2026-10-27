@@ -67,6 +67,36 @@ describe('manual BODYFORGE backup without changing game state', () => {
     expect(removeItem).not.toHaveBeenCalled();
   });
 
+  it('detects a cross-tab mutation while an asynchronous IndexedDB read is in progress', async () => {
+    const before = values.get(STORAGE_KEY);
+    vi.mocked(readDurableJournal).mockImplementation(async () => {
+      values.set(STORAGE_KEY, '{"xp":300,"coins":51,"workouts":[]}');
+      return { status: 'ready', entries: [] };
+    });
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    const payload = JSON.parse(prepared.json);
+    expect(payload.sourcesChangedDuringRead).toBe(true);
+    expect(payload.complete).toBe(false);
+    expect(prepared.complete).toBe(false);
+    expect(payload.storedProfileRaw).toBe(before);
+    expect(values.get(STORAGE_KEY)).not.toBe(before);
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
+  });
+
+  it('marks a concurrent appearance change without losing the original opaque bytes', async () => {
+    vi.mocked(readDurableJournal).mockImplementation(async () => {
+      values.set(AVATAR_LOOK_KEY, '{ "version": 3, "anotherTab": true }');
+      return { status: 'ready', entries: [] };
+    });
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    const payload = JSON.parse(prepared.json);
+    expect(prepared.complete).toBe(false);
+    expect(payload.sourcesChangedDuringRead).toBe(true);
+    expect(payload.storedAuxiliaryRaw.avatarLook).toBe(original.avatar);
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
   it('marks blocked IndexedDB or settings as incomplete, never invents missing data', async () => {
     vi.mocked(readDurableJournal).mockResolvedValue({ status: 'unavailable', entries: [] });
     const originalStore = globalThis.localStorage;

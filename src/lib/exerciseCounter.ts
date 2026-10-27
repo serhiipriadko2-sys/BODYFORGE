@@ -10,6 +10,9 @@ const ENGAGED_MS = 100;
 const RETURN_MS = 90;
 const REP_MS = 390;
 const HOLD_TARGET_SECONDS = 30;
+// Shared minimum silhouette sizes for jumping-jack detection and framing advice.
+export const MIN_JACK_SHOULDER_WIDTH = .025;
+export const MIN_JACK_TORSO_HEIGHT = .045;
 
 type Side = KneeSide;
 interface Reading { metric: number; ready: boolean; engaged: boolean; side: Side | null }
@@ -85,11 +88,17 @@ function sidesReading(p: LandmarkSet, ratio: number, id: ExerciseId, locked: Sid
 function jackReading(p: LandmarkSet, ratio: number): Reading | null {
   if (!visible(p, 11, 12, 15, 16, 23, 24, 27, 28)) return null;
   const shoulderWidth = Math.abs(p[11].x - p[12].x) * ratio;
-  if (shoulderWidth < 0.065) return null;
-  const feet = Math.abs(p[27].x - p[28].x) * ratio / shoulderWidth;
   const shoulders = (p[11].y + p[12].y) / 2;
-  const armsUp = p[15].y < shoulders - .095 && p[16].y < shoulders - .095;
-  const armsDown = p[15].y > shoulders + .10 && p[16].y > shoulders + .10;
+  const hips = (p[23].y + p[24].y) / 2;
+  const torsoHeight = hips - shoulders;
+  // Use a person's visible size, not fixed fractions of the camera frame.
+  // Otherwise a complete jumping jack stops working as the person steps back.
+  // Keep lower pixel-scale floors to reject tiny/noisy MediaPipe silhouettes.
+  if (shoulderWidth < MIN_JACK_SHOULDER_WIDTH || torsoHeight < MIN_JACK_TORSO_HEIGHT) return null;
+  const feet = Math.abs(p[27].x - p[28].x) * ratio / shoulderWidth;
+  const armTravel = Math.max(.018, torsoHeight * .42);
+  const armsUp = p[15].y < shoulders - armTravel && p[16].y < shoulders - armTravel;
+  const armsDown = p[15].y > shoulders + armTravel && p[16].y > shoulders + armTravel;
   return { metric: feet, ready: feet < 1.12 && armsDown, engaged: feet > 1.70 && armsUp, side: null };
 }
 function kneesReading(p: LandmarkSet): Reading | null {

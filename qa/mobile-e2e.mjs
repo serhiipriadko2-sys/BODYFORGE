@@ -174,8 +174,12 @@ try{
   check(!!(await js("document.querySelector('#progress-backup .progress-install-help summary')?.textContent.includes('УСТАНОВИТЬ')")),
     'mobile app offers an accessible install guide');
   await js("window.dispatchEvent(new StorageEvent('storage', {key:'bodyforge:avatar-look:v1',newValue:'changed-in-another-tab'}));true");
-  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='idle'", 'stale cross-tab backup invalidated', 3000);
-  check(!!(await js("document.querySelector('#progress-backup [role=status]')?.textContent.includes('другой вкладке')")),
+  await sleep(240);
+  console.log('BACKUP_CROSS_TAB_STATE',JSON.stringify(await read("({stage:document.querySelector('#progress-backup')?.dataset.backupStage,message:document.querySelector('#progress-backup .progress-backup-actions [role=status]')?.textContent||'',exists:!!document.querySelector('#progress-backup')})")));
+  // React may already be in 'idle' while an earlier profile revision settles.
+  // Wait for the actual cross-tab warning before asserting invalidation.
+  await until("document.querySelector('#progress-backup .progress-backup-actions [role=status]')?.textContent.includes('другой вкладке')", 'cross-tab stale-backup warning rendered', 4000);
+  check(await js("document.querySelector('#progress-backup')?.dataset.backupStage==='idle'"),
     'changed settings invalidate a prepared download');
   await click('#progress-backup [data-action=prepare-progress]');
   await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'", 'refreshed backup assembled', 12000);
@@ -195,6 +199,60 @@ try{
     'two-click local backup preserves the actual profile and settings');
   check((await js("localStorage.getItem('bodyforge:pilot:v1')"))===beforeBackup,
     'export does not rewrite user progress or rewards');
+  // Inspect the actual exported Blob using a local File input; never upload or
+  // restore it. Exercise success, broken JSON and a moving-source warning.
+  await js("document.querySelector('.progress-backup-file-checker').open=true;true");
+  await js(`(async()=>{
+    const blob=window.__bfExportSample.blob;
+    const input=document.querySelector('[data-action=inspect-progress-file]');
+    const transfer=new DataTransfer();
+    transfer.items.add(new File([blob], 'saved-bodyforge.json', {type:'application/json'}));
+    input.files=transfer.files;
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+    return true;
+  })()`);
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='readable'",
+    'downloaded backup inspection succeeds', 10000);
+  check(!!(await js("document.querySelector('.progress-backup-file-checker [role=status]')?.textContent.includes('Структура резервной копии BODYFORGE проверена')")),
+    'manual selected-file inspection confirms structure without claiming a restore');
+  await js(`(()=>{
+    const input=document.querySelector('[data-action=inspect-progress-file]');
+    const transfer=new DataTransfer();
+    transfer.items.add(new File(['{broken backup'], 'broken.json', {type:'application/json'}));
+    input.files=transfer.files;
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+    return true;
+  })()`);
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='invalid'",
+    'invalid local JSON detected', 10000);
+  check(!!(await js("document.querySelector('.progress-backup-file-checker [role=status]')?.textContent.includes('не является корректным JSON')")),
+    'broken backup cannot be presented as verified');
+  await js(`(async()=>{
+    const payload=JSON.parse(await window.__bfExportSample.blob.text());
+    payload.complete=false;
+    payload.sourcesChangedDuringRead=true;
+    const input=document.querySelector('[data-action=inspect-progress-file]');
+    const transfer=new DataTransfer();
+    transfer.items.add(new File([JSON.stringify(payload)],'stale.json',{type:'application/json'}));
+    input.files=transfer.files;
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+    return true;
+  })()`);
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='incomplete'",
+    'outdated export detected', 10000);
+  check(!!(await js("document.querySelector('.progress-backup-file-checker [role=status]')?.textContent.includes('изменялись во время экспорта')")),
+    'cross-tab race is never presented as a complete backup');
+  check((await js("localStorage.getItem('bodyforge:pilot:v1')"))===beforeBackup,
+    'inspecting downloaded, broken or stale backup never rewrites wallet and rewards');
+  await cdp('Emulation.setDeviceMetricsOverride',{width:320,height:740,deviceScaleFactor:1,mobile:true});
+  await sleep(300);
+  const narrowBackup=await read("(()=>{const card=document.querySelector('#progress-backup');card.scrollIntoView({block:'start',behavior:'instant'});const box=card.querySelector('[data-action=inspect-progress-file]').getBoundingClientRect();return {width:innerWidth,scroll:document.documentElement.scrollWidth,inputRight:box.right,inputLeft:box.left}})()");
+  check(narrowBackup.width===320&&narrowBackup.scroll<=320&&narrowBackup.inputRight<=321&&narrowBackup.inputLeft>=-1,
+    'backup JSON file picker fits a narrow 320px phone without horizontal overflow');
+  await screenshot('bf-qa-mobile-backup-json-inspection.png');
+  await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+  await js("document.querySelector('.dashboard-player')?.scrollIntoView({block:'start',behavior:'instant'});true");
+  await sleep(260);
   const premium=await read("({player:!!document.querySelector('.dashboard-player'),dark:!!document.querySelector('link[href*=premium]')||getComputedStyle(document.body).backgroundColor,firstRect:document.querySelector('.character-card')?.getBoundingClientRect().top})");
   console.log('PREMIUM_HOME',JSON.stringify(premium));
   check(premium.player && premium.firstRect>0,'home has real fighter status and 3D hero');

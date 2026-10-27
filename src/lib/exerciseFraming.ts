@@ -1,4 +1,4 @@
-import { measureExercise } from './exerciseCounter';
+import { measureExercise, MIN_JACK_SHOULDER_WIDTH, MIN_JACK_TORSO_HEIGHT } from './exerciseCounter';
 import type { PoseGuidance } from './poseGuidance';
 import type { PosePoint } from './squatCounter';
 import { exerciseGuide, type ExerciseId } from './trainingCatalog';
@@ -69,6 +69,12 @@ export function assessExerciseFraming(
     if (missing(points, 27, 28)) return hint('feet-hidden', 'НЕ ВИЖУ ОБЕ СТОПЫ', guide.placement[1]);
     if (missing(points, 11, 12, 23, 24))
       return hint('angle-unavailable', 'НЕ ВИЖУ ПЛЕЧИ И ТАЗ', guide.placement[1]);
+    const shoulderWidth = Math.abs(points[11].x - points[12].x) * ratio;
+    const torsoHeight = ((points[23].y + points[24].y) - (points[11].y + points[12].y)) / 2;
+    if (shoulderWidth < MIN_JACK_SHOULDER_WIDTH || torsoHeight < MIN_JACK_TORSO_HEIGHT) {
+      return hint('angle-unavailable', 'ПОДОЙДИ БЛИЖЕ К КАМЕРЕ',
+        'Фигура слишком мала для надёжного подсчёта. Подойди ближе, оставляя кисти и стопы целиком в кадре.');
+    }
   } else {
     const completeSide = SIDES.find((side) => requiredSide(id, side).every((i) => visible(points[i])));
     if (!completeSide) {

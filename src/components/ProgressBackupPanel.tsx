@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Profile } from '../lib/progression';
 import type { CompletedWorkoutResult } from '../lib/workoutJournal';
 import { prepareProgressBackup, requestProgressBackupDownload, type PreparedProgressBackup } from '../lib/progressBackup';
+import { inspectProgressBackupFile, type BackupInspection } from '../lib/progressBackupInspector';
 import './progressBackup.css';
 
 interface Props {
@@ -17,7 +18,10 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   const [status, setStatus] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
   const [prepared, setPrepared] = useState<PreparedProgressBackup | null>(null);
   const [message, setMessage] = useState('');
+  const [inspection, setInspection] = useState<BackupInspection | null>(null);
+  const [inspecting, setInspecting] = useState(false);
   const generation = useRef(0);
+  const inspectionGeneration = useRef(0);
 
   // A new profile revision invalidates any snapshot prepared from old data.
   useEffect(() => {
@@ -30,8 +34,11 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   useEffect(() => {
     if (!disabled) return;
     generation.current++;
+    inspectionGeneration.current++;
     setPrepared(null);
     setStatus('idle');
+    setInspecting(false);
+    setInspection(null);
   }, [disabled]);
 
   useEffect(() => {
@@ -48,7 +55,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
     return () => window.removeEventListener('storage', changedElsewhere);
   }, []);
 
-  useEffect(() => () => { generation.current++; }, []);
+  useEffect(() => () => { generation.current++; inspectionGeneration.current++; }, []);
 
   async function prepare() {
     if (disabled || status === 'preparing') return;
@@ -63,7 +70,9 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
       setStatus('ready');
       setMessage(backup.complete
         ? 'Данные подготовлены. Нажми «Скачать» и проверь файл в загрузках.'
-        : 'Копия подготовлена частично: не все хранилища доступны. Сохрани файл для разбора, но не считай его полной резервной копией.');
+        : backup.sourcesChangedDuringRead
+          ? 'Прогресс изменился во время подготовки. Копия неполная — подготовь новую перед очисткой данных браузера.'
+          : 'Копия подготовлена частично: не все хранилища доступны. Сохрани файл для разбора, но не считай его полной резервной копией.');
     } catch {
       if (request !== generation.current) return;
       setStatus('error');
@@ -83,6 +92,17 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
     }
   }
 
+  async function inspectFile(file: File) {
+    if (disabled) return;
+    const request = ++inspectionGeneration.current;
+    setInspection(null);
+    setInspecting(true);
+    const result = await inspectProgressBackupFile(file);
+    if (request !== inspectionGeneration.current) return;
+    setInspection(result);
+    setInspecting(false);
+  }
+
   return (
     <section id="progress-backup" className="progress-backup-card" data-backup-stage={status}
       aria-label="Локальная резервная копия прогресса">
@@ -96,6 +116,29 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
           <p><strong>Android / Chrome:</strong> меню браузера → «Установить приложение» или «Добавить на главный экран».</p>
           <p><strong>iPhone / Safari:</strong> «Поделиться» → «На экран „Домой“».</p>
           <small>Камере нужен HTTPS; первая загрузка модели требует интернет. Копия прогресса не переносится на другое устройство автоматически.</small>
+        </details>
+        <details className="progress-backup-file-checker"
+          data-inspection-state={inspecting ? 'checking' : inspection?.state ?? 'idle'}>
+          <summary>ПРОВЕРИТЬ СКАЧАННЫЙ JSON</summary>
+          <label htmlFor="bf-verify-local-backup">Выбери резервную копию с устройства. Файл останется в этом браузере.</label>
+          <input id="bf-verify-local-backup" data-action="inspect-progress-file"
+            type="file" accept=".json,application/json" disabled={disabled || inspecting}
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              event.currentTarget.value = '';
+              if (file) void inspectFile(file);
+            }}/>
+          <p role="status" aria-live="polite" data-inspection-result={inspection?.state ?? 'idle'}>
+            {inspecting ? 'Проверяем структуру JSON без отправки файла…'
+              : inspection?.message ?? 'Проверка только читает JSON: текущий прогресс не изменяется.'}
+          </p>
+          {inspection && inspection.state !== 'invalid' && (
+            <small>Дата копии: {inspection.exportedAt ? new Date(inspection.exportedAt).toLocaleString('ru-RU') : '—'}.
+              Записей тренировок: {inspection.workouts}; журнал: {inspection.journalRecords};
+              долговременное хранилище: {inspection.durableRecords}; карантин: {inspection.quarantineRecords}.</small>
+          )}
+          <small>Это проверка структуры файла, не доказательство подлинности наград и не импорт.
+            Не удаляй данные браузера без проверенной полной копии и плана восстановления.</small>
         </details>
       </div>
       <div className="progress-backup-actions">
