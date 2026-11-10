@@ -1,0 +1,35 @@
+## main...origin/main
+ M qa/appearance-e2e.mjs
+ M qa/avatar-lifecycle-e2e.mjs
+ M src/App.tsx
+ M src/components/ExerciseCatalog.tsx
+ M src/components/ProgressPulseBoard.tsx
+ M src/components/SettingsFaq.tsx
+ D src/lib/forgeHomeExercise.test.ts
+ M src/lib/progressPulse.test.ts
+ M src/lib/screenNavigation.test.ts
+ M src/neonPulseV2.css
+?? docs/audits/BF_APPEARANCE_CDP_20261110/
+?? docs/audits/BF_APPEARANCE_CDP_20261110_ITER2/
+?? docs/audits/BF_AVATAR_CDP_20261110_BEFORE.mjs.txt
+?? docs/audits/BF_AVATAR_CDP_20261110_RECEIPT.md
+?? docs/audits/BF_BASELINE_20261110_CONTINUATION.md
+?? docs/audits/BF_CAMERA_HUD_20261110/bf-qa-mobile-camera-hud-390.png
+?? docs/audits/BF_CAMERA_HUD_20261110/hud-proposed.diff
+?? docs/audits/BF_CAMERA_HUD_20261110/mobile-e2e.before-hud.mjs
+?? docs/audits/BF_CAMERA_HUD_20261110_ITER2/
+?? docs/audits/BF_CAMERA_HUD_20261110_ITER3/
+?? docs/audits/BF_FORGE_HOME_XP_FAQ_20261110/
+?? docs/audits/BF_MOBILE_QA_ROUTING_20261110/RECEIPT.md
+?? docs/audits/BF_NAV_INTEGRATION_20261110/ADR.md
+?? docs/audits/BF_NAV_INTEGRATION_20261110/before-appearance-e2e.mjs.txt
+?? docs/audits/BF_NAV_INTEGRATION_20261110/compatibility-recheck-results.json
+?? docs/audits/BF_NAV_INTEGRATION_20261110/green-shots/
+?? docs/audits/BF_NAV_INTEGRATION_20261110/mobile-shots/
+?? docs/audits/BF_NAV_INTEGRATION_20261110/tested-sources/qa/appearance-e2e.mjs
+?? docs/audits/BF_NAV_INTEGRATION_20261110/tested-sources/qa/mobile-final-run.mjs
+?? docs/audits/BF_NAV_INTEGRATION_20261110/tested-sources/qa/pulse-armory-e2e.mjs
+?? docs/audits/BF_NAV_INTEGRATION_20261110/tested-sources/qa/tower20-e2e.mjs
+?? qa/forge-home-xp-faq-e2e.mjs
+?? src/components/FighterLevelProgress.tsx
+?? src/lib/forgeHomeXp.test.ts

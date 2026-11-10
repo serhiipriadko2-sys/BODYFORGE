@@ -54,7 +54,7 @@
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#daily-plan {order:4;}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#quests {order:5;}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#step-log {order:6;}
-.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.lower-grid {order:7;}
+.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.lower-grid {order:7;grid-template-columns:minmax(0,1fr);}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.footer {order:8;}
 .app-shell[data-screen="dashboard"] .dashboard-player {
   display:flex;align-items:center;gap:15px;
@@ -67,9 +67,14 @@
   min-width:0;
 }
 .app-shell[data-screen="dashboard"] .dashboard-player {flex-wrap:wrap;}
-.dashboard-player-catalog {flex:0 0 100%;min-width:0;width:100%;}
-.dashboard-player-catalog .bf-catalog {margin:0;}
-.dashboard-player-catalog .bf-catalog-trigger {min-height:56px;}
+/* The existing level/XP banner now belongs to the fighter header, not a separate tile. */
+.app-shell[data-screen="dashboard"] .dashboard-player .pulse-xp-card {
+  flex:0 0 100%;width:100%;min-width:0;
+  padding:15px 0 0;margin:2px 0 0;
+  border:0;border-top:1px solid #33546a;border-radius:0;
+  background:transparent;box-shadow:none;gap:11px;
+}
+.app-shell[data-screen="dashboard"] .dashboard-player .pulse-xp-card::before {display:none;}
 .dashboard-player-icon {
   width:62px;height:62px;flex:0 0 62px;position:relative;
   border:2px solid #62d9f0;border-radius:50%;
@@ -610,6 +615,7 @@
 }
 .bf-settings-screen .forge-heading {margin-bottom:20px;}
 .bf-faq-list {display:grid;gap:10px;margin-bottom:24px;}
+.bf-settings-screen .tips-card {width:100%;margin:0 0 24px;}
 .bf-faq-item {
   padding:0 17px;border:1px solid var(--bf-outline);
   border-radius:16px;background:var(--bf-raised);

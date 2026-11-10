@@ -1,10 +1,45 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import ProgressPulseBoard from '../components/ProgressPulseBoard';
+import { EMPTY_PROFILE } from './progression';
 import { activityPulse, comparePulsePeriods, weeklyPulse, type PulseRange } from './progressPulse';
 import type { Workout } from './progression';
 const workout = (id: string, date: Date, repetitions = 20): Workout => ({
   id, finishedAt: date.toISOString(), durationMs: 35000, repetitions, xp: 120,
 });
 describe('pulse dashboard — derived from stored, verified sessions', () => {
+  it('places active-day and exercise-repetition totals INSIDE the activity card', () => {
+    const now = new Date(2026, 9, 26, 12);
+    const profile = { ...EMPTY_PROFILE, workouts: [
+      workout('today', new Date(2026, 9, 26, 10)),
+      workout('earlier', new Date(2026, 9, 24, 10)),
+    ] };
+    const html = renderToStaticMarkup(createElement(ProgressPulseBoard, {
+      profile, now, onTraining: () => {}, onAvatar: () => {},
+    }));
+    const activity = html.split('class="pulse-trend-card"')[1]?.split('</article>')[0] ?? '';
+    expect(activity).toContain('АКТИВНОСТЬ ТРЕНИРОВОК');
+    expect(activity).toContain('data-period-reps="40"');
+    expect(activity).toContain('data-active-days="2"');
+    expect(activity).toContain('/7');
+  });
+
+  it('never counts more than 7 or 30 active calendar days in the selected period', () => {
+    const now = new Date(2026, 9, 26, 12);
+    const sessions = Array.from({length: 30}, (_, i) =>
+      workout('daily-' + i, new Date(2026, 9, 26 - i, 11)));
+    const invalid = workout('incomplete', now, 13);
+    const values = [...sessions, sessions[0], invalid];
+    expect(activityPulse(values, now, 7)).toMatchObject({
+      activeDays: 7, reps: 140, sessions: 7,
+    });
+    expect(activityPulse(values, now, 30)).toMatchObject({
+      activeDays: 30, reps: 600, sessions: 30,
+    });
+    expect(activityPulse([], now, 7)).toMatchObject({ activeDays: 0, reps: 0 });
+    expect(activityPulse([], now, 30)).toMatchObject({ activeDays: 0, reps: 0 });
+  });
   it('has 7 local calendar buckets, including empty days, with no imaginary values', () => {
     const now = new Date(2026, 9, 26, 16);
     const data = weeklyPulse([], now);

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
+import FighterLevelProgress from './components/FighterLevelProgress';
 import SettingsFaqBoundary from './components/SettingsFaqBoundary';
 
 const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
@@ -984,23 +985,15 @@ function App() {
               <div className="dashboard-player-info">
                 <span>ТВОЙ БОЕЦ · {getRank(workoutCount)}</span>
                 <strong>{profile.game.nickname}</strong>
-                <div className="dashboard-player-track" aria-label={`Прогресс до следующего уровня: ${levelPercent}%`}>
-                  <div style={{ width: `${levelPercent}%` }} />
-                </div>
               </div>
-              <div className="dashboard-player-stats"><strong>УР. {level}</strong><span>{repetitionsDone} ПОВТОРОВ</span>
+              <div className="dashboard-player-stats"><span>{repetitionsDone} ПОВТОРОВ</span>
                 <button type="button" className="profile-training-cta" disabled={!canNavigate}
-                  onClick={() => goTraining('training', previewExercise)}
-                  aria-label={`Начать тренировку: ${exerciseGuide(previewExercise).name}`}>
+                  onClick={() => goTraining('training', 'squat')}
+                  aria-label="Начать тренировку приседаний">
                   <Play size={13} fill="currentColor"/> СТАРТ
                 </button>
               </div>
-              <div className="dashboard-player-catalog" aria-label="Выбор упражнения для бойца">
-                <Suspense fallback={<p role="status">Загружаем упражнения…</p>}>
-                  <ExerciseCatalog selected={previewExercise} onSelect={setPreviewExercise}
-                    initiallyOpen busy={!canNavigate}/>
-                </Suspense>
-              </div>
+              <FighterLevelProgress xp={profile.xp}/>
             </section>
           )}
           {!profile.game.created && <FighterSetup legacyWorkouts={profile.workouts.length}
@@ -1032,10 +1025,10 @@ function App() {
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>{exerciseGuide(previewExercise).target} {exerciseTargetLabel(previewExercise)}</strong>
+                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
                   <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
                 <button type="button" disabled={!profile.game.created || !canNavigate}
-                  onClick={() => goTraining('training', previewExercise)}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
+                  onClick={() => goTraining('training', 'squat')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
               </div>
               <div className="character-footer">
                 <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПОВТОРОВ <strong>{repetitionsDone}</strong></span></div>
@@ -1243,12 +1236,6 @@ function App() {
                 <div className="record-item"><div className="record-icon"><Clock3 size={22} /></div><div><strong className="time-record">{best === null ? '— : —' : formatTime(best)}</strong><span>ЛУЧШЕЕ ВРЕМЯ</span></div></div>
               </div>
               <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{workout.exerciseId === 'plank' ? '30 сек. планки' : `${workout.repetitions} · ${exerciseGuide(workout.exerciseId ?? 'squat').name.toLowerCase()}`}</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
-            </div>
-            <div className="tips-card"><div className="lower-card-header"><div><span className="section-index">ПЕРЕД УДАРОМ</span><h3>ПОДГОТОВЬ <em>КАДР</em></h3></div><CircleHelp size={22} /></div>
-              <div className="tip-row"><div className="tip-number">01</div><div><strong>Телефон вертикально, сбоку</strong><span>Снимай в портретном положении 9:16. Целиком должны быть видны таз, колени и стопы.</span></div></div>
-              <div className="tip-row"><div className="tip-number">02</div><div><strong>Прими исходную стойку</strong><span>Система сначала определит исходную стойку, затем включит секундомер.</span></div></div>
-              <div className="tip-row"><div className="tip-number">03</div><div><strong>Выполни 20 полных приседаний</strong><span>Присядь достаточно глубоко и выпрями ноги. На двадцатом система остановится сама.</span></div></div>
-              <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
             </div>
           </section>
           <section id="settings" className="forge-section bf-settings-screen" aria-label="Настройки и FAQ">

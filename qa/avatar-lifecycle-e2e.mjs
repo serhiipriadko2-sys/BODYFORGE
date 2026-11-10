@@ -49,17 +49,23 @@ const loop = canvas + '?.dataset.renderLoop';
 const draws = "window.__avatarDraws.get(window.__avatarCanvas) || 0";
 const avatarStats = () => js("(async()=> (await import('/src/lib/runtimeDiagnostics.ts')).runtimeDiagnostics.snapshot().avatar)()");
 try {
-  let port;
+  // On Windows the Chrome launcher can exit after handing off to an
+  // owned browser process. Readiness is the live CDP endpoint, not the
+  // launcher's exit code. Keep the isolated profile and existing flags.
+  let debuggerUrl;
   for (let i = 0; i < 100; i++) {
-    const portFile = path.join(profile, 'DevToolsActivePort');
-    if (fs.existsSync(portFile)) { port = Number(fs.readFileSync(portFile, 'utf8').split('\n')[0]); break; }
-    if (chrome.exitCode !== null) throw Error('Chrome exited ' + chrome.exitCode);
+    try {
+      const port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+      if (Number.isInteger(port) && port > 0) {
+        const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json();
+        debuggerUrl = tabs.find((item) => item.type === 'page')?.webSocketDebuggerUrl;
+        if (debuggerUrl) break;
+      }
+    } catch { /* Browser may still be starting. */ }
     await sleep(100);
   }
-  if (!port) throw Error('Chrome DevTools unavailable');
-  const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json();
-  const tab = tabs.find((item) => item.type === 'page');
-  socket = new WebSocket(tab.webSocketDebuggerUrl);
+  if (!debuggerUrl) throw Error('Chrome DevTools unavailable');
+  socket = new WebSocket(debuggerUrl);
   await new Promise((resolve, reject) => {
     socket.addEventListener('open', resolve, { once: true });
     socket.addEventListener('error', reject, { once: true });
@@ -182,9 +188,30 @@ try {
   process.exitCode = 12;
 } finally {
   socket?.close();
+  // Close only the browser that owns this temporary CDP profile. Killing
+  // the Windows launcher alone can leave the handed-off browser running.
+  try {
+    const port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+    if (Number.isInteger(port) && port > 0) {
+      const info = await (await fetch('http://127.0.0.1:' + port + '/json/version', {
+        signal: AbortSignal.timeout(1500),
+      })).json();
+      if (typeof info.webSocketDebuggerUrl === 'string') {
+        const owned = new WebSocket(info.webSocketDebuggerUrl);
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(Error('Owned Chrome CDP close timeout')), 1500);
+          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned Chrome CDP close failed')); }, { once: true });
+        });
+        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
+        await sleep(400);
+        owned.close();
+      }
+    }
+  } catch (error) { console.warn('QA_CHROME_CLOSE_UNCONFIRMED', String(error)); }
   chrome.kill();
-  await sleep(400);
-  // This exact directory is exclusively owned by the process that created it.
-  try { fs.rmSync(profile, { recursive: true, force: true }); }
+  await sleep(500);
+  // This exact directory is exclusively owned by this test.
+  try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); }
   catch { console.error('TEMP_CLEANUP_BLOCKED', profile); process.exitCode ||= 13; }
 }

@@ -302,6 +302,8 @@ function integrationStyleSnapshot(specs) {
   return records;
 }
 async function integrationRecords(tab, specs) {
+  await tab.until('(' + JSON.stringify(specs.map(spec => spec.selector)) + ').every(selector=>document.querySelector(selector)?.getClientRects().length>0)',
+    'theme targets are committed and visible before measurement');
   return tab.js('(' + integrationStyleSnapshot.toString() + ')(' + JSON.stringify(specs) + ')');
 }
 async function integrationBounds(tab, selectors, label) {
@@ -317,16 +319,25 @@ async function integrationBounds(tab, selectors, label) {
   }
 }
 async function openCameraPanels(tab) {
-  for (const [trigger, panel] of [['.bf-catalog-trigger', '.bf-catalog-grid'], ['.bf-guide-trigger', '.bf-guide']]) {
+  // The home exercise picker shares these classes. Only operate the visible
+  // Camera screen, otherwise a hidden catalog can produce a false QA result.
+  for (const [trigger, panel] of [['#challenge .bf-catalog-trigger', '#challenge .bf-catalog-grid'], ['#challenge .bf-guide-trigger', '#challenge .bf-guide']]) {
     await tab.until('!!document.querySelector(' + JSON.stringify(trigger) + ')', 'camera panel toggle mounted');
     if (!await tab.js('!!document.querySelector(' + JSON.stringify(panel) + ')')) await tab.click(trigger);
     await tab.until('!!document.querySelector(' + JSON.stringify(panel) + ')', 'camera panel expanded');
   }
 }
+async function trainingScreen(tab) {
+  await tab.click('.mobile-nav button:nth-child(2)');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge"&&["#daily-plan","#step-log"].every(s=>document.querySelector(s)?.getClientRects().length>0)',
+    'Camera screen owns visible daily plan and manual steps');
+}
 async function preferenceDraftRaces(a, initialGame) {
   const b = await newTab();
   try {
     await app(b);
+    await trainingScreen(a);
+    await trainingScreen(b);
     const baseline = await a.js('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)');
     check(baseline <= 120, 'synthetic goal has room for independent tab edits');
     if (!await a.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await a.click('#daily-plan .bf-small-action');
@@ -389,6 +400,7 @@ async function integrationExperience(tab, initialGame) {
   const goalKey = 'bodyforge:daily-plan:v1', stepsKey = 'bodyforge:manual-steps:v1';
   const appearanceBefore = await stored(tab);
   await tab.until('!!document.querySelector("#daily-plan")&&!!document.querySelector("#step-log")', 'new daily plan and manual steps panels mounted');
+  await trainingScreen(tab);
   await tab.click('#daily-plan .bf-small-action');
   await tab.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
   await tab.click('#daily-plan .bf-goal-save');
@@ -444,6 +456,7 @@ async function integrationExperience(tab, initialGame) {
   ].map(([selector, property, expected]) => ({ selector, property, expected }));
   cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'backgroundColor', expected: '--bf-accent' });
   cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'color', expected: '--bf-accent-ink' });
+  const cameraTargets = cameraSpecs.map(spec => ({ ...spec, selector: '#challenge ' + spec.selector }));
   observations.integration = [];
   for (const variant of ['mint', 'violet', 'custom-dark', 'high-contrast']) {
     await open(tab);
@@ -456,12 +469,12 @@ async function integrationExperience(tab, initialGame) {
       await tab.click('.appearance-palette [data-palette="' + variant + '"]'); await savedSettings(tab, variant);
     }
     await close(tab);
-    await tab.click('.mobile-nav button:nth-child(1)');
+    await trainingScreen(tab);
     if (!await tab.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await tab.click('#daily-plan .bf-small-action');
     const home = await integrationRecords(tab, homeSpecs);
     await tab.click('.mobile-nav button:nth-child(2)');
     await openCameraPanels(tab);
-    const camera = await integrationRecords(tab, cameraSpecs);
+    const camera = await integrationRecords(tab, cameraTargets);
     const records = [...home, ...camera];
     const state = { variant, records };
     observations.integration.push(state);
@@ -480,8 +493,8 @@ async function integrationExperience(tab, initialGame) {
     check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(goalKey) + '))?.targetReps===40&&JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '))?.count===4321'), variant + ' theme changes preserve saved daily goal and manual steps');
     for (const width of [390, 360, 320]) {
       await tab.viewport(width, width === 390 ? 844 : 800);
-      await tab.click('.mobile-nav button:nth-child(1)');
-      await integrationBounds(tab, ['#daily-plan', '#step-log', '.bf-goal-editor', '.bf-step-input-row'], variant + ' ' + width + ' home');
+      await trainingScreen(tab);
+      await integrationBounds(tab, ['#daily-plan', '#step-log', '.bf-goal-editor', '.bf-step-input-row'], variant + ' ' + width + ' training tasks');
       if (width === 390) {
         await tab.js('document.querySelector("#daily-plan").scrollIntoView({block:"start",behavior:"instant"});true');
         await tab.screenshot('integration-' + variant + '-daily-plan');
@@ -490,9 +503,9 @@ async function integrationExperience(tab, initialGame) {
       }
       await tab.click('.mobile-nav button:nth-child(2)');
       await openCameraPanels(tab);
-      await integrationBounds(tab, ['.bf-catalog', '.bf-catalog-grid', '.bf-guide', '.bf-guide-visual'], variant + ' ' + width + ' camera guide');
+      await integrationBounds(tab, ['#challenge .bf-catalog', '#challenge .bf-catalog-grid', '#challenge .bf-guide', '#challenge .bf-guide-visual'], variant + ' ' + width + ' camera guide');
       if (width === 390) {
-        await tab.js('document.querySelector(".bf-catalog").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.js('document.querySelector("#challenge .bf-catalog").scrollIntoView({block:"start",behavior:"instant"});true');
         await tab.screenshot('integration-' + variant + '-catalog-guide');
       }
     }

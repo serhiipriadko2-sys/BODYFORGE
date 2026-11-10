@@ -1,0 +1,84 @@
+diff --git "a/docs\\audits\\BF_APPEARANCE_CDP_20261110_ITER2\\appearance.before.mjs" "b/docs\\audits\\BF_APPEARANCE_CDP_20261110_ITER2\\appearance.candidate.mjs"
+index efaf2f3..1811569 100644
+--- "a/docs\\audits\\BF_APPEARANCE_CDP_20261110_ITER2\\appearance.before.mjs"
++++ "b/docs\\audits\\BF_APPEARANCE_CDP_20261110_ITER2\\appearance.candidate.mjs"
+@@ -217,6 +217,9 @@ async function colors(tab, label) {
+   for (const [pair, ratio] of Object.entries(result.ratios)) check(ratio >= 4.5, label + ' opaque/composited token contrast ' + pair + ' >=4.5 (' + ratio.toFixed(2) + ')');
+ }
+ async function mobileGraphics(tab, initialGame) {
++  // The avatar legitimately pauses rendering when Chrome backgrounds its tab.
++  // Make the measured tab active, without weakening any framebuffer assertion.
++  await tab.cdp('Page.bringToFront');
+   await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
+   // A real phone starts with this DPR. Changing only emulation DPR after load
+   // does not necessarily emit resize or request a new on-demand render.
+@@ -304,7 +307,17 @@ function integrationStyleSnapshot(specs) {
+ async function integrationRecords(tab, specs) {
+   await tab.until('(' + JSON.stringify(specs.map(spec => spec.selector)) + ').every(selector=>document.querySelector(selector)?.getClientRects().length>0)',
+     'theme targets are committed and visible before measurement');
+-  return tab.js('(' + integrationStyleSnapshot.toString() + ')(' + JSON.stringify(specs) + ')');
++  const read = () => tab.js('(' + integrationStyleSnapshot.toString() + ')(' + JSON.stringify(specs) + ')');
++  // Some Chrome builds retain the previous pseudo-element color for a paint.
++  // Wait at most 500 ms for the real computed tokens; never relax exact matches.
++  let records = await read();
++  const began = Date.now();
++  while (Date.now() - began < 500 && records.some(record => record.actual !== record.expected)) {
++    await sleep(50);
++    records = await read();
++  }
++  if (Date.now() - began > 0) console.log('THEME_STYLE_SETTLE_MS', Date.now() - began);
++  return records;
+ }
+ async function integrationBounds(tab, selectors, label) {
+   await tab.until('(' + JSON.stringify(selectors) + ').every(selector=>document.querySelector(selector)?.getClientRects().length>0)',
+@@ -521,7 +534,8 @@ try {
+   await waitFor(() => {
+     const file = path.join(profile, 'DevToolsActivePort');
+     if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); return port > 0; }
+-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    // Chrome's short-lived Windows launcher can exit while the owned browser
++    // remains live. Only this unique test profile's CDP port proves readiness.
+     return false;
+   }, 'owned Chrome DevTools', 10000);
+   const a = await newTab();
+@@ -677,13 +691,39 @@ try {
+   process.exitCode = 18;
+   for (const client of clients) {
+     try { console.log('FAILURE_STATE', await client.js('JSON.stringify({url:location.href,screen:document.querySelector(".app-shell")?.dataset.screen,theme:document.documentElement.dataset,dialog:document.querySelector("dialog.appearance-dialog")?.open,focus:{tag:document.activeElement.tagName,focused:document.hasFocus()},body:document.body.innerText.slice(0,400)})')); } catch {}
++    try { console.log('GRAPHICS_FAILURE_STATE', await client.js('JSON.stringify((()=>{const c=document.querySelector(".character-card .avatar-3d-shell canvas"),stage=document.querySelector(".character-card .avatar-stage"),r=c?.getBoundingClientRect();return {hidden:document.hidden,hasFocus:document.hasFocus(),inViewport:r? r.top<innerHeight&&r.bottom>0:false,renderScale:c?.dataset.renderScale,renderLoop:c?.dataset.renderLoop,canvasWidth:c?.width,canvasHeight:c?.height,stageDisplay:stage?getComputedStyle(stage).display:null,bodyGraphics:document.documentElement.dataset.bfGraphics}})())')); } catch {}
+   }
+ } finally {
+   for (const client of clients) client.socket.close();
++  // The launcher can exit before the actual browser. Close only the Chrome
++  // instance whose debugging port belongs to our disposable profile.
++  try {
++    const debugFile = path.join(profile, 'DevToolsActivePort');
++    if (fs.existsSync(debugFile)) {
++      const ownedPort = Number(fs.readFileSync(debugFile, 'utf8').split('\n')[0]);
++      if (Number.isInteger(ownedPort) && ownedPort > 0) {
++        const info = await (await fetch('http://127.0.0.1:' + ownedPort + '/json/version',
++          { signal: AbortSignal.timeout(1500) })).json();
++        if (typeof info.webSocketDebuggerUrl === 'string') {
++          const owned = new WebSocket(info.webSocketDebuggerUrl);
++          await new Promise((resolve, reject) => {
++            const timeout = setTimeout(() => reject(Error('Owned CDP close timeout')), 1500);
++            owned.addEventListener('open', () => { clearTimeout(timeout); resolve(); }, { once: true });
++            owned.addEventListener('error', () => { clearTimeout(timeout); reject(Error('Owned CDP close failed')); }, { once: true });
++          });
++          owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++          await sleep(700);
++          owned.close();
++        }
++      }
++    }
++  } catch (error) { console.warn('QA_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+   chrome.kill();
+   await sleep(500);
+   const resolved = path.resolve(profile), tempRoot = path.resolve(os.tmpdir()) + path.sep;
+   if (resolved.startsWith(tempRoot) && path.basename(resolved).startsWith('bf-appearance-')) {
+-    try { fs.rmSync(resolved, { recursive: true, force: true }); } catch { console.log('QA_PROFILE_CLEANUP_INCOMPLETE', resolved); }
++    // Windows can retain a just-closed profile for several seconds.
++    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
++    catch (error) { console.error('QA_PROFILE_CLEANUP_INCOMPLETE', resolved, String(error)); process.exitCode = 18; }
+   }
+ }

@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { CircleHelp, Info } from 'lucide-react';
 import type { Profile } from '../lib/progression';
 import type { CompletedWorkoutResult } from '../lib/workoutJournal';
 
@@ -37,6 +38,13 @@ export default function SettingsFaq({ profile, pendingResult, disabled }: Props)
           <summary>Как перенести прогресс на другой телефон?</summary>
           <p>Можно скачать JSON-копию ниже. Автоматического импорта и синхронизации между телефонами пока нет. Проверка файла не восстанавливает сохранения.</p>
         </details>
+      </div>
+      <div className="tips-card" aria-label="Подготовка кадра для приседаний">
+        <div className="lower-card-header"><div><span className="section-index">ПЕРЕД УДАРОМ</span><h3>ПОДГОТОВЬ <em>КАДР</em></h3></div><CircleHelp size={22} /></div>
+        <div className="tip-row"><div className="tip-number">01</div><div><strong>Телефон вертикально, сбоку</strong><span>Снимай в портретном положении 9:16. Целиком должны быть видны таз, колени и стопы.</span></div></div>
+        <div className="tip-row"><div className="tip-number">02</div><div><strong>Прими исходную стойку</strong><span>Система сначала определит исходную стойку, затем включит секундомер.</span></div></div>
+        <div className="tip-row"><div className="tip-number">03</div><div><strong>Выполни 20 полных приседаний</strong><span>Присядь достаточно глубоко и выпрями ноги. На двадцатом система остановится сама.</span></div></div>
+        <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
       </div>
       {profile.game.created
         ? <Suspense fallback={<p role="status">Загружаем защиту прогресса…</p>}>

@@ -1,0 +1,18 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\appearance-e2e.mjs",
+        "Hash":  "CE357D8619B1D686090717262668B11C3892DC9B7725FB5BB42BD069339BA92B"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "69AE4FC119E89346E6D315A9E6123A33176DAFAE1EF8D76C05B41D827C42F3B3"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\forge.css",
+        "Hash":  "7ADACC00887693CD0438591C3FA598B06F6499A1ADFBFD4895C234642BBB1C9D"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\forgeHomeXp.test.ts",
+        "Hash":  "A86387D90FC55C2CA826197822BF2A54C7D969B203DB222A250830B43EB01995"
+    }
+]

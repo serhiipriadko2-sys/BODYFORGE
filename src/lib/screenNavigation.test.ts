@@ -25,6 +25,16 @@ describe('Forge screen responsibilities', () => {
     expect(css).toContain('.app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log)');
   });
 
+  it('moves the entire pre-workout camera guide from Forge to Settings FAQ', () => {
+    expect(app).not.toContain('className="tips-card"');
+    expect(faq).toContain('className="tips-card"');
+    expect(faq).toContain('ПЕРЕД УДАРОМ');
+    expect(faq).toContain('ПОДГОТОВЬ <em>КАДР</em>');
+    expect(faq).toContain('Телефон вертикально, сбоку');
+    expect(faq).toContain('экспериментальная функция');
+    expect(css).toContain('.bf-settings-screen .tips-card');
+  });
+
   it('does not make the local backup available on the Forge home screen', () => {
     expect(app).not.toContain("section === 'dashboard' && <Suspense fallback={null}>\n            <ProgressBackupPanel");
     expect(app).toContain("section === 'settings' && <Suspense");

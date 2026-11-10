@@ -3,7 +3,7 @@ import {
   Activity, ArrowUpRight, ChartNoAxesCombined, ChevronDown, Dumbbell, Footprints,
   Gauge, Shield, Target, TrendingUp, Zap,
 } from 'lucide-react';
-import { getLevel, getLevelProgress, type Profile } from '../lib/progression';
+import type { Profile } from '../lib/progression';
 import { fighterSkillMeters, fighterUpgradeFraction, weeklySessionLine } from '../lib/dashboardDisplay';
 import { comparePulsePeriods, type PulseRange } from '../lib/progressPulse';
 
@@ -35,10 +35,6 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
   const muscles = fighterSkillMeters(profile.game.muscles);
   const overall = fighterUpgradeFraction(profile.game.muscles);
   const upgradePercent = Math.round(overall * 100);
-  const xp = Math.max(0, profile.xp);
-  const level = getLevel(xp);
-  const levelProgress = getLevelProgress(xp);
-  const levelPercent = Math.round(levelProgress * 100);
 
   return (
     <section id="pulse-progress" className="pulse-dashboard" aria-label="Достоверный прогресс BODYFORGE">
@@ -129,6 +125,27 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
           <strong>{trend.sessions}</strong>
           <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {trend.reps} повторений{trend.holdSeconds ? ` · ${trend.holdSeconds} сек. планки` : ''}</span>
         </div>
+        <div className="pulse-metric-grid" role="group"
+          aria-label={`Подтверждённая активность за ${range} дней`} data-activity-period={range}>
+          <div className="pulse-metric" aria-label={`Повторы упражнений за ${range} дней: ${trend.reps}`}>
+            <Dumbbell size={18}/><span>ПОВТОРОВ ЗА {range} ДНЕЙ</span>
+            <strong data-period-reps={trend.reps} data-weekly-reps={range === 7 ? trend.reps : undefined}>
+              {trend.reps}
+            </strong>
+            {trend.holdSeconds > 0 && <small data-period-plank-seconds={trend.holdSeconds}>{trend.holdSeconds} сек. планки</small>}
+          </div>
+          <div className="pulse-metric" aria-label={`Активных дней: ${trend.activeDays} из ${range}`}>
+            <Activity size={18}/><span>АКТИВНЫХ ДНЕЙ</span>
+            <strong data-active-days={trend.activeDays} data-period-active-days={trend.activeDays}>
+              {trend.activeDays}<small>/{range}</small>
+            </strong>
+          </div>
+          <div className="pulse-metric pulse-metric-action">
+            <Zap size={18}/><span>СЛЕДУЮЩИЙ ШАГ</span>
+            <button type="button" onClick={onTraining}>Тренировка <ArrowUpRight size={15}/></button>
+            <button type="button" onClick={onAvatar}>Герой <ArrowUpRight size={15}/></button>
+          </div>
+        </div>
         <div className="pulse-comparison" data-pulse-delta={historyLimited ? 'unavailable' : deltaSessions}
           data-prior-sessions={previous.sessions} aria-label={changeLabel}>
           <TrendingUp size={14} aria-hidden="true"/>
@@ -194,34 +211,6 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
           {historyLimited ? ' · История ограничена последними 60 тренировками; сравнение периодов отключено.' : ''}
         </p>
       </article>
-
-      <article className="pulse-xp-card" aria-label={`Уровень ${level}, ${levelPercent}% опыта до следующего уровня`}>
-        <div className="pulse-xp-top">
-          <div className="pulse-level-medal"><span>{level}</span></div>
-          <div className="pulse-xp-heading">
-            <strong>Уровень {level}</strong>
-            <span>Опыт: {xp%250} / 250 XP</span>
-          </div>
-          <span className="pulse-xp-legend">ТВОЯ СЛЕДУЮЩАЯ ЗАКАЛКА <ArrowUpRight size={16}/></span>
-        </div>
-        <div className="pulse-xp-track" role="progressbar" aria-valuenow={xp%250}
-          aria-valuemax={250} aria-valuemin={0} aria-label="Опыт до следующего уровня">
-          <span style={{width:`${levelProgress*100}%`}}/>
-        </div>
-      </article>
-
-      <div className="pulse-metric-grid">
-        <div className="pulse-metric"><Dumbbell size={18}/><span>ПОВТОРОВ ЗА {range} ДНЕЙ</span>
-          <strong data-period-reps={trend.reps} data-weekly-reps={range === 7 ? trend.reps : undefined}>
-            {trend.reps}
-          </strong>{trend.holdSeconds > 0 && <small data-period-plank-seconds={trend.holdSeconds}>{trend.holdSeconds} сек. планки</small>}</div>
-        <div className="pulse-metric"><Activity size={18}/><span>АКТИВНЫХ ДНЕЙ</span>
-          <strong data-active-days={trend.activeDays}>{trend.activeDays}<small>/{range}</small></strong></div>
-        <div className="pulse-metric pulse-metric-action"><Zap size={18}/><span>СЛЕДУЮЩИЙ ШАГ</span>
-          <button type="button" onClick={onTraining}>Тренировка <ArrowUpRight size={15}/></button>
-          <button type="button" onClick={onAvatar}>Герой <ArrowUpRight size={15}/></button>
-        </div>
-      </div>
     </section>
   );
 }

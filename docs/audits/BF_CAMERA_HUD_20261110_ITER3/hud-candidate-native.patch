@@ -1,0 +1,70 @@
+diff --git a/qa/mobile-e2e.mjs b/qa/mobile-e2e.mjs
+index ddcf7d4..9f68785 100644
+--- a/qa/mobile-e2e.mjs
++++ b/qa/mobile-e2e.mjs
+@@ -426,6 +426,31 @@ try{
+     if(detectorReady)break;
+   }
+   check(detectorReady,'pose model fully active before switching lens');
++  // Visual layout contract: temporary Chrome camera, never the user's video.
++  // Large HUD panels must not cover the lower 35% where feet are framed.
++  const cameraHudMatrix=[];
++  for(const viewportWidth of [320,360,390,428]){
++    await cdp('Emulation.setDeviceMetricsOverride',{width:viewportWidth,height:844,deviceScaleFactor:1,mobile:true});
++    await sleep(180);
++    const g=await read("(()=>{const frame=document.querySelector('#challenge .training-visual');const rect=e=>{const r=e?.getBoundingClientRect();return r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null};return {frame:rect(frame),counter:rect(frame?.querySelector('.counter-center')),hud:rect(frame?.querySelector('.pose-hud')),coach:rect(frame?.querySelector('.pose-camera-coach')),viewport:innerWidth,scroll:document.documentElement.scrollWidth}})()");
++    const within=(r,f)=>r.left>=f.left+4&&r.right<=f.right-4;
++    const overlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
++    const lowerLimit=g.frame.top+g.frame.height*.65;
++    const clear=!!g.counter&&!!g.hud&&within(g.counter,g.frame)&&within(g.hud,g.frame)
++      &&!overlap(g.counter,g.hud)&&Math.max(g.counter.bottom,g.hud.bottom)<=lowerLimit
++      &&(!g.coach||g.coach.bottom+8<=Math.min(g.counter.top,g.hud.top))
++      &&g.scroll<=g.viewport;
++    cameraHudMatrix.push(clear);
++    console.log('CAMERA_HUD_MATRIX',viewportWidth,JSON.stringify({pass:clear,
++      counterBottom:Math.round((g.counter?.bottom??0)-g.frame.top),
++      hudBottom:Math.round((g.hud?.bottom??0)-g.frame.top),
++      coachBottom:Math.round((g.coach?.bottom??0)-g.frame.top),
++      lowerLimit:Math.round(lowerLimit-g.frame.top)}));
++  }
++  await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
++  await js("document.querySelector('#challenge .training-visual')?.scrollIntoView({block:'center',behavior:'instant'});true");
++  await screenshot('bf-qa-mobile-camera-hud-390.png');
++  check(cameraHudMatrix.every(Boolean),'camera HUD keeps lower 35% unobscured across 320/360/390/428px');
+   // Chrome's fake webcam is a single camera. Switching to the rear-facing
+   // preference must keep inference alive without wiping a workout reward.
+   await click('.camera-lenses button:nth-child(2)');
+diff --git a/src/forge.css b/src/forge.css
+index 89560ad..341de40 100644
+--- a/src/forge.css
++++ b/src/forge.css
+@@ -632,3 +632,29 @@ h1, h2, h3, .counter-number, .brand-copy strong, .record-item strong,
+   .pose-hud-target { font-size: 8px; }
+   .pose-hud-step, .pose-hud-side { font-size: 7px; }
+ }
++
++/* Mobile live camera: keep knees, ankles and feet clear of large HUD panels.
++ * Pure presentation change; MediaPipe receives the unmodified video frame. */
++@media (max-width: 428px) {
++  .training-visual-camera .counter-center {
++    top: 148px;
++    right: 8px;
++    bottom: auto;
++    left: auto;
++  }
++  .training-visual-camera .counter-circle {
++    width: 106px;
++    height: 106px;
++    backdrop-filter: none;
++  }
++  .training-visual-camera .counter-number { font-size: 46px; }
++  .training-visual-camera .counter-target { font-size: 14px; }
++  .training-visual-camera .counter-inner small { font-size: 7px; letter-spacing: 0; }
++  .training-visual-camera .pose-hud {
++    top: 148px;
++    bottom: auto;
++    left: 8px;
++    width: min(142px, calc(100% - 134px));
++    padding: 8px 7px;
++  }
++}

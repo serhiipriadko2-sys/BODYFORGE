@@ -1,0 +1,14 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\appearance-e2e.mjs",
+        "Hash":  "5E8E79CCC80B05AE4787FA8AD18C553085D69572C5EE31A7FE3EF2C2AC94C746"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "6467023EB626BBA3201B0264A08668CC4235E3236ABFC1F906955ACBF00922F4"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\forge.css",
+        "Hash":  "A9A1BF6BEFDBA94DFDCEA994079CE473BFA915CAFDCAA983DC72E84DC5C0A8C5"
+    }
+]

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Activity, Camera, ChevronDown, ShieldCheck, Smartphone } from 'lucide-react';
 import { EXERCISE_GUIDES, exerciseGuide, exerciseCameraLayout, canStartCameraExercise, type ExerciseId } from '../lib/trainingCatalog';
 
-interface CatalogProps { selected: ExerciseId; onSelect: (id: ExerciseId) => void; busy?: boolean; initiallyOpen?: boolean }
+interface CatalogProps { selected: ExerciseId; onSelect: (id: ExerciseId) => void; busy?: boolean }
 
-export function ExerciseCatalog({ selected, onSelect, busy = false, initiallyOpen = false }: CatalogProps) {
-  const [catalogOpen, setCatalogOpen] = useState(initiallyOpen);
+export function ExerciseCatalog({ selected, onSelect, busy = false }: CatalogProps) {
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   useEffect(() => {
     if (busy) { setCatalogOpen(false); setGuideOpen(false); }
