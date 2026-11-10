@@ -1,0 +1,23 @@
+## main...origin/main
+ M docs/audits/BF_WEBGL_RELOAD_PROBE_20261110.mjs
+ M qa/bundle-on-demand.mjs
+ M qa/forge-home-xp-faq-e2e.mjs
+ M qa/journal-e2e.mjs
+ M qa/mobile-e2e.mjs
+ M src/App.tsx
+ M src/components/ForgeQuickDeck.tsx
+ M src/components/ForgeWorld.tsx
+ M src/lib/screenNavigation.test.ts
+ M src/neonPulseV2.css
+?? docs/audits/BF_APPEARANCE_CONTRACT_20261110/
+?? docs/audits/BF_CDP_RELOAD_DAILY_20261110/
+?? docs/audits/BF_HERO_LAYOUT_20261110/
+?? docs/audits/BF_HERO_LAYOUT_20261110_KEYBOARD_RECHECK/
+?? docs/audits/BF_MOBILE_NEWHEAD_20261110/
+?? docs/audits/BF_MOBILE_RELOAD_TRACE_20261110/
+?? docs/audits/BF_P0_REWARD_VERIFY_20261110/
+?? docs/audits/BF_REMOVE_CAMERA_PLAN_20261110/
+?? docs/audits/BF_THEME_PSEUDO_20261110/
+?? docs/audits/BODYFORGE_20261110_REMOVE_CAMERA_DAILY_PLAN_QA.md
+?? qa/hero-layout-e2e.mjs
+?? src/lib/heroLayout.test.ts

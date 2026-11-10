@@ -18,8 +18,10 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
   const [selectedDate, setSelectedDate] = useState('');
   const dateStrip = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // The 30-day strip has horizontal scroll; show today's chip on switching.
-    if (range === 30 && dateStrip.current) dateStrip.current.scrollLeft = dateStrip.current.scrollWidth;
+    // Both ranges can scroll on narrow screens. Keep the newest selected day visible
+    // on initial mount and after switching 7 / 30 without scrolling the entire page.
+    const strip = dateStrip.current;
+    if (strip) strip.scrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
   }, [range]);
   const { current: trend, previous, deltaSessions, historyLimited } =
     comparePulsePeriods(profile.workouts, now, range);
@@ -182,7 +184,9 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
               fontSize="16" textAnchor="middle">{p.tick}</text>)}
           </svg>
         </div>
-        <div className="pulse-date-strip" role="group" aria-label="Выбрать день графика"
+        <p className="pulse-date-swipe-hint">← Листай даты →</p>
+        <div className="pulse-date-strip" role="region" tabIndex={0}
+          aria-label="Выбрать день графика: список прокручивается горизонтально"
           data-period={range} ref={dateStrip}>
           {trend.days.map(day => (
             <button type="button" key={day.date} data-pulse-date={day.date}

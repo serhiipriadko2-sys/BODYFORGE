@@ -1,0 +1,86 @@
+diff --git "a/docs\\audits\\BF_P0_REWARD_VERIFY_20261110\\journal.before.mjs" "b/qa\\journal-e2e.mjs"
+index 9b27764..aa42ae8 100644
+--- "a/docs\\audits\\BF_P0_REWARD_VERIFY_20261110\\journal.before.mjs"
++++ "b/qa\\journal-e2e.mjs"
+@@ -278,7 +278,13 @@ async function foregroundReconciliation() {
+   await observer.js('window.__release();true');
+   await waitFor(async()=>(await readProfile()).coins===10,'ordinary profile save settles in the background');
+   await page.js("window.__qaHidden=false;document.dispatchEvent(new Event('visibilitychange'));true");
+-  await page.until("document.querySelector('[data-action=prepare-progress]')?.disabled===false",'ordinary profile save clears its saving flag after foreground');
++  // Backup controls are lazy-mounted on Settings, not on the Camera/Home screen.
++  // A completed save must first unlock navigation, then the real backup action.
++  await page.until('document.querySelector(\'.mobile-nav button[aria-label="Настройки и FAQ"]\')?.disabled===false',
++    'ordinary profile save unlocks Settings after foreground');
++  await click('.mobile-nav button[aria-label="Настройки и FAQ"]');
++  await page.until("document.querySelector('#settings [data-action=prepare-progress]')?.disabled===false",
++    'ordinary profile save clears its saving flag after foreground');
+   check((await readProfile()).coins===10,'foreground never duplicates the ordinary reward');
+ }
+ 
+@@ -474,13 +480,18 @@ async function hotDedupRecovery() {
+ }
+ 
+ try {
+-  for (let i = 0; i < 100; i++) {
++  // On Windows the Chrome launcher may exit 0 after handing off to the browser.
++  // The disposable profile's DevToolsActivePort is the readiness signal.
++  for (let i = 0; i < 150; i++) {
+     const file = path.join(ownedProfile, 'DevToolsActivePort');
+-    if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); break; }
+-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    if (fs.existsSync(file)) {
++      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) { port = candidate; break; }
++    }
++    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
+     await sleep(100);
+   }
+-  if (!port) throw Error('Owned DevTools unavailable');
++  if (!port) throw Error('Owned DevTools unavailable in disposable profile after 15s');
+   observer = await newPage(true);
+ 
+   if (process.argv.includes('--dedup-only')) { await dedupRecovery(); await hotDedupRecovery(); }
+@@ -631,9 +642,41 @@ try {
+   process.exitCode = 16;
+ } finally {
+   for (const client of clients) client.dispose();
++  // Windows may leave the owned Chrome browser running after its launcher exits.
++  // Close ONLY the browser advertised by this script's disposable profile.
++  try {
++    const portFile = path.join(ownedProfile, 'DevToolsActivePort');
++    if (fs.existsSync(portFile)) {
++      const ownPort = Number(fs.readFileSync(portFile, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(ownPort) && ownPort > 0 && ownPort <= 65535) {
++        const reply = await fetch('http://127.0.0.1:' + ownPort + '/json/version',
++          { signal: AbortSignal.timeout(1500) });
++        if (!reply.ok) throw Error('Owned CDP version endpoint failed');
++        const { webSocketDebuggerUrl } = await reply.json();
++        const endpoint = new URL(webSocketDebuggerUrl);
++        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
++            endpoint.port !== String(ownPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
++          throw Error('Unverified owned Chrome endpoint');
++        }
++        const owned = new WebSocket(webSocketDebuggerUrl);
++        await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Owned Chrome CDP open timeout')), 1500);
++          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned Chrome CDP connection failed')); }, { once: true });
++        });
++        const closed = new Promise((resolve) => {
++          const timer = setTimeout(resolve, 1500);
++          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
++        });
++        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++        await closed;
++        if (owned.readyState === WebSocket.OPEN) owned.close();
++      }
++    }
++  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+   chrome.kill(); await sleep(500);
+   // The only recursive deletion is this script's verified mkdtemp directory.
+   if (path.dirname(ownedProfile) !== os.tmpdir() || !path.basename(ownedProfile).startsWith('bf-journal-')) throw Error('Unexpected temp cleanup target');
+-  try { fs.rmSync(ownedProfile, { recursive: true, force: true }); }
+-  catch { console.error('TEMP_CLEANUP_BLOCKED', ownedProfile); process.exitCode ||= 17; }
++  try { fs.rmSync(ownedProfile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
++  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+ }

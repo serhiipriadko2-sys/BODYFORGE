@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import {
-  ArrowRight, CheckCircle2, ChevronRight, Coins, Crown, Flame, Footprints,
-  Gift, Globe2, Hammer, LockKeyhole, Medal, Shirt, ShieldCheck,
+  ArrowRight, CheckCircle2, ChevronDown, ChevronRight, Coins, Crown, Flame, Footprints,
+  Gift, Globe2, Hammer, LockKeyhole, Medal, Shirt, ShieldCheck, SlidersHorizontal,
   Swords, Target, Timer, UserRound, Zap,
 } from 'lucide-react';
 import GameAvatar, { type AvatarFocus } from './GameAvatar';
@@ -117,7 +117,8 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
       </div>
       {busy && <p role="status">Сохраняем прогресс. Дождись завершения записи, прежде чем улучшать мышцы или менять одежду.</p>}
       <div className="studio-layout">
-        <div className="studio-preview" data-studio-focus={focus} data-studio-trim={look.trim}>
+        <div className="studio-hero-column">
+          <div className="studio-preview" data-studio-focus={focus} data-studio-trim={look.trim}>
           <span className="preview-kicker">BODYFORGE // AVATAR SYSTEM · 01</span>
           <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {focus === 'portrait' ? 'ПОРТРЕТ' : 'ПОЛНЫЙ РОСТ'}</div>
           <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}
@@ -125,13 +126,9 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
           <strong>{game.nickname}</strong>
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
-        </div>
-        <div className="studio-content">
-          {active && <Suspense fallback={<div className="armory-lab-wait" role="status">Загружаем редактор внешности…</div>}>
-            <AvatarLab look={look} onChange={onLookChange} focus={focus} onFocus={setFocus}
-              yaw={yaw} onYaw={setYaw} message={lookMessage} readStatus={lookStatus}/>
-          </Suspense>}
-          <div className="forge-subheading"><Hammer size={18}/> ПРОКАЧКА МЫШЦ <span>МАКСИМУМ 5</span></div>
+          </div>
+          <section className="studio-muscle-panel" aria-label="Прокачка мышц">
+            <div className="forge-subheading"><Hammer size={18}/> ПРОКАЧКА МЫШЦ <span>МАКСИМУМ 5</span></div>
           <div className="muscle-grid">
             {MUSCLES.map((muscle) => {
               const level = game.muscles[muscle.id], cost = muscleCost(level);
@@ -145,9 +142,34 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
                   {capped ? 'МАКС.' : <><Coins size={14}/> {cost} · УЛУЧШИТЬ</>}</button>
               </div>;
             })}
-          </div>
-          <div className="forge-subheading"><Shirt size={18}/> ГАРДЕРОБ <span>ВЫБЕРИ ФОРМУ</span></div>
-          <div className="outfit-grid">
+            </div>
+          </section>
+        </div>
+        <div className="studio-content">
+          <details className="studio-accordion" data-studio-panel="appearance" open>
+            <summary className="studio-accordion-trigger">
+              <SlidersHorizontal size={20} aria-hidden="true"/>
+              <span className="studio-accordion-copy">
+                <small>BODYFORGE / AVATAR LAB</small>
+                <strong>СОБЕРИ <em>СВОЙ ОБЛИК</em></strong>
+              </span>
+              <ChevronDown className="studio-accordion-chevron" size={21} aria-hidden="true"/>
+            </summary>
+            {active && <Suspense fallback={<div className="armory-lab-wait" role="status">Загружаем редактор внешности…</div>}>
+              <AvatarLab look={look} onChange={onLookChange} focus={focus} onFocus={setFocus}
+                yaw={yaw} onYaw={setYaw} message={lookMessage} readStatus={lookStatus}/>
+            </Suspense>}
+          </details>
+          <details className="studio-accordion" data-studio-panel="wardrobe" open>
+            <summary className="studio-accordion-trigger">
+              <Shirt size={20} aria-hidden="true"/>
+              <span className="studio-accordion-copy">
+                <small>ВЫБЕРИ ФОРМУ</small>
+                <strong>ГАРДЕРОБ</strong>
+              </span>
+              <ChevronDown className="studio-accordion-chevron" size={21} aria-hidden="true"/>
+            </summary>
+            <div className="outfit-grid">
             {OUTFITS.map((outfit) => {
               const owned = game.ownedOutfits.includes(outfit.id);
               const selected = game.outfit === outfit.id;
@@ -160,7 +182,8 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
                 <span className="outfit-price">{selected ? 'НАДЕТО' : owned ? 'НАДЕТЬ' : <><Coins size={13}/> {outfit.price}</>}</span>
               </button>;
             })}
-          </div>
+            </div>
+          </details>
         </div>
       </div>
     </section>

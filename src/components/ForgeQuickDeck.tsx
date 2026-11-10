@@ -24,8 +24,8 @@ export default function ForgeQuickDeck({ profile, disabled, onTraining, onAvatar
     { id: 'tower', title: 'Башня', subtitle: towerDone === TOWER_FLOORS.length ? 'Этажи пройдены' : `Следующий: ${tower.floor}`,
       kicker: 'ИСПЫТАНИЯ', meta: `${towerDone} / ${TOWER_FLOORS.length} этажей`, action: onTower,
       glyph: Shield, hint: 'Открыть башню' },
-    { id: 'daily', title: 'Цели дня', subtitle: 'Задачи и награды', kicker: 'ТВОЙ ПЛАН',
-      meta: 'Проверить прогресс', action: onDaily, glyph: CalendarCheck2, hint: 'Перейти к целям дня' },
+    { id: 'daily', title: 'Миссии', subtitle: 'Задачи и награды', kicker: 'МИССИИ · КАМЕРА',
+      meta: 'Проверить задания', action: onDaily, glyph: CalendarCheck2, hint: 'Открыть миссии на экране Камера' },
   ] as const;
 
   return <section className="forge-quick-deck" id="forge-quick-deck" aria-label="Разделы BODYFORGE">

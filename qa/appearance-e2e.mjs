@@ -116,8 +116,8 @@ async function app(tab, reload = false) {
   await tab.until('!!document.querySelector(".app-shell")&&!!' + query('button[aria-label="Внешний вид"]'), 'actual application and appearance control');
   await tab.until('document.documentElement.dataset.bfPalette!==undefined', 'appearance applied to document');
   if (await tab.js('!!document.querySelector(".dashboard-player")')) {
-    await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
-      'created fighter dashboard lazy panels ready');
+    await tab.until('!!document.querySelector(".dashboard-player .profile-training-cta")',
+      'created fighter dashboard CTA ready');
   }
 }
 async function open(tab) {
@@ -329,114 +329,77 @@ async function openCameraPanels(tab) {
 }
 async function trainingScreen(tab) {
   await tab.click('.mobile-nav button:nth-child(2)');
-  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge"&&["#daily-plan","#step-log"].every(s=>document.querySelector(s)?.getClientRects().length>0)',
-    'Camera screen owns visible daily plan and manual steps');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge"&&["#quests","#step-log"].every(s=>document.querySelector(s)?.getClientRects().length>0)&&!document.querySelector("#daily-plan")',
+    'Camera screen shows missions and manual steps without removed daily-plan editor');
 }
 async function preferenceDraftRaces(a, initialGame) {
+  // The daily-plan editor was deliberately removed from the app, but its
+  // localStorage key must remain untouched. Cross-tab manual steps still work.
   const b = await newTab();
   try {
     await app(b);
     await trainingScreen(a);
     await trainingScreen(b);
-    const baseline = await a.js('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)');
-    check(baseline <= 120, 'synthetic goal has room for independent tab edits');
-    if (!await a.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await a.click('#daily-plan .bf-small-action');
-    await a.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    const wanted = baseline + 20, remote = baseline + 40;
-    await a.until('parseInt(document.querySelector("#daily-plan output")?.textContent)===' + wanted, 'first tab has its own unsaved daily-goal draft');
-    await b.click('#daily-plan .bf-small-action');
-    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    await b.click('#daily-plan .bf-goal-save');
-    await a.until('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)===' + remote, 'first tab receives actual newer goal from the second tab');
-    const goal = await a.js('({saved:Number(document.querySelector("[data-goal-target]").dataset.goalTarget),draft:parseInt(document.querySelector("#daily-plan output")?.textContent),warning:[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))})');
-    await a.click('#daily-plan .bf-goal-cancel');
-    await a.click('#daily-plan .bf-small-action');
-    goal.cancelledDraft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
-    await a.click('#daily-plan .bf-goal-cancel');
-    // Hiding an editor is not explicit cancellation of its unsaved contents.
-    await a.click('#daily-plan .bf-small-action');
-    await a.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    const hiddenWanted = remote + 20, hiddenRemote = remote + 40;
-    await a.until('parseInt(document.querySelector("#daily-plan output")?.textContent)===' + hiddenWanted, 'first tab edits a second daily-goal draft before hiding');
-    await a.click('#daily-plan .bf-small-action');
-    check(!await a.js('!!document.querySelector("#daily-plan .bf-goal-editor")'), 'hide editor collapses controls without explicit cancellation');
-    await b.click('#daily-plan .bf-small-action');
-    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    await b.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-    await b.click('#daily-plan .bf-goal-save');
-    await a.until('Number(document.querySelector("[data-goal-target]").dataset.goalTarget)===' + hiddenRemote, 'first tab receives newer goal while its dirty editor is hidden');
-    const hiddenGoal = await a.js('({saved:Number(document.querySelector("[data-goal-target]").dataset.goalTarget),warningBeforeReopen:[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))})');
-    await a.click('#daily-plan .bf-small-action');
-    hiddenGoal.draft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
-    hiddenGoal.warningAfterReopen = await a.js('[...document.querySelectorAll("#daily-plan [role=status]")].some(e=>/черновик/i.test(e.innerText))');
-    await a.click('#daily-plan .bf-goal-cancel');
-    await a.click('#daily-plan .bf-small-action');
-    hiddenGoal.cancelledDraft = await a.js('parseInt(document.querySelector("#daily-plan output")?.textContent)');
-    await a.click('#daily-plan .bf-goal-cancel');
+    check(await a.js('!document.querySelector("#daily-plan") && !!document.querySelector("#quests")'),
+      'removed daily-plan editor stays absent while missions remain available');
+    const legacyRaw = await a.js('localStorage.getItem("bodyforge:daily-plan:v1")');
     await a.input('#bf-steps-today', '7777');
     await b.input('#bf-steps-today', '8888');
     await b.click('#step-log .bf-step-input-row button');
-    await a.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="8888"', 'first tab receives actual newer saved manual steps');
-    const steps = await a.js('({saved:Number(document.querySelector("[data-manual-steps]").dataset.manualSteps),draft:document.querySelector("#bf-steps-today").value,warning:[...document.querySelectorAll("#step-log [role=status]")].some(e=>/ввод/i.test(e.innerText)),durable:JSON.parse(localStorage.getItem("bodyforge:manual-steps:v1"))?.count})');
-    check(await gameBytes(a) === initialGame, 'two-tab goal and manual-step edits preserve every game storage byte');
+    await a.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="8888"',
+      'first tab receives newly saved manual steps from another tab');
+    const steps = await a.js('(()=>{const e=document.querySelector("#bf-steps-today");return {saved:Number(document.querySelector("[data-manual-steps]")?.dataset.manualSteps),draft:e?.value,warning:[...document.querySelectorAll("#step-log [role=status]")].some(el=>/ввод/i.test(el.innerText)),durable:JSON.parse(localStorage.getItem("bodyforge:manual-steps:v1"))?.count}})()');
+    check(await gameBytes(a) === initialGame, 'cross-tab manual steps never alter game save bytes');
     await app(a, true);
-    steps.afterReload = await a.js('({saved:Number(document.querySelector("[data-manual-steps]").dataset.manualSteps),input:document.querySelector("#bf-steps-today").value})');
-    observations.preferenceDrafts = { baseline, wanted, remote, goal, hiddenWanted, hiddenRemote, hiddenGoal, steps };
+    await trainingScreen(a);
+    steps.afterReload = await a.js('({saved:Number(document.querySelector("[data-manual-steps]")?.dataset.manualSteps),input:document.querySelector("#bf-steps-today")?.value})');
+    observations.preferenceDrafts = { removedDailyPlan: true, steps };
     console.log('PREFERENCE_DRAFT_OBSERVATIONS', JSON.stringify(observations.preferenceDrafts));
-    check(goal.saved === remote && goal.draft === wanted, 'cross-tab saved goal updates while first-tab unsaved draft remains intact');
-    check(goal.warning, 'cross-tab goal update visibly explains the preserved draft');
-    check(goal.cancelledDraft === remote, 'cancelling daily-goal draft returns to latest saved goal');
-    check(hiddenGoal.saved === hiddenRemote && hiddenGoal.draft === hiddenWanted, 'hidden unsaved daily-goal draft survives another tab save and reopening');
-    check(hiddenGoal.warningBeforeReopen && hiddenGoal.warningAfterReopen, 'cross-tab conflict warning remains visible when dirty goal editor is reopened');
-    check(hiddenGoal.cancelledDraft === hiddenRemote, 'explicit cancellation of hidden-and-reopened goal loads latest saved goal');
-    check(steps.saved === 8888 && steps.draft === '7777' && steps.durable === 8888, 'cross-tab saved manual steps update without replacing unsaved input');
-    check(steps.warning, 'cross-tab manual-step update visibly explains the preserved input');
-    check(steps.afterReload.saved === 8888 && steps.afterReload.input === '8888', 'reload restores durable manual steps rather than the abandoned draft');
-    check(await gameBytes(a) === initialGame, 'two-tab preference races and reload leave game progress byte-identical');
+    check(steps.saved === 8888 && steps.draft === '7777' && steps.durable === 8888,
+      'remote manual-step save does not replace the unsaved local input');
+    check(steps.warning, 'cross-tab manual-step update explains that input was preserved');
+    check(steps.afterReload.saved === 8888 && steps.afterReload.input === '8888',
+      'reload shows the durable manual steps rather than abandoned draft');
+    check(await a.js('localStorage.getItem("bodyforge:daily-plan:v1")') === legacyRaw,
+      'removed daily-plan preference bytes are not rewritten');
+    check(await gameBytes(a) === initialGame,
+      'cross-tab steps and reload preserve the entire game progress');
   } finally { await b.close(); }
 }
 async function integrationExperience(tab, initialGame) {
   const goalKey = 'bodyforge:daily-plan:v1', stepsKey = 'bodyforge:manual-steps:v1';
   const appearanceBefore = await stored(tab);
-  await tab.until('!!document.querySelector("#daily-plan")&&!!document.querySelector("#step-log")', 'new daily plan and manual steps panels mounted');
+  const legacyRaw = JSON.stringify({ version: 99, opaque: 'qa-preserve-retired-editor' });
+  // A legacy preference is retained after the UI editor is removed.
+  await tab.js('localStorage.setItem(' + JSON.stringify(goalKey) + ',' + JSON.stringify(legacyRaw) + ');true');
   await trainingScreen(tab);
-  await tab.click('#daily-plan .bf-small-action');
-  await tab.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
-  await tab.click('#daily-plan .bf-goal-save');
-  await tab.until('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"', 'new daily goal acknowledged in actual panel');
-  check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(goalKey) + '))?.targetReps===40'), 'daily goal saved in its separate preference key');
-  check(await gameBytes(tab) === initialGame, 'changing daily goal preserves exact game primary, backup and result bytes');
-  check(await stored(tab) === appearanceBefore, 'changing daily goal does not rewrite appearance settings');
+  check(await tab.js('!document.querySelector("#daily-plan") && !!document.querySelector("#quests")'),
+    'Camera keeps missions and omits the retired personal-plan editor');
   await tab.input('#bf-steps-today', '4321');
   await tab.click('#step-log .bf-step-input-row button');
-  await tab.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"', 'manual steps acknowledged in actual panel');
-  check(await tab.js('(()=>{const s=JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '));return s?.count===4321&&s.source==="manual"})()'), 'manual steps saved with explicit manual provenance in separate key');
-  check(await gameBytes(tab) === initialGame, 'manual steps award no XP or coins and preserve exact game bytes');
-  check(await stored(tab) === appearanceBefore, 'manual steps do not rewrite appearance settings');
+  await tab.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"',
+    'manual steps acknowledged in the actual Camera panel');
+  check(await tab.js('(()=>{const s=JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '));return s?.count===4321&&s.source==="manual"})()'),
+    'manual steps persist with explicit manual provenance');
+  check(await gameBytes(tab) === initialGame,
+    'manual steps award no XP or coins and preserve the game');
+  check(await stored(tab) === appearanceBefore,
+    'manual steps do not silently rewrite appearance preferences');
   await app(tab, true);
-  await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
-    'lazy daily goal and manual steps panels mounted after reload');
-  check(await tab.js('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"&&document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"'), 'daily goal and manual steps survive actual application reload');
-  check(await gameBytes(tab) === initialGame, 'reloading goal and steps leaves game primary and backup byte-identical');
+  await trainingScreen(tab);
+  check(await tab.js('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"'),
+    'manual steps survive a full application reload');
+  check(await tab.js('localStorage.getItem(' + JSON.stringify(goalKey) + ')') === legacyRaw,
+    'removed editor does not erase the legacy daily-plan storage key');
+  check(await gameBytes(tab) === initialGame,
+    'reload of manual steps preserves game primary and backup bytes');
 
-  const homeSpecs = [
-    ['#daily-plan', 'effectiveBackground', '--bf-surface-solid'],
+  const stepSpecs = [
     ['#step-log', 'effectiveBackground', '--bf-surface-solid'],
-    ['#daily-plan .bf-panel-heading strong', 'color', '--bf-copy'],
     ['#step-log .bf-panel-heading strong', 'color', '--bf-copy'],
-    ['#daily-plan .bf-panel-description', 'color', '--bf-muted'],
     ['#step-log .bf-panel-description', 'color', '--bf-muted'],
-    ['#daily-plan .bf-panel-heading>span', 'color', '--bf-accent-copy'],
     ['#step-log .bf-panel-heading>span', 'color', '--bf-accent-copy'],
-    ['#daily-plan .bf-goal-overview strong', 'color', '--bf-accent-copy'],
-    ['#daily-plan .bf-goal-editor output', 'color', '--bf-accent-copy'],
-    ['#daily-plan .bf-goal-editor button[aria-label="Увеличить цель на 20"]', 'color', '--bf-accent-copy'],
     ['#step-log .bf-step-summary strong', 'color', '--bf-accent-copy'],
-    ['#daily-plan .bf-gold-action', 'backgroundColor', '--bf-accent'],
-    ['#daily-plan .bf-gold-action', 'color', '--bf-accent-ink'],
-    ['#daily-plan .bf-goal-save', 'backgroundColor', '--bf-accent'],
-    ['#daily-plan .bf-goal-save', 'color', '--bf-accent-ink'],
     ['#step-log .bf-step-input-row button', 'backgroundColor', '--bf-accent'],
     ['#step-log .bf-step-input-row button', 'color', '--bf-accent-ink'],
   ].map(([selector, property, expected]) => ({ selector, property, expected }));
@@ -454,8 +417,10 @@ async function integrationExperience(tab, initialGame) {
     ['.bf-guide-steps li', 'color', '--bf-copy'],
     ['.bf-guide-privacy', 'color', '--bf-muted'],
   ].map(([selector, property, expected]) => ({ selector, property, expected }));
-  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'backgroundColor', expected: '--bf-accent' });
-  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before', property: 'color', expected: '--bf-accent-ink' });
+  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before',
+    property: 'backgroundColor', expected: '--bf-accent' });
+  cameraSpecs.push({ selector: '.bf-guide-steps li', pseudo: '::before',
+    property: 'color', expected: '--bf-accent-ink' });
   const cameraTargets = cameraSpecs.map(spec => ({ ...spec, selector: '#challenge ' + spec.selector }));
   observations.integration = [];
   for (const variant of ['mint', 'violet', 'custom-dark', 'high-contrast']) {
@@ -466,44 +431,60 @@ async function integrationExperience(tab, initialGame) {
     } else if (variant === 'high-contrast') {
       await tab.click('input[name="highContrast"]'); await savedSettings(tab, 'custom', 'glass', true);
     } else {
-      await tab.click('.appearance-palette [data-palette="' + variant + '"]'); await savedSettings(tab, variant);
+      await tab.click('.appearance-palette [data-palette="' + variant + '"]');
+      await savedSettings(tab, variant);
     }
     await close(tab);
     await trainingScreen(tab);
-    if (!await tab.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await tab.click('#daily-plan .bf-small-action');
-    const home = await integrationRecords(tab, homeSpecs);
-    await tab.click('.mobile-nav button:nth-child(2)');
+    check(await tab.js('!document.querySelector("#daily-plan") && !!document.querySelector("#quests")'),
+      variant + ' omits the removed editor and keeps the mission panel');
+    const steps = await integrationRecords(tab, stepSpecs);
     await openCameraPanels(tab);
+    // A palette event can update the root token before Chrome recomputes ::before.
+    // Wait at most 2 seconds for the *actual* pseudo-element color to match.
+    // If it never matches, the E2E still fails; no assertion is skipped.
+    await tab.until('(()=>{const e=document.querySelector("#challenge .bf-guide-steps li");if(!e)return false;const probe=document.createElement("span");probe.style.color="var(--bf-accent)";document.body.append(probe);const expected=getComputedStyle(probe).color;probe.remove();return getComputedStyle(e,"::before").backgroundColor===expected})()',
+      variant + ' camera guide pseudo-element color settled', 2000);
     const camera = await integrationRecords(tab, cameraTargets);
-    const records = [...home, ...camera];
-    const state = { variant, records };
-    observations.integration.push(state);
-    console.log('INTEGRATION_THEME', JSON.stringify(state));
+    const records = [...steps, ...camera];
+    observations.integration.push({ variant, records });
+    console.log('INTEGRATION_THEME', JSON.stringify({ variant, records }));
     for (const record of records) {
-      check(!record.missing && record.visible, variant + ' actual new control is rendered ' + record.selector);
-      check(record.actual === record.expected, variant + ' new control follows theme token ' + record.selector + (record.pseudo ?? '') + ' ' + record.property);
+      check(!record.missing && record.visible,
+        variant + ' actual control is visible ' + record.selector);
+      check(record.actual === record.expected,
+        variant + ' actual style follows theme token ' + record.selector + (record.pseudo ?? '') + ' ' + record.property);
       if (record.property === 'color' && !record.pseudo) {
-        check(measuredContrast(record.actual, record.background) >= 4.5, variant + ' new text/button has actual contrast >=4.5 ' + record.selector);
+        check(measuredContrast(record.actual, record.background) >= 4.5,
+          variant + ' actual foreground text contrast >=4.5 ' + record.selector);
       }
       if (variant === 'high-contrast' && record.property === 'effectiveBackground') {
-        check(record.opacity === '1' && record.filter === 'none' && !record.actual.startsWith('rgba'), 'high contrast new content is opaque without blur ' + record.selector);
+        check(record.opacity === '1' && record.filter === 'none' && !record.actual.startsWith('rgba'),
+          'high-contrast panels have opaque backgrounds and no glass blur ' + record.selector);
       }
     }
-    check(await gameBytes(tab) === initialGame, variant + ' new panel theme changes preserve exact game bytes');
-    check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(goalKey) + '))?.targetReps===40&&JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '))?.count===4321'), variant + ' theme changes preserve saved daily goal and manual steps');
+    check(await gameBytes(tab) === initialGame,
+      variant + ' theme changes preserve exact primary and backup game bytes');
+    check(await tab.js('localStorage.getItem(' + JSON.stringify(goalKey) + ')') === legacyRaw,
+      variant + ' theme changes preserve retired-editor storage bytes');
+    check(await tab.js('JSON.parse(localStorage.getItem(' + JSON.stringify(stepsKey) + '))?.count===4321'),
+      variant + ' theme changes preserve verified manual steps');
     for (const width of [390, 360, 320]) {
       await tab.viewport(width, width === 390 ? 844 : 800);
       await trainingScreen(tab);
-      await integrationBounds(tab, ['#daily-plan', '#step-log', '.bf-goal-editor', '.bf-step-input-row'], variant + ' ' + width + ' training tasks');
+      await integrationBounds(tab, ['#quests', '#step-log', '.bf-step-input-row'],
+        variant + ' ' + width + ' missions and steps');
       if (width === 390) {
-        await tab.js('document.querySelector("#daily-plan").scrollIntoView({block:"start",behavior:"instant"});true');
-        await tab.screenshot('integration-' + variant + '-daily-plan');
+        await tab.js('document.querySelector("#quests").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.screenshot('integration-' + variant + '-missions');
         await tab.js('document.querySelector("#step-log").scrollIntoView({block:"start",behavior:"instant"});true');
         await tab.screenshot('integration-' + variant + '-manual-steps');
       }
-      await tab.click('.mobile-nav button:nth-child(2)');
       await openCameraPanels(tab);
-      await integrationBounds(tab, ['#challenge .bf-catalog', '#challenge .bf-catalog-grid', '#challenge .bf-guide', '#challenge .bf-guide-visual'], variant + ' ' + width + ' camera guide');
+      await integrationBounds(tab, [
+        '#challenge .bf-catalog', '#challenge .bf-catalog-grid',
+        '#challenge .bf-guide', '#challenge .bf-guide-visual'
+      ], variant + ' ' + width + ' camera guide');
       if (width === 390) {
         await tab.js('document.querySelector("#challenge .bf-catalog").scrollIntoView({block:"start",behavior:"instant"});true');
         await tab.screenshot('integration-' + variant + '-catalog-guide');
@@ -511,17 +492,21 @@ async function integrationExperience(tab, initialGame) {
     }
     await tab.viewport(390);
   }
-  await open(tab); await tab.click('[data-action="reset-appearance"]'); await savedSettings(tab, 'mint'); await close(tab);
+  await open(tab);
+  await tab.click('[data-action="reset-appearance"]'); await savedSettings(tab, 'mint');
+  await close(tab);
   await tab.click('.mobile-nav button:nth-child(1)');
   await tab.js('scrollTo({top:0,behavior:"instant"});true');
-  check(await gameBytes(tab) === initialGame, 'integrated appearance, goal and steps workflow never rewrites game progression');
+  check(await gameBytes(tab) === initialGame,
+    'integrated theme, manual steps and missions never rewrite game progression');
 }
 
 try {
   await waitFor(() => {
     const file = path.join(profile, 'DevToolsActivePort');
     if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); return port > 0; }
-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
+    // Windows may exit the short-lived Chrome launcher while the owned CDP browser stays alive.
+    // A usable DevToolsActivePort from this unique profile is the readiness signal.
     return false;
   }, 'owned Chrome DevTools', 10000);
   const a = await newTab();
@@ -680,10 +665,29 @@ try {
   }
 } finally {
   for (const client of clients) client.socket.close();
+  // Close ONLY the browser created with this unique temporary QA profile.
+  try {
+    if (Number.isInteger(port) && port > 0) {
+      const info = await (await fetch('http://127.0.0.1:' + port + '/json/version',
+        { signal: AbortSignal.timeout(1500) })).json();
+      if (typeof info.webSocketDebuggerUrl === 'string') {
+        const owned = new WebSocket(info.webSocketDebuggerUrl);
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(Error('Owned browser CDP timeout')), 1500);
+          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned browser CDP error')); }, { once: true });
+        });
+        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
+        await sleep(450);
+        owned.close();
+      }
+    }
+  } catch (error) { console.warn('QA_CHROME_CLOSE_UNCONFIRMED', String(error)); }
   chrome.kill();
   await sleep(500);
   const resolved = path.resolve(profile), tempRoot = path.resolve(os.tmpdir()) + path.sep;
   if (resolved.startsWith(tempRoot) && path.basename(resolved).startsWith('bf-appearance-')) {
-    try { fs.rmSync(resolved, { recursive: true, force: true }); } catch { console.log('QA_PROFILE_CLEANUP_INCOMPLETE', resolved); }
+    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 15, retryDelay: 250 }); }
+    catch (error) { console.error('QA_PROFILE_CLEANUP_INCOMPLETE', String(error)); process.exitCode = 18; }
   }
 }

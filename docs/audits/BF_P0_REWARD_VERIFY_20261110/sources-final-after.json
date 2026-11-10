@@ -1,0 +1,26 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\journal-e2e.mjs",
+        "Hash":  "402A8FE3FA2913964C267383003E174D14BE64BD0DDF8D1D60C1D4BF894E445D"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "98A06B57D9C1AD974E29388F892A34370BD503EBB6E59FDFB24EDE8AA5014686"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\components\\ForgeWorld.tsx",
+        "Hash":  "8007FB521A3E02261E69AC2194CAC0B5FDBAE7F3FAFC6AB3905BB6DC06D2ADC4"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\heroLayout.test.ts",
+        "Hash":  "5989906A6344A57A85F7EB87C28D66EBB3952DCB87F6364A668B27FFB5A02BAD"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\neonPulseV2.css",
+        "Hash":  "3664C7F932F0C87EDEC3C1A08F396A92BFF4728C6ED2EC9C4066B981828DF93C"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs",
+        "Hash":  "6FEEA6E2701A19EA12E815983CB28A36EF278388A2DEA6B293E1093B3DA882DD"
+    }
+]

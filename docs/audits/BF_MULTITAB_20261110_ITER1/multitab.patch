@@ -1,0 +1,73 @@
+diff --git "a/docs\\audits\\BF_MULTITAB_20261110_ITER1\\multitab.before.mjs" "b/qa\\multitab-e2e.mjs"
+index 50c81cf..3410fd3 100644
+--- "a/docs\\audits\\BF_MULTITAB_20261110_ITER1\\multitab.before.mjs"
++++ "b/qa\\multitab-e2e.mjs"
+@@ -143,12 +143,20 @@ async function hold(tab, lockName, operation = '') {
+ }
+ 
+ try {
++  // Windows may exit the launcher with 0 after handing off to the real browser.
++  // Only the CDP port written by this disposable profile proves readiness.
+   await waitFor(() => {
+     const file = path.join(profile, 'DevToolsActivePort');
+-    if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); return port > 0; }
+-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    if (fs.existsSync(file)) {
++      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) {
++        port = candidate;
++        return true;
++      }
++    }
++    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
+     return false;
+-  }, 'owned Chrome DevTools', 10000);
++  }, 'owned Chrome DevTools', 15000);
+   let a = await newTab(), b = await newTab();
+   check(a.target.id !== b.target.id, 'independent page targets share one disposable Chrome profile');
+   check(await a.js('!!navigator.locks?.request') && await b.js('!!navigator.locks?.request'), 'Web Locks available in both actual loopback tabs');
+@@ -363,7 +371,42 @@ try {
+   process.exitCode = 16;
+ } finally {
+   for (const tab of clients) tab.socket.close();
++  // The launcher may already have exited, leaving this test's browser running.
++  // Close ONLY the browser endpoint associated with our disposable profile.
++  try {
++    const file = path.join(profile, 'DevToolsActivePort');
++    if (fs.existsSync(file)) {
++      const ownedPort = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(ownedPort) && ownedPort > 0 && ownedPort <= 65535) {
++        const response = await fetch('http://127.0.0.1:' + ownedPort + '/json/version',
++          { signal: AbortSignal.timeout(1500) });
++        if (!response.ok) throw Error('Owned browser CDP unavailable');
++        const { webSocketDebuggerUrl } = await response.json();
++        const endpoint = new URL(webSocketDebuggerUrl);
++        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
++            endpoint.port !== String(ownedPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
++          throw Error('Unverified owned browser endpoint');
++        }
++        const owned = new WebSocket(webSocketDebuggerUrl);
++        await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Owned CDP connection timeout')), 1500);
++          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned CDP connection failed')); }, { once: true });
++        });
++        const closed = new Promise((resolve) => {
++          const timer = setTimeout(resolve, 1500);
++          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
++        });
++        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++        await closed;
++        if (owned.readyState === WebSocket.OPEN) owned.close();
++      }
++    }
++  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+   chrome.kill(); await sleep(500);
+-  try { fs.rmSync(profile, { recursive: true, force: true }); }
+-  catch { console.error('TEMP_CLEANUP_BLOCKED', profile); process.exitCode ||= 17; }
++  if (path.dirname(profile) !== os.tmpdir() || !path.basename(profile).startsWith('bf-multitab-')) {
++    throw Error('Unverified temporary cleanup target');
++  }
++  try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
++  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+ }

@@ -581,11 +581,18 @@
   .pulse-day-detail>div>strong {font-size:12px;}
   .pulse-day-values>strong {font-size:12px;}
 }
+/* A seven-day period must never shrink touch targets below 44px.
+   On narrow phones, scroll the dates instead of shrinking their hit areas. */
+.pulse-date-swipe-hint {display:none;}
 @media(max-width:390px) {
   .pulse-trend-heading .pulse-range-control {flex-basis:100%;}
-  .pulse-date-strip:not([data-period="30"]) {gap:3px;}
+  .pulse-date-swipe-hint {
+    display:block;margin:0;color:var(--bf-muted,#b2c6d2);
+    font-size:10px;font-weight:750;text-align:right;
+  }
+  .pulse-date-strip:not([data-period="30"]) {gap:6px;}
   .pulse-date-strip:not([data-period="30"]) .pulse-date-button {
-    flex:1 1 0;min-width:0;padding:4px 2px;
+    flex:0 0 44px;min-width:44px;min-height:48px;padding:5px 3px;
   }
   .pulse-date-strip:not([data-period="30"]) .pulse-date-button small span {display:none;}
 }
@@ -641,4 +648,82 @@
   .app-shell .mobile-nav button {flex:1 1 0;min-width:0;padding-inline:1px;font-size:7px;}
   .app-shell .mobile-nav button svg {width:20px;height:20px;}
   .bf-faq-item {padding-inline:13px;}
+}
+
+/* HERO: muscle upgrades follow the real 3D preview. Cosmetics are independent,
+   native keyboard/touch-accessible disclosure panels. No game state is changed. */
+#forge .studio-hero-column {min-width:0;display:flex;flex-direction:column;gap:14px;}
+#forge .studio-muscle-panel {min-width:0;}
+#forge .studio-muscle-panel>.forge-subheading {margin-top:0;}
+#forge .studio-accordion {
+  min-width:0;overflow:hidden;
+  border:1px solid var(--bf-outline,#35526c);
+  border-radius:17px;background:var(--bf-raised,#122336);
+}
+#forge .studio-accordion > .studio-accordion-trigger {
+  display:flex;align-items:center;gap:12px;min-height:60px;
+  padding:12px 14px;list-style:none;cursor:pointer;
+  color:var(--bf-copy,#edf8fc);user-select:none;
+}
+#forge .studio-accordion > .studio-accordion-trigger::-webkit-details-marker {display:none;}
+#forge .studio-accordion > .studio-accordion-trigger::marker {content:"";}
+#forge .studio-accordion > .studio-accordion-trigger:focus-visible {
+  outline:3px solid var(--aurora-cyan,#69ddeb);outline-offset:-3px;
+}
+#forge .studio-accordion-trigger > svg:first-child {flex:none;color:var(--aurora-cyan,#69ddeb);}
+#forge .studio-accordion-copy {min-width:0;flex:1;display:flex;flex-direction:column;gap:5px;}
+#forge .studio-accordion-copy small {color:var(--bf-muted,#abc2d2);font-size:10px;font-weight:800;letter-spacing:.06em;}
+#forge .studio-accordion-copy strong {font-size:clamp(15px,1.65vw,21px);line-height:1.15;font-weight:900;}
+#forge .studio-accordion-copy em {font-style:normal;color:var(--aurora-cyan,#69ddeb);}
+#forge .studio-accordion-chevron {flex:none;color:var(--aurora-cyan,#69ddeb);transition:transform .16s ease;}
+#forge .studio-accordion[open] .studio-accordion-chevron {transform:rotate(180deg);}
+#forge .studio-accordion:not([open]) > :not(summary) {display:none;}
+#forge .studio-accordion[data-studio-panel="appearance"] .armory-lab {
+  border:0;border-top:1px solid var(--bf-outline,#35526c);
+  border-radius:0;background:transparent;box-shadow:none;padding:14px;
+}
+/* The accordion summary is now the single visible Avatar Lab heading. */
+#forge .studio-accordion[data-studio-panel="appearance"] .armory-lab-heading>span,
+#forge .studio-accordion[data-studio-panel="appearance"] .armory-lab-heading>h3 {display:none;}
+#forge .studio-accordion[data-studio-panel="wardrobe"] .outfit-grid {
+  border-top:1px solid var(--bf-outline,#35526c);padding:13px;
+}
+@media(max-width:740px) {
+  #forge .studio-hero-column {gap:12px;}
+  #forge .studio-accordion > .studio-accordion-trigger {min-height:56px;padding:10px 12px;}
+  #forge .studio-accordion[data-studio-panel="wardrobe"] .outfit-grid {padding:10px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  #forge .studio-accordion-chevron {transition:none;}
+}
+:root[data-bf-contrast="high"] #forge .studio-accordion {
+  border-color:var(--bf-copy,#fff);
+}
+
+/* UI polish / mobile audit 2026-11-10: readable six-tab navigation, controls
+   comfortable for touch, and a scroll safe-zone above the fixed bottom dock.
+   No changes to workouts, rewards, personal data, or camera permissions. */
+@media(max-width:740px) {
+  html {scroll-padding-bottom:calc(98px + env(safe-area-inset-bottom,0px));}
+  .app-shell .mobile-nav button {
+    font-size:clamp(9.5px,2.7vw,11px);
+    font-weight:800;
+    letter-spacing:-.025em;
+  }
+  .app-shell .mobile-nav button span {max-width:100%;white-space:nowrap;}
+  .dashboard-player-stats .profile-training-cta,
+  #pulse-progress .pulse-metric button,
+  #challenge .sound-toggle,
+  #challenge .camera-refresh,
+  #challenge .camera-frame-toggle,
+  #forge .armory-view-tabs button,
+  #forge .armory-lab-footer button {min-height:44px;}
+  #pulse-progress .pulse-metric button {padding:9px 5px;}
+  #forge .armory-yaw-controls button {width:44px;min-width:44px;height:44px;}
+}
+#settings .progress-install-help>summary,
+#settings .progress-backup-file-checker>summary {
+  min-height:44px;
+  box-sizing:border-box;
+  padding:12px 3px;
 }

@@ -1,0 +1,22 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\multitab-e2e.mjs",
+        "Hash":  "5EAF53A583A87DA1DF0D1B1EBCD8600F74535B8E434F676583E3FC93C604C9CA"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "98A06B57D9C1AD974E29388F892A34370BD503EBB6E59FDFB24EDE8AA5014686"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\profileLock.ts",
+        "Hash":  "6CA5D7959CE739EDDB0BD10FD63999134B5F187821F9C75BF7C07855825277CE"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\progression.ts",
+        "Hash":  "120A016FF379840470B4949DBB49FEAE7F3E055E1A040774AA1FD23E718B8422"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\hooks\\useProfileStorage.ts",
+        "Hash":  "0241E29BF77BF1C8428D1F1B46D2A841E5D0B05B0A316A64BF8D1E58B1F7C70D"
+    }
+]

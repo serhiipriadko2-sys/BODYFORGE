@@ -16,7 +16,10 @@ const only = (pattern, label) => {
 const entryName = only(/^index-[\w-]+\.js$/, 'App entry');
 const poseName = only(/^vision_bundle-[\w-]+\.js$/, 'Pose library');
 const cameraControlsName = only(/^CameraControls-[\w-]+\.js$/, 'Camera controls');
-const dailyPlanName = only(/^DailyPlanBoard-[\w-]+\.js$/, 'Daily plan editor');
+// The user removed the personal plan UI. Keep its unused module out of production bundles.
+if (files.some((name) => /^DailyPlanBoard-[\w-]+\.js$/.test(name))) {
+  throw Error('Removed daily plan must not ship as an unused chunk');
+}
 const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
 const entryBytes = fs.readFileSync(path.join(assets, entryName));
 const poseBytes = fs.readFileSync(path.join(assets, poseName));
@@ -27,15 +30,13 @@ const baseline = 496761; // Vite 8.3.4 / main@bc9fd6b, measured 2026-10-22
 const saved = baseline - entry;
 const reduction = Math.round((saved / baseline) * 1000) / 10;
 const result = { entryBytes: entry, entryGzipBytes: entryGzip, cameraChunkBytes: pose,
-  dailyPlanChunkBytes: fs.statSync(path.join(assets, dailyPlanName)).size, dailyPlanName,
+  dailyPlanRemoved: true,
   baselineEntryBytes: baseline, entryBytesSaved: saved, entryReductionPercent: reduction,
   entryName, poseName };
 if (entry >= baseline * 0.8) throw Error('Initial bundle regression: ' + JSON.stringify(result));
 if (pose < 100000 || pose > 300000) throw Error('Unexpected pose chunk size: ' + JSON.stringify(result));
 if (html.includes(poseName)) throw Error('Camera-only chunk was preloaded in index.html');
 if (html.includes(cameraControlsName)) throw Error('Mobile camera controls were preloaded in index.html');
-if (html.includes(dailyPlanName)) throw Error('Daily plan editor was preloaded in index.html');
-if (!entryBytes.toString('utf8').includes(dailyPlanName)) throw Error('Daily plan no longer uses a dynamic import');
 if (!entryBytes.toString('utf8').includes(cameraControlsName)) {
   throw Error('Camera controls no longer use a dynamic import');
 }

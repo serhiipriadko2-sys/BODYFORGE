@@ -1,0 +1,5 @@
+qa/appearance-e2e.mjs | 32a60330ccdf5c6b394b9b0ac78b185b711599d1afbd0289d96f7bbea62759e9
+src/App.tsx | 98a06b57d9c1ad974e29388f892a34370bd503ebb6e59fdfb24ede8aa5014686
+src/neonPulseV2.css | 3664c7f932f0c87edec3c1a08f396a92bff4728c6ed2ec9c4066b981828df93c
+src/lib/screenNavigation.test.ts | 39157979f5644c4fbbf77ec76a23d32838466a25bb6a31e4cc3d45044bca7817
+qa/mobile-e2e.mjs | be9bee1912c556dd7b12153d9ea91b3a90f6ef777c4dab0ea2afcf9ecb526b2b

@@ -1,0 +1,1914 @@
+{
+  "origin": "http://127.0.0.1:5237",
+  "mode": "audit",
+  "report": [
+    {
+      "screen": "dashboard",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "profile-training-cta",
+          "text": "СТАРТ",
+          "w": 68,
+          "h": 35
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Тренировка",
+          "w": 98,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Герой",
+          "w": 98,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СР\n04",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ЧТ\n05",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПТ\n06",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СБ\n07",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ВС\n08",
+          "w": 35,
+          "h": 48
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 10,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "challenge",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "sound-toggle",
+          "text": "ЗВУК ПОВТОРЕНИЙ\nВКЛ",
+          "w": 168,
+          "h": 35
+        }
+      ],
+      "mainCount": 6,
+      "smallCount": 1,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "forge",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 9,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "tower",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "online",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "settings",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "dashboard",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "profile-training-cta",
+          "text": "СТАРТ",
+          "w": 68,
+          "h": 35
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Тренировка",
+          "w": 118,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Герой",
+          "w": 118,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СР\n04",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ЧТ\n05",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПТ\n06",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СБ\n07",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ВС\n08",
+          "w": 40,
+          "h": 48
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 10,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "challenge",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "camera-refresh",
+          "text": "ОБНОВИТЬ",
+          "w": 91,
+          "h": 36
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "camera-frame-toggle",
+          "text": "ПОКАЗАТЬ ВЕСЬ КАДР\nКрая не обрезают",
+          "w": 280,
+          "h": 43
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "sound-toggle",
+          "text": "ЗВУК ПОВТОРЕНИЙ\nВКЛ",
+          "w": 168,
+          "h": 35
+        }
+      ],
+      "mainCount": 14,
+      "smallCount": 3,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "forge",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "РОСТ",
+          "w": 130,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "ПОРТРЕТ",
+          "w": 130,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца влево",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца вправо",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "СБРОС ОБЛИКА",
+          "w": 111,
+          "h": 35
+        }
+      ],
+      "mainCount": 31,
+      "smallCount": 5,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "tower",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "online",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "settings",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "КАК УСТАНОВИТЬ BODYFORGE НА ТЕЛЕФОН",
+          "w": 270,
+          "h": 17
+        },
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "ПРОВЕРИТЬ СКАЧАННЫЙ JSON",
+          "w": 270,
+          "h": 17
+        }
+      ],
+      "mainCount": 8,
+      "smallCount": 2,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "dashboard",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "profile-training-cta",
+          "text": "СТАРТ",
+          "w": 68,
+          "h": 35
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Тренировка",
+          "w": 133,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Герой",
+          "w": 133,
+          "h": 34
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 3,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "challenge",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "camera-refresh",
+          "text": "ОБНОВИТЬ",
+          "w": 91,
+          "h": 36
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "camera-frame-toggle",
+          "text": "ПОКАЗАТЬ ВЕСЬ КАДР\nКрая не обрезают",
+          "w": 310,
+          "h": 43
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "sound-toggle",
+          "text": "ЗВУК ПОВТОРЕНИЙ\nВКЛ",
+          "w": 168,
+          "h": 35
+        }
+      ],
+      "mainCount": 14,
+      "smallCount": 3,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "forge",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "РОСТ",
+          "w": 145,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "ПОРТРЕТ",
+          "w": 145,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца влево",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца вправо",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "СБРОС ОБЛИКА",
+          "w": 111,
+          "h": 35
+        }
+      ],
+      "mainCount": 31,
+      "smallCount": 5,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "tower",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "online",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "settings",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "КАК УСТАНОВИТЬ BODYFORGE НА ТЕЛЕФОН",
+          "w": 300,
+          "h": 17
+        },
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "ПРОВЕРИТЬ СКАЧАННЫЙ JSON",
+          "w": 300,
+          "h": 17
+        }
+      ],
+      "mainCount": 8,
+      "smallCount": 2,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "dashboard",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "profile-training-cta",
+          "text": "СТАРТ",
+          "w": 68,
+          "h": 35
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Тренировка",
+          "w": 152,
+          "h": 34
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Герой",
+          "w": 152,
+          "h": 34
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 3,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "challenge",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "camera-refresh",
+          "text": "ОБНОВИТЬ",
+          "w": 91,
+          "h": 36
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "camera-frame-toggle",
+          "text": "ПОКАЗАТЬ ВЕСЬ КАДР\nКрая не обрезают",
+          "w": 348,
+          "h": 43
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "sound-toggle",
+          "text": "ЗВУК ПОВТОРЕНИЙ\nВКЛ",
+          "w": 168,
+          "h": 35
+        }
+      ],
+      "mainCount": 14,
+      "smallCount": 3,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "forge",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "РОСТ",
+          "w": 89,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "ПОРТРЕТ",
+          "w": 89,
+          "h": 40
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца влево",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Повернуть бойца вправо",
+          "w": 42,
+          "h": 42
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "СБРОС ОБЛИКА",
+          "w": 111,
+          "h": 35
+        }
+      ],
+      "mainCount": 31,
+      "smallCount": 5,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "tower",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "online",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 0
+    },
+    {
+      "screen": "settings",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 19.421875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 29.390625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 23.703125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 7,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 26.171875,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 31.390625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 7,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 14.03125,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "КАК УСТАНОВИТЬ BODYFORGE НА ТЕЛЕФОН",
+          "w": 338,
+          "h": 17
+        },
+        {
+          "tag": "SUMMARY",
+          "cls": "",
+          "text": "ПРОВЕРИТЬ СКАЧАННЫЙ JSON",
+          "w": 338,
+          "h": 17
+        }
+      ],
+      "mainCount": 8,
+      "smallCount": 2,
+      "scrollBottom": 0
+    },
+    {
+      "focus": {
+        "tag": "BUTTON",
+        "text": "ПОДГОТОВИТЬ РЕЗЕРВНУЮ КОПИЮ",
+        "targetBottom": 760.484375,
+        "navTop": 680,
+        "visibleAboveNav": false,
+        "scrollY": 555,
+        "scrollHeight": 1490
+      }
+    }
+  ]
+}

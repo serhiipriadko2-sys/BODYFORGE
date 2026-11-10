@@ -176,12 +176,14 @@ try {
     'Forge quick starts still explicitly request squats');
   await click('.mobile-nav button:nth-child(2)');
   await until('document.querySelector(".app-shell")?.dataset.screen==="challenge"', 'camera screen ready');
-  await until('!!document.querySelector("#step-log") && !!document.querySelector("#daily-plan")',
-    'moved daily plan and steps mounted');
+  await until('!!document.querySelector("#step-log") && !!document.querySelector("#quests")',
+    'missions and steps mounted on Camera');
   const camera = await state();
   console.log('CAMERA_390', JSON.stringify(camera));
-  assert(camera.camera && camera.daily && camera.quests && camera.steps,
-    'camera holds plan, missions and steps');
+  assert(camera.camera && !camera.daily && camera.quests && camera.steps,
+    'camera shows missions and steps but no personal daily plan card');
+  assert(await js('document.querySelector("#daily-plan") === null'),
+    'removed daily-plan card is absent from DOM, not merely hidden');
   assert(!camera.home && !camera.settings && !camera.forgeGuide,
     'fighter XP and pre-workout FAQ are not on Camera');
   await until('!!document.querySelector("#challenge .bf-catalog-trigger")',
@@ -217,6 +219,15 @@ try {
   assert(returned.home && returned.xp && !returned.guide &&
     !returned.daily && !returned.quests && !returned.steps,
     'Forge retains XP banner but does not show the moved FAQ or daily panels');
+  await until('!!document.querySelector("[data-quick-action=daily]")',
+    'Forge mission shortcut ready');
+  assert(await js('document.querySelector("[data-quick-action=daily]")?.textContent?.includes("Миссии")'),
+    'Forge shortcut correctly says Миссии rather than deleted personal plan');
+  await click('[data-quick-action=daily]');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#quests")?.getClientRects().length>0',
+    'Forge shortcut opens Camera missions');
+  assert(await js('document.querySelector("#daily-plan") === null'),
+    'daily-plan remains absent after mission shortcut navigation');
   assert(browserErrors.length === 0, 'no uncaught exceptions while switching screens');
   console.log('BODYFORGE_FORGE_XP_FAQ_E2E_PASS');
 } catch (error) {

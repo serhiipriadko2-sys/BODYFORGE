@@ -57,7 +57,16 @@ async function click(selector) {
 }
 async function boot(value = player) {
   await cdp('Page.navigate', { url: 'about:blank' });
-  if (initScript) await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: initScript });
+  if (initScript) {
+    try { await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: initScript }); }
+    catch (error) {
+      // A renderer navigation may already have discarded the old injection.
+      // Any different CDP failure still aborts the test.
+      if (!String(error).includes('Script not found')) throw error;
+      console.log('QA_INIT_SCRIPT_ALREADY_GONE');
+    }
+    initScript = undefined;
+  }
   const result = await cdp('Page.addScriptToEvaluateOnNewDocument', { source:
     `if(location.origin===${JSON.stringify(origin)}){localStorage.clear();localStorage.setItem(${JSON.stringify(key)},${JSON.stringify(JSON.stringify(value))});}` });
   initScript = result.identifier;
@@ -103,20 +112,39 @@ async function startTower() {
   await until("!!document.querySelector('.live-tag')", 'synthetic camera active');
 }
 async function waitFinishFailure(status) {
-  await until("document.querySelector('[data-storage-status]')?.dataset.storageStatus===" + JSON.stringify(status), '20-rep ' + status, 60000);
+  try {
+    await until("document.querySelector('[data-storage-status]')?.dataset.storageStatus===" + JSON.stringify(status), '20-rep ' + status, 60000);
+  } catch (error) {
+    const details = await js(`(()=>({poseCalls:window.__poseCalls??null,modelsClosed:window.__modelsClosed??null,
+      liveTag:document.querySelector('.live-tag')?.textContent??null,
+      storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus??null,
+      completionStatus:document.querySelector('.completion-stage')?.dataset.resultPersistence??null,
+      screen:document.querySelector('.app-shell')?.dataset.screen??null,
+      tracks:window.__tracks?.map(track=>track.readyState)??[],
+      banner:document.querySelector('[role="alert"]')?.textContent?.slice(0,160)??null,
+      wallet:(()=>{try{const p=JSON.parse(localStorage.getItem('bodyforge:pilot:v1'));return {xp:p?.xp,coins:p?.coins,workouts:p?.workouts?.length}}catch{return null}})()
+    }))()` ).catch(() => ({ unavailable: true }));
+    console.error('FINISH_TIMEOUT_DIAGNOSTIC', JSON.stringify(details));
+    throw error;
+  }
   check(await js('window.__poseCalls>=320'), 'failure occurs after the complete synthetic 20-rep sequence');
   check(await js("window.__tracks.length>0 && window.__tracks.every(t=>t.readyState==='ended') && window.__modelsClosed===1"), 'finish releases fake camera tracks and pose runtime');
 }
 
 try {
   let port;
-  for (let i = 0; i < 100; i++) {
+  // On Windows the Chrome launcher may exit 0 while the owned browser continues.
+  // Only this disposable profile's DevToolsActivePort proves CDP readiness.
+  for (let i = 0; i < 150; i++) {
     const file = path.join(profile, 'DevToolsActivePort');
-    if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); break; }
-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
+    if (fs.existsSync(file)) {
+      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
+      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) { port = candidate; break; }
+    }
+    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
     await sleep(100);
   }
-  if (!port) throw Error('Owned DevTools unavailable');
+  if (!port) throw Error('Owned DevTools unavailable in disposable profile after 15s');
   const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json();
   socket = new WebSocket(tabs.find((tab) => tab.type === 'page').webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }); });
@@ -196,7 +224,43 @@ try {
   console.log('READBACK', JSON.stringify({ assertions, observations }));
   process.exitCode = 14;
 } finally {
-  socket?.close(); chrome.kill(); await sleep(400);
-  try { fs.rmSync(profile, { recursive: true, force: true }); }
-  catch { console.error('TEMP_CLEANUP_BLOCKED', profile); process.exitCode ||= 15; }
+  socket?.close();
+  // The Windows launcher may have handed off to a running owned browser.
+  // Close ONLY the browser advertised by this test's temporary profile.
+  try {
+    const portFile = path.join(profile, 'DevToolsActivePort');
+    if (fs.existsSync(portFile)) {
+      const ownPort = Number(fs.readFileSync(portFile, 'utf8').split('\n')[0]);
+      if (Number.isSafeInteger(ownPort) && ownPort > 0 && ownPort <= 65535) {
+        const reply = await fetch('http://127.0.0.1:' + ownPort + '/json/version',
+          { signal: AbortSignal.timeout(1500) });
+        if (!reply.ok) throw Error('Owned CDP version unavailable');
+        const { webSocketDebuggerUrl } = await reply.json();
+        const endpoint = new URL(webSocketDebuggerUrl);
+        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
+            endpoint.port !== String(ownPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
+          throw Error('Unverified owned Chrome browser endpoint');
+        }
+        const owned = new WebSocket(webSocketDebuggerUrl);
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(Error('Owned Chrome CDP connect timeout')), 1500);
+          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned Chrome CDP connect failed')); }, { once: true });
+        });
+        const closed = new Promise((resolve) => {
+          const timer = setTimeout(resolve, 1500);
+          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
+        });
+        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
+        await closed;
+        if (owned.readyState === WebSocket.OPEN) owned.close();
+      }
+    }
+  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+  chrome.kill(); await sleep(500);
+  if (path.dirname(profile) !== os.tmpdir() || !path.basename(profile).startsWith('bf-finish-save-')) {
+    throw Error('Unverified temporary profile cleanup target');
+  }
+  try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
+  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 15; }
 }

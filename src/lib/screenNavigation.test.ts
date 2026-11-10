@@ -17,12 +17,16 @@ describe('Forge screen responsibilities', () => {
     expect(css).toContain('.app-shell[data-screen="settings"] .content > :not(#settings)');
   });
 
-  it('renders the plan, missions and manual steps only on the Camera screen', () => {
-    expect(app).toContain('id="daily-plan"');
+  it('removes the personal daily-plan card without removing Camera missions or steps', () => {
+    expect(app).not.toContain("import('./components/DailyPlanBoard')");
+    expect(app).not.toContain('<DailyPlanBoard');
+    expect(app).not.toContain('id="daily-plan"');
     expect(app).toContain('<DailyBoard profile={profile}');
     expect(app).toContain('<StepsBoard now={today}');
-    expect(css).toContain('.app-shell:not([data-screen="challenge"]) .content > :is(#daily-plan,#quests,#step-log)');
-    expect(css).toContain('.app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log)');
+    expect(app).toContain("document.getElementById('quests')");
+    expect(css).toContain('.app-shell[data-screen="challenge"]');
+    const quickDeck = readFileSync(new URL('../components/ForgeQuickDeck.tsx', import.meta.url), 'utf8');
+    expect(quickDeck).toContain("title: 'Миссии'");
   });
 
   it('moves the entire pre-workout camera guide from Forge to Settings FAQ', () => {

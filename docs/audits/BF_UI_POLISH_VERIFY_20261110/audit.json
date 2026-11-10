@@ -1,0 +1,2103 @@
+{
+  "origin": "http://127.0.0.1:5238",
+  "mode": "verify",
+  "report": [
+    {
+      "targets": {
+        "start": {
+          "width": 68.3125,
+          "height": 44
+        },
+        "pulseTraining": {
+          "width": 98,
+          "height": 44
+        },
+        "pulseHero": {
+          "width": 98,
+          "height": 44
+        },
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "dashboard",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СР\n04",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ЧТ\n05",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПТ\n06",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СБ\n07",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ВС\n08",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПН\n09",
+          "w": 35,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button is-selected",
+          "text": "ВТ\n10",
+          "w": 35,
+          "h": 48
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 7,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": {
+          "width": 167.5,
+          "height": 44
+        },
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "challenge",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 6,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": {
+          "width": 109.5,
+          "height": 44
+        },
+        "avatarYaw": {
+          "width": 44,
+          "height": 44
+        },
+        "lookReset": {
+          "width": 111.0625,
+          "height": 44
+        },
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "forge",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Светлый",
+          "w": 42,
+          "h": 69
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Песочный",
+          "w": 42,
+          "h": 69
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Янтарный",
+          "w": 42,
+          "h": 69
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Умбра",
+          "w": 42,
+          "h": 69
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "",
+          "text": "Глубокий",
+          "w": 42,
+          "h": 69
+        }
+      ],
+      "mainCount": 31,
+      "smallCount": 5,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "tower",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "online",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": {
+          "width": 230,
+          "height": 57
+        },
+        "backupChecker": {
+          "width": 230,
+          "height": 44
+        }
+      },
+      "screen": "settings",
+      "viewport": 320,
+      "docWidth": 320,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 296,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 24.625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 37.25,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 29.953125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.5,
+          "width": 46.84375,
+          "height": 56,
+          "labelWidth": 33.375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 40.078125,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.5,
+          "width": 46.828125,
+          "height": 56,
+          "labelWidth": 17.734375,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 8,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": {
+          "width": 68.3125,
+          "height": 44
+        },
+        "pulseTraining": {
+          "width": 118,
+          "height": 44
+        },
+        "pulseHero": {
+          "width": 118,
+          "height": 44
+        },
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "dashboard",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СР\n04",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ЧТ\n05",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПТ\n06",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "СБ\n07",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ВС\n08",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button",
+          "text": "ПН\n09",
+          "w": 40,
+          "h": 48
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "pulse-date-button is-selected",
+          "text": "ВТ\n10",
+          "w": 40,
+          "h": 48
+        }
+      ],
+      "mainCount": 16,
+      "smallCount": 7,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": {
+          "width": 167.5,
+          "height": 44
+        },
+        "cameraRefresh": {
+          "width": 91.171875,
+          "height": 44
+        },
+        "wholeFrame": {
+          "width": 280,
+          "height": 44
+        },
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "challenge",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 14,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": {
+          "width": 129.5,
+          "height": 44
+        },
+        "avatarYaw": {
+          "width": 44,
+          "height": 44
+        },
+        "lookReset": {
+          "width": 111.0625,
+          "height": 44
+        },
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "forge",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 31,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "tower",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "online",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": {
+          "width": 270,
+          "height": 44
+        },
+        "backupChecker": {
+          "width": 270,
+          "height": 44
+        }
+      },
+      "screen": "settings",
+      "viewport": 360,
+      "docWidth": 360,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 336,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 25.203125,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 38.125,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 30.640625,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 34.140625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 41,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 9.72,
+          "width": 53.5,
+          "height": 56,
+          "labelWidth": 18.140625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 8,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": {
+          "width": 68.3125,
+          "height": 44
+        },
+        "pulseTraining": {
+          "width": 133,
+          "height": 44
+        },
+        "pulseHero": {
+          "width": 133,
+          "height": 44
+        },
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "dashboard",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 16,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": {
+          "width": 167.5,
+          "height": 44
+        },
+        "cameraRefresh": {
+          "width": 91.171875,
+          "height": 44
+        },
+        "wholeFrame": {
+          "width": 310,
+          "height": 44
+        },
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "challenge",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 14,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": {
+          "width": 144.5,
+          "height": 44
+        },
+        "avatarYaw": {
+          "width": 44,
+          "height": 44
+        },
+        "lookReset": {
+          "width": 111.0625,
+          "height": 44
+        },
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "forge",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 31,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "tower",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "online",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": {
+          "width": 300,
+          "height": 44
+        },
+        "backupChecker": {
+          "width": 300,
+          "height": 44
+        }
+      },
+      "screen": "settings",
+      "viewport": 390,
+      "docWidth": 390,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 366,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 27.296875,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 41.296875,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 33.203125,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 36.984375,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 44.421875,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 10.53,
+          "width": 58.5,
+          "height": 56,
+          "labelWidth": 19.65625,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 8,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": {
+          "width": 68.3125,
+          "height": 44
+        },
+        "pulseTraining": {
+          "width": 152,
+          "height": 44
+        },
+        "pulseHero": {
+          "width": 152,
+          "height": 44
+        },
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "dashboard",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 16,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": {
+          "width": 167.5,
+          "height": 44
+        },
+        "cameraRefresh": {
+          "width": 91.171875,
+          "height": 44
+        },
+        "wholeFrame": {
+          "width": 348,
+          "height": 44
+        },
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "challenge",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 14,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": {
+          "width": 86.5625,
+          "height": 44
+        },
+        "avatarYaw": {
+          "width": 44,
+          "height": 44
+        },
+        "lookReset": {
+          "width": 111.0625,
+          "height": 44
+        },
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "forge",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 31,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "tower",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 2,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": null,
+        "backupChecker": null
+      },
+      "screen": "online",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 0,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "targets": {
+        "start": null,
+        "pulseTraining": null,
+        "pulseHero": null,
+        "sound": null,
+        "cameraRefresh": null,
+        "wholeFrame": null,
+        "avatarView": null,
+        "avatarYaw": null,
+        "lookReset": null,
+        "installGuide": {
+          "width": 338,
+          "height": 44
+        },
+        "backupChecker": {
+          "width": 338,
+          "height": 44
+        }
+      },
+      "screen": "settings",
+      "viewport": 428,
+      "docWidth": 428,
+      "height": 760,
+      "navTop": 680,
+      "navBottom": 750,
+      "navWidth": 404,
+      "buttons": [
+        {
+          "text": "ГОРН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 28.515625,
+          "clipped": false
+        },
+        {
+          "text": "КАМЕРА",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 43.140625,
+          "clipped": false
+        },
+        {
+          "text": "ГЕРОЙ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 34.6875,
+          "clipped": false
+        },
+        {
+          "text": "БАШНЯ",
+          "font": 11,
+          "width": 64.84375,
+          "height": 56,
+          "labelWidth": 38.640625,
+          "clipped": false
+        },
+        {
+          "text": "ОНЛАЙН",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 46.40625,
+          "clipped": false
+        },
+        {
+          "text": "FAQ",
+          "font": 11,
+          "width": 64.828125,
+          "height": 56,
+          "labelWidth": 20.53125,
+          "clipped": false
+        }
+      ],
+      "undersized": [],
+      "mainCount": 8,
+      "smallCount": 0,
+      "scrollBottom": 98
+    },
+    {
+      "focus": {
+        "tag": "BUTTON",
+        "text": "ПОДГОТОВИТЬ РЕЗЕРВНУЮ КОПИЮ",
+        "targetBottom": 662.484375,
+        "navTop": 680,
+        "visibleAboveNav": true,
+        "scrollY": 708,
+        "scrollHeight": 1545
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\multitab-e2e.mjs",
+        "Hash":  "E9529084BED73B6A1C15F2365520107C0A7A7E42E735589FE497C5B6E2918C9B"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "98A06B57D9C1AD974E29388F892A34370BD503EBB6E59FDFB24EDE8AA5014686"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\profileLock.ts",
+        "Hash":  "6CA5D7959CE739EDDB0BD10FD63999134B5F187821F9C75BF7C07855825277CE"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\progression.ts",
+        "Hash":  "120A016FF379840470B4949DBB49FEAE7F3E055E1A040774AA1FD23E718B8422"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\hooks\\useProfileStorage.ts",
+        "Hash":  "0241E29BF77BF1C8428D1F1B46D2A841E5D0B05B0A316A64BF8D1E58B1F7C70D"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs",
+        "Hash":  "6FEEA6E2701A19EA12E815983CB28A36EF278388A2DEA6B293E1093B3DA882DD"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\components\\ForgeWorld.tsx",
+        "Hash":  "8007FB521A3E02261E69AC2194CAC0B5FDBAE7F3FAFC6AB3905BB6DC06D2ADC4"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\neonPulseV2.css",
+        "Hash":  "E115849C07D249CE4ECB8D6585CDF087B6E35AFD1376BD4B54CE30AB732D7EC0"
+    }
+]

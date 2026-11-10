@@ -1,0 +1,100 @@
+diff --git a/qa/appearance-e2e.mjs b/qa/appearance-e2e.mjs
+index efaf2f3..4dad2f6 100644
+--- a/qa/appearance-e2e.mjs
++++ b/qa/appearance-e2e.mjs
+@@ -116,8 +116,10 @@ async function app(tab, reload = false) {
+   await tab.until('!!document.querySelector(".app-shell")&&!!' + query('button[aria-label="Внешний вид"]'), 'actual application and appearance control');
+   await tab.until('document.documentElement.dataset.bfPalette!==undefined', 'appearance applied to document');
+   if (await tab.js('!!document.querySelector(".dashboard-player")')) {
+-    await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
+-      'created fighter dashboard lazy panels ready');
++    // The daily-goal and manual-step panels are mounted on Camera, not on Home.
++    // Navigation-specific checks wait for those modules in trainingScreen().
++    await tab.until('!!document.querySelector(".dashboard-player .profile-training-cta")',
++      'created fighter dashboard training control ready');
+   }
+ }
+ async function open(tab) {
+@@ -399,8 +401,9 @@ async function preferenceDraftRaces(a, initialGame) {
+ async function integrationExperience(tab, initialGame) {
+   const goalKey = 'bodyforge:daily-plan:v1', stepsKey = 'bodyforge:manual-steps:v1';
+   const appearanceBefore = await stored(tab);
+-  await tab.until('!!document.querySelector("#daily-plan")&&!!document.querySelector("#step-log")', 'new daily plan and manual steps panels mounted');
++  // Daily-goal and manual-step sections are lazy-mounted on the Camera tab.
+   await trainingScreen(tab);
++  await tab.until('!!document.querySelector("#daily-plan")&&!!document.querySelector("#step-log")', 'new daily plan and manual steps panels mounted');
+   await tab.click('#daily-plan .bf-small-action');
+   await tab.click('#daily-plan button[aria-label="Увеличить цель на 20"]');
+   await tab.click('#daily-plan .bf-goal-save');
+@@ -415,6 +418,7 @@ async function integrationExperience(tab, initialGame) {
+   check(await gameBytes(tab) === initialGame, 'manual steps award no XP or coins and preserve exact game bytes');
+   check(await stored(tab) === appearanceBefore, 'manual steps do not rewrite appearance settings');
+   await app(tab, true);
++  await trainingScreen(tab);
+   await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
+     'lazy daily goal and manual steps panels mounted after reload');
+   check(await tab.js('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"&&document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"'), 'daily goal and manual steps survive actual application reload');
+@@ -476,6 +480,18 @@ async function integrationExperience(tab, initialGame) {
+     await openCameraPanels(tab);
+     const camera = await integrationRecords(tab, cameraTargets);
+     const records = [...home, ...camera];
++    const pseudoMismatch = records.find(record => record.pseudo === '::before' && record.actual !== record.expected);
++    if (pseudoMismatch) {
++      // Diagnostic-only: preserve the first failed sample and record whether CSS eventually settles.
++      const samples = [{ afterMs: 0, actual: pseudoMismatch.actual, expected: pseudoMismatch.expected }];
++      for (const delayMs of [150, 300, 550]) {
++        await sleep(delayMs);
++        const next = (await integrationRecords(tab, cameraTargets)).find(record =>
++          record.selector === pseudoMismatch.selector && record.pseudo === pseudoMismatch.pseudo && record.property === pseudoMismatch.property);
++        samples.push({ afterMs: samples.at(-1).afterMs + delayMs, actual: next?.actual, expected: next?.expected });
++      }
++      console.log('PSEUDO_SETTLE_DIAGNOSTIC', JSON.stringify({ variant, samples }));
++    }
+     const state = { variant, records };
+     observations.integration.push(state);
+     console.log('INTEGRATION_THEME', JSON.stringify(state));
+@@ -521,7 +537,8 @@ try {
+   await waitFor(() => {
+     const file = path.join(profile, 'DevToolsActivePort');
+     if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); return port > 0; }
+-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    // The Windows launcher can exit 0 while the browser using this unique profile remains alive.
++    // CDP readiness is proven by DevToolsActivePort, not by the launcher's exit code.
+     return false;
+   }, 'owned Chrome DevTools', 10000);
+   const a = await newTab();
+@@ -680,10 +697,33 @@ try {
+   }
+ } finally {
+   for (const client of clients) client.socket.close();
++  // Shut down the browser belonging to the unique QA profile, not the user's Chrome.
++  // On Windows the launcher may already have handed off to a child process.
++  try {
++    if (port > 0) {
++      const info = await (await fetch('http://127.0.0.1:' + port + '/json/version',
++        { signal: AbortSignal.timeout(1500) })).json();
++      if (typeof info.webSocketDebuggerUrl === 'string') {
++        const owned = new WebSocket(info.webSocketDebuggerUrl);
++        await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Browser CDP connection timeout')), 1500);
++          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Browser CDP error')); }, { once: true });
++        });
++        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++        await sleep(500);
++        owned.close();
++      }
++    }
++  } catch (error) { console.warn('QA_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+   chrome.kill();
+   await sleep(500);
+   const resolved = path.resolve(profile), tempRoot = path.resolve(os.tmpdir()) + path.sep;
+   if (resolved.startsWith(tempRoot) && path.basename(resolved).startsWith('bf-appearance-')) {
+-    try { fs.rmSync(resolved, { recursive: true, force: true }); } catch { console.log('QA_PROFILE_CLEANUP_INCOMPLETE', resolved); }
++    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 15, retryDelay: 250 }); }
++    catch (error) {
++      console.error('QA_PROFILE_CLEANUP_INCOMPLETE', String(error));
++      process.exitCode = 18;
++    }
+   }
+ }

@@ -15,7 +15,7 @@ const chrome=spawn(chromePath,[
   'about:blank',
 ],{stdio:'ignore'});
 const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
-let socket,seq=0,pageLoads=0,dailyPlanRequest=null;const pending=new Map();
+let socket,seq=0,pageLoads=0;const pending=new Map();
 // Inspect actual resource pathnames in dev AND hashed production builds.
 function downloadedPanels(){
   const paths=performance.getEntriesByType('resource').map(e=>new URL(e.name).pathname);
@@ -90,7 +90,6 @@ try{
   socket.addEventListener('message',e=>{
     const m=JSON.parse(e.data.toString());
     if(m.method==='Page.loadEventFired')pageLoads++;
-    if(m.method==='Fetch.requestPaused')dailyPlanRequest=m.params.requestId;
     if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}
     if(m.method==='Runtime.exceptionThrown')console.log('BROWSER_EXCEPTION',(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,270));
     if(m.method==='Runtime.consoleAPICalled'&&m.params?.type==='error')
@@ -125,7 +124,7 @@ try{
   const initialPanels = await js(downloadedPanelsExpression);
   check(!initialPanels.catalog && !initialPanels.diagnostics && !initialPanels.controls,
     'training-only panels are not downloaded on mobile home');
-  check(!initialPanels.dailyPlan,'onboarding never downloads the daily-plan editor');
+  check(!initialPanels.dailyPlan,'removed daily-plan editor is not downloaded on mobile onboarding');
   let photoHuman=false;
   for(let i=0;i<70;i++){
     photoHuman=await js("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'");
@@ -160,37 +159,17 @@ try{
   const returned=await snapshot();
   check(returned.screen==='dashboard'&&returned.setup,'explicit fighter creation button returns to onboarding');
   await click('.build-options button:nth-child(2)');
-  await cdp('Fetch.enable',{patterns:[{urlPattern:'*DailyPlanBoard*',resourceType:'Script',requestStage:'Request'}]});
   await click('#onboarding .forge-solid-button');
   await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game?.created===true", 'fighter creation acknowledged on disk');
-  // Daily-plan panels now live on the Camera tab, not the Forge dashboard.
-  // Test the visible recovery control rather than measuring a hidden element.
+  // The personal daily-plan card has been removed; missions and steps remain.
+  const profileBeforeNavigation=await js("localStorage.getItem('bodyforge:pilot:v1')");
   await click('.mobile-nav button:nth-child(2)');
-  await until("document.querySelector('.app-shell')?.dataset.screen==='challenge'", 'daily plan camera tab visible');
-  const planDeadline=Date.now()+10000;
-  while(!dailyPlanRequest&&Date.now()<planDeadline)await sleep(100);
-  check(!!dailyPlanRequest,'daily-plan module is first requested only after fighter creation');
-  const profileBeforePlanFailure=await js("localStorage.getItem('bodyforge:pilot:v1')");
-  await until("!!document.querySelector('#daily-plan[data-daily-plan-state=loading][role=status]')",'pending daily-plan chunk has an accessible loading state');
-  await js("document.querySelector('#daily-plan').scrollIntoView({block:'center',behavior:'instant'});true");
-  await screenshot('bf-qa-mobile-plan-loading.png');
-  await cdp('Fetch.failRequest',{requestId:dailyPlanRequest,errorReason:'Failed'});
-  await cdp('Fetch.disable');
-  await until("!!document.querySelector('#daily-plan[data-daily-plan-state=error] [role=alert]')",'failed daily-plan chunk stays inside its panel');
-  check(await js("!!document.querySelector('.app-shell')&&!!document.querySelector('#daily-plan [data-action=reload-daily-plan]')"),
-    'optional chunk failure preserves navigation and offers an explicit reload');
-  await js("document.querySelector('#daily-plan').scrollIntoView({block:'center',behavior:'instant'});true");
-  await screenshot('bf-qa-mobile-plan-error.png');
-  const reloadTarget=await read("(()=>{const r=document.querySelector('#daily-plan [data-action=reload-daily-plan]').getBoundingClientRect(),nav=document.querySelector('.mobile-nav').getBoundingClientRect();return {width:r.width,height:r.height,top:r.top,bottom:r.bottom,usableBottom:Math.min(innerHeight,nav.top)}})()");
-  console.log('DAILY_PLAN_RELOAD_TARGET',JSON.stringify(reloadTarget));
-  check(reloadTarget.width>=44&&reloadTarget.height>=44&&reloadTarget.top>=0&&reloadTarget.bottom<=reloadTarget.usableBottom,
-    'daily-plan recovery has a visible 44px touch target above mobile navigation');
-  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforePlanFailure,'daily-plan load failure preserves exact profile bytes');
-  await reloadApp('#daily-plan [data-action=reload-daily-plan]');
-  await until("!!document.querySelector('#daily-plan [data-goal-target]')",'daily plan recovers after a real reload');
-  check(true,'touching the actual recovery button reloads and restores the daily plan');
-  check((await js(downloadedPanelsExpression)).dailyPlan,'successful production/dev daily-plan chunk download is observed');
-  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforePlanFailure,'recovering daily-plan UI neither rewrites nor rewards the fighter');
+  await until("document.querySelector('.app-shell')?.dataset.screen==='challenge' && document.querySelector('#quests')?.getClientRects().length>0 && document.querySelector('#step-log')?.getClientRects().length>0",
+    'camera missions and manual steps visible without deleted daily plan');
+  check(await js("document.querySelector('#daily-plan')===null"),'removed daily-plan card is absent from the mobile DOM');
+  check(!(await js(downloadedPanelsExpression)).dailyPlan,'removed daily-plan chunk is never downloaded');
+  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforeNavigation,
+    'opening Camera without the removed plan does not rewrite progression');
   s=await snapshot();
   console.log('CREATED',JSON.stringify(s).slice(0,440));
   check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');

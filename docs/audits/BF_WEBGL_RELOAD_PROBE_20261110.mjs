@@ -13,8 +13,9 @@ const chrome = spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
   '--remote-allow-origins=*', '--remote-debugging-address=127.0.0.1',
   '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank',
 ], { stdio: 'ignore' });
-let browserUrl, socket, sequence = 0;
+let browserUrl, socket, sequence = 0, pageLoads = 0;
 const pending = new Map(), browserErrors = [], observations = [];
+const pageEvents = [];
 async function endpoint() {
   for (let i = 0; i < 70; i++) {
     try {
@@ -56,6 +57,19 @@ async function waitFor(expression, label) {
   }
   throw Error('TIMEOUT ' + label);
 }
+async function reloadWithEvidence(label) {
+  const beforeOrigin = await evaluate('performance.timeOrigin');
+  const beforeLoads = pageLoads;
+  const beforeEvents = pageEvents.length;
+  await cdp('Page.reload', { ignoreCache: true });
+  for (let i = 0; i < 30 && pageLoads === beforeLoads; i++) await sleep(100);
+  await waitFor('performance.timeOrigin > ' + JSON.stringify(beforeOrigin) + ' && document.readyState === "complete" && !!document.querySelector(".mobile-nav")', 'new hydrated document');
+  const dom = await evaluate('({ timeOrigin: performance.timeOrigin, readyState: document.readyState, hasNav: !!document.querySelector(".mobile-nav") })');
+  const result = { label, newDocument: dom.timeOrigin > beforeOrigin, loadEvent: pageLoads > beforeLoads, events: pageEvents.slice(beforeEvents).map(e => e.type), dom };
+  console.log('RELOAD_EVIDENCE', JSON.stringify(result));
+  if (!result.newDocument || dom.readyState !== 'complete' || !dom.hasNav) throw Error('Reload proof invalid: ' + label);
+  return result;
+}
 async function observe(stage) {
   const state = await evaluate(`(() => ({
     screen: document.querySelector('.app-shell')?.dataset.screen ?? null,
@@ -81,6 +95,10 @@ try {
   });
   socket.addEventListener('message', (event) => {
     const message = JSON.parse(event.data.toString());
+    if (message.method === 'Page.loadEventFired') pageLoads++;
+    if (message.method === 'Page.loadEventFired' || message.method === 'Page.frameNavigated') {
+      pageEvents.push({ type: message.method, at: Date.now() });
+    }
     if (message.id && pending.has(message.id)) {
       pending.get(message.id)(message);
       pending.delete(message.id);
@@ -106,12 +124,20 @@ try {
   await waitFor('document.querySelector("#onboarding [data-avatar-source]")?.dataset.avatarSource === "cc0" || document.querySelector("#onboarding [data-3d-status]")?.dataset["3dStatus"] !== "active"', 'initial model completion');
   const first = await observe('before-reload');
   const withProfile = process.env.BF_PROBE_PROFILE === '1';
+  const withDaily = process.env.BF_PROBE_DAILY === '1';
   if (withProfile) {
     // Disposable browser fixture: mirrors the existing mobile E2E purchase
     // sequence without touching the owner's real browser or saved wallet.
     await evaluate('document.querySelector(".build-options button:nth-child(2)").click();true');
     await evaluate('document.querySelector("#onboarding .forge-solid-button").click();true');
     await waitFor('!document.querySelector("#onboarding") && !!localStorage.getItem("bodyforge:pilot:v1")', 'fighter persisted');
+    if (withDaily) {
+      await evaluate('document.querySelector(".mobile-nav button:nth-child(2)").click();true');
+      await waitFor('!!document.querySelector("#quests .quest-button")', 'daily login reward button');
+      await evaluate('document.querySelector("#quests .quest-button").click();true');
+      await waitFor('(() => { const p = JSON.parse(localStorage.getItem("bodyforge:pilot:v1")); return p.coins === 10 && !!p.game?.lastLoginDay; })()', 'daily reward persisted once');
+      console.log('DAILY_PROOF', await evaluate('({coins:JSON.parse(localStorage.getItem("bodyforge:pilot:v1")).coins,day:JSON.parse(localStorage.getItem("bodyforge:pilot:v1")).game.lastLoginDay})'));
+    }
     await evaluate(`(() => {
       const key = 'bodyforge:pilot:v1';
       const profile = JSON.parse(localStorage.getItem(key));
@@ -120,7 +146,8 @@ try {
       localStorage.setItem(key, JSON.stringify(profile));
       return true;
     })()`);
-    await cdp('Page.reload', { ignoreCache: true });
+    if (withDaily) await reloadWithEvidence('after-daily-reward');
+    else await cdp('Page.reload', { ignoreCache: true });
     await waitFor('!!document.querySelector(".mobile-nav button:nth-child(3)")', 'fixture reload');
     await evaluate('document.querySelector(".mobile-nav button:nth-child(3)").click();true');
     await waitFor('document.querySelector("#forge .muscle-card button")?.disabled === false', 'muscle action');
@@ -131,12 +158,13 @@ try {
     await waitFor('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource === "cc0"', 'purchased GLB ready');
     await observe('purchased-before-final-reload');
   }
-  await cdp('Page.reload', { ignoreCache: true });
+  if (withDaily && withProfile) await reloadWithEvidence('after-purchase');
+  else await cdp('Page.reload', { ignoreCache: true });
   if (withProfile) {
     await waitFor('!!document.querySelector(".mobile-nav button:nth-child(3)")', 'profile page ready');
     await evaluate('document.querySelector(".mobile-nav button:nth-child(3)").click();true');
     await evaluate('document.querySelector("#forge .studio-preview")?.scrollIntoView({block:"start",behavior:"instant"});true');
-    await waitFor('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource === "cc0" || document.querySelector("#forge [data-3d-status]")?.dataset["3dStatus"] !== "active"', 'purchased GLB after reload');
+    await waitFor('(() => { const status = document.querySelector("#forge [data-3d-status]"); return !!status && (document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource === "cc0" || status.dataset["3dStatus"] !== "active"); })()', 'purchased GLB after reload');
   } else {
     await waitFor('!!document.querySelector("#onboarding [data-3d-status]")', 'reloaded model status');
     await waitFor('document.querySelector("#onboarding [data-avatar-source]")?.dataset.avatarSource === "cc0" || document.querySelector("#onboarding [data-3d-status]")?.dataset["3dStatus"] !== "active"', 'reloaded model completion');

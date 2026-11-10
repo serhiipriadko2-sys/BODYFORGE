@@ -1,0 +1,49 @@
+diff --git a/qa/appearance-e2e.mjs b/qa/appearance-e2e.mjs
+index efaf2f3..ee8838a 100644
+--- a/qa/appearance-e2e.mjs
++++ b/qa/appearance-e2e.mjs
+@@ -521,7 +521,8 @@ try {
+   await waitFor(() => {
+     const file = path.join(profile, 'DevToolsActivePort');
+     if (fs.existsSync(file)) { port = Number(fs.readFileSync(file, 'utf8').split('\n')[0]); return port > 0; }
+-    if (chrome.exitCode !== null) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    // The Windows launcher can exit 0 while the browser using this unique profile remains alive.
++    // CDP readiness is proven by DevToolsActivePort, not by the launcher's exit code.
+     return false;
+   }, 'owned Chrome DevTools', 10000);
+   const a = await newTab();
+@@ -680,10 +681,33 @@ try {
+   }
+ } finally {
+   for (const client of clients) client.socket.close();
++  // Shut down the browser belonging to the unique QA profile, not the user's Chrome.
++  // On Windows the launcher may already have handed off to a child process.
++  try {
++    if (port > 0) {
++      const info = await (await fetch('http://127.0.0.1:' + port + '/json/version',
++        { signal: AbortSignal.timeout(1500) })).json();
++      if (typeof info.webSocketDebuggerUrl === 'string') {
++        const owned = new WebSocket(info.webSocketDebuggerUrl);
++        await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Browser CDP connection timeout')), 1500);
++          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Browser CDP error')); }, { once: true });
++        });
++        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++        await sleep(500);
++        owned.close();
++      }
++    }
++  } catch (error) { console.warn('QA_CHROME_CLOSE_UNCONFIRMED', String(error)); }
+   chrome.kill();
+   await sleep(500);
+   const resolved = path.resolve(profile), tempRoot = path.resolve(os.tmpdir()) + path.sep;
+   if (resolved.startsWith(tempRoot) && path.basename(resolved).startsWith('bf-appearance-')) {
+-    try { fs.rmSync(resolved, { recursive: true, force: true }); } catch { console.log('QA_PROFILE_CLEANUP_INCOMPLETE', resolved); }
++    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 15, retryDelay: 250 }); }
++    catch (error) {
++      console.error('QA_PROFILE_CLEANUP_INCOMPLETE', String(error));
++      process.exitCode = 18;
++    }
+   }
+ }

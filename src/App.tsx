@@ -20,17 +20,6 @@ import BrandMark from './components/BrandMark';
 import Avatar from './components/Avatar';
 import ForgeGlyph from './components/ForgeGlyph';
 
-// A new fighter does not need the daily-plan editor in the initial download.
-// Keep this optional panel's chunk failure local instead of rejecting into App.
-const DailyPlanBoard = lazy(() => import('./components/DailyPlanBoard').catch(() => ({
-  default: function DailyPlanUnavailable() {
-    return <section id="daily-plan" className="forge-section" data-daily-plan-state="error" aria-label="Личный план тренировок">
-      <p role="alert">Личный план не загрузился. Обнови страницу, чтобы повторить загрузку.</p>
-      <div className="bf-goal-actions"><button type="button" className="bf-small-action" data-action="reload-daily-plan"
-        onClick={() => window.location.reload()}>Обновить страницу</button></div>
-    </section>;
-  },
-})));
 import { canStartCameraExercise, exerciseCameraLayout, exerciseGuide, exerciseTargetLabel, type ExerciseId } from './lib/trainingCatalog';
 import { ExerciseMotionCounter, exerciseMetric } from './lib/exerciseCounter';
 import './trainingExperience.css';
@@ -1186,9 +1175,6 @@ function App() {
             </article>
           </section>
 
-          {profile.game.created && <Suspense fallback={<section id="daily-plan" className="forge-section" role="status" data-daily-plan-state="loading">Загружаем личный план…</section>}>
-            <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}/>
-          </Suspense>}
           <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {
               const now = new Date();
@@ -1214,8 +1200,8 @@ function App() {
               onTower={() => navigate('tower')}
               onDaily={() => {
                 navigate('challenge');
-                // Wait for the Camera screen to appear before targeting its daily plan.
-                requestAnimationFrame(() => document.getElementById('daily-plan')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                // Wait for the Camera screen before scrolling to the remaining daily missions.
+                requestAnimationFrame(() => document.getElementById('quests')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
               }}/>
           </Suspense>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
