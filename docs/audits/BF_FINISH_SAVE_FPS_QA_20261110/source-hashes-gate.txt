@@ -1,0 +1,5 @@
+src/App.tsx | 98a06b57d9c1ad974e29388f892a34370bd503ebb6e59fdfb24ede8aa5014686
+src/lib/progression.ts | 120a016ff379840470b4949dbb49feae7f3e055e1a040774aa1fd23e718b8422
+src/lib/workoutJournal.ts | fa420f47d69690aedc76c9ae521f17d98c1cc789c3949a1bd191ef85709fbaaa
+src/hooks/useProfileStorage.ts | 0241e29bf77bf1c8428d1f1b46d2a841e5d0b05b0a316a64bf8d1e58b1f7c70d
+qa/finish-save-e2e.mjs | aa02a662e5555d7534a05bdfa641e4a3850a9769c1c35abcb68c63a7076290ed

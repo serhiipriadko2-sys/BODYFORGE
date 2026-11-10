@@ -1,0 +1,278 @@
+﻿{
+    "schema":  "bodyforge-apk-test-v1",
+    "status":  "PACKAGED_NOT_INSTALLED",
+    "sourceHead":  "733e18b5a9c33298b6c4ba9f8389423fb52f9412",
+    "sourceFileCount":  155,
+    "buildUtc":  "2026-11-10T18:31:23.7951194Z",
+    "androidPackage":  "ru.bodyforge.fieldqa",
+    "versionName":  "0.3.0-test.733e18b",
+    "versionCode":  1,
+    "minSdk":  26,
+    "targetSdk":  34,
+    "nativeSources":  [
+                          "MainActivity.java",
+                          "AndroidManifest.xml"
+                      ],
+    "assetCount":  50,
+    "assetBytes":  30721582,
+    "assets":  [
+                   {
+                       "path":  "assets/athlete-eyes.jpg",
+                       "bytes":  30484,
+                       "sha256":  "286CBC415B376FB69871D0E4DDE159B20BA307E3E7497274347A5C9617E72338"
+                   },
+                   {
+                       "path":  "assets/athlete-groom-source.md",
+                       "bytes":  3867,
+                       "sha256":  "BF587D8B94367E9D25340E8E3582CCD840D43B84D20F7C4A2157F56B289C4AD0"
+                   },
+                   {
+                       "path":  "assets/athlete-hair.png",
+                       "bytes":  465622,
+                       "sha256":  "BF407D26FC79C7FA48C7EB5CE580384B2A5CB02B23CF97E5326C3335A2D70530"
+                   },
+                   {
+                       "path":  "assets/athlete-hair-normal.png",
+                       "bytes":  228087,
+                       "sha256":  "A3CC46BF1B45B668C9CF8A611C0B586779559F4488D1F9CDBC74C745767A5169"
+                   },
+                   {
+                       "path":  "assets/athlete-normal.png",
+                       "bytes":  425857,
+                       "sha256":  "E95565DF62AF0349A6BFEB266F505EE23E0789BCB3F83FEE0AE9C84C718ED67C"
+                   },
+                   {
+                       "path":  "assets/athlete-orm.png",
+                       "bytes":  219446,
+                       "sha256":  "31A794D88E45423CCF1540846D607941946ACE03A38741EBC1CE0B8EBF87B02A"
+                   },
+                   {
+                       "path":  "assets/athlete-realism-source.md",
+                       "bytes":  2882,
+                       "sha256":  "928F8FCA852A33B65F0C6F4219B4267F38AE9FC3F327CA48ECAAB94116C9B5A7"
+                   },
+                   {
+                       "path":  "assets/athlete-skin.jpg",
+                       "bytes":  130759,
+                       "sha256":  "33077073E7C16CB850310D0697392099711463F5704A442506C89BB893CBFD70"
+                   },
+                   {
+                       "path":  "assets/athlete-skin-detail.jpg",
+                       "bytes":  668292,
+                       "sha256":  "E5D5D5D7EEE9568B386AD4A4457714DACE161C11FA45F9DD6161A437FC6DEAEC"
+                   },
+                   {
+                       "path":  "assets/athlete-skin-source.md",
+                       "bytes":  2051,
+                       "sha256":  "269C03FE3B003A1C2C0ECD9AC28D6AD878C86AB2318199C364D82831238CBBD7"
+                   },
+                   {
+                       "path":  "assets/Avatar3D-Dh0s6eyX.js",
+                       "bytes":  651080,
+                       "sha256":  "1A06258D00D195DAFBD95EE7EA3C431E8F5EB9A64BD9EFCEA173AA24ED8AF335"
+                   },
+                   {
+                       "path":  "assets/AvatarLab-C-3h6yID.js",
+                       "bytes":  7346,
+                       "sha256":  "B98AFE0F6951B43F6B6CEA44D60F1F7B8672C10C9DDB9EFC298F76DE53ABA3B5"
+                   },
+                   {
+                       "path":  "assets/avatarYaw-BAlZR6XA.js",
+                       "bytes":  191,
+                       "sha256":  "41DD011150107B8D4691A58AD3CA1964F8A4EF9F43086ED91CA9569AEE142857"
+                   },
+                   {
+                       "path":  "assets/bodyforge-athlete.glb",
+                       "bytes":  5011480,
+                       "sha256":  "E08A53C9833B43B80924D64123681FCEEEEA5BF3347E4339DB07D03E1E722F97"
+                   },
+                   {
+                       "path":  "assets/bodyforge-athlete-detail.glb",
+                       "bytes":  6038680,
+                       "sha256":  "16D3F6110D07179D71378AF462A2C0DDC99D7E73207DF123B3401769F18D53D6"
+                   },
+                   {
+                       "path":  "assets/bodyforge-athlete-efficient.glb",
+                       "bytes":  4639184,
+                       "sha256":  "DF8C4E3D0D8EBFBD6A03B83E537663BDA41DF5D0D30259AD1B530C2A2ABEFA7E"
+                   },
+                   {
+                       "path":  "assets/bodyforge-athlete-realistic.glb",
+                       "bytes":  6757648,
+                       "sha256":  "4C7754507AED2B48A0FD1CEAA9BFACF8BCD35BEFE0091AFC39F8798E3A561834"
+                   },
+                   {
+                       "path":  "assets/CameraControls-1d54xRfx.js",
+                       "bytes":  4981,
+                       "sha256":  "11BF6F2C43DC95637404D132558AD13097E74316A503DDE48F30EDBB771E6F3D"
+                   },
+                   {
+                       "path":  "assets/camera-D3bXTDSb.js",
+                       "bytes":  237,
+                       "sha256":  "27F1AC0242558CF84F5C6609D9AEB900E9A552C856194EA6E1978CF8EAA7E4BD"
+                   },
+                   {
+                       "path":  "assets/ExerciseCatalog-BmXDoiRx.js",
+                       "bytes":  3438,
+                       "sha256":  "E9BDBDEEE034AD3405E874A92EA120D4CC7027413CAF026EC4459000475E303B"
+                   },
+                   {
+                       "path":  "assets/ForgeQuickDeck-T1qODcOz.js",
+                       "bytes":  3055,
+                       "sha256":  "E82A67ACD54677F85D283A5801969C567F47620AEFA5DB089894DE546B6474F3"
+                   },
+                   {
+                       "path":  "assets/index-ic7iW-8X.css",
+                       "bytes":  172117,
+                       "sha256":  "547998DD7BEF42E5386AE8B7AD3BC328E4DC6D9A10D8FF5F162D5B99B7D451BE"
+                   },
+                   {
+                       "path":  "assets/index-K5tXbdJJ.js",
+                       "bytes":  393787,
+                       "sha256":  "DAABAEDC8905FEE384AF0C5481F11C62C4598D99277E9E686AC3E023CE19B8F9"
+                   },
+                   {
+                       "path":  "assets/jsx-runtime-DyZJNswf.js",
+                       "bytes":  8784,
+                       "sha256":  "006C8C36904A2F42AC8E86D3E56BADC6473450E8A3988D87F12C632A6487218B"
+                   },
+                   {
+                       "path":  "assets/male-base-mesh-base_male.glb",
+                       "bytes":  4498248,
+                       "sha256":  "D15A07E2B4CF1D08A3B91CB212A9A06A91438077F05A3F2A62F45351E8A71EB8"
+                   },
+                   {
+                       "path":  "assets/ProgressBackupPanel-BMTzpeaV.js",
+                       "bytes":  12719,
+                       "sha256":  "C0B9F7B9BAF0058399843E0B8053E4A8DE3F97677ABE8B04FB9C2E7F4999C76F"
+                   },
+                   {
+                       "path":  "assets/ProgressBackupPanel-Dt0z2VpD.css",
+                       "bytes":  3088,
+                       "sha256":  "B70B509ED525BEB05070A67E435B59488E27F5A21E85DA91B5EAB18C63C2F59A"
+                   },
+                   {
+                       "path":  "assets/ProgressPulseBoard-CXKG46M-.js",
+                       "bytes":  13983,
+                       "sha256":  "27126824A8BDCD394D2B1EA59954D08AC0AA42332CD77276CC3F18064F844EE4"
+                   },
+                   {
+                       "path":  "assets/RuntimeDiagnosticsPanel-U8Cd7jtV.js",
+                       "bytes":  4896,
+                       "sha256":  "14D905B17BEB1D44B0DA74653F0B27726B35501B871A735DF5F1344D58BE55AE"
+                   },
+                   {
+                       "path":  "assets/SettingsFaq-Cah3IvM4.js",
+                       "bytes":  5100,
+                       "sha256":  "2192A33E966F4E966BEA547EFF687EA8071691968D7E2B4D57CDD1E122B67E41"
+                   },
+                   {
+                       "path":  "assets/shield-hmGMVE-j.js",
+                       "bytes":  261,
+                       "sha256":  "ABC50E07B8B39D83CDB9AD9AF3F3AF91519C60251B28F0BA15B7D6343F03ECE8"
+                   },
+                   {
+                       "path":  "assets/sparkles-DWBFr11L.js",
+                       "bytes":  497,
+                       "sha256":  "963D4D037753701DBE3FCC53A4398E744E813D3DFFA9F70B306EC7E52D4C4414"
+                   },
+                   {
+                       "path":  "assets/StepsBoard-DyzT-23d.js",
+                       "bytes":  6094,
+                       "sha256":  "2ECDDDC5BDCA4613A70659FBCAD96A517358BF0D38C3F316D426B2AC7459EB52"
+                   },
+                   {
+                       "path":  "assets/vision_bundle-DtHRU79h.js",
+                       "bytes":  154276,
+                       "sha256":  "AAECEF13374E7D04BD69345BA3D122CB101A9F9F5404158B3B44A855A6E5DB6C"
+                   },
+                   {
+                       "path":  "favicon.svg",
+                       "bytes":  436,
+                       "sha256":  "495339D1B02A00931D8F986F1822507AE4C77CFD99D2784CA071338FD39BD12B"
+                   },
+                   {
+                       "path":  "fonts/manrope-cyrillic-variable.woff2",
+                       "bytes":  14500,
+                       "sha256":  "C268B459A9329E59FECF39A17618EFD44C71735532048D60B12AAB76A8C14914"
+                   },
+                   {
+                       "path":  "fonts/manrope-latin-variable.woff2",
+                       "bytes":  24836,
+                       "sha256":  "A30DDCD349703AFF7464C34BEF3FFFDFF405EE50C113440D7C8693C02D210972"
+                   },
+                   {
+                       "path":  "fonts/Manrope-OFL.txt",
+                       "bytes":  4387,
+                       "sha256":  "58172E0C0FAC2CDA8A37B348164BB55E44B0E69051E557E92B1D3F6910141F7B"
+                   },
+                   {
+                       "path":  "fonts/README.md",
+                       "bytes":  2275,
+                       "sha256":  "C72BEC53390B14D22238D07A358F58B996C10E35A5FB457C90F4B56E45C1D6B6"
+                   },
+                   {
+                       "path":  "fonts/unbounded-cyrillic-variable.woff2",
+                       "bytes":  31424,
+                       "sha256":  "E30BF6A6063B6A47232BBD657E24C7CF4FDAF76FC2C50D92D9EE63E2AD2087CF"
+                   },
+                   {
+                       "path":  "fonts/unbounded-latin-variable.woff2",
+                       "bytes":  50904,
+                       "sha256":  "22F9B928AA3928A896340422B54D690FBB5875C30EAE4C106F029C61F2289FD6"
+                   },
+                   {
+                       "path":  "fonts/Unbounded-OFL.txt",
+                       "bytes":  4392,
+                       "sha256":  "31E5D4E83955E7103C34570DD49B0570EF490800BD65B42923C0DD02445263B3"
+                   },
+                   {
+                       "path":  "icons/bodyforge-180.png",
+                       "bytes":  3223,
+                       "sha256":  "43115D5E3A50E7B229DDCC5C1C11277BEBF1F88D4ED5AF0336480977DC086EE1"
+                   },
+                   {
+                       "path":  "icons/bodyforge-192.png",
+                       "bytes":  3362,
+                       "sha256":  "C91EB5E74C5EC9371EDB896E230932D799B81749A1AC638601D85ADFFFC43332"
+                   },
+                   {
+                       "path":  "icons/bodyforge-512.png",
+                       "bytes":  5525,
+                       "sha256":  "2E4223C25A93EDECEC87E1280F704B386372BB2111EF0617EF7942D258BF6E8D"
+                   },
+                   {
+                       "path":  "icons/bodyforge-icon.svg",
+                       "bytes":  514,
+                       "sha256":  "0D16AAC886F994B2229064E4BD95FAE691823287B329C3F579440A4DAC24D4BE"
+                   },
+                   {
+                       "path":  "icons/bodyforge-maskable.svg",
+                       "bytes":  579,
+                       "sha256":  "B902F0A4E50A56D78BBB5879D52724114DB83DD140C2C2C5306978987B243975"
+                   },
+                   {
+                       "path":  "icons/bodyforge-maskable-512.png",
+                       "bytes":  4593,
+                       "sha256":  "0B83A297284E68381ADA89B8AC4225FFB98DB2F7F7CE9EB7482C8A1C26B0EBEE"
+                   },
+                   {
+                       "path":  "index.html",
+                       "bytes":  1188,
+                       "sha256":  "1F8B32D5379D9520EF8FB1B1932077DCA44F54B9727FDCD8BF1C64FF8E0E1E72"
+                   },
+                   {
+                       "path":  "manifest.webmanifest",
+                       "bytes":  927,
+                       "sha256":  "C0F1B84CE0E4F9A79E83198AEBC9DE7D4F0E8B9C2176DACBFF2F17A02E955F0E"
+                   }
+               ],
+    "apkName":  "BODYFORGE-0.3.0-733e18b-android-test.apk",
+    "apkBytes":  18461339,
+    "apkSha256":  "8459A1A8914D8F9EB5D848122342F811B48708692601F5E74C34F38139773F4E",
+    "apkZipEntries":  57,
+    "debugSigning":  "APK Signature Scheme v2 and v3",
+    "debugCertificateSha256":  "f656efdd810c9ddc88173dfa5b23c424d6a973f88f36ee06b063fd41c13505a8",
+    "installSource":  "C:\\Users\\gabra\\Downloads",
+    "phoneUrl":  "http://localhost:52871/BODYFORGE-0.3.0-733e18b-android-test.apk"
+}

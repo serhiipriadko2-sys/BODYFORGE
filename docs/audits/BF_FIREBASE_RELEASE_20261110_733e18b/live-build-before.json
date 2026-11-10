@@ -1,0 +1,14 @@
+﻿{
+    "app":  "BODYFORGE",
+    "channel":  "live",
+    "sourceRepo":  "serhiipriadko2-sys/BODYFORGE",
+    "sourceBranch":  "main",
+    "commit":  "0be3f52d68a3f299357636ad3e262c7ebdbbde90",
+    "builtAtUtc":  "2026-10-27T20:02:05.6599050Z",
+    "buildKind":  "verified-committed-source",
+    "fileCount":  48,
+    "indexSha256":  "47c7e51c8fa584c879f098f3ca7ee893207f18c2a5db2517369f80f005a1def0",
+    "athleteGlbSha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+    "firebaseProject":  "artful-striker-476211-h4",
+    "hostingSite":  "bodyforge-mobile-20261022"
+}

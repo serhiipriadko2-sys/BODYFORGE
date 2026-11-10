@@ -1,0 +1,15 @@
+{
+    "app":  "BODYFORGE",
+    "version":  "0.3.0",
+    "sourceRepo":  "serhiipriadko2-sys/BODYFORGE",
+    "sourceBranch":  "main",
+    "commit":  "733e18b5a9c33298b6c4ba9f8389423fb52f9412",
+    "builtAtUtc":  "2026-11-10T18:30:48.4247924Z",
+    "buildKind":  "verified-committed-source",
+    "hostingSite":  "bodyforge-mobile-20261022",
+    "channel":  "firebase-hosting",
+    "fileCount":  51,
+    "indexSha256":  "1f8b32d5379d9520ef8fb1b1932077dca44f54b9727fdcd8bf1c64ff8e0e1e72",
+    "entryJsSha256":  "daabaedc8905fee384af0c5481f11c62c4598d99277e9e686ac3e023ce19b8f9",
+    "athleteGlbSha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+}

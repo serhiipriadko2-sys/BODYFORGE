@@ -1,0 +1,223 @@
+﻿{
+  "status": "success",
+  "result": {
+    "channels": [
+      {
+        "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/live",
+        "url": "https://bodyforge-mobile-20261022.web.app",
+        "release": {
+          "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/live/releases/1793132199481000",
+          "version": {
+            "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/versions/dd2e07073f05c0f5",
+            "status": "FINALIZED",
+            "config": {
+              "headers": [
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/index.html"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/build-info.json"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "public, max-age=3600"
+                  },
+                  "glob": "/assets/**"
+                },
+                {
+                  "headers": {
+                    "X-Content-Type-Options": "nosniff",
+                    "X-Frame-Options": "DENY",
+                    "Referrer-Policy": "strict-origin-when-cross-origin",
+                    "Permissions-Policy": "camera=(self), microphone=(), geolocation=()"
+                  },
+                  "glob": "**"
+                }
+              ],
+              "rewrites": [
+                {
+                  "glob": "**",
+                  "path": "/index.html"
+                }
+              ]
+            },
+            "labels": {
+              "deployment-tool": "cli-firebase"
+            },
+            "createTime": "2026-10-27T20:16:29.549283Z",
+            "createUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "finalizeTime": "2026-10-27T20:16:38.885414Z",
+            "finalizeUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "fileCount": "50",
+            "versionBytes": "18622220"
+          },
+          "type": "DEPLOY",
+          "releaseTime": "2026-10-27T20:16:39.481Z",
+          "message": "BODYFORGE verified stable 0be3f52 2026-10-27",
+          "releaseUser": {
+            "email": "serhiipriadko2@gmail.com"
+          }
+        },
+        "createTime": "2026-10-22T19:23:49.078549421Z",
+        "updateTime": "2026-10-27T20:16:39.481Z",
+        "retainedReleaseCount": 999999
+      },
+      {
+        "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/pre-0be3f52-20261027",
+        "url": "https://bodyforge-mobile-20261022--pre-0be3f52-20261027-lmh2p2yv.web.app",
+        "release": {
+          "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/pre-0be3f52-20261027/releases/1793131423427000",
+          "version": {
+            "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/versions/b2e50c8b9e0194e6",
+            "status": "FINALIZED",
+            "config": {
+              "headers": [
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/index.html"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/build-info.json"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "public, max-age=3600"
+                  },
+                  "glob": "/assets/**"
+                },
+                {
+                  "headers": {
+                    "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+                    "X-Content-Type-Options": "nosniff",
+                    "X-Frame-Options": "DENY",
+                    "Referrer-Policy": "strict-origin-when-cross-origin"
+                  },
+                  "glob": "**"
+                }
+              ]
+            },
+            "labels": {
+              "deployment-tool": "cli-firebase"
+            },
+            "createTime": "2026-10-22T20:23:11.757260Z",
+            "createUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "finalizeTime": "2026-10-22T20:23:16.688545Z",
+            "finalizeUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "fileCount": "10",
+            "versionBytes": "3173281"
+          },
+          "type": "DEPLOY",
+          "releaseTime": "2026-10-27T20:03:43.427Z",
+          "releaseUser": {
+            "email": "serhiipriadko2@gmail.com"
+          }
+        },
+        "createTime": "2026-10-27T20:03:33.272572237Z",
+        "updateTime": "2026-10-27T20:03:43.427Z",
+        "retainedReleaseCount": 10,
+        "expireTime": "2026-11-26T20:03:33.272572237Z"
+      },
+      {
+        "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/pre-1d4eb97-20261027",
+        "url": "https://bodyforge-mobile-20261022--pre-1d4eb97-20261027-b8nwjdb7.web.app",
+        "release": {
+          "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/channels/pre-1d4eb97-20261027/releases/1793110314100000",
+          "version": {
+            "name": "projects/artful-striker-476211-h4/sites/bodyforge-mobile-20261022/versions/b2e50c8b9e0194e6",
+            "status": "FINALIZED",
+            "config": {
+              "headers": [
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/index.html"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "no-store"
+                  },
+                  "glob": "/build-info.json"
+                },
+                {
+                  "headers": {
+                    "Cache-Control": "public, max-age=3600"
+                  },
+                  "glob": "/assets/**"
+                },
+                {
+                  "headers": {
+                    "X-Frame-Options": "DENY",
+                    "Referrer-Policy": "strict-origin-when-cross-origin",
+                    "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+                    "X-Content-Type-Options": "nosniff"
+                  },
+                  "glob": "**"
+                }
+              ]
+            },
+            "labels": {
+              "deployment-tool": "cli-firebase"
+            },
+            "createTime": "2026-10-22T20:23:11.757260Z",
+            "createUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "finalizeTime": "2026-10-22T20:23:16.688545Z",
+            "finalizeUser": {
+              "email": "serhiipriadko2@gmail.com"
+            },
+            "fileCount": "10",
+            "versionBytes": "3173281"
+          },
+          "type": "DEPLOY",
+          "releaseTime": "2026-10-27T14:11:54.100Z",
+          "releaseUser": {
+            "email": "serhiipriadko2@gmail.com"
+          }
+        },
+        "createTime": "2026-10-27T14:11:15.218645343Z",
+        "updateTime": "2026-10-27T14:11:54.100Z",
+        "retainedReleaseCount": 10,
+        "expireTime": "2026-11-26T14:11:15.218645343Z"
+      }
+    ]
+  }
+}

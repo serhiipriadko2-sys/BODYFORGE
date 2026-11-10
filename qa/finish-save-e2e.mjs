@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-finish-save-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
-  '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
+  '--headless=new',
   '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
   '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
   '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profile,

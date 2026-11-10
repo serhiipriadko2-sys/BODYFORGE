@@ -15,7 +15,7 @@ const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chro
   '--remote-debugging-port=0', '--user-data-dir=' + profileDir, 'about:blank',
 ], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
-let socket, seq = 0, initScript = null;
+let socket, seq = 0, initScript = null, bootSerial = 0;
 const pending = new Map();
 let assertions = 0;
 const check = (condition, message) => { if (!condition) throw Error('FAIL ' + message); assertions++; console.log('PASS ' + message); };
@@ -47,14 +47,29 @@ const fighter = {
   game: { created: true, nickname: 'QA ONLY', build: 'solid', muscles: { arms: 1, core: 0, legs: 2, back: 0 }, outfit: 'ember', ownedOutfits: ['base', 'ember'], lastLoginDay: null, lastQuestClaimDay: null, highestClearedFloor: 0, bestGhost: null },
 };
 async function boot(primary = JSON.stringify(fighter), backup = JSON.stringify({ ...fighter, xp: 240, coins: 35 }), hook = '', blocked = []) {
+  const bootId = ++bootSerial;
   await cdp('Page.navigate', { url: 'about:blank' });
   if (initScript) await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: initScript });
-  const seed = '(()=>{if(location.origin!==' + JSON.stringify(origin) + ')return;localStorage.clear();const p=' + JSON.stringify(primary) + ',b=' + JSON.stringify(backup) + ';if(p!==null)localStorage.setItem(' + JSON.stringify(key) + ',p);if(b!==null)localStorage.setItem(' + JSON.stringify(backupKey) + ',b);' + hook + '})()';
+  const seed = '(()=>{if(location.origin!==' + JSON.stringify(origin) + ')return;localStorage.clear();window.__bfQaBootId=' + bootId + ';const p=' + JSON.stringify(primary) + ',b=' + JSON.stringify(backup) + ';if(p!==null)localStorage.setItem(' + JSON.stringify(key) + ',p);if(b!==null)localStorage.setItem(' + JSON.stringify(backupKey) + ',b);' + hook + '})()';
   const added = await cdp('Page.addScriptToEvaluateOnNewDocument', { source: seed });
   initScript = added.identifier;
   await cdp('Network.setBlockedURLs', { urls: blocked });
   await cdp('Page.navigate', { url: origin + '/' });
-  await until("!!document.querySelector('.app-shell,.storage-recovery')", 'app mounts');
+  // Page.navigate resolves before the old renderer is necessarily replaced.
+  // A fresh boot token prevents a stale DOM from passing the readiness gate.
+  const end = Date.now() + 16000;
+  let fresh = false;
+  while (Date.now() < end) {
+    try {
+      fresh = Boolean(await js('window.__bfQaBootId===' + bootId + " && !!document.querySelector('.app-shell,.storage-recovery')"));
+      if (fresh) break;
+    } catch (error) {
+      // Only a context torn down by this known navigation may be retried.
+      if (!/Inspected target navigated or closed|Execution context was destroyed|Cannot find context with specified id/.test(String(error))) throw error;
+    }
+    await sleep(180);
+  }
+  if (!fresh) throw Error('TIMEOUT fresh app document mounts');
   await sleep(300);
 }
 async function current() { return JSON.parse(await js('localStorage.getItem(' + JSON.stringify(key) + ')')); }

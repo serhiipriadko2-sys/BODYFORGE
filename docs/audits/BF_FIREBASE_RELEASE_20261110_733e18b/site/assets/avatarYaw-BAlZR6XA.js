@@ -1,0 +1,1 @@
+var e=-.21;function t(t){return Number.isFinite(t)?Math.max(-1.02,Math.min(1.02,Math.round(t*1e3)/1e3)):e}function n(e,n){return t(t(e)+(Number.isFinite(n)?n:0))}export{t as n,n as r,e as t};
