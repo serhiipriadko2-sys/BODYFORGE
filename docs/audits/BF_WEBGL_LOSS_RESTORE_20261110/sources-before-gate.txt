@@ -1,0 +1,5 @@
+src/components/Avatar3D.tsx | a3b525c5c84953d6a135352b1fbea121a6f0d6dd9487cb38c10282b6a20fdf44
+src/App.tsx | 98a06b57d9c1ad974e29388f892a34370bd503ebb6e59fdfb24ede8aa5014686
+qa/avatar-lifecycle-e2e.mjs | 0c1ae9f59d941732a5f22d40f3a550fcc2af03b91dafbb6d65acf30fc0dab6e5
+qa/avatar-observers-e2e.mjs | bc73c2d21e3248ff1038c3192866d816de71a37c17cfe89fd00735060025d977
+qa/mobile-e2e.mjs | be9bee1912c556dd7b12153d9ea91b3a90f6ef777c4dab0ea2afcf9ecb526b2b

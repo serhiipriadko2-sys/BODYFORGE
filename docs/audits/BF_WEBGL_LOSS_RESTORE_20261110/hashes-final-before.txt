@@ -1,0 +1,5 @@
+src/components/Avatar3D.tsx | a3b525c5c84953d6a135352b1fbea121a6f0d6dd9487cb38c10282b6a20fdf44
+qa/avatar-observers-e2e.mjs | ef70a153a999d55c6b410a7563d76e258dac12e355f90a4c143091442204f27d
+src/App.tsx | 98a06b57d9c1ad974e29388f892a34370bd503ebb6e59fdfb24ede8aa5014686
+src/forge.css | 7adacc00887693cd0438591c3fa598b06f6499a1adfbfd4895c234642bbb1c9d
+qa/mobile-e2e.mjs | be9bee1912c556dd7b12153d9ea91b3a90f6ef777c4dab0ea2afcf9ecb526b2b

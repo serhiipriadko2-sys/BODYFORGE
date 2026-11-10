@@ -1,0 +1,22 @@
+[
+    {
+        "Path":  "C:\\github\\BODYFORGE\\qa\\resilience-e2e.mjs",
+        "Hash":  "2C5697F9AB6B7DB0406FD5F86ECA0D8DC3E276B0CD6F7A2C02FA506C76710639"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\App.tsx",
+        "Hash":  "98A06B57D9C1AD974E29388F892A34370BD503EBB6E59FDFB24EDE8AA5014686"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\progression.ts",
+        "Hash":  "120A016FF379840470B4949DBB49FEAE7F3E055E1A040774AA1FD23E718B8422"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\lib\\profileLock.ts",
+        "Hash":  "6CA5D7959CE739EDDB0BD10FD63999134B5F187821F9C75BF7C07855825277CE"
+    },
+    {
+        "Path":  "C:\\github\\BODYFORGE\\src\\hooks\\useProfileStorage.ts",
+        "Hash":  "0241E29BF77BF1C8428D1F1B46D2A841E5D0B05B0A316A64BF8D1E58B1F7C70D"
+    }
+]

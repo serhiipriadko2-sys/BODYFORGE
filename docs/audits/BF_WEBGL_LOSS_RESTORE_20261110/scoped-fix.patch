@@ -1,0 +1,59 @@
+diff --git a/qa/avatar-observers-e2e.mjs b/qa/avatar-observers-e2e.mjs
+index cb55359..ca80379 100644
+--- a/qa/avatar-observers-e2e.mjs
++++ b/qa/avatar-observers-e2e.mjs
+@@ -117,7 +117,9 @@ async function app(tab, reload = false) {
+ 
+ try {
+   check((await fetch(origin + '/')).status === 200,'existing Vite HTTP 200');
+-  await waitFor(()=>{const f=path.join(profile,'DevToolsActivePort');if(fs.existsSync(f)){port=Number(fs.readFileSync(f,'utf8').split('\n')[0]);return port>0;}if(chrome.exitCode!==null)throw Error('Owned Chrome exited '+chrome.exitCode);return false;},'owned Chrome',10000);
++  // On Windows the launcher can exit 0 while its owned CDP browser is still active.
++  // DevToolsActivePort under the unique QA profile is the readiness signal.
++  await waitFor(()=>{const f=path.join(profile,'DevToolsActivePort');if(fs.existsSync(f)){port=Number(fs.readFileSync(f,'utf8').split('\n')[0]);return Number.isInteger(port)&&port>0;}return false;},'owned Chrome CDP port',10000);
+   for(const [missing,mode] of [['IntersectionObserver','undefined'],['IntersectionObserver','deleted'],['ResizeObserver','undefined'],['ResizeObserver','deleted']]) {
+     const tab=await newTab();
+     await tab.cdp('Page.addScriptToEvaluateOnNewDocument',{source:(mode==='deleted'?'delete window['+JSON.stringify(missing)+'];':'Object.defineProperty(window,'+JSON.stringify(missing)+',{configurable:true,value:undefined});')+'window.__qaContextAttempts=0;const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(String(type).startsWith("webgl"))window.__qaContextAttempts++;return original.call(this,type,...args)};'});
+@@ -136,4 +138,29 @@ try {
+   }
+   console.log('AVATAR_OBSERVERS_PASS',JSON.stringify({assertions}));
+ } catch(error){console.error('AVATAR_OBSERVERS_FAIL',error.stack||String(error));process.exitCode=19;}
+-finally {for(const client of clients)client.socket.close();chrome.kill();await sleep(500);const resolved=path.resolve(profile),root=path.resolve(os.tmpdir())+path.sep;if(resolved.startsWith(root)&&path.basename(resolved).startsWith('bf-avatar-observers-')){try{fs.rmSync(resolved,{recursive:true,force:true});}catch{console.log('OWNED_PROFILE_CLEANUP_INCOMPLETE',resolved);}}}
++finally {
++  for (const client of clients) client.socket.close();
++  // Close only the Chrome instance owned by this disposable QA profile.
++  try {
++    if (Number.isInteger(port) && port > 0) {
++      const info = await (await fetch('http://127.0.0.1:' + port + '/json/version',
++        { signal: AbortSignal.timeout(1500) })).json();
++      const owned = new WebSocket(info.webSocketDebuggerUrl);
++      await new Promise((resolve, reject) => {
++        const timer = setTimeout(() => reject(Error('owned browser CDP close timeout')), 1600);
++        owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++        owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('owned browser CDP close error')); }, { once: true });
++      });
++      owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++      await sleep(550);
++      owned.close();
++    }
++  } catch (error) { console.error('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); process.exitCode ||= 19; }
++  chrome.kill();
++  await sleep(500);
++  const resolved = path.resolve(profile), root = path.resolve(os.tmpdir()) + path.sep;
++  if (resolved.startsWith(root) && path.basename(resolved).startsWith('bf-avatar-observers-')) {
++    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 12, retryDelay: 200 }); }
++    catch (error) { console.error('OWNED_PROFILE_CLEANUP_INCOMPLETE', String(error)); process.exitCode ||= 19; }
++  }
++}
+diff --git a/src/components/Avatar3D.tsx b/src/components/Avatar3D.tsx
+index a87a497..a722568 100644
+--- a/src/components/Avatar3D.tsx
++++ b/src/components/Avatar3D.tsx
+@@ -473,7 +473,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
+     return (
+       <div className={`avatar-3d-fallback ${className}`} data-3d-status="fallback">
+         <Avatar workouts={0} build={build} muscles={muscles} outfit={outfit} look={look}/>
+-        <span>Устройство не поддерживает 3D — включён облегчённый персонаж</span>
++        <span>3D сейчас недоступно — включён облегчённый персонаж</span>
+       </div>
+     );
+   }

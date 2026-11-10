@@ -196,6 +196,9 @@ try {
     }));
     if (!duringLoss.three.includes('fallback') || !duringLoss.lost.some(e => e.kind === 'lost') ||
         savedDuring !== saveBeforeLoss) throw Error('CONTROLLED_LOSS_FALLBACK_FAILED');
+    if (!fallbackText?.includes('облегчённый персонаж') || fallbackText.includes('не поддерживает 3D')) {
+      throw Error('FALLBACK_MESSAGE_FALSE_UNSUPPORTED_CLAIM');
+    }
     await reloadWithEvidence('after-controlled-loss');
     await evaluate('document.querySelector(".mobile-nav button:nth-child(3)").click();true');
     await waitFor('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource === "cc0"',

@@ -1,0 +1,26 @@
+BODYFORGE RESILIENCE QA | relative path | bytes | sha256
+build-final.log | 2220 | cdfd62b1c81ae436a4bdade51020e0760600cbf705e128e65e107232a5e2eff6
+bundle-final.log | 366 | 93d5d81c0e22d5174df13ddf29527f51ee7633cb92637682dc04424b5f9090f3
+canon-check.log | 384 | 8b4df67d114d2bd425ab452757e4f30bd77fec2b1c1eb079fd393ed31dfd8ad2
+close-owned-resilience.mjs | 2416 | 5a2f6aaf4c416a748dc65a9541bdfa449f0048e4f598a3fa10ccd99070967ecc
+close-scoped-resilience.ps1 | 1466 | 9fdb52873442a81f9154cb120f3a8c47d6e45343f9377df43a613ce77ea2fdec
+e2e-sha-after.json | 844 | 710604f578db0ce6342c50495ca978c8fad7ac99d384e8315c297c7f01f0a62e
+e2e-sha-before.json | 844 | 710604f578db0ce6342c50495ca978c8fad7ac99d384e8315c297c7f01f0a62e
+git-head-initial.txt | 42 | 2ed31ebee32817f405b1652c73d36ad6751ed75f8d487104a7e73cca6e1a198c
+git-status-initial.txt | 1765 | 4215b52efe30f9b8294008f0e8e1afe1250f10a3e2398e4e873772fe9b22519d
+head-build-after.txt | 42 | de25c128c019b404e858cb00199580d5bcbe3829ad156a5ceabb351728346ce5
+head-build-before.txt | 42 | de25c128c019b404e858cb00199580d5bcbe3829ad156a5ceabb351728346ce5
+make-manifest.ps1 | 2378 | 797b1f77e60aa0a138431c72b1ee90ab08c0b4969945c36620614c25d45e6b93
+own-profile-cleanup.log | 944 | ac2287c5bb69a2c174a0d60db0c7658170d926793dd2b78a560240eb374a5383
+preview-smoke.log | 99 | 69777188907ef2f15650b9090db5a489f9211f44cfcc68eb55f6514420eb8ece
+resilience.before.mjs | 22394 | 2dc5a3e27b8271b3738e67e4a9e608d26e32054e1c9e76dcd7d117c593fbbf55
+resilience.patch | 6787 | 5b49c38f0ef0dd12e35a7cf4b7875d7ab2dfb235485d063969e5dc4b587f9e5a
+resilience-after.log | 3715 | a9f2f39744e1d4ebd51fc85eb0568b1db1702240a302c37bfe67d6b0cf3c81e6
+resilience-before.log | 4017 | d7dde30343954d4353261248d636574949f685b697a0c6c13ca99257020c0182
+screenshots/bf-audit-3d-fallback.png | 185339 | 064b679f265b4b5914836b948c8ae947160a9f32c18326dc88316c377383a870
+screenshots/bf-audit-frozen-camera.png | 76887 | 31e33ebeb518d77b93275fbfb353cfff3983c256da177f09356d3fbfc33990f9
+screenshots/bf-audit-recovery.png | 50430 | f6ce13be97391724b1864df5bfaeb505ac070073985567f613e08110d6a6ba5f
+source-sha-build-after.json | 1354 | b4040f7776dd8a2e3949fca42c39cbb9b2b1cff620833f5607488ebc6c2613f4
+source-sha-build-before.json | 1354 | b4040f7776dd8a2e3949fca42c39cbb9b2b1cff620833f5607488ebc6c2613f4
+source-sha-initial.json | 1013 | a6d1d445cfe2c11bebbd3496c3ad3d5bcd9b3c86f8f03ef5e2af451cf667b472
+unit-final.log | 6707 | 19e75207b9e06b72aaa9b7e5e7882dc7a3432e398b6e3069a570e68b6c98b6cb

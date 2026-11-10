@@ -1,0 +1,107 @@
+diff --git "a/docs\\audits\\BF_RESILIENCE_20261110_ITER1\\resilience.before.mjs" "b/qa\\resilience-e2e.mjs"
+index 240f019..3e2d0e0 100644
+--- "a/docs\\audits\\BF_RESILIENCE_20261110_ITER1\\resilience.before.mjs"
++++ "b/qa\\resilience-e2e.mjs"
+@@ -6,13 +6,13 @@ import path from 'node:path';
+ import { spawn } from 'node:child_process';
+ 
+ const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
+-const port = 9742;
++let port;
+ const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-resilience-'));
+ const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
+   '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
+   '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
+   '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
+-  '--remote-debugging-port=' + port, '--user-data-dir=' + profileDir, 'about:blank',
++  '--remote-debugging-port=0', '--user-data-dir=' + profileDir, 'about:blank',
+ ], { stdio: 'ignore' });
+ const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
+ let socket, seq = 0, initScript = null;
+@@ -87,12 +87,24 @@ async function cameraReady() {
+   await until("document.querySelector('.pose-hud-angle strong')?.textContent.includes('°')", 'live angle', 5000);
+ }
+ try {
++  // The launcher may exit 0 after handing off to Chrome on Windows.
++  // The unique profile's DevToolsActivePort is the browser readiness signal.
++  for (let i = 0; i < 150; i++) {
++    const file = path.join(profileDir, 'DevToolsActivePort');
++    if (fs.existsSync(file)) {
++      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) { port = candidate; break; }
++    }
++    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
++    await sleep(100);
++  }
++  if (!port) throw Error('Owned Chrome DevTools unavailable in disposable profile');
+   let endpoint;
+   for (let i = 0; i < 70; i++) {
+     try { const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json(); endpoint = tabs.find((t) => t.type === 'page')?.webSocketDebuggerUrl; if (endpoint) break; } catch {}
+     await sleep(200);
+   }
+-  if (!endpoint) throw Error('Chrome unavailable');
++  if (!endpoint) throw Error('Owned Chrome page unavailable');
+   socket = new WebSocket(endpoint);
+   await new Promise((ok, no) => { socket.addEventListener('open', ok, { once: true }); socket.addEventListener('error', no, { once: true }); });
+   socket.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
+@@ -260,7 +272,13 @@ try {
+   // until scrolled into view. Trigger the import before testing its failure.
+   await js("document.querySelector('.avatar-stage').scrollIntoView({block:'center',behavior:'instant'});true");
+   await until("!!document.querySelector('[data-3d-status=fallback]')", 'lazy 3D failure fallback', 15000);
+-  check(await js("document.querySelectorAll('.mobile-nav button').length===5"), 'missing 3D module cannot crash navigation');
++  check(await js(`(()=>{
++    const buttons=[...document.querySelectorAll('.mobile-nav button')];
++    const labels=['ГОРН','КАМЕРА','ГЕРОЙ','БАШНЯ','ОНЛАЙН','Настройки и FAQ'];
++    return buttons.length===labels.length && buttons.every((button,index)=>
++      button.getClientRects().length>0 &&
++      (button.getAttribute('aria-label')||button.textContent.trim()).includes(labels[index]));
++  })()`), 'missing 3D module preserves all six visible, labelled navigation actions');
+   await sleep(300);
+   await shot('bf-audit-3d-fallback.png');
+   await cdp('Emulation.setDeviceMetricsOverride', { width: 360, height: 780, deviceScaleFactor: 1, mobile: true });
+@@ -271,6 +289,43 @@ try {
+   try { console.error('FAILURE_STATE', JSON.stringify(await js("({status:document.querySelector('[data-storage-status]')?.dataset.storageStatus,profile:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'null')})"))); } catch {}
+   process.exitCode = 12;
+ } finally {
+-  socket?.close(); chrome.kill(); await sleep(400);
+-  try { fs.rmSync(profileDir, { recursive: true, force: true }); } catch {}
++  socket?.close();
++  // The Windows launcher may exit while the owned Chrome browser is still live.
++  // Close ONLY the browser whose port was written by this temporary profile.
++  try {
++    const file = path.join(profileDir, 'DevToolsActivePort');
++    if (fs.existsSync(file)) {
++      const ownedPort = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
++      if (Number.isSafeInteger(ownedPort) && ownedPort > 0 && ownedPort <= 65535) {
++        const response = await fetch('http://127.0.0.1:' + ownedPort + '/json/version',
++          { signal: AbortSignal.timeout(1500) });
++        if (!response.ok) throw Error('Owned browser CDP unavailable');
++        const { webSocketDebuggerUrl } = await response.json();
++        const endpoint = new URL(webSocketDebuggerUrl);
++        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
++            endpoint.port !== String(ownedPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
++          throw Error('Unverified owned browser endpoint');
++        }
++        const owned = new WebSocket(webSocketDebuggerUrl);
++        await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Owned CDP connection timeout')), 1500);
++          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
++          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned CDP connection failed')); }, { once: true });
++        });
++        const closed = new Promise((resolve) => {
++          const timer = setTimeout(resolve, 1500);
++          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
++        });
++        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
++        await closed;
++        if (owned.readyState === WebSocket.OPEN) owned.close();
++      }
++    }
++  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
++  chrome.kill(); await sleep(500);
++  if (path.dirname(profileDir) !== os.tmpdir() || !path.basename(profileDir).startsWith('bf-resilience-')) {
++    throw Error('Unverified temporary profile cleanup target');
++  }
++  try { fs.rmSync(profileDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
++  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+ }

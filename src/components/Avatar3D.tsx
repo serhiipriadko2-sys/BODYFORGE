@@ -473,7 +473,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     return (
       <div className={`avatar-3d-fallback ${className}`} data-3d-status="fallback">
         <Avatar workouts={0} build={build} muscles={muscles} outfit={outfit} look={look}/>
-        <span>Устройство не поддерживает 3D — включён облегчённый персонаж</span>
+        <span>3D сейчас недоступно — включён облегчённый персонаж</span>
       </div>
     );
   }
