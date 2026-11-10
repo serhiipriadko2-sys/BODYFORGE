@@ -1,0 +1,7 @@
+## main...origin/main
+ M qa/bundle-on-demand.mjs
+ M qa/mobile-e2e.mjs
+ M src/App.tsx
+?? docs/audits/BF_BUNDLE_20261110.browser-summary.json
+?? docs/audits/BF_BUNDLE_20261110_before/
+?? docs/audits/BF_CHROME_CDP_20261110/

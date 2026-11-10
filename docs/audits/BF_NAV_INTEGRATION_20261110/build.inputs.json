@@ -1,0 +1,780 @@
+{
+  "at": "2026-11-10T15:53:55.131215+00:00",
+  "files": [
+    {
+      "path": "qa/all-exercises-motion-e2e.mjs",
+      "bytes": 14922,
+      "sha256": "8f6a23e505e0134ef9735fdf57db7dfae997c96aeebb93b7b41f3c9b54894c01"
+    },
+    {
+      "path": "qa/appearance-e2e.mjs",
+      "bytes": 51972,
+      "sha256": "44857fe85a4cf301984f7645630c7b818be1f5b0dc15c84f075bc70eddd21383"
+    },
+    {
+      "path": "qa/athlete-efficient.mjs",
+      "bytes": 6496,
+      "sha256": "684bd0f6b303950bb9460c6dfd7fb838dcf515c89625a48ee21f57f23e14dfb9"
+    },
+    {
+      "path": "qa/avatar-glb-inspect.mjs",
+      "bytes": 2590,
+      "sha256": "ce6036a96d61d3c70086e8efb9f9e25f776101f0f220ecc832ce345f98e9b431"
+    },
+    {
+      "path": "qa/avatar-lifecycle-e2e.mjs",
+      "bytes": 11107,
+      "sha256": "078eb9e4608c7d44532c5ba535e6f1665f4c881679935bbdd19e42f52ab3bbc5"
+    },
+    {
+      "path": "qa/avatar-observers-e2e.mjs",
+      "bytes": 9261,
+      "sha256": "bc73c2d21e3248ff1038c3192866d816de71a37c17cfe89fd00735060025d977"
+    },
+    {
+      "path": "qa/avatar-quality-e2e.mjs",
+      "bytes": 26463,
+      "sha256": "bd4faab966d495361ed0bd0c1b94c6f8d99b837c86d47c20907d2e9efe98e58a"
+    },
+    {
+      "path": "qa/browser-crash-e2e.mjs",
+      "bytes": 16702,
+      "sha256": "c8424d929f63aac4af6bed8c50eff513cf611151f3ac0be34b98cf030219c142"
+    },
+    {
+      "path": "qa/bundle-on-demand.mjs",
+      "bytes": 2709,
+      "sha256": "958505bf5392b281b239b83e9f3bb27e75e8f85d250c1e916917d51059cde088"
+    },
+    {
+      "path": "qa/durable-journal-e2e.mjs",
+      "bytes": 14435,
+      "sha256": "c4e3df5f0a95de2b159a9f4f578d30676695fb692d30b40f3c40dff63dc2ce0c"
+    },
+    {
+      "path": "qa/eight-exercise-catalog-e2e.mjs",
+      "bytes": 4163,
+      "sha256": "42e446000c94742f4e7738da3da93dc675b8980e0c0d125d8f9246e0f8b0f503"
+    },
+    {
+      "path": "qa/finish-save-e2e.mjs",
+      "bytes": 13833,
+      "sha256": "09b5259c2c75080a4e77570669ab7ee62eb7c08d3080ab838cbe2e83867a86ae"
+    },
+    {
+      "path": "qa/journal-e2e.mjs",
+      "bytes": 49683,
+      "sha256": "f767f191a023dff41d01585f857efed63b9d380451601cfd3c9b3afbec49655f"
+    },
+    {
+      "path": "qa/kinetic-e2e.mjs",
+      "bytes": 19119,
+      "sha256": "6e780f322ca00c675d2e569bf54c958534fcce79282cf7cef5a43b6583407fdc"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 41522,
+      "sha256": "623c84166b241ca2b4f81722ea2af77cca3e288d86a77f5bf113455f01d8dbbd"
+    },
+    {
+      "path": "qa/multitab-e2e.mjs",
+      "bytes": 26257,
+      "sha256": "98bf80892ecdcddf8c4f7e3077ce1b37db7edf21eaea1f5f225190e958d2a24f"
+    },
+    {
+      "path": "qa/on-demand-camera-e2e.mjs",
+      "bytes": 12239,
+      "sha256": "4cfe7f63e685923da325c4bd6030d7f14c09b1b0a7914872f300c08e056c69f9"
+    },
+    {
+      "path": "qa/privacy-server-e2e.mjs",
+      "bytes": 1799,
+      "sha256": "c3597329ee69fb09ec27a86f9bb5b31dc08db313cb55885f6853dacd1ce4516b"
+    },
+    {
+      "path": "qa/pulse-armory-e2e.mjs",
+      "bytes": 16277,
+      "sha256": "69ba99bd81cde06f699c1b87cc130141636d96f0fb3bffacae1628199610810d"
+    },
+    {
+      "path": "qa/pwa-install.mjs",
+      "bytes": 4124,
+      "sha256": "8c0ab6f5e2bbfa95bf8984b4acf604388c7d1bbb24a4a2657beee2d1145518c8"
+    },
+    {
+      "path": "qa/realme-camera-e2e.mjs",
+      "bytes": 9895,
+      "sha256": "0de3af80d5cd7e36c836efb9fa760b277e830aef64e4078ccacbb2b7d8c65867"
+    },
+    {
+      "path": "qa/realme-usb-e2e.mjs",
+      "bytes": 19103,
+      "sha256": "23e946cb50c5daca67299c5631ad52e3bf7021b80cf0ab1d79ef8d7d2e0c2671"
+    },
+    {
+      "path": "qa/resilience-e2e.mjs",
+      "bytes": 22394,
+      "sha256": "2dc5a3e27b8271b3738e67e4a9e608d26e32054e1c9e76dcd7d117c593fbbf55"
+    },
+    {
+      "path": "qa/settings-recovery-e2e.mjs",
+      "bytes": 10751,
+      "sha256": "468b48967c54bdf3f0ff9e4f70091d7f13de7d606a67a29dec76b16ee4fb5516"
+    },
+    {
+      "path": "qa/stable-dev-server.mjs",
+      "bytes": 952,
+      "sha256": "b840f59b0348b37663fa9544597538768f0f1287b2ce28554ecf831c783c393d"
+    },
+    {
+      "path": "qa/steps-day-e2e.mjs",
+      "bytes": 22404,
+      "sha256": "c82a61f2e87b1685f27dacb2bf6734bc678874619edeae306f952d73f15c8243"
+    },
+    {
+      "path": "qa/tower20-e2e.mjs",
+      "bytes": 9448,
+      "sha256": "c92a6dbf380d348156d84e1cd4fe48a3172c23868aa74746bad9fcb27a5e9328"
+    },
+    {
+      "path": "qa/training-experience-e2e.mjs",
+      "bytes": 11482,
+      "sha256": "09697f930a0e85c64791e426a73cddbb450dc7e8f5860cac1319e68d103364d7"
+    },
+    {
+      "path": "src/App.tsx",
+      "bytes": 84563,
+      "sha256": "3e420fb1f9ed282eaa3e49ef69782689bded25cf1edd41bba2c8a41bd8a05b6f"
+    },
+    {
+      "path": "src/appearance.css",
+      "bytes": 26985,
+      "sha256": "ee3bd541163f548fdac343f8f99da466e47c662195bb5756a48f45394fc70ee8"
+    },
+    {
+      "path": "src/components/AppearancePanel.tsx",
+      "bytes": 7924,
+      "sha256": "42c976ba363159c034dac566c0f491134acd83ab3cb0bfa8c7f7d4f01ffd5059"
+    },
+    {
+      "path": "src/components/Avatar.tsx",
+      "bytes": 11689,
+      "sha256": "1109aef4bba76578a4455c29d0c5109ba2d115157a4f31a8f503a8640303bfc1"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 41088,
+      "sha256": "5097a85aeec3d1e73c33ae1a6dd82d6b8eeb39e9c3b7d5e02329c022b545db2e"
+    },
+    {
+      "path": "src/components/AvatarLab.tsx",
+      "bytes": 7495,
+      "sha256": "7d44cc65eab251201ed7ea3c9afae84773ec27121281926d45c13ba25ce0f4fe"
+    },
+    {
+      "path": "src/components/BrandMark.tsx",
+      "bytes": 676,
+      "sha256": "9aeda58703267e99f862e70c0025b25cb666d415febeaf68b6352f20f30dd2dc"
+    },
+    {
+      "path": "src/components/CameraControls.tsx",
+      "bytes": 5925,
+      "sha256": "8bc41f552daec655730bb6577879f4f7b667634db27e6456adbef1743c2dcedb"
+    },
+    {
+      "path": "src/components/DailyPlanBoard.tsx",
+      "bytes": 6259,
+      "sha256": "d612b466238dd77abe80f4940975b4ff478ef6af21dab4b6a61aee1e19dd45c1"
+    },
+    {
+      "path": "src/components/ExerciseCatalog.tsx",
+      "bytes": 4186,
+      "sha256": "142af0a81e992b7206a660d918739b5109e71719455d50cd8fc19d44586fcca8"
+    },
+    {
+      "path": "src/components/ForgeGlyph.tsx",
+      "bytes": 2158,
+      "sha256": "00761610bf99a908745058238710fe8fe7ffad173590fea6f7ad1659d77aadc9"
+    },
+    {
+      "path": "src/components/ForgeQuickDeck.tsx",
+      "bytes": 3284,
+      "sha256": "b2e013df7caf5d62d23ec22166be6f5307316981e367ce859c22200ab5292a44"
+    },
+    {
+      "path": "src/components/ForgeWorld.tsx",
+      "bytes": 16238,
+      "sha256": "3b9902414a9c6756ab341c19a6b04bfdeb026a6b2d11ab052b9919fdfddf1443"
+    },
+    {
+      "path": "src/components/GameAvatar.tsx",
+      "bytes": 3099,
+      "sha256": "0c492b67dffc761fe575e3dcd38f739295bfbf576c241256f2fb7be2fb629a20"
+    },
+    {
+      "path": "src/components/progressBackup.css",
+      "bytes": 3751,
+      "sha256": "45261d6c02ca11cc6d39be3838deb336ad380d29989816ab68848982a63a6b33"
+    },
+    {
+      "path": "src/components/ProgressBackupPanel.tsx",
+      "bytes": 9027,
+      "sha256": "36765beecdf9d77396370e743706a90bfa0e9297b9ba70f66534ab55bef6b24a"
+    },
+    {
+      "path": "src/components/ProgressPulseBoard.tsx",
+      "bytes": 13868,
+      "sha256": "ff52012ba50592af72f7368e41f7d57e1b67bcac368f47b2f0f7ee53a40e6f6d"
+    },
+    {
+      "path": "src/components/RuntimeDiagnosticsPanel.tsx",
+      "bytes": 5678,
+      "sha256": "c62b7ee4f27c4547ef39029615b07fa75eff005191293a0d69645c9bf0d1fc3d"
+    },
+    {
+      "path": "src/components/SettingsFaq.tsx",
+      "bytes": 3174,
+      "sha256": "5bb06f77a3c6dbf3f85781555ea73e5d391fb04dbfcceb606649ebc8215b1463"
+    },
+    {
+      "path": "src/components/SettingsFaqBoundary.tsx",
+      "bytes": 930,
+      "sha256": "438b9a8fc88a05754e2c53d7473b5340cf92b426354cd0ecaffebd82d2dc0298"
+    },
+    {
+      "path": "src/components/StepsBoard.tsx",
+      "bytes": 7454,
+      "sha256": "99623fd070a8c744e78d2b0ab7820e93a51bc3b7f066dc471a967724196a6183"
+    },
+    {
+      "path": "src/components/StorageRecovery.tsx",
+      "bytes": 11357,
+      "sha256": "8a41598cef6186193fa89588fb0de0f2f4f64431b86bc8157ab4e10ad941fe63"
+    },
+    {
+      "path": "src/fonts.css",
+      "bytes": 1357,
+      "sha256": "9732640ae82264a9c44cdc8405e7f740c06d70549a5a0bbbbf26882fe355703e"
+    },
+    {
+      "path": "src/forge.css",
+      "bytes": 21570,
+      "sha256": "47c6b6be7ccf519ed5e637169f699e64977a1fa12671582da4c60ed0dbaac879"
+    },
+    {
+      "path": "src/hooks/useAvatarLook.ts",
+      "bytes": 1472,
+      "sha256": "17bdc78a10a59eeef26dc75f51691576c45efdb8031ab7939b6bc8b4d9b18ffb"
+    },
+    {
+      "path": "src/hooks/useProfileStorage.ts",
+      "bytes": 18414,
+      "sha256": "0241e29bf77bf1c8428d1f1b46d2a841e5d0b05b0a316a64bf8d1e58b1f7c70d"
+    },
+    {
+      "path": "src/index.css",
+      "bytes": 27304,
+      "sha256": "8a2ae0b45fa2a4e5429d806c93261cfe526635864fa09263c0c5930676fea783"
+    },
+    {
+      "path": "src/lib/appearance.test.ts",
+      "bytes": 11406,
+      "sha256": "360263dc34aa2ec4e5771041fabbddd33ddc51146dda18e42b3d1e99dfc0e0c9"
+    },
+    {
+      "path": "src/lib/appearance.ts",
+      "bytes": 5019,
+      "sha256": "75f6eb46c92071e37ac08abb9574e51cc9cbf44608c9c423143e3b6ec95546f8"
+    },
+    {
+      "path": "src/lib/auditRegression.test.ts",
+      "bytes": 5768,
+      "sha256": "aa57cf8f2880af207aa0afef68828d55198429f26c1a594f21541cd9859e89bb"
+    },
+    {
+      "path": "src/lib/avatarDetailMaps.test.ts",
+      "bytes": 1630,
+      "sha256": "a3293af0634f3a6bdea7da8cd5e31c57c5dd3adc39b0c3b7e7e0d1ddfb04f3cf"
+    },
+    {
+      "path": "src/lib/avatarDetailMaps.ts",
+      "bytes": 1160,
+      "sha256": "5c3aa56501ae69c0ac865571997b21cfa5d319d07f104a0ff0493387f6f8999c"
+    },
+    {
+      "path": "src/lib/avatarGroom.test.ts",
+      "bytes": 5561,
+      "sha256": "f7b1b45a7ebc713ff866ace954f1aba7d41072bd1d05942ea3a3a2e238c2ab7b"
+    },
+    {
+      "path": "src/lib/avatarGrowth.test.ts",
+      "bytes": 5447,
+      "sha256": "b496d1268ddf2709430919aa8a3db4c5660f9ddf0a741d739e8e3f4b963f8ecd"
+    },
+    {
+      "path": "src/lib/avatarGrowth.ts",
+      "bytes": 3554,
+      "sha256": "41e5e0e87279d36ea36d06d8bc04fa1f1e2b927ff074e329dfbad86305b5119a"
+    },
+    {
+      "path": "src/lib/avatarHair.test.ts",
+      "bytes": 4522,
+      "sha256": "f4a8feca38656c35658e43fb5e702449b7a62522a32eff1bc49537cda1747ae0"
+    },
+    {
+      "path": "src/lib/avatarHair.ts",
+      "bytes": 6668,
+      "sha256": "6b85f6ad41683ec6e4a1a6539ff2d6839af9892e5a28afee89ab99a7004c56dd"
+    },
+    {
+      "path": "src/lib/avatarHairMaterial.test.ts",
+      "bytes": 4056,
+      "sha256": "2305aec8d05a63ced814e50370835e8a6efde96541645b4c2f0ea720a4298456"
+    },
+    {
+      "path": "src/lib/avatarHairMaterial.ts",
+      "bytes": 2444,
+      "sha256": "081088ccfb4e6d776f6935a701fceeddfa0814ef33196d12bc6299b0fcc4a19d"
+    },
+    {
+      "path": "src/lib/avatarLook.test.ts",
+      "bytes": 5209,
+      "sha256": "5ede4b3266886bb0def543cb57125690ad428f07fcda03a3401460420718ad1b"
+    },
+    {
+      "path": "src/lib/avatarLook.ts",
+      "bytes": 4727,
+      "sha256": "68052fba72cca82761a5d401503643c37eb27e25e0628dfd08a4a06f266f49e9"
+    },
+    {
+      "path": "src/lib/avatarMaterials.test.ts",
+      "bytes": 11304,
+      "sha256": "1b7e1c1b4d5b4ec61669aab47f7b105691d1d667abeb62f7e14d7a1fa4d52ad5"
+    },
+    {
+      "path": "src/lib/avatarMaterials.ts",
+      "bytes": 6489,
+      "sha256": "8299d20429ef57653eff3cf2bb15ee809e587af787322da55342f778f339ef22"
+    },
+    {
+      "path": "src/lib/avatarOcclusion.test.ts",
+      "bytes": 7052,
+      "sha256": "273381577862ce5aea79e8e1babcbe9a881c5296eaaea51d1b4f20fee7eec7b1"
+    },
+    {
+      "path": "src/lib/avatarOcclusion.ts",
+      "bytes": 5306,
+      "sha256": "b9e5cc491a8d1fb91314374716da6e6189164db76b51b531b22f59d5870b6729"
+    },
+    {
+      "path": "src/lib/avatarPose.test.ts",
+      "bytes": 2278,
+      "sha256": "05a319fd5c6d651055362ef960d9bd880018c193fe3ff668ed3ab4f7e3a6ec99"
+    },
+    {
+      "path": "src/lib/avatarPose.ts",
+      "bytes": 1465,
+      "sha256": "3caaf19f6620aa4cdc45d640444ce9575cca6f026699150380e2b83fbf5d16fc"
+    },
+    {
+      "path": "src/lib/avatarRealism.test.ts",
+      "bytes": 6361,
+      "sha256": "be622ce6448b2a809c2aab8930e937a02c20e07af6698b39a9d04741a1a11a11"
+    },
+    {
+      "path": "src/lib/avatarStudio.ts",
+      "bytes": 595,
+      "sha256": "cfaf0484602852fc739cd27404c5e89ba4314ca6361a72d682990e810a2349d2"
+    },
+    {
+      "path": "src/lib/avatarSurfaceFit.test.ts",
+      "bytes": 2346,
+      "sha256": "8de5e5ca6b07d7cb2a72dc4329c0ade27c38304e3d7c85df41c8afb7151d8849"
+    },
+    {
+      "path": "src/lib/avatarSurfaceFit.ts",
+      "bytes": 3405,
+      "sha256": "08c7907dd0e5f54dc4c259d005a89b3c2aab3fb2138bf20bb6d91c19498c84a0"
+    },
+    {
+      "path": "src/lib/avatarYaw.test.ts",
+      "bytes": 1017,
+      "sha256": "91ad6e18468486fa07c2fed528eb7e819fadeccd83c909fcf3d594e33829b36e"
+    },
+    {
+      "path": "src/lib/avatarYaw.ts",
+      "bytes": 607,
+      "sha256": "2235ffe0b746c8ad6defe8152ede79fb20983d4628af268e4ffbb8dfae64f506"
+    },
+    {
+      "path": "src/lib/camera.test.ts",
+      "bytes": 8293,
+      "sha256": "ae71032f170a92ee78e15e7814226240096223c87a1fba32a89cdcb9c1887e01"
+    },
+    {
+      "path": "src/lib/camera.ts",
+      "bytes": 7254,
+      "sha256": "b016ffacb0eab6b05e0cb53139eb73fddaa60f12112c2cde972f574585af5d36"
+    },
+    {
+      "path": "src/lib/cameraSelection.test.ts",
+      "bytes": 2683,
+      "sha256": "c077f888cc5dc7aaef11bf93af3e91509ea8b2161ff554257f594da41b374cef"
+    },
+    {
+      "path": "src/lib/completionPersistence.test.ts",
+      "bytes": 4485,
+      "sha256": "52b12f7b49ac7eea4cc1c08ccb2b3fe4841b60e53c07f736249729e06f187df1"
+    },
+    {
+      "path": "src/lib/completionPersistence.ts",
+      "bytes": 2770,
+      "sha256": "defa6c37c180f22a4105dddb2c625585e9cb31b95f2c74e0c43d6228b0e85247"
+    },
+    {
+      "path": "src/lib/dailyPlan.test.ts",
+      "bytes": 4176,
+      "sha256": "6927b650d3f5fd890088d0b9323bc9afba9b1a701a0a1754edf922ee551c5b0f"
+    },
+    {
+      "path": "src/lib/dailyPlan.ts",
+      "bytes": 3354,
+      "sha256": "0c0df71c400b1890dbe7c971e099a236742ca8e947dfe213e17b3b194c8573ba"
+    },
+    {
+      "path": "src/lib/dashboardDisplay.test.ts",
+      "bytes": 2921,
+      "sha256": "bea78bfdf5dc166488326b186430d47f395adba3cb3c8388ac97c93fd43f0d94"
+    },
+    {
+      "path": "src/lib/dashboardDisplay.ts",
+      "bytes": 2865,
+      "sha256": "57b8480143e98732da28332ed14f0819b310c479cce067b4e4060624206fd2c9"
+    },
+    {
+      "path": "src/lib/dashboardOrder.test.ts",
+      "bytes": 1200,
+      "sha256": "523009936940c966889df569b74bcb3942410fc3031ed2788d2b216dccc7130d"
+    },
+    {
+      "path": "src/lib/dedupRecovery.test.ts",
+      "bytes": 10686,
+      "sha256": "91e3135871c299bbe8a3ca6bed416124c59a4eb66a858f5c388cf9093c99aad2"
+    },
+    {
+      "path": "src/lib/durableJournal.ts",
+      "bytes": 9619,
+      "sha256": "4009b083d300dafd822d6098f5d76ebb5aa54c4c6537b740205718be868a0e65"
+    },
+    {
+      "path": "src/lib/durableWorkout.test.ts",
+      "bytes": 14922,
+      "sha256": "e4f8080f39c4080f86cca91d32e580266bbb869460e8e03425b029aaed602e13"
+    },
+    {
+      "path": "src/lib/durableWorkout.ts",
+      "bytes": 6711,
+      "sha256": "2933edee70f690abdc495689a3f6daeffe30e2bcbfb1afbfa0f1f5f45d91726b"
+    },
+    {
+      "path": "src/lib/exerciseCounter.test.ts",
+      "bytes": 14360,
+      "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+    },
+    {
+      "path": "src/lib/exerciseCounter.ts",
+      "bytes": 15048,
+      "sha256": "e4709fe6c8f022ed54b2614e2b585648f7de50a685c2d99d2d2914b099d5de87"
+    },
+    {
+      "path": "src/lib/exerciseFraming.test.ts",
+      "bytes": 6122,
+      "sha256": "ed470ebea299e7243fcf6211357ae1a37c0e3002a0a3d8496fd5b22f5cc06db6"
+    },
+    {
+      "path": "src/lib/exerciseFraming.ts",
+      "bytes": 8188,
+      "sha256": "5eaf98ab69507a047c720c16963d78ab3a6b9c97fb509e8fc26d8101f2ef0b2f"
+    },
+    {
+      "path": "src/lib/exerciseRewards.test.ts",
+      "bytes": 3663,
+      "sha256": "257f19b7c46fb394647589f86f27f6ddeeffd88d6380f6a26148f36ce1a85017"
+    },
+    {
+      "path": "src/lib/forgeHomeExercise.test.ts",
+      "bytes": 2018,
+      "sha256": "a5d1c7c85485f7b4d786e42547eb7b19fb9826aa3af995cfc0f0b400b71e7c4c"
+    },
+    {
+      "path": "src/lib/frameLoop.test.ts",
+      "bytes": 2885,
+      "sha256": "a166ffa17154ab42926dd5f1f6d5be9ee18d2875bc498a44d71d7e505469f9b1"
+    },
+    {
+      "path": "src/lib/frameLoop.ts",
+      "bytes": 1560,
+      "sha256": "f28cbbcb31bf96ff149767995b2b5f50eec18fd97bccce14aa8c4e45714aec6a"
+    },
+    {
+      "path": "src/lib/game.test.ts",
+      "bytes": 6479,
+      "sha256": "cd3d101c85faa3375ca3a6c3709dcb0e81bf08b5fbb1d5a40a30f4ff3a80a573"
+    },
+    {
+      "path": "src/lib/game.ts",
+      "bytes": 11115,
+      "sha256": "00dfc8bcc9ad58c9f8ebeb7eb45a6cf759d42c73065fe60433f90652b9ec8236"
+    },
+    {
+      "path": "src/lib/mobileGraphics.test.ts",
+      "bytes": 787,
+      "sha256": "69374c670f52110ff7c1d59f0819a939e4b51e25c82a3074f02d54741d995e52"
+    },
+    {
+      "path": "src/lib/mobileGraphics.ts",
+      "bytes": 636,
+      "sha256": "850bcf553348e2cf0e8cc7ce5c3f2e04cbf6c70dfb36a7bccff548d2b7558937"
+    },
+    {
+      "path": "src/lib/poseGuidance.test.ts",
+      "bytes": 3332,
+      "sha256": "dc3f88de745bffac04cd76675d2c17c04e496d21d9626e987d71805db5840b56"
+    },
+    {
+      "path": "src/lib/poseGuidance.ts",
+      "bytes": 4586,
+      "sha256": "91e89ad88c4975f92bdca688eb6a7bfa3bd29166411630fecd9244e10836df11"
+    },
+    {
+      "path": "src/lib/profileLock.test.ts",
+      "bytes": 10077,
+      "sha256": "4fa343a23c05272121c55a72012c33dd3e24b418aaad30f227534eae8a66aa91"
+    },
+    {
+      "path": "src/lib/profileLock.ts",
+      "bytes": 2100,
+      "sha256": "6ca5d7959ce739eddb0bd10fd63999134b5f187821f9c75bf7c07855825277ce"
+    },
+    {
+      "path": "src/lib/profileQuarantineExport.test.ts",
+      "bytes": 2436,
+      "sha256": "22475de18d901577e76f87d569692b341ba51b5613422279ea952638ec36dbb5"
+    },
+    {
+      "path": "src/lib/profileQuarantineExport.ts",
+      "bytes": 1441,
+      "sha256": "94c1a5450b415340aee13b076a34adc3febfdebc6d2a261786389f29db522cb1"
+    },
+    {
+      "path": "src/lib/profileWrite.test.ts",
+      "bytes": 4530,
+      "sha256": "3dd45f28ffacbb58af89fabc19452c86c3c92cd1fb42be9989c865694dd2e526"
+    },
+    {
+      "path": "src/lib/progressBackup.test.ts",
+      "bytes": 8052,
+      "sha256": "4791b3996c68a4544cce217224ec4e60564da4949b566d4c784c342058a1c1c6"
+    },
+    {
+      "path": "src/lib/progressBackup.ts",
+      "bytes": 3256,
+      "sha256": "641a700cd1a12af6760a6165f802aeb0ce9977a97dada859c32a42d2b6dad556"
+    },
+    {
+      "path": "src/lib/progressBackupInspector.test.ts",
+      "bytes": 7558,
+      "sha256": "f2fb136c1b914d2063755f28ae09c6870b625a0189be7b1c78bfc1ec63d24a39"
+    },
+    {
+      "path": "src/lib/progressBackupInspector.ts",
+      "bytes": 8987,
+      "sha256": "5bdb4df024523c8066150141a6f097a3cf9ac773a1bc46da11a29be937e859fb"
+    },
+    {
+      "path": "src/lib/progressExport.test.ts",
+      "bytes": 7808,
+      "sha256": "a51a4b2bdc9e53d3b6cd3fd5b5c7f98d4b69be842d0dacdc8efcd7aa010dcb11"
+    },
+    {
+      "path": "src/lib/progressExport.ts",
+      "bytes": 2483,
+      "sha256": "a45520a55eedb0a9f6085e46e7ffb7ee18b972d0cfba585d1d453e53a19e9310"
+    },
+    {
+      "path": "src/lib/progression.test.ts",
+      "bytes": 15077,
+      "sha256": "62fb9f4cef5f2b15079fffc48ea68620dcfc6b04823f49d67c12c7994ae1d5c0"
+    },
+    {
+      "path": "src/lib/progression.ts",
+      "bytes": 17478,
+      "sha256": "120a016ff379840470b4949dbb49feae7f3e055e1a040774aa1fd23e718b8422"
+    },
+    {
+      "path": "src/lib/progressPulse.test.ts",
+      "bytes": 5241,
+      "sha256": "37b0dda6dc7751c7925898a2d9083a06925aebc5f63e336eb5ff6454d4a2eba0"
+    },
+    {
+      "path": "src/lib/progressPulse.ts",
+      "bytes": 3889,
+      "sha256": "c5aeaf88be103371a40419edc6a9394d7ac5a318f58dbdce5cd4d29ff3b210c5"
+    },
+    {
+      "path": "src/lib/rewardIntegrity.test.ts",
+      "bytes": 11324,
+      "sha256": "000978d71a3fd57abd81492c5deab69a6394f0b443babda426d411d71f657932"
+    },
+    {
+      "path": "src/lib/runtimeDiagnostics.test.ts",
+      "bytes": 5938,
+      "sha256": "a50c4017f3dda87b7e8bf04b2b13412b63230d343893fe7bd32e3d2f909fc8b9"
+    },
+    {
+      "path": "src/lib/runtimeDiagnostics.ts",
+      "bytes": 6744,
+      "sha256": "e698c768f7e6fefc4d3ae100c289b9da4e1bc0e64bee4b3dfcdc77e435594340"
+    },
+    {
+      "path": "src/lib/screenNavigation.test.ts",
+      "bytes": 1912,
+      "sha256": "dae0ad88656c7aa99caedeec9aba4a40e761c7b90c781450fc4b907dd27609cf"
+    },
+    {
+      "path": "src/lib/squatCounter.test.ts",
+      "bytes": 10274,
+      "sha256": "52a733407806c27d5aa8c25f4a04a9360a27757dd567a0a41bf31d2f89fac0a7"
+    },
+    {
+      "path": "src/lib/squatCounter.ts",
+      "bytes": 10544,
+      "sha256": "87742e64368550f26cdaf1986a423e3ecd046dd2dbdd6ddad5bcc2681c5c00f4"
+    },
+    {
+      "path": "src/lib/stepsLog.test.ts",
+      "bytes": 3791,
+      "sha256": "7d8561ed2c53827f348050160cb2f4100a77c971f2532c13bd4bf69cb9e57d9f"
+    },
+    {
+      "path": "src/lib/stepsLog.ts",
+      "bytes": 3384,
+      "sha256": "7703b795f159f97311de4af078154dc600a7eb234fee08a60a34223c239cc32b"
+    },
+    {
+      "path": "src/lib/threeResources.test.ts",
+      "bytes": 1903,
+      "sha256": "c84bd2e8f1939fd935d4428fb9cfbc57e858c59f9b6f284fe18a139fac441224"
+    },
+    {
+      "path": "src/lib/threeResources.ts",
+      "bytes": 1456,
+      "sha256": "71ebc4926019938bcae2e793d46c445e8ec857694f4b19de61c4bc74f13c46f1"
+    },
+    {
+      "path": "src/lib/trainingCatalog.test.ts",
+      "bytes": 2704,
+      "sha256": "90f76af85fe301407c20d07f6c689544b37bcaad78602f0226ee456a15142ddc"
+    },
+    {
+      "path": "src/lib/trainingCatalog.ts",
+      "bytes": 8027,
+      "sha256": "769d309bbd6a50b2ce4a0da304bc6ff5da85c283a65d34ba86f2b076e8deded6"
+    },
+    {
+      "path": "src/lib/withTimeout.test.ts",
+      "bytes": 1953,
+      "sha256": "c6ed3e2b74d58599b73ae036a881d466f7fdf22750865e1d825d58988a82b905"
+    },
+    {
+      "path": "src/lib/withTimeout.ts",
+      "bytes": 831,
+      "sha256": "ee443d8d202fcf70232d379c2304338d5202cd2b35f324363a1cc16d9899f1e5"
+    },
+    {
+      "path": "src/lib/workoutJournal.test.ts",
+      "bytes": 20414,
+      "sha256": "d5962b376d48d0dd1e0cedc6f298593add209584bd44c260fa9921d33311219e"
+    },
+    {
+      "path": "src/lib/workoutJournal.ts",
+      "bytes": 12405,
+      "sha256": "fa420f47d69690aedc76c9ae521f17d98c1cc789c3949a1bd191ef85709fbaaa"
+    },
+    {
+      "path": "src/lib/workoutQuarantine.test.ts",
+      "bytes": 14482,
+      "sha256": "ee687e48eaaa8857677397252dece5adc6101473bf1b531fc380d12f8a465cc6"
+    },
+    {
+      "path": "src/lib/workoutWakeLock.test.ts",
+      "bytes": 4426,
+      "sha256": "a042f3ef81d5d8520a419fe5ccaa210b0d96f3f8805be5f2c2185c4d684e2bf4"
+    },
+    {
+      "path": "src/lib/workoutWakeLock.ts",
+      "bytes": 1675,
+      "sha256": "ed49bea658f8251334aa4db55197701eca98a0c50ad0a7928015210f0e893f1e"
+    },
+    {
+      "path": "src/main.tsx",
+      "bytes": 543,
+      "sha256": "04e8336c99bc85f2f528f799e7191be7da2726326cb0104e0c797ec1d8c92bdf"
+    },
+    {
+      "path": "src/neonPulseV2.css",
+      "bytes": 30045,
+      "sha256": "39027cd100ad434f5a15e6fb4ab77aa5e5967d6fec22d79e37fb6ee0201c06b3"
+    },
+    {
+      "path": "src/premium.css",
+      "bytes": 22324,
+      "sha256": "b55bef06ca71f918e9216d1c431ef8fa800bfcbb5d0b852498e44d34bb261f51"
+    },
+    {
+      "path": "src/pulseArmory.css",
+      "bytes": 19888,
+      "sha256": "aa246b46e79d997886ba046fe8b29bce9f5fa6471b21ded9d732e4b08ebcdd2e"
+    },
+    {
+      "path": "src/recovery.css",
+      "bytes": 2369,
+      "sha256": "2ab4fe8af1bc3e0a3548f29b54e6ef52cd398687876723b81d98a271146f02b5"
+    },
+    {
+      "path": "src/trainingExperience.css",
+      "bytes": 12793,
+      "sha256": "3196e173f705ef16548362148e5287f2b981ff081613c2032b33e145396c684e"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "bytes": 39,
+      "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+    },
+    {
+      "path": "src/world.css",
+      "bytes": 32678,
+      "sha256": "71fe24da727402f98f13f508ab531a003e9ddb0d371a931aaad580784bad16af"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2006,
+      "sha256": "d12b1c4980345a8b05fbc50023cd9548aebc28bbc392b782c182047a9dd61963"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 66821,
+      "sha256": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 2035,
+      "sha256": "8d9736a6d377c1abfe3ebf681508ac918a9394cf1b15f02c9bed9c390b2ba8ab"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1008,
+      "sha256": "704f478fa0d444ebd2ba1e71705dd8bdbc3902686ee6bd1cb45077836e104694"
+    }
+  ]
+}

@@ -46,10 +46,11 @@
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.intro {
   display:none;
 }
+/* On the Forge home screen, the fighter's full-size card comes directly after the compact profile. */
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.dashboard-player {order:0;}
-.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#pulse-progress {order:1;}
-.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#forge-quick-deck {order:2;}
-.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.cards-grid {order:3;}
+.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>.cards-grid {order:1;}
+.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#pulse-progress {order:2;}
+.app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#forge-quick-deck {order:3;}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#daily-plan {order:4;}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#quests {order:5;}
 .app-shell[data-screen="dashboard"][data-fighter-created="true"] .content>#step-log {order:6;}
@@ -65,6 +66,10 @@
   box-shadow:0 18px 42px #0004,inset 0 1px #85d5e915;
   min-width:0;
 }
+.app-shell[data-screen="dashboard"] .dashboard-player {flex-wrap:wrap;}
+.dashboard-player-catalog {flex:0 0 100%;min-width:0;width:100%;}
+.dashboard-player-catalog .bf-catalog {margin:0;}
+.dashboard-player-catalog .bf-catalog-trigger {min-height:56px;}
 .dashboard-player-icon {
   width:62px;height:62px;flex:0 0 62px;position:relative;
   border:2px solid #62d9f0;border-radius:50%;
@@ -589,4 +594,45 @@
 }
 :root[data-bf-contrast="high"] .pulse-date-button.is-selected {
   color:#0b241b;background:#c5f878;border-color:#c5f878;
+}
+
+/* Forge navigation: camera owns daily tasks/steps, FAQ owns backups.
+   Hidden screens keep their existing React state; rewards and storage do not change. */
+.app-shell:not([data-screen="challenge"]) .content > :is(#daily-plan,#quests,#step-log) {display:none;}
+.app-shell:not([data-screen="settings"]) .content > #settings {display:none;}
+.app-shell[data-screen="settings"] .content > :not(#settings) {display:none;}
+.app-shell[data-screen="settings"] .content > #settings {
+  display:block;max-width:950px;margin:0 auto;
+  scroll-margin-top:78px;
+}
+.app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log) {
+  display:block;margin-top:17px;scroll-margin-top:78px;
+}
+.bf-settings-screen .forge-heading {margin-bottom:20px;}
+.bf-faq-list {display:grid;gap:10px;margin-bottom:24px;}
+.bf-faq-item {
+  padding:0 17px;border:1px solid var(--bf-outline);
+  border-radius:16px;background:var(--bf-raised);
+}
+.bf-faq-item>summary {
+  min-height:52px;display:list-item;align-content:center;
+  padding:12px 0;color:var(--bf-copy);font-size:13px;font-weight:800;
+  cursor:pointer;
+}
+.bf-faq-item>summary:focus-visible {outline:2px solid var(--aurora-cyan);outline-offset:3px;}
+.bf-faq-item>p {margin:0 0 15px;color:var(--bf-muted);font-size:12px;line-height:1.65;}
+.bf-settings-screen .progress-backup-card {margin-top:14px;}
+.bf-settings-hint {color:var(--bf-muted);font-size:13px;line-height:1.6;}
+
+@media(max-width:740px) {
+  /* World mobile tabs hide non-camera content. Restore only relocated panels. */
+  .app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log) {
+    display:block;margin-top:15px;
+  }
+  .app-shell[data-screen="settings"] .content > #settings {margin-top:0;padding:18px 14px;}
+  /* Six real tabs must still fit a 320px handset with usable hit targets. */
+  .app-shell .mobile-nav {gap:1px;padding-inline:4px;}
+  .app-shell .mobile-nav button {flex:1 1 0;min-width:0;padding-inline:1px;font-size:7px;}
+  .app-shell .mobile-nav button svg {width:20px;height:20px;}
+  .bf-faq-item {padding-inline:13px;}
 }

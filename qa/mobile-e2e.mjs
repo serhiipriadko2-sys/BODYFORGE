@@ -15,10 +15,20 @@ const chrome=spawn(chromePath,[
   'about:blank',
 ],{stdio:'ignore'});
 const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
-let socket,seq=0,pageLoads=0;const pending=new Map();
+let socket,seq=0,pageLoads=0,dailyPlanRequest=null;const pending=new Map();
+// Inspect actual resource pathnames in dev AND hashed production builds.
+function downloadedPanels(){
+  const paths=performance.getEntriesByType('resource').map(e=>new URL(e.name).pathname);
+  const has=name=>paths.some(url=>url.endsWith('/src/components/'+name+'.tsx')||
+    new RegExp('/assets/'+name+'-[\\w-]+\\.js$').test(url));
+  return {catalog:has('ExerciseCatalog'),diagnostics:has('RuntimeDiagnosticsPanel'),
+    controls:has('CameraControls'),dailyPlan:has('DailyPlanBoard')};
+}
+const downloadedPanelsExpression='('+downloadedPanels.toString()+')()';
 async function endpoint(){
   for(let i=0;i<75;i++){
-    if(chrome.exitCode!==null)throw Error('Owned Chrome exited '+chrome.exitCode);
+    // Windows can exit the Chrome launcher while its owned CDP browser remains active.
+    // A working DevTools endpoint, not the short-lived launcher, proves readiness.
     try{const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
       const tabs=await(await fetch('http://127.0.0.1:'+port+'/json')).json();
       const tab=tabs.find(t=>t.type==='page');
@@ -45,16 +55,22 @@ async function until(expression,label,timeoutMs=20000){
   throw Error('TIMEOUT '+label);
 }
 async function read(expression){return JSON.parse(await js('JSON.stringify('+expression+')'));}
-async function reloadApp(){
+async function reloadApp(touchSelector){
   const previous=pageLoads;
-  await cdp('Page.reload',{ignoreCache:true});
+  if(touchSelector){
+    const point=await js("(()=>{const r=document.querySelector("+JSON.stringify(touchSelector)+").getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()");
+    await cdp('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+    await cdp('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }else await cdp('Page.reload',{ignoreCache:true});
   const deadline=Date.now()+30000;
   while(pageLoads<=previous){if(Date.now()>=deadline)throw Error('TIMEOUT new document load');await sleep(80);}
   await until('!!document.querySelector(".app-shell .mobile-nav button:nth-child(3)")','profile hydrated and navigation ready after reload',30000);
 }
 async function screenshot(name){
   const shot=await cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-  const file=path.join(os.tmpdir(),name);
+  const directory=process.env.BODYFORGE_QA_ARTIFACT_DIR||os.tmpdir();
+  fs.mkdirSync(directory,{recursive:true});
+  const file=path.join(directory,name);
   fs.writeFileSync(file,Buffer.from(shot.data,'base64'));
   console.log('SHOT',file,fs.statSync(file).size);
 }
@@ -74,12 +90,13 @@ try{
   socket.addEventListener('message',e=>{
     const m=JSON.parse(e.data.toString());
     if(m.method==='Page.loadEventFired')pageLoads++;
+    if(m.method==='Fetch.requestPaused')dailyPlanRequest=m.params.requestId;
     if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}
     if(m.method==='Runtime.exceptionThrown')console.log('BROWSER_EXCEPTION',(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'').slice(0,270));
     if(m.method==='Runtime.consoleAPICalled'&&m.params?.type==='error')
       console.log('BROWSER_ERROR',JSON.stringify(m.params.args?.map(a=>a.value??a.description).slice(0,2)).slice(0,440));
   });
-  await cdp('Runtime.enable');await cdp('Page.enable');
+  await cdp('Runtime.enable');await cdp('Page.enable');await cdp('Network.enable');
   // Disposable fake Wake Lock: prove the actual app requests and releases it.
   // No system-wide settings or the owner's real screen state are changed.
   await cdp('Page.addScriptToEvaluateOnNewDocument',{source:`
@@ -105,9 +122,10 @@ try{
   console.log('INITIAL',JSON.stringify(s).slice(0,470));
   check(s.setup&&s.scroll<=width,'fresh mobile onboarding no overflow');
   check(s.three.includes('active'),'WebGL 3D hero active');
-  const initialPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx')),controls:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/CameraControls.tsx'))})");
+  const initialPanels = await js(downloadedPanelsExpression);
   check(!initialPanels.catalog && !initialPanels.diagnostics && !initialPanels.controls,
     'training-only panels are not downloaded on mobile home');
+  check(!initialPanels.dailyPlan,'onboarding never downloads the daily-plan editor');
   let photoHuman=false;
   for(let i=0;i<70;i++){
     photoHuman=await js("document.querySelector('#onboarding [data-avatar-source]')?.dataset.avatarSource==='cc0'");
@@ -130,7 +148,7 @@ try{
   // to the home screen. The user should see why they cannot train yet.
   await click('.mobile-nav button:nth-child(2)');
   await until("!!document.querySelector('#challenge .bf-catalog-trigger') && !!document.querySelector('#challenge .perf-toggle')", 'training panels loaded', 6000);
-  const requestedPanels = await read("({catalog:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/ExerciseCatalog.tsx')),diagnostics:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/RuntimeDiagnosticsPanel.tsx')),controls:performance.getEntriesByType('resource').some(e=>e.name.includes('/src/components/CameraControls.tsx'))})");
+  const requestedPanels = await js(downloadedPanelsExpression);
   check(requestedPanels.catalog && requestedPanels.diagnostics && requestedPanels.controls,
     'training-only panels are downloaded after opening the camera tab');
   await click('#challenge .primary-button');
@@ -142,11 +160,43 @@ try{
   const returned=await snapshot();
   check(returned.screen==='dashboard'&&returned.setup,'explicit fighter creation button returns to onboarding');
   await click('.build-options button:nth-child(2)');
+  await cdp('Fetch.enable',{patterns:[{urlPattern:'*DailyPlanBoard*',resourceType:'Script',requestStage:'Request'}]});
   await click('#onboarding .forge-solid-button');
   await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game?.created===true", 'fighter creation acknowledged on disk');
+  // Daily-plan panels now live on the Camera tab, not the Forge dashboard.
+  // Test the visible recovery control rather than measuring a hidden element.
+  await click('.mobile-nav button:nth-child(2)');
+  await until("document.querySelector('.app-shell')?.dataset.screen==='challenge'", 'daily plan camera tab visible');
+  const planDeadline=Date.now()+10000;
+  while(!dailyPlanRequest&&Date.now()<planDeadline)await sleep(100);
+  check(!!dailyPlanRequest,'daily-plan module is first requested only after fighter creation');
+  const profileBeforePlanFailure=await js("localStorage.getItem('bodyforge:pilot:v1')");
+  await until("!!document.querySelector('#daily-plan[data-daily-plan-state=loading][role=status]')",'pending daily-plan chunk has an accessible loading state');
+  await js("document.querySelector('#daily-plan').scrollIntoView({block:'center',behavior:'instant'});true");
+  await screenshot('bf-qa-mobile-plan-loading.png');
+  await cdp('Fetch.failRequest',{requestId:dailyPlanRequest,errorReason:'Failed'});
+  await cdp('Fetch.disable');
+  await until("!!document.querySelector('#daily-plan[data-daily-plan-state=error] [role=alert]')",'failed daily-plan chunk stays inside its panel');
+  check(await js("!!document.querySelector('.app-shell')&&!!document.querySelector('#daily-plan [data-action=reload-daily-plan]')"),
+    'optional chunk failure preserves navigation and offers an explicit reload');
+  await js("document.querySelector('#daily-plan').scrollIntoView({block:'center',behavior:'instant'});true");
+  await screenshot('bf-qa-mobile-plan-error.png');
+  const reloadTarget=await read("(()=>{const r=document.querySelector('#daily-plan [data-action=reload-daily-plan]').getBoundingClientRect(),nav=document.querySelector('.mobile-nav').getBoundingClientRect();return {width:r.width,height:r.height,top:r.top,bottom:r.bottom,usableBottom:Math.min(innerHeight,nav.top)}})()");
+  console.log('DAILY_PLAN_RELOAD_TARGET',JSON.stringify(reloadTarget));
+  check(reloadTarget.width>=44&&reloadTarget.height>=44&&reloadTarget.top>=0&&reloadTarget.bottom<=reloadTarget.usableBottom,
+    'daily-plan recovery has a visible 44px touch target above mobile navigation');
+  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforePlanFailure,'daily-plan load failure preserves exact profile bytes');
+  await reloadApp('#daily-plan [data-action=reload-daily-plan]');
+  await until("!!document.querySelector('#daily-plan [data-goal-target]')",'daily plan recovers after a real reload');
+  check(true,'touching the actual recovery button reloads and restores the daily plan');
+  check((await js(downloadedPanelsExpression)).dailyPlan,'successful production/dev daily-plan chunk download is observed');
+  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforePlanFailure,'recovering daily-plan UI neither rewrites nor rewards the fighter');
   s=await snapshot();
   console.log('CREATED',JSON.stringify(s).slice(0,440));
   check(!s.setup&&s.game?.created&&s.game.build==='solid','fighter creation persisted');
+  // Backup controls live on the separate FAQ tab in the current navigation.
+  await click('.mobile-nav button:nth-child(6)');
+  await until("document.querySelector('.app-shell')?.dataset.screen==='settings'", 'FAQ tab visible');
   // The local backup is opt-in. Prepare asynchronously, then download from a
   // second direct click; inspect only this disposable browser's fake export.
   await until("!!document.querySelector('#progress-backup [data-action=prepare-progress]:not(:disabled)')", 'backup panel ready', 12000);
@@ -251,6 +301,8 @@ try{
     'backup JSON file picker fits a narrow 320px phone without horizontal overflow');
   await screenshot('bf-qa-mobile-backup-json-inspection.png');
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+  await click('.mobile-nav button:nth-child(1)');
+  await until("document.querySelector('.app-shell')?.dataset.screen==='dashboard'", 'home tab visible');
   await js("document.querySelector('.dashboard-player')?.scrollIntoView({block:'start',behavior:'instant'});true");
   await sleep(260);
   const premium=await read("({player:!!document.querySelector('.dashboard-player'),dark:!!document.querySelector('link[href*=premium]')||getComputedStyle(document.body).backgroundColor,firstRect:document.querySelector('.character-card')?.getBoundingClientRect().top})");
@@ -280,7 +332,8 @@ try{
   await js('document.querySelector("#forge .studio-preview")?.scrollIntoView({block:"start",behavior:"instant"});true');
   await until('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'studio CC0 asset fully loaded', 30000);
   await screenshot('bf-qa-mobile-forge.png');
-  await click('.mobile-nav button:nth-child(1)');
+  // Daily quest actions moved alongside camera workouts.
+  await click('.mobile-nav button:nth-child(2)');
   await click('#quests .quest-button');
   s=await snapshot();
   check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
@@ -446,4 +499,30 @@ try{
     console.log('FAILURE_STATE',await js("JSON.stringify({url:location.href,screen:document.querySelector('.app-shell')?.dataset.screen,storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus,loading:!!document.querySelector('.avatar-3d-wait'),message:document.body.innerText.slice(0,2000)})"));
   }catch{}
 }
-finally{socket?.close();chrome.kill();await sleep(400);try{fs.rmSync(profile,{recursive:true,force:true})}catch{}}
+finally{
+  socket?.close();
+  // The launcher may already be gone. Close only this test's browser through
+  // the browser-level CDP endpoint discovered in its unique temporary profile.
+  try{
+    const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
+    if(Number.isInteger(port)&&port>0){
+      const info=await(await fetch('http://127.0.0.1:'+port+'/json/version',
+        {signal:AbortSignal.timeout(1500)})).json();
+      if(typeof info.webSocketDebuggerUrl==='string'){
+        const owned=new WebSocket(info.webSocketDebuggerUrl);
+        await new Promise((resolve,reject)=>{
+          const timer=setTimeout(()=>reject(Error('CDP close connection timeout')),1500);
+          owned.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
+          owned.addEventListener('error',()=>{clearTimeout(timer);reject(Error('CDP close connection failed'));},{once:true});
+        });
+        owned.send(JSON.stringify({id:1,method:'Browser.close'}));
+        await sleep(400);
+        owned.close();
+      }
+    }
+  }catch(error){console.warn('QA_CHROME_CLOSE_UNCONFIRMED',String(error));}
+  chrome.kill();
+  await sleep(500);
+  try{fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:200});}
+  catch(error){console.error('QA_CHROME_PROFILE_CLEANUP_FAIL',String(error));process.exitCode=12;}
+}

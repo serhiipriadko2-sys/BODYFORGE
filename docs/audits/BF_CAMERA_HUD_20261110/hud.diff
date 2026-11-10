@@ -1,0 +1,34 @@
+diff --git a/src/forge.css b/src/forge.css
+index 89560ad..52f9c1a 100644
+--- a/src/forge.css
++++ b/src/forge.css
+@@ -632,3 +632,29 @@ h1, h2, h3, .counter-number, .brand-copy strong, .record-item strong,
+   .pose-hud-target { font-size: 8px; }
+   .pose-hud-step, .pose-hud-side { font-size: 7px; }
+ }
++
++/* Mobile camera-only HUD: leave the lower leg/foot area observable.
++ * The overlay never changes the camera pixels used by MediaPipe. */
++@media (max-width: 428px) {
++  .training-visual-camera .counter-center {
++    top: 148px;
++    right: 8px;
++    bottom: auto;
++    left: auto;
++  }
++  .training-visual-camera .counter-circle {
++    width: 106px;
++    height: 106px;
++    backdrop-filter: none;
++  }
++  .training-visual-camera .counter-number { font-size: 46px; }
++  .training-visual-camera .counter-target { font-size: 14px; }
++  .training-visual-camera .counter-inner small { font-size: 7px; letter-spacing: 0; }
++  .training-visual-camera .pose-hud {
++    top: 148px;
++    bottom: auto;
++    left: 8px;
++    width: min(142px, calc(100% - 134px));
++    padding: 8px 7px;
++  }
++}

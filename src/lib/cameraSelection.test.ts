@@ -28,6 +28,14 @@ describe('actual camera selection after getUserMedia', () => {
     expect(verifyCameraSelection(rear, { facingMode: 'left' })).toBe('unverified');
   });
 
+  it('explains a wrong lens in clear Russian without disclosing the device ID', () => {
+    expect(cameraSelectionFeedback(front, 'mismatch')).toContain('вместо передней камеры');
+    expect(cameraSelectionFeedback(rear, 'mismatch')).toContain('вместо задней камеры');
+    const feedback = cameraSelectionFeedback(exact, 'mismatch');
+    expect(feedback).toContain('вместо выбранной камеры');
+    expect(feedback).not.toContain(exact.value);
+  });
+
   it.each<CameraSelectionVerification>(['confirmed', 'unverified', 'mismatch'])(
     'shows factual %s feedback without exposing hardware identifiers', (status) => {
       const text = cameraSelectionFeedback(exact, status);

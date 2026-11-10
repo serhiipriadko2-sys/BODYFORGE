@@ -1,0 +1,484 @@
+{
+  "schema": "bodyforge.engineering-qa-receipt.v1",
+  "id": "BF_BUNDLE_20261110",
+  "date": "2026-11-10",
+  "createdAt": "2026-11-10T15:32:22.249085+00:00",
+  "head": "7144fc4c20d813979c82a9bd980f4b274c24af67",
+  "ownedScope": [
+    "src/App.tsx",
+    "qa/bundle-on-demand.mjs",
+    "qa/mobile-e2e.mjs"
+  ],
+  "status": "TESTED_LOCAL",
+  "testedBuild": ".bodyforge-qa/bundle-20261110-final",
+  "origin": "http://127.0.0.1:5193",
+  "unit": {
+    "exitCode": 0,
+    "passed": 565,
+    "files": 46
+  },
+  "buildExit": 0,
+  "bundleExit": 0,
+  "bundle": {
+    "entryBytes": 397150,
+    "entryGzipBytes": 121099,
+    "cameraChunkBytes": 154276,
+    "dailyPlanChunkBytes": 5117,
+    "dailyPlanName": "DailyPlanBoard-0ImIQEhN.js",
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 99611,
+    "entryReductionPercent": 20.1,
+    "entryName": "index-BujRZ9ce.js",
+    "poseName": "vision_bundle-Dj7stae8.js"
+  },
+  "mobile": {
+    "exitCode": 0,
+    "origin": "http://127.0.0.1:5193",
+    "synthetic": true,
+    "touchTarget": {
+      "width": 164,
+      "height": 48,
+      "top": 478.390625,
+      "bottom": 526.390625,
+      "usableBottom": 764
+    },
+    "actualTouchRecovery": true,
+    "runtimeExceptions": 0
+  },
+  "otherQA": {
+    "privacyExit": 0,
+    "blockedPaths": 12,
+    "pwaExit": 0,
+    "preFinalRuns": [
+      {
+        "command": "npm run qa:camera-runtime",
+        "origin": "http://127.0.0.1:5174",
+        "exitCode": 0,
+        "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.camera-runtime.log"
+      },
+      {
+        "command": "npm run qa:experience",
+        "origin": "http://127.0.0.1:5174",
+        "exitCode": 0,
+        "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.experience.log"
+      },
+      {
+        "command": "npm run qa:appearance",
+        "origin": "http://127.0.0.1:5174",
+        "exitCode": 0,
+        "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.appearance.log"
+      }
+    ]
+  },
+  "sourceDriftSinceSeal": [
+    {
+      "path": "src/neonPulseV2.css",
+      "bytes": 27620,
+      "sha256": "7243129ae7da18588381ab9a929a686d68319f06bf13119d23c777553ab7a23c",
+      "currentSha256": "e40099fd4940459a25176f782fbb539b9a2d023393c7c347c7fe790ecf05a41e"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 40232,
+      "sha256": "65268cfe7a5a2665ff9663ef139e2f669fdce6bbdbd04b101b8b0a2bca0b7cbe",
+      "currentSha256": "212b72d59297eab72600453351507aa1f6dc7622dc76850bcfb6462e86d613d7"
+    },
+    {
+      "path": "qa/on-demand-camera-e2e.mjs",
+      "bytes": 11955,
+      "sha256": "2e3fccdc133b3119b015f2834f5cb8fecffae7b00d3e0c40f405d7384b00b07d",
+      "currentSha256": "4cfe7f63e685923da325c4bd6030d7f14c09b1b0a7914872f300c08e056c69f9"
+    },
+    {
+      "path": "qa/training-experience-e2e.mjs",
+      "bytes": 10640,
+      "sha256": "eca5b184eac1e8e7c2472aeffaa7e0cf79e2ef0ea734cd0cc1ad3cb5b38857b5",
+      "currentSha256": "09697f930a0e85c64791e426a73cddbb450dc7e8f5860cac1319e68d103364d7"
+    }
+  ],
+  "wholeMutableWorkspaceReleaseStatus": "PARTIAL",
+  "rollbackCheckExit": 0,
+  "canonExit": 0,
+  "lifecycle": {
+    "implemented": true,
+    "testedLocalBuild": true,
+    "committedByThisAgent": false,
+    "pushedByThisAgent": false,
+    "deployedByThisAgent": false,
+    "verifiedLive": false
+  },
+  "nonclaims": [
+    "physical movement accuracy",
+    "real phone FPS/battery/heat",
+    "LCP INP CLS p75",
+    "current parallel CSS and QA completion",
+    "historical Chrome exited0 root cause"
+  ],
+  "files": [
+    {
+      "path": "src/App.tsx",
+      "bytes": 82614,
+      "sha256": "ba9bc862f34ff7bb27715a9afd026bc3bf4f1aebb4cb707ef3a4ad6cbf2085c9"
+    },
+    {
+      "path": "qa/bundle-on-demand.mjs",
+      "bytes": 2709,
+      "sha256": "958505bf5392b281b239b83e9f3bb27e75e8f85d250c1e916917d51059cde088"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 40746,
+      "sha256": "212b72d59297eab72600453351507aa1f6dc7622dc76850bcfb6462e86d613d7"
+    },
+    {
+      "path": "docs/audits/ADR-BF_BUNDLE_20261110-DAILY-PLAN.md",
+      "bytes": 5439,
+      "sha256": "b9f09995843653ea7cc43a09ea01ea6491aa069265224aea5f720498b48a845c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.md",
+      "bytes": 10925,
+      "sha256": "6973c7a4dfbc4df79155fa5a073199e37dce51c65d1f1608b7d2be57d87fb62a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.patch",
+      "bytes": 15379,
+      "sha256": "39f0d9b14da9af549dfd49c18c1e2ee513b739a707f7f26c7a57231c5a3dc537"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.inputs.json",
+      "bytes": 29890,
+      "sha256": "bf74516d1b925bdb94679bd7ea663c95aad7fed52160bc42ba52f1b4cf0c3b96"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/App.tsx.txt",
+      "bytes": 81613,
+      "sha256": "410167479f449e6517f186f3b677952d823c0d28f709559a04ddc3cfab64eff0"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/bundle-on-demand.mjs.txt",
+      "bytes": 2322,
+      "sha256": "185f3f75479fb441b9b0f3640b8878806faa5aab0048d2b627bee9e0d4f92701"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/mobile-e2e.mjs.txt",
+      "bytes": 36043,
+      "sha256": "b84650f15a5ed8726c15600bdee84a8811eaf352d01e0fde6a752ef1144f95be"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-320-mint-dashboard.png",
+      "bytes": 153417,
+      "sha256": "aa60219df10beea4bbc81f6f97276f3cd2e43b4d871414a061df00084edb9675"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-320-mint-dialog.png",
+      "bytes": 77237,
+      "sha256": "8c9af77822ca3dfef1eabb6c6fbffc2708f5143dae06aff8cb97db078a1d7759"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-360-mint-dashboard.png",
+      "bytes": 164379,
+      "sha256": "d09c962756526187ee910e7795137addf79da2727408754708530eb134e6809a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-360-mint-dialog.png",
+      "bytes": 88796,
+      "sha256": "70a71b8e1bc98b1dc06ed4c2d94cd482d237d692ff05dee20bf5848ff77fd173"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-copper-dashboard.png",
+      "bytes": 186305,
+      "sha256": "d884d41415c45459708b71139361565b66ac5a85e61b60a644f0a34f944db35c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-mint-dashboard.png",
+      "bytes": 184688,
+      "sha256": "ac21760ca87b6f1c5eece3021cb59d5037c5d04a7e98266fb541888541df3364"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-mint-dialog.png",
+      "bytes": 92663,
+      "sha256": "02ed14680d710a5b7e76d0eaff9f1f955209f428cbe1958c0cf47fb996f04f64"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-violet-dashboard.png",
+      "bytes": 186448,
+      "sha256": "8bc87ca27f5ee6d096bd7a6ab84a7daad583e5133890bd5dc4e3d42d9463e63f"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-360-premium.png",
+      "bytes": 86876,
+      "sha256": "0874a19dd18fc4a8c379bfa5912708f38f0e17204a75c163e18774650370b0e8"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 147084,
+      "sha256": "86d95205ad947e7327f39765653577251e33fd0b75cd25d45da91d5db1e8c628"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 201061,
+      "sha256": "9b1d8453adbf7e9a0e8fd8a59815c90bdb291ac043fae770c05ef1a3bb1c56fa"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-forge.png",
+      "bytes": 205010,
+      "sha256": "86341dff61689af47c1edc5ae833a194b1d3aefdb8b407037386ae2a0eefaa08"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-home-360-premium.png",
+      "bytes": 160577,
+      "sha256": "61d9975bc8930493823d99219b788eb2368e70e9d138116ad792432d32c2188e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-home-premium.png",
+      "bytes": 187493,
+      "sha256": "e0d3aa3d847806046bca5651b3e6b77a7e66d4e7bcd85540a391ab33f111fddd"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-lenses.png",
+      "bytes": 89239,
+      "sha256": "80f396ede41054665c940871376741a33cb41227b5f3be290bce491d3794b386"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-performance-panel.png",
+      "bytes": 16666,
+      "sha256": "d52fcbe6beca615c0522c066a96bc428e5356b28ab5643e94cb54909467701f6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-error-red.png",
+      "bytes": 149250,
+      "sha256": "fa5712c8331bfaefe4871ba3523c0f89a0cad378a675dd7edf07a56b9004e812"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-error.png",
+      "bytes": 141237,
+      "sha256": "39da9656b18af1a0d717b943caf943391cd102f03bb3d0ae3383c9ab6004e060"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-loading.png",
+      "bytes": 156526,
+      "sha256": "e2eb9f11a50fd14c5f053541817bf6ffa9754bc9500812ec6d16aac136e66c42"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-setup.png",
+      "bytes": 146569,
+      "sha256": "de1a585bca2ab694bddb3e6fe3cdd87aefff47e3a6d6230025b44f5f17da8f07"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-tower.png",
+      "bytes": 89309,
+      "sha256": "d7d82ee521b9bfc83ef90dd6d1d37ea930116c887728a1ae9980525e50069e68"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-catalog-guide.png",
+      "bytes": 84593,
+      "sha256": "d29131d9b74696b14dd84f2b370c8ed02b3bfceb30c9ad2f6f64d78489e1c671"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-daily-plan.png",
+      "bytes": 79013,
+      "sha256": "0f5b70d12d45722bb4ca27cb279a20de0248b9b4b84de9875c13be9c4309fb87"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-manual-steps.png",
+      "bytes": 81691,
+      "sha256": "37b437edd4fc61dcf75838000c8a2dd41273214b6f5d4179dd6964b71dfb503e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-catalog-guide.png",
+      "bytes": 81114,
+      "sha256": "701ae5a9500a318a6905994a064d5198354eabea6548d25f4b06824093d20d24"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-daily-plan.png",
+      "bytes": 75135,
+      "sha256": "2099f554c8089986fd9e5d98ffb52ace55b25a13276faf173aa35516a3edd2e4"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-manual-steps.png",
+      "bytes": 76895,
+      "sha256": "bde5154fd9a3a42206309f8a0fc7858d4e4725e7e0cd883f19a838284d656555"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-catalog-guide.png",
+      "bytes": 84783,
+      "sha256": "80b78f7298443831b9a68035a000a1c53c8a73aa2487896e5c9a73ecd50b12ca"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-daily-plan.png",
+      "bytes": 79258,
+      "sha256": "096e573a17008279f3b34553d9fb5caad63d5af5572c9ae9ed4faf3dc59a0956"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-manual-steps.png",
+      "bytes": 81850,
+      "sha256": "8a60dc8fb0b9b29f994a6c656b707beccb8010d8b20f8d78c68666077795d4b4"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-catalog-guide.png",
+      "bytes": 85123,
+      "sha256": "77d7e1cd7f37bb8a8aa28619a89a4f66084058cad1b8765e6ebef005a9970b80"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-daily-plan.png",
+      "bytes": 79438,
+      "sha256": "a1854aae9069f277ec18076c49e466c15f4d9e1d2c5aa5ea182605ba4c7fca0a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-manual-steps.png",
+      "bytes": 82022,
+      "sha256": "46674692cacddf04903c92f5b574ea7bb70304a8b001ceb8e4d3e58399a1618c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.appearance.log",
+      "bytes": 337140,
+      "sha256": "8a388b962e6744fb577a5d8ea920cad9f0e72926b7f0b11c9971908a25044a5c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-build.log",
+      "bytes": 4562,
+      "sha256": "b8b8ea734133820d61ab634299976d5d40a8e7c1079be5161e3bf98603ce3616"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-bundle.log",
+      "bytes": 2370,
+      "sha256": "88373078ff22339b0c8675a4e1058cbf67e5630092be6d6c9e929b1669c9327e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-mobile.log",
+      "bytes": 5210,
+      "sha256": "d5a71086678c12117f63a94cfcfe10a8764dd252ac7c862410687b495bd56bf1"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-tests.log",
+      "bytes": 1676,
+      "sha256": "907188d7ec991db552fc778d945aa011ee2f2bf1260a75a032e3f676662c4689"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.build.log",
+      "bytes": 4718,
+      "sha256": "8c8d2dea4e4c996a4e9c75fb1cfbad8dfa2ffeaa8bfdb3a35b9d134620215504"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.bundle.log",
+      "bytes": 1382,
+      "sha256": "81ee171164bc40ff7cd6a34d91da867f152eb6f61337083429798c3ce07663f3"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.camera-runtime.log",
+      "bytes": 4072,
+      "sha256": "bb5394f15e78270ff3031062b56c45b4b7de046761d332b61dd312bc4eaf4cfe"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.canon.log",
+      "bytes": 191,
+      "sha256": "bd4804de303f67e95fa25e0fa54c637d0ae574c4ff18b54cfa79d64738587506"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.experience.log",
+      "bytes": 3982,
+      "sha256": "43fc64f92a4e24d77f8ed014fc9581028438bbbc7f3b25fc94cb0790aec82dbe"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-build.log",
+      "bytes": 4718,
+      "sha256": "eb83eb73cd5b9baa9406a0e033125c579ad30dc2833322734ad592969046ebef"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-bundle.log",
+      "bytes": 1526,
+      "sha256": "21c94af463948abf4b0b76a5c5d12fa7f47e6edb5d2d5e3c40e58ae01926c695"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-mobile.log",
+      "bytes": 16900,
+      "sha256": "8c6090308a1be5483f6a5a6537b6ef9ecb267df99c5dd29dfacfef370d4fd4db"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-tests.log",
+      "bytes": 1676,
+      "sha256": "5f97ccdd3b5cbb468667b819f14c0e66bdda8365f214cf4d59289d4bae43ab6d"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-build.log",
+      "bytes": 4718,
+      "sha256": "118fa45ee59e9d19f6938963cda997860f76d9c6d0170dc476679877d54d6230"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-bundle.log",
+      "bytes": 1526,
+      "sha256": "21c94af463948abf4b0b76a5c5d12fa7f47e6edb5d2d5e3c40e58ae01926c695"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-tests.log",
+      "bytes": 1676,
+      "sha256": "d1092f70871d556daf3f85f712d43f5d7456854f12cdc93a52920952bd1e42f6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.mobile.log",
+      "bytes": 15508,
+      "sha256": "48292c2616e8ef4e522077375e19c2818cee3e934893ceb1fcd876b70d6c68c6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.privacy.log",
+      "bytes": 2408,
+      "sha256": "09ec6904dacd1041eda74cfce7ac5ab3be363fde89770aad8d0642ba4f2edc53"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.pwa.log",
+      "bytes": 1146,
+      "sha256": "7bd057d510f5e8c2d094390dc6b779d41542b4d75966255ef0462877e8e0f647"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.release-build.log",
+      "bytes": 4718,
+      "sha256": "5a9359ba45bb28f31cb95234a73cc5bde23d97fb08aa39cc08ff9569d755aea7"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.release-bundle.log",
+      "bytes": 1526,
+      "sha256": "0987372417faae8841ac3ef33e9c3b89329d444b0dcb07c28795717026f7f82e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-mobile.log",
+      "bytes": 16744,
+      "sha256": "243ab0809493d98bf1767d9e3affa4c3e14d22a3b2c717183668540fb020539c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-privacy.log",
+      "bytes": 2408,
+      "sha256": "09ec6904dacd1041eda74cfce7ac5ab3be363fde89770aad8d0642ba4f2edc53"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-pwa.log",
+      "bytes": 1144,
+      "sha256": "abb5e56a138d14bd8dea6584d62501ee1b1f33170220c3ff8d658f6ed2aba23b"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.tests.log",
+      "bytes": 1676,
+      "sha256": "3cf20029ea9e1715e47f7a1e6e68110c27e2bc48517056f6f845b5316df1bc4c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.touch-target.log",
+      "bytes": 9330,
+      "sha256": "7f0a5da49998b11af439cc2c1c3a6bd97898df9bc249aca5ddb7083d237227ed"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.browser-summary.json",
+      "bytes": 679,
+      "sha256": "ca0577672aeb8cfbef2074539f6a31d7cb736b3507437b2c09eac9b9f6beec13"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_capture.py",
+      "bytes": 2163,
+      "sha256": "7a3605f4e8e0e3c3b5ebfa0f26b4c22dedbdb5887285c6c79a7f03cf21700353"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_receipt.py",
+      "bytes": 22851,
+      "sha256": "658090a3de7816eed22660559cb4d434f9f745efa61c4afd5b276e1e6f903fac"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+## main...origin/main
+ M qa/bundle-on-demand.mjs
+ M qa/mobile-e2e.mjs
+ M qa/on-demand-camera-e2e.mjs
+ M qa/training-experience-e2e.mjs
+ M src/App.tsx
+ M src/components/ExerciseCatalog.tsx
+ M src/lib/camera.ts
+ M src/lib/cameraSelection.test.ts
+ M src/neonPulseV2.css
+?? docs/audits/ADR-BF_BUNDLE_20261110-DAILY-PLAN.md
+?? docs/audits/BF_BUNDLE_20261110.browser-summary.json
+?? docs/audits/BF_BUNDLE_20261110.concurrent-App.diff
+?? docs/audits/BF_BUNDLE_20261110.final.md
+?? docs/audits/BF_BUNDLE_20261110.final.receipt.json
+?? docs/audits/BF_BUNDLE_20261110.inputs.json
+?? docs/audits/BF_BUNDLE_20261110.md
+?? docs/audits/BF_BUNDLE_20261110.patch
+?? docs/audits/BF_BUNDLE_20261110.receipt.json
+?? docs/audits/BF_BUNDLE_20261110_before/
+?? docs/audits/BF_BUNDLE_20261110_capture.py
+?? docs/audits/BF_BUNDLE_20261110_finalize.py
+?? docs/audits/BF_BUNDLE_20261110_receipt.py
+?? docs/audits/BF_BUNDLE_20261110_shots/
+?? docs/audits/BF_BUNDLE_20261110_tested_sources/
+?? docs/audits/BF_CAMERA_HUD_20261110/
+?? docs/audits/BF_CHROME_CDP_20261110/
+?? docs/audits/BF_MOBILE_QA_ROUTING_20261110/
+?? docs/audits/BF_NAV_INTEGRATION_20261110/
+?? docs/audits/BODYFORGE_20261110_CAMERA_CDP_GUIDE_390.png
+?? docs/audits/BODYFORGE_20261110_CAMERA_CDP_HOME_360.png
+?? docs/audits/BODYFORGE_20261110_F0_BROWSER_BLOCKER_HANDOFF.md
+?? qa/settings-recovery-e2e.mjs
+?? src/components/SettingsFaq.tsx
+?? src/components/SettingsFaqBoundary.tsx
+?? src/lib/dashboardOrder.test.ts
+?? src/lib/forgeHomeExercise.test.ts
+?? src/lib/screenNavigation.test.ts

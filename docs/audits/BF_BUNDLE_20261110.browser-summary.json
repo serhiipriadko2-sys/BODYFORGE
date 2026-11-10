@@ -1,0 +1,20 @@
+﻿[
+    {
+        "command":  "npm run qa:camera-runtime",
+        "origin":  "http://127.0.0.1:5174",
+        "exitCode":  0,
+        "log":  "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.camera-runtime.log"
+    },
+    {
+        "command":  "npm run qa:experience",
+        "origin":  "http://127.0.0.1:5174",
+        "exitCode":  0,
+        "log":  "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.experience.log"
+    },
+    {
+        "command":  "npm run qa:appearance",
+        "origin":  "http://127.0.0.1:5174",
+        "exitCode":  0,
+        "log":  "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.appearance.log"
+    }
+]

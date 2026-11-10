@@ -38,7 +38,9 @@ export function cameraSelectionFeedback(
     : requested.value === 'user' ? 'переднюю камеру' : 'заднюю камеру';
   const workout = 'Повторы сохранены; удержание планки начинается заново.';
   if (verification === 'mismatch') {
-    return `Браузер открыл другой объектив вместо ${name}. Проверь изображение и выбери камеру ещё раз. ${workout}`;
+    const expected = requested.kind === 'device' ? 'выбранной камеры'
+      : requested.value === 'user' ? 'передней камеры' : 'задней камеры';
+    return `Браузер открыл другой объектив вместо ${expected}. Проверь изображение и выбери камеру ещё раз. ${workout}`;
   }
   if (verification === 'unverified') {
     return `Запросили ${name}, но браузер не подтвердил фактический объектив. Проверь изображение. ${workout}`;

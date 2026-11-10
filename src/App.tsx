@@ -7,18 +7,29 @@ import {
 } from 'lucide-react';
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
+import SettingsFaqBoundary from './components/SettingsFaqBoundary';
 
 const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
-const ProgressBackupPanel = lazy(() => import('./components/ProgressBackupPanel'));
+const ForgeQuickDeck = lazy(() => import('./components/ForgeQuickDeck'));
+const SettingsFaq = lazy(() => import('./components/SettingsFaq'));
 const StepsBoard = lazy(() => import('./components/StepsBoard'));
 import { useAvatarLook } from './hooks/useAvatarLook';
 import AppearancePanel from './components/AppearancePanel';
 import BrandMark from './components/BrandMark';
 import Avatar from './components/Avatar';
-import ForgeQuickDeck from './components/ForgeQuickDeck';
 import ForgeGlyph from './components/ForgeGlyph';
 
-import DailyPlanBoard from './components/DailyPlanBoard';
+// A new fighter does not need the daily-plan editor in the initial download.
+// Keep this optional panel's chunk failure local instead of rejecting into App.
+const DailyPlanBoard = lazy(() => import('./components/DailyPlanBoard').catch(() => ({
+  default: function DailyPlanUnavailable() {
+    return <section id="daily-plan" className="forge-section" data-daily-plan-state="error" aria-label="Личный план тренировок">
+      <p role="alert">Личный план не загрузился. Обнови страницу, чтобы повторить загрузку.</p>
+      <div className="bf-goal-actions"><button type="button" className="bf-small-action" data-action="reload-daily-plan"
+        onClick={() => window.location.reload()}>Обновить страницу</button></div>
+    </section>;
+  },
+})));
 import { canStartCameraExercise, exerciseCameraLayout, exerciseGuide, exerciseTargetLabel, type ExerciseId } from './lib/trainingCatalog';
 import { ExerciseMotionCounter, exerciseMetric } from './lib/exerciseCounter';
 import './trainingExperience.css';
@@ -945,6 +956,7 @@ function App() {
           <button disabled={!canNavigate} className={`nav-item${section === 'forge' ? ' selected' : ''}`} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')}><ForgeGlyph name="body" size={19} /> <span>Персонаж</span><span className="nav-selected-dot" /></button>
           <button disabled={!canNavigate} className={`nav-item${section === 'tower' ? ' selected' : ''}`} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')}><ForgeGlyph name="tower" size={19} /> <span>Башня</span><span className="nav-selected-dot" /></button>
           <button disabled={!canNavigate} className={`nav-item${section === 'online' ? ' selected' : ''}`} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')}><ForgeGlyph name="orbit" size={19} /> <span>Онлайн</span><span className="nav-selected-dot" /></button>
+          <button disabled={!canNavigate} className={`nav-item${section === 'settings' ? ' selected' : ''}`} aria-current={section === 'settings' ? 'page' : undefined} onClick={() => navigate('settings')}><CircleHelp size={19} /> <span>Настройки / FAQ</span><span className="nav-selected-dot" /></button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-quote"><div className="quote-mark"><Hammer size={30} /></div><p>ЖАР<br /><span>ПРЕВРАЩАЕТ</span><br />ЖЕЛЕЗО В СИЛУ.</p><div className="quote-line" /></div>
@@ -955,7 +967,7 @@ function App() {
       <div className="main-area" id="dashboard">
         <header className="topbar">
           <div className="mobile-brand"><Brand compact /><strong>BODY<span>FORGE</span></strong></div>
-          <div className="breadcrumbs"><span>КУЗНИЦА ТЕЛА</span><ChevronRight size={15} /><strong>ГЛАВНЫЙ ГОРН</strong></div>
+          <div className="breadcrumbs"><span>КУЗНИЦА ТЕЛА</span><ChevronRight size={15} /><strong>{section === 'settings' ? 'НАСТРОЙКИ / FAQ' : section === 'challenge' ? 'КАМЕРА' : 'ГЛАВНЫЙ ГОРН'}</strong></div>
           <div className="topbar-right">
             <AppearancePanel disabled={isCameraShown}/>
             <div className="currency-pill"><Coins size={17} /><strong>{profile.coins}</strong><span className="desktop-word">МОНЕТ</span></div>
@@ -978,9 +990,16 @@ function App() {
               </div>
               <div className="dashboard-player-stats"><strong>УР. {level}</strong><span>{repetitionsDone} ПОВТОРОВ</span>
                 <button type="button" className="profile-training-cta" disabled={!canNavigate}
-                  onClick={() => goTraining('training', 'squat')} aria-label="Начать тренировку приседаний">
+                  onClick={() => goTraining('training', previewExercise)}
+                  aria-label={`Начать тренировку: ${exerciseGuide(previewExercise).name}`}>
                   <Play size={13} fill="currentColor"/> СТАРТ
                 </button>
+              </div>
+              <div className="dashboard-player-catalog" aria-label="Выбор упражнения для бойца">
+                <Suspense fallback={<p role="status">Загружаем упражнения…</p>}>
+                  <ExerciseCatalog selected={previewExercise} onSelect={setPreviewExercise}
+                    initiallyOpen busy={!canNavigate}/>
+                </Suspense>
               </div>
             </section>
           )}
@@ -1013,10 +1032,10 @@ function App() {
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
               <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
+                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>{exerciseGuide(previewExercise).target} {exerciseTargetLabel(previewExercise)}</strong>
                   <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
                 <button type="button" disabled={!profile.game.created || !canNavigate}
-                  onClick={() => goTraining('training', 'squat')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
+                  onClick={() => goTraining('training', previewExercise)}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
               </div>
               <div className="character-footer">
                 <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПОВТОРОВ <strong>{repetitionsDone}</strong></span></div>
@@ -1174,15 +1193,9 @@ function App() {
             </article>
           </section>
 
-          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
-            <ProgressPulseBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}
-              onAvatar={() => navigate('forge')}/>
+          {profile.game.created && <Suspense fallback={<section id="daily-plan" className="forge-section" role="status" data-daily-plan-state="loading">Загружаем личный план…</section>}>
+            <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}/>
           </Suspense>}
-          {profile.game.created && <ForgeQuickDeck profile={profile} disabled={!canNavigate}
-            onTraining={() => goTraining('training', 'squat')} onAvatar={() => navigate('forge')}
-            onTower={() => navigate('tower')}
-            onDaily={() => document.getElementById('daily-plan')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}/>}
-          {profile.game.created && <DailyPlanBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}/>}
           <DailyBoard profile={profile} now={today} busy={isSaving}
             onLogin={() => {
               const now = new Date();
@@ -1197,6 +1210,20 @@ function App() {
             onTraining={() => goTraining('training', 'squat')}/>
           {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем шаги за день…</div>}>
             <StepsBoard now={today}/>
+          </Suspense>}
+          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
+            <ProgressPulseBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}
+              onAvatar={() => navigate('forge')}/>
+          </Suspense>}
+          {profile.game.created && <Suspense fallback={<section id="forge-quick-deck" className="forge-quick-deck" role="status">Загружаем быстрые действия…</section>}>
+            <ForgeQuickDeck profile={profile} disabled={!canNavigate}
+              onTraining={() => goTraining('training', 'squat')} onAvatar={() => navigate('forge')}
+              onTower={() => navigate('tower')}
+              onDaily={() => {
+                navigate('challenge');
+                // Wait for the Camera screen to appear before targeting its daily plan.
+                requestAnimationFrame(() => document.getElementById('daily-plan')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+              }}/>
           </Suspense>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
             look={avatarLook} onLookChange={updateAvatarLook} lookStatus={avatarLookStatus} lookMessage={avatarLookMessage}
@@ -1224,10 +1251,13 @@ function App() {
               <div className="tips-note"><Info size={16} /><span>Подсчёт — экспериментальная функция. Он не заменяет тренера и не гарантирует оценку техники.</span></div>
             </div>
           </section>
-          {profile.game.created && section === 'dashboard' && <Suspense fallback={null}>
-            <ProgressBackupPanel profile={profile} pendingResult={pendingResult}
-              disabled={isSaving || !canNavigate}/>
-          </Suspense>}
+          <section id="settings" className="forge-section bf-settings-screen" aria-label="Настройки и FAQ">
+            {section === 'settings' && <Suspense fallback={<p role="status">Загружаем настройки и FAQ…</p>}>
+              <SettingsFaqBoundary>
+                <SettingsFaq profile={profile} pendingResult={pendingResult} disabled={isSaving || !canNavigate}/>
+              </SettingsFaqBoundary>
+            </Suspense>}
+          </section>
           <footer className="footer"><span><span className="footer-mark"><BrandMark size={18} /></span> BODYFORGE · КУЗНИЦА ТЕЛА</span><span>ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ.</span></footer>
         </main>
       </div>
@@ -1237,6 +1267,7 @@ function App() {
         <button type="button" disabled={!canNavigate} aria-current={section === 'forge' ? 'page' : undefined} onClick={() => navigate('forge')} className={section === 'forge' ? 'active' : ''}><ForgeGlyph name="body" size={21}/><span>ГЕРОЙ</span></button>
         <button type="button" disabled={!canNavigate} aria-current={section === 'tower' ? 'page' : undefined} onClick={() => navigate('tower')} className={section === 'tower' ? 'active' : ''}><ForgeGlyph name="tower" size={21}/><span>БАШНЯ</span></button>
         <button type="button" disabled={!canNavigate} aria-current={section === 'online' ? 'page' : undefined} onClick={() => navigate('online')} className={section === 'online' ? 'active' : ''}><ForgeGlyph name="orbit" size={21}/><span>ОНЛАЙН</span></button>
+        <button type="button" disabled={!canNavigate} aria-current={section === 'settings' ? 'page' : undefined} aria-label="Настройки и FAQ" onClick={() => navigate('settings')} className={section === 'settings' ? 'active' : ''}><CircleHelp size={21}/><span>FAQ</span></button>
       </nav>
       <div className="screen-grain" aria-hidden="true" />
       <div className="sr-only" aria-live="polite">{mode === 'complete' ? isSaving

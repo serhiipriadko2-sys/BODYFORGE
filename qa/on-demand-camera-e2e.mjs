@@ -55,20 +55,25 @@ async function click(selector) {
 const observeTracks = "(()=>{window.__qaTracks=[];const media=navigator.mediaDevices;const real=media.getUserMedia.bind(media);media.getUserMedia=async c=>{const s=await real(c);window.__qaTracks.push(...s.getTracks());return s;};return true})()";
 
 try {
-  let port;
+  let endpoint;
   for (let attempt = 0; attempt < 90; attempt++) {
-    if (chrome.exitCode !== null) throw Error('Chrome exited: ' + chrome.exitCode);
+    // On Windows the short-lived Chrome launcher can exit 0 while its owned
+    // headless child is still starting. Only a working CDP page proves ready.
     try {
-      port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
-      if (port) break;
-    } catch {}
-    await sleep(120);
+      const port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+      if (Number.isSafeInteger(port) && port > 0) {
+        const response = await fetch('http://127.0.0.1:' + port + '/json', { signal: AbortSignal.timeout(1500) });
+        if (response.ok) {
+          const tabs = await response.json();
+          endpoint = tabs.find((tab) => tab.type === 'page')?.webSocketDebuggerUrl;
+          if (endpoint) { console.log('CDP_READY', port); break; }
+        }
+      }
+    } catch { /* The disposable Chrome profile is still starting. */ }
+    await sleep(150);
   }
-  if (!port) throw Error('Chrome debugging port unavailable');
-  const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json();
-  const page = tabs.find((tab) => tab.type === 'page');
-  if (!page) throw Error('Chrome page unavailable');
-  socket = new WebSocket(page.webSocketDebuggerUrl);
+  if (!endpoint) throw Error('Chrome DevTools unavailable; launcher exit=' + String(chrome.exitCode));
+  socket = new WebSocket(endpoint);
   await new Promise((resolve, reject) => {
     socket.addEventListener('open', resolve, { once: true });
     socket.addEventListener('error', reject, { once: true });
@@ -77,7 +82,8 @@ try {
     const message = JSON.parse(event.data.toString());
     if (pending.has(message.id)) { pending.get(message.id)(message); pending.delete(message.id); }
     if (message.method === 'Network.requestWillBeSent') urls.push(message.params.request.url);
-    if (message.method === 'Fetch.requestPaused' && /mediapipe_tasks-vision\.js/.test(message.params.request.url)) {
+    if (message.method === 'Fetch.requestPaused' &&
+        /(?:mediapipe_tasks-vision\.js|vision_bundle-[\w-]+\.js)/.test(message.params.request.url)) {
       pausedImport = message.params.requestId;
     }
   });
@@ -135,7 +141,12 @@ try {
   await until("window.__qaBeforeReload===undefined && document.readyState==='complete' && !!document.querySelector('.mobile-nav button:nth-child(2)') && !!document.querySelector('.app-shell') && !document.querySelector('#onboarding')", 'fresh cancellation page', 45000);
   check(await js(observeTracks), 'QA instruments tracks for delayed import');
   await click('.mobile-nav button:nth-child(2)');
-  await cdp('Fetch.enable', { patterns: [{ urlPattern: '*mediapipe_tasks-vision.js*', requestStage: 'Request' }] });
+  // Vite dev serves mediapipe_tasks-vision.js; production emits vision_bundle-HASH.js.
+  // Hold either exact library path, not unrelated app or camera requests.
+  await cdp('Fetch.enable', { patterns: [
+    { urlPattern: '*mediapipe_tasks-vision.js*', requestStage: 'Request' },
+    { urlPattern: '*vision_bundle-*.js*', requestStage: 'Request' },
+  ] });
   await click('#challenge .primary-button');
   const pausedUntil = Date.now() + 18000;
   while (!pausedImport && Date.now() < pausedUntil) await sleep(100);
@@ -158,9 +169,19 @@ try {
   } catch {}
   process.exitCode = 12;
 } finally {
-  socket?.close();
-  chrome.kill();
+  // Close the browser attached to OUR disposable profile, not the owner's
+  // regular Chrome. The spawned launcher PID might already have exited.
+  if (socket?.readyState === WebSocket.OPEN) {
+    try { socket.send(JSON.stringify({ id: ++seq, method: 'Browser.close' })); }
+    catch { /* The browser may already be shutting down. */ }
+  }
   await sleep(450);
-  try { fs.rmSync(profile, { recursive: true, force: true }); }
-  catch { console.error('Temporary Chrome cleanup failed:', profile); process.exitCode ||= 13; }
+  socket?.close();
+  if (chrome.exitCode === null) chrome.kill();
+  let removed = false;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    try { fs.rmSync(profile, { recursive: true, force: true }); removed = true; break; }
+    catch { await sleep(250); }
+  }
+  if (!removed) { console.error('Temporary Chrome cleanup failed:', profile); process.exitCode ||= 13; }
 }

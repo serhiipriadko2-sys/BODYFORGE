@@ -1,0 +1,756 @@
+{
+  "schema": "bodyforge.engineering-qa-final-seal.v1",
+  "id": "BF_BUNDLE_20261110-FINAL",
+  "createdAt": "2026-11-10T15:41:54.803869+00:00",
+  "head": "7144fc4c20d813979c82a9bd980f4b274c24af67",
+  "supersedesSourceMappingOf": {
+    "path": "docs/audits/BF_BUNDLE_20261110.receipt.json",
+    "bytes": 17967,
+    "sha256": "21770a8f178fe258a1af19c47ab8b72223360107537910b6d3040c33057c000d"
+  },
+  "testedStatus": "TESTED_LOCAL",
+  "currentWorkspaceStatus": "PARTIAL",
+  "sourceMapping": [
+    {
+      "sourcePath": "src/App.tsx",
+      "testedArtifact": {
+        "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/src/App.tsx",
+        "bytes": 82614,
+        "sha256": "ba9bc862f34ff7bb27715a9afd026bc3bf4f1aebb4cb707ef3a4ad6cbf2085c9"
+      }
+    },
+    {
+      "sourcePath": "qa/bundle-on-demand.mjs",
+      "testedArtifact": {
+        "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/qa/bundle-on-demand.mjs",
+        "bytes": 2709,
+        "sha256": "958505bf5392b281b239b83e9f3bb27e75e8f85d250c1e916917d51059cde088"
+      }
+    },
+    {
+      "sourcePath": "qa/mobile-e2e.mjs",
+      "testedArtifact": {
+        "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/qa/mobile-e2e.mjs",
+        "bytes": 40746,
+        "sha256": "212b72d59297eab72600453351507aa1f6dc7622dc76850bcfb6462e86d613d7"
+      }
+    }
+  ],
+  "liveAppObservation": {
+    "path": "src/App.tsx",
+    "bytes": 83671,
+    "sha256": "b06379f429bcfb06321630d888f26e92da5f783bd457f28f414639fa6c8568d3"
+  },
+  "compiledArtifacts": [
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-eyes.jpg",
+      "bytes": 30484,
+      "sha256": "286cbc415b376fb69871d0e4dde159b20ba307e3e7497274347a5c9617e72338"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-groom-source.md",
+      "bytes": 3867,
+      "sha256": "bf587d8b94367e9d25340e8e3582ccd840d43b84d20f7c4a2157f56b289c4ad0"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-hair-normal.png",
+      "bytes": 228087,
+      "sha256": "a3cc46bf1b45b668c9cf8a611c0b586779559f4488d1f9cdbc74c745767a5169"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-hair.png",
+      "bytes": 465622,
+      "sha256": "bf407d26fc79c7fa48c7eb5ce580384b2a5cb02b23cf97e5326c3335a2d70530"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-normal.png",
+      "bytes": 425857,
+      "sha256": "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-orm.png",
+      "bytes": 219446,
+      "sha256": "31a794d88e45423ccf1540846d607941946ace03a38741ebc1ce0b8ebf87b02a"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-realism-source.md",
+      "bytes": 2882,
+      "sha256": "928f8fca852a33b65f0c6f4219b4267f38ae9fc3f327ca48ecaab94116c9b5a7"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-skin-detail.jpg",
+      "bytes": 668292,
+      "sha256": "e5d5d5d7eee9568b386ad4a4457714dace161c11fa45f9dd6161a437fc6deaec"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-skin-source.md",
+      "bytes": 2051,
+      "sha256": "269c03fe3b003a1c2c0ecd9ac28d6ad878c86ab2318199c364d82831238cbbd7"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/athlete-skin.jpg",
+      "bytes": 130759,
+      "sha256": "33077073e7c16cb850310d0697392099711463f5704a442506c89bb893cbfd70"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/Avatar3D-nBYZCzUl.js",
+      "bytes": 651097,
+      "sha256": "d08dc507be6f8ff7e676b0d4622af7c53be1bda44359e5b09ae3b82d46d8630b"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/AvatarLab-Dqq9FBhQ.js",
+      "bytes": 7827,
+      "sha256": "e52cf074502c0122b886711a4fcf3745ffaaf7816c0d9c8fe89e81b6a65659e4"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/avatarYaw-BAlZR6XA.js",
+      "bytes": 191,
+      "sha256": "41dd011150107b8d4691a58ad3ca1964f8a4ef9f43086ed91ca9569aee142857"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/bodyforge-athlete-detail.glb",
+      "bytes": 6038680,
+      "sha256": "16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/bodyforge-athlete-efficient.glb",
+      "bytes": 4639184,
+      "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/bodyforge-athlete-realistic.glb",
+      "bytes": 6757648,
+      "sha256": "4c7754507aed2b48a0fd1ceaa9bfacf8bcd35befe0091afc39f8798e3a561834"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/bodyforge-athlete.glb",
+      "bytes": 5011480,
+      "sha256": "e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/camera-yMcAQq_b.js",
+      "bytes": 237,
+      "sha256": "be57acd52425edc4e291e369f52706929e9d5119e33b781b1d09bed0f2e2f533"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/CameraControls-NmXc0Nl2.js",
+      "bytes": 4981,
+      "sha256": "47e90516bad492e83d01b944c66344114068b689332974fe0bf9d408f57e53a4"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/chevron-down-BG2lCnoC.js",
+      "bytes": 116,
+      "sha256": "6d4cc09aea0e59e0008c41b3d3116192040a645047c33e3c8a145877a2fae2ac"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/DailyPlanBoard-0ImIQEhN.js",
+      "bytes": 5117,
+      "sha256": "2afdfbe91bb3a8af3b6f31abce1b8fea70bc2e966c28d8fddd540a6a83603364"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/ExerciseCatalog-BDeZTpfA.js",
+      "bytes": 3478,
+      "sha256": "6f21cf857db3371a4bb8393762243c7ef0cb2d7200ac690aec2db7d4eab39051"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/index-BujRZ9ce.js",
+      "bytes": 397150,
+      "sha256": "77fa4f0827087d8a2de79cb4054de20ba6678c5124b5190d438bc8eaf0977a93"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/index-CeGIFXb-.css",
+      "bytes": 166173,
+      "sha256": "796c3edbb81e8529f966b38adac3254b81e735c3b94179dc58590182ec5337d8"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/jsx-runtime-DyZJNswf.js",
+      "bytes": 8784,
+      "sha256": "006c8c36904a2f42ac8e86d3e56badc6473450e8a3988d87f12c632a6487218b"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/male-base-mesh-base_male.glb",
+      "bytes": 4498248,
+      "sha256": "d15a07e2b4cf1d08a3b91cb212a9a06a91438077f05a3f2a62f45351e8a71eb8"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/ProgressBackupPanel-B_ashkU0.js",
+      "bytes": 12719,
+      "sha256": "7cf5abdd53d9990dc700531584f5d053f7223be50dc2055953a2e685b18cff5b"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/ProgressBackupPanel-Dt0z2VpD.css",
+      "bytes": 3088,
+      "sha256": "b70b509ed525beb05070a67e435b59488e27f5a21e85da91b5eab18c63c2f59a"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/ProgressPulseBoard-DxeqzTwn.js",
+      "bytes": 14409,
+      "sha256": "cfbfeec17e394cf69f8b522735d13430923d3996e44babcf3890269ee3064236"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/RuntimeDiagnosticsPanel-BxMqgkcZ.js",
+      "bytes": 4896,
+      "sha256": "37139c550cb77ea6bad878b6e5980a73a170f12ce2dbd38c369277f9dbb929c5"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/StepsBoard-QIdFAekM.js",
+      "bytes": 6094,
+      "sha256": "00e7f16c7c94398cdf3f02c9e769d21bb28deef0efc0f2f10e86eef3bc718aeb"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/assets/vision_bundle-Dj7stae8.js",
+      "bytes": 154276,
+      "sha256": "fa0d954f9e515b424abf6ba9ef48c0943b9a8bd51be8537460e5c738aa510ed8"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/favicon.svg",
+      "bytes": 436,
+      "sha256": "495339d1b02a00931d8f986f1822507ae4c77cfd99d2784ca071338fd39bd12b"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/manrope-cyrillic-variable.woff2",
+      "bytes": 14500,
+      "sha256": "c268b459a9329e59fecf39a17618efd44c71735532048d60b12aab76a8c14914"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/manrope-latin-variable.woff2",
+      "bytes": 24836,
+      "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/Manrope-OFL.txt",
+      "bytes": 4387,
+      "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/README.md",
+      "bytes": 2275,
+      "sha256": "c72bec53390b14d22238d07a358f58b996c10e35a5fb457c90f4b56e45c1d6b6"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/unbounded-cyrillic-variable.woff2",
+      "bytes": 31424,
+      "sha256": "e30bf6a6063b6a47232bbd657e24c7cf4fdaf76fc2c50d92d9ee63e2ad2087cf"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/unbounded-latin-variable.woff2",
+      "bytes": 50904,
+      "sha256": "22f9b928aa3928a896340422b54d690fbb5875c30eae4c106f029c61f2289fd6"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/fonts/Unbounded-OFL.txt",
+      "bytes": 4392,
+      "sha256": "31e5d4e83955e7103c34570dd49b0570ef490800bd65b42923c0dd02445263b3"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-180.png",
+      "bytes": 3223,
+      "sha256": "43115d5e3a50e7b229ddcc5c1c11277bebf1f88d4ed5af0336480977dc086ee1"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-192.png",
+      "bytes": 3362,
+      "sha256": "c91eb5e74c5ec9371edb896e230932d799b81749a1ac638601d85adfffc43332"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-512.png",
+      "bytes": 5525,
+      "sha256": "2e4223c25a93edecec87e1280f704b386372bb2111ef0617ef7942d258bf6e8d"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-icon.svg",
+      "bytes": 514,
+      "sha256": "0d16aac886f994b2229064e4bd95fae691823287b329c3f579440a4dac24d4be"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-maskable-512.png",
+      "bytes": 4593,
+      "sha256": "0b83a297284e68381ada89b8ac4225ffb98db2f7f7ce9eb7482c8a1c26b0ebee"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/icons/bodyforge-maskable.svg",
+      "bytes": 579,
+      "sha256": "b902f0a4e50a56d78bbb5879d52724114db83dd140c2c2c5306978987b243975"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/index.html",
+      "bytes": 1188,
+      "sha256": "a135b6a5da70986ca783d6d125b74e850defaff8a24cd5c1dd7e03de53ad1088"
+    },
+    {
+      "path": ".bodyforge-qa/bundle-20261110-final/manifest.webmanifest",
+      "bytes": 927,
+      "sha256": "c0f1b84ce0e4f9a79e83198aebc9de7d4f0e8b9c2176dacbff2f17a02e955f0e"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/src/App.tsx",
+      "bytes": 82614,
+      "sha256": "ba9bc862f34ff7bb27715a9afd026bc3bf4f1aebb4cb707ef3a4ad6cbf2085c9"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/qa/bundle-on-demand.mjs",
+      "bytes": 2709,
+      "sha256": "958505bf5392b281b239b83e9f3bb27e75e8f85d250c1e916917d51059cde088"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_tested_sources/qa/mobile-e2e.mjs",
+      "bytes": 40746,
+      "sha256": "212b72d59297eab72600453351507aa1f6dc7622dc76850bcfb6462e86d613d7"
+    },
+    {
+      "path": "docs/audits/ADR-BF_BUNDLE_20261110-DAILY-PLAN.md",
+      "bytes": 5439,
+      "sha256": "b9f09995843653ea7cc43a09ea01ea6491aa069265224aea5f720498b48a845c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.md",
+      "bytes": 10925,
+      "sha256": "6973c7a4dfbc4df79155fa5a073199e37dce51c65d1f1608b7d2be57d87fb62a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.patch",
+      "bytes": 15379,
+      "sha256": "39f0d9b14da9af549dfd49c18c1e2ee513b739a707f7f26c7a57231c5a3dc537"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.inputs.json",
+      "bytes": 29890,
+      "sha256": "bf74516d1b925bdb94679bd7ea663c95aad7fed52160bc42ba52f1b4cf0c3b96"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/App.tsx.txt",
+      "bytes": 81613,
+      "sha256": "410167479f449e6517f186f3b677952d823c0d28f709559a04ddc3cfab64eff0"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/bundle-on-demand.mjs.txt",
+      "bytes": 2322,
+      "sha256": "185f3f75479fb441b9b0f3640b8878806faa5aab0048d2b627bee9e0d4f92701"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_before/mobile-e2e.mjs.txt",
+      "bytes": 36043,
+      "sha256": "b84650f15a5ed8726c15600bdee84a8811eaf352d01e0fde6a752ef1144f95be"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-320-mint-dashboard.png",
+      "bytes": 153417,
+      "sha256": "aa60219df10beea4bbc81f6f97276f3cd2e43b4d871414a061df00084edb9675"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-320-mint-dialog.png",
+      "bytes": 77237,
+      "sha256": "8c9af77822ca3dfef1eabb6c6fbffc2708f5143dae06aff8cb97db078a1d7759"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-360-mint-dashboard.png",
+      "bytes": 164379,
+      "sha256": "d09c962756526187ee910e7795137addf79da2727408754708530eb134e6809a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-360-mint-dialog.png",
+      "bytes": 88796,
+      "sha256": "70a71b8e1bc98b1dc06ed4c2d94cd482d237d692ff05dee20bf5848ff77fd173"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-copper-dashboard.png",
+      "bytes": 186305,
+      "sha256": "d884d41415c45459708b71139361565b66ac5a85e61b60a644f0a34f944db35c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-mint-dashboard.png",
+      "bytes": 184688,
+      "sha256": "ac21760ca87b6f1c5eece3021cb59d5037c5d04a7e98266fb541888541df3364"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-mint-dialog.png",
+      "bytes": 92663,
+      "sha256": "02ed14680d710a5b7e76d0eaff9f1f955209f428cbe1958c0cf47fb996f04f64"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/appearance-390-violet-dashboard.png",
+      "bytes": 186448,
+      "sha256": "8bc87ca27f5ee6d096bd7a6ab84a7daad583e5133890bd5dc4e3d42d9463e63f"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-360-premium.png",
+      "bytes": 86876,
+      "sha256": "0874a19dd18fc4a8c379bfa5912708f38f0e17204a75c163e18774650370b0e8"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 147084,
+      "sha256": "86d95205ad947e7327f39765653577251e33fd0b75cd25d45da91d5db1e8c628"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 201061,
+      "sha256": "9b1d8453adbf7e9a0e8fd8a59815c90bdb291ac043fae770c05ef1a3bb1c56fa"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-forge.png",
+      "bytes": 205010,
+      "sha256": "86341dff61689af47c1edc5ae833a194b1d3aefdb8b407037386ae2a0eefaa08"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-home-360-premium.png",
+      "bytes": 160577,
+      "sha256": "61d9975bc8930493823d99219b788eb2368e70e9d138116ad792432d32c2188e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-home-premium.png",
+      "bytes": 187493,
+      "sha256": "e0d3aa3d847806046bca5651b3e6b77a7e66d4e7bcd85540a391ab33f111fddd"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-lenses.png",
+      "bytes": 89239,
+      "sha256": "80f396ede41054665c940871376741a33cb41227b5f3be290bce491d3794b386"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-performance-panel.png",
+      "bytes": 16666,
+      "sha256": "d52fcbe6beca615c0522c066a96bc428e5356b28ab5643e94cb54909467701f6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-error-red.png",
+      "bytes": 149250,
+      "sha256": "fa5712c8331bfaefe4871ba3523c0f89a0cad378a675dd7edf07a56b9004e812"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-error.png",
+      "bytes": 141237,
+      "sha256": "39da9656b18af1a0d717b943caf943391cd102f03bb3d0ae3383c9ab6004e060"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-plan-loading.png",
+      "bytes": 156526,
+      "sha256": "e2eb9f11a50fd14c5f053541817bf6ffa9754bc9500812ec6d16aac136e66c42"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-setup.png",
+      "bytes": 146569,
+      "sha256": "de1a585bca2ab694bddb3e6fe3cdd87aefff47e3a6d6230025b44f5f17da8f07"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/bf-qa-mobile-tower.png",
+      "bytes": 89309,
+      "sha256": "d7d82ee521b9bfc83ef90dd6d1d37ea930116c887728a1ae9980525e50069e68"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-catalog-guide.png",
+      "bytes": 84593,
+      "sha256": "d29131d9b74696b14dd84f2b370c8ed02b3bfceb30c9ad2f6f64d78489e1c671"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-daily-plan.png",
+      "bytes": 79013,
+      "sha256": "0f5b70d12d45722bb4ca27cb279a20de0248b9b4b84de9875c13be9c4309fb87"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-custom-dark-manual-steps.png",
+      "bytes": 81691,
+      "sha256": "37b437edd4fc61dcf75838000c8a2dd41273214b6f5d4179dd6964b71dfb503e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-catalog-guide.png",
+      "bytes": 81114,
+      "sha256": "701ae5a9500a318a6905994a064d5198354eabea6548d25f4b06824093d20d24"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-daily-plan.png",
+      "bytes": 75135,
+      "sha256": "2099f554c8089986fd9e5d98ffb52ace55b25a13276faf173aa35516a3edd2e4"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-high-contrast-manual-steps.png",
+      "bytes": 76895,
+      "sha256": "bde5154fd9a3a42206309f8a0fc7858d4e4725e7e0cd883f19a838284d656555"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-catalog-guide.png",
+      "bytes": 84783,
+      "sha256": "80b78f7298443831b9a68035a000a1c53c8a73aa2487896e5c9a73ecd50b12ca"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-daily-plan.png",
+      "bytes": 79258,
+      "sha256": "096e573a17008279f3b34553d9fb5caad63d5af5572c9ae9ed4faf3dc59a0956"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-mint-manual-steps.png",
+      "bytes": 81850,
+      "sha256": "8a60dc8fb0b9b29f994a6c656b707beccb8010d8b20f8d78c68666077795d4b4"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-catalog-guide.png",
+      "bytes": 85123,
+      "sha256": "77d7e1cd7f37bb8a8aa28619a89a4f66084058cad1b8765e6ebef005a9970b80"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-daily-plan.png",
+      "bytes": 79438,
+      "sha256": "a1854aae9069f277ec18076c49e466c15f4d9e1d2c5aa5ea182605ba4c7fca0a"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_shots/integration-violet-manual-steps.png",
+      "bytes": 82022,
+      "sha256": "46674692cacddf04903c92f5b574ea7bb70304a8b001ceb8e4d3e58399a1618c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.appearance.log",
+      "bytes": 337140,
+      "sha256": "8a388b962e6744fb577a5d8ea920cad9f0e72926b7f0b11c9971908a25044a5c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-build.log",
+      "bytes": 4562,
+      "sha256": "b8b8ea734133820d61ab634299976d5d40a8e7c1079be5161e3bf98603ce3616"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-bundle.log",
+      "bytes": 2370,
+      "sha256": "88373078ff22339b0c8675a4e1058cbf67e5630092be6d6c9e929b1669c9327e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-mobile.log",
+      "bytes": 5210,
+      "sha256": "d5a71086678c12117f63a94cfcfe10a8764dd252ac7c862410687b495bd56bf1"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.baseline-tests.log",
+      "bytes": 1676,
+      "sha256": "907188d7ec991db552fc778d945aa011ee2f2bf1260a75a032e3f676662c4689"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.build.log",
+      "bytes": 4718,
+      "sha256": "8c8d2dea4e4c996a4e9c75fb1cfbad8dfa2ffeaa8bfdb3a35b9d134620215504"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.bundle.log",
+      "bytes": 1382,
+      "sha256": "81ee171164bc40ff7cd6a34d91da867f152eb6f61337083429798c3ce07663f3"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.camera-runtime.log",
+      "bytes": 4072,
+      "sha256": "bb5394f15e78270ff3031062b56c45b4b7de046761d332b61dd312bc4eaf4cfe"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.canon.log",
+      "bytes": 191,
+      "sha256": "bd4804de303f67e95fa25e0fa54c637d0ae574c4ff18b54cfa79d64738587506"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.experience.log",
+      "bytes": 3982,
+      "sha256": "43fc64f92a4e24d77f8ed014fc9581028438bbbc7f3b25fc94cb0790aec82dbe"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-build.log",
+      "bytes": 4718,
+      "sha256": "eb83eb73cd5b9baa9406a0e033125c579ad30dc2833322734ad592969046ebef"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-bundle.log",
+      "bytes": 1526,
+      "sha256": "21c94af463948abf4b0b76a5c5d12fa7f47e6edb5d2d5e3c40e58ae01926c695"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-mobile.log",
+      "bytes": 16900,
+      "sha256": "8c6090308a1be5483f6a5a6537b6ef9ecb267df99c5dd29dfacfef370d4fd4db"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final-tests.log",
+      "bytes": 1676,
+      "sha256": "5f97ccdd3b5cbb468667b819f14c0e66bdda8365f214cf4d59289d4bae43ab6d"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-build.log",
+      "bytes": 4718,
+      "sha256": "118fa45ee59e9d19f6938963cda997860f76d9c6d0170dc476679877d54d6230"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-bundle.log",
+      "bytes": 1526,
+      "sha256": "21c94af463948abf4b0b76a5c5d12fa7f47e6edb5d2d5e3c40e58ae01926c695"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.joint-tests.log",
+      "bytes": 1676,
+      "sha256": "d1092f70871d556daf3f85f712d43f5d7456854f12cdc93a52920952bd1e42f6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.mobile.log",
+      "bytes": 15508,
+      "sha256": "48292c2616e8ef4e522077375e19c2818cee3e934893ceb1fcd876b70d6c68c6"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.privacy.log",
+      "bytes": 2408,
+      "sha256": "09ec6904dacd1041eda74cfce7ac5ab3be363fde89770aad8d0642ba4f2edc53"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.pwa.log",
+      "bytes": 1146,
+      "sha256": "7bd057d510f5e8c2d094390dc6b779d41542b4d75966255ef0462877e8e0f647"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.release-build.log",
+      "bytes": 4718,
+      "sha256": "5a9359ba45bb28f31cb95234a73cc5bde23d97fb08aa39cc08ff9569d755aea7"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.release-bundle.log",
+      "bytes": 1526,
+      "sha256": "0987372417faae8841ac3ef33e9c3b89329d444b0dcb07c28795717026f7f82e"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-mobile.log",
+      "bytes": 16744,
+      "sha256": "243ab0809493d98bf1767d9e3affa4c3e14d22a3b2c717183668540fb020539c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-privacy.log",
+      "bytes": 2408,
+      "sha256": "09ec6904dacd1041eda74cfce7ac5ab3be363fde89770aad8d0642ba4f2edc53"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.sealed-pwa.log",
+      "bytes": 1144,
+      "sha256": "abb5e56a138d14bd8dea6584d62501ee1b1f33170220c3ff8d658f6ed2aba23b"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.tests.log",
+      "bytes": 1676,
+      "sha256": "3cf20029ea9e1715e47f7a1e6e68110c27e2bc48517056f6f845b5316df1bc4c"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.touch-target.log",
+      "bytes": 9330,
+      "sha256": "7f0a5da49998b11af439cc2c1c3a6bd97898df9bc249aca5ddb7083d237227ed"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.browser-summary.json",
+      "bytes": 679,
+      "sha256": "ca0577672aeb8cfbef2074539f6a31d7cb736b3507437b2c09eac9b9f6beec13"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_capture.py",
+      "bytes": 2163,
+      "sha256": "7a3605f4e8e0e3c3b5ebfa0f26b4c22dedbdb5887285c6c79a7f03cf21700353"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_receipt.py",
+      "bytes": 22851,
+      "sha256": "658090a3de7816eed22660559cb4d434f9f745efa61c4afd5b276e1e6f903fac"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.receipt.json",
+      "bytes": 17967,
+      "sha256": "21770a8f178fe258a1af19c47ab8b72223360107537910b6d3040c33057c000d"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.concurrent-App.diff",
+      "bytes": 8525,
+      "sha256": "b97802797c4dfbab6b641ede7a63b7d764013a93344d7fb953e20989de30697b"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110.final.md",
+      "bytes": 3838,
+      "sha256": "fd4f60dae56ed42853e8eae517af5d972eb473bbaa875fae5452311e37b8e951"
+    },
+    {
+      "path": "docs/audits/BF_BUNDLE_20261110_finalize.py",
+      "bytes": 9620,
+      "sha256": "9d5fe9387e51cc028d7398a1942119d1178e95bae643193f6029cdd5cce3ec32"
+    }
+  ],
+  "qa": {
+    "unit": {
+      "exitCode": 0,
+      "passed": 565,
+      "files": 46
+    },
+    "buildExit": 0,
+    "bundleExit": 0,
+    "bundle": {
+      "entryBytes": 397150,
+      "entryGzipBytes": 121099,
+      "cameraChunkBytes": 154276,
+      "dailyPlanChunkBytes": 5117,
+      "dailyPlanName": "DailyPlanBoard-0ImIQEhN.js",
+      "baselineEntryBytes": 496761,
+      "entryBytesSaved": 99611,
+      "entryReductionPercent": 20.1,
+      "entryName": "index-BujRZ9ce.js",
+      "poseName": "vision_bundle-Dj7stae8.js"
+    },
+    "mobile": {
+      "exitCode": 0,
+      "origin": "http://127.0.0.1:5193",
+      "synthetic": true,
+      "touchTarget": {
+        "width": 164,
+        "height": 48,
+        "top": 478.390625,
+        "bottom": 526.390625,
+        "usableBottom": 764
+      },
+      "actualTouchRecovery": true,
+      "runtimeExceptions": 0
+    },
+    "otherQA": {
+      "privacyExit": 0,
+      "blockedPaths": 12,
+      "pwaExit": 0,
+      "preFinalRuns": [
+        {
+          "command": "npm run qa:camera-runtime",
+          "origin": "http://127.0.0.1:5174",
+          "exitCode": 0,
+          "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.camera-runtime.log"
+        },
+        {
+          "command": "npm run qa:experience",
+          "origin": "http://127.0.0.1:5174",
+          "exitCode": 0,
+          "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.experience.log"
+        },
+        {
+          "command": "npm run qa:appearance",
+          "origin": "http://127.0.0.1:5174",
+          "exitCode": 0,
+          "log": "C:\\github\\BODYFORGE\\docs\\audits\\BF_BUNDLE_20261110.appearance.log"
+        }
+      ]
+    }
+  },
+  "finalChecks": {
+    "gitDiffCheckExit": 0,
+    "httpStatus": 200,
+    "servedExpectedEntry": true,
+    "videoRecorded": false
+  },
+  "origin": "http://127.0.0.1:5193",
+  "lifecycle": {
+    "implemented": true,
+    "testedLocalBuild": true,
+    "committedByThisAgent": false,
+    "pushedByThisAgent": false,
+    "deployedByThisAgent": false,
+    "verifiedLive": false
+  },
+  "nonclaims": [
+    "physical movement accuracy",
+    "real phone FPS/battery/heat",
+    "LCP INP CLS p75",
+    "current parallel CSS and QA completion",
+    "historical Chrome exited0 root cause"
+  ],
+  "readBackScope": "Archived tested inputs, immutable logs/receipts and compiled artifacts; mutable live source observations are not assertions of its future state."
+}
