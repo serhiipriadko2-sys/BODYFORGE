@@ -305,3 +305,10 @@ button,input,select,textarea { font-family:inherit; }
   .appearance-custom { grid-template-columns:50px minmax(0,1fr); }
   .appearance-custom>button { grid-column:1/-1; }
 }
+
+/* User-selected mobile budget; colors and the 3D human model remain intact. */
+:root[data-bf-graphics="economy"][data-bf-material][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog) {
+  background: var(--bf-surface-solid);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

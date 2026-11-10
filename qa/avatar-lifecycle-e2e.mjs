@@ -164,6 +164,9 @@ try {
   const stopped = await js(draws);
   await sleep(250);
   check(await js(draws) === stopped, 'unmounted GLB avatar stops drawing');
+  await js("window.dispatchEvent(new Event('bodyforge:graphics-change'));window.dispatchEvent(new Event('resize'));true");
+  await sleep(100);
+  check(await js(draws) === stopped, 'graphics-budget and resize events never draw the disposed avatar');
   check(!(await avatarStats()).active && !(await avatarStats()).animating && (await avatarStats()).observedFps === null,
     'disposed scene retains no live FPS or animation state');
   await js("document.querySelector('.mobile-nav button:first-child').click()");

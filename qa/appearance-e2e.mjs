@@ -71,9 +71,12 @@ class Client {
   }
   async until(expression, label, timeout) { return waitFor(() => this.js(expression), label, timeout); }
   async click(selector) {
+    await this.until('(()=>{const e=document.querySelector(' + JSON.stringify(selector) + ');return !!e&&!e.disabled})()',
+      'requested control mounted and enabled: ' + selector);
     check(await this.js('(()=>{const e=document.querySelector(' + JSON.stringify(selector) + ');if(!e||e.disabled)return false;e.click();return true})()'), 'click ' + selector);
   }
   async input(selector, value) {
+    await this.until('!!document.querySelector(' + JSON.stringify(selector) + ')', 'requested input mounted: ' + selector);
     check(await this.js('(()=>{const e=document.querySelector(' + JSON.stringify(selector) + ');if(!e)return false;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(e,' + JSON.stringify(value) + ');e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}));return true})()'), 'input ' + selector);
   }
   async keyboard(key, code, modifiers = 0) {
@@ -112,6 +115,10 @@ async function app(tab, reload = false) {
   await waitFor(async () => tab.loads > loads, 'fresh application document loaded');
   await tab.until('!!document.querySelector(".app-shell")&&!!' + query('button[aria-label="Внешний вид"]'), 'actual application and appearance control');
   await tab.until('document.documentElement.dataset.bfPalette!==undefined', 'appearance applied to document');
+  if (await tab.js('!!document.querySelector(".dashboard-player")')) {
+    await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
+      'created fighter dashboard lazy panels ready');
+  }
 }
 async function open(tab) {
   await tab.cdp('Page.bringToFront');
@@ -209,6 +216,48 @@ async function colors(tab, label) {
   console.log('OPAQUE_TOKEN_CONTRAST', JSON.stringify(result));
   for (const [pair, ratio] of Object.entries(result.ratios)) check(ratio >= 4.5, label + ' opaque/composited token contrast ' + pair + ' >=4.5 (' + ratio.toFixed(2) + ')');
 }
+async function mobileGraphics(tab, initialGame) {
+  await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
+  // A real phone starts with this DPR. Changing only emulation DPR after load
+  // does not necessarily emit resize or request a new on-demand render.
+  await app(tab, true);
+  const stage = "document.querySelector('.character-card .avatar-stage')";
+  const canvas = "document.querySelector('.character-card .avatar-3d-shell canvas')";
+  await tab.js(stage + '.scrollIntoView({block:"center",behavior:"instant"});true');
+  await tab.until(canvas + '?.dataset.renderScale==="1.5"', 'balanced high-DPI drawing buffer');
+  const before = await tab.js(`(()=>{const c=${canvas};window.__graphicsCanvas=c;return {width:c.width,height:c.height}})()`);
+  // Keep the scene visible while testing its event handler. Opening a dialog
+  // can scroll the stage away and legitimately dispose it via IntersectionObserver.
+  await tab.js('(async()=>{const m=await import("/src/lib/appearance.ts");m.applyAppearance({...m.loadAppearance().settings,graphics:"economy"});return true})()');
+  await tab.until(canvas + '?.dataset.renderScale==="1"', 'economy changes the live drawing buffer');
+  const after = await tab.js(`(()=>{const c=${canvas},r=c.getBoundingClientRect(),gl=c.getContext('webgl2');return {same:c===window.__graphicsCanvas,width:c.width,height:c.height,cssWidth:r.width,cssHeight:r.height,gpuWidth:gl.drawingBufferWidth,gpuHeight:gl.drawingBufferHeight}})()`);
+  console.log('GRAPHICS_BUFFERS', JSON.stringify({before,after}));
+  check(after.same && after.width === after.gpuWidth && after.height === after.gpuHeight,
+    'budget updates the same real WebGL canvas without replacing the model');
+  check(Math.abs(after.width - Math.round(after.cssWidth)) <= 1 && Math.abs(after.height - Math.round(after.cssHeight)) <= 1,
+    'economy uses one framebuffer pixel per CSS pixel on a high-DPI screen');
+  check(after.width * after.height < before.width * before.height * .46, 'economy reduces drawing-buffer area by more than half');
+  observations.mobileGraphics = { emulatedDpr: 3, before, after, physicalDevice: 'NOT VERIFIED' };
+  await open(tab); await tab.click('input[name="graphics"][value="economy"]');
+  await tab.until('document.documentElement.dataset.bfGraphics==="economy"', 'economy selected');
+  check(JSON.parse(await stored(tab)).graphics === 'economy', 'economy preference is independently read back');
+  check(await tab.js('getComputedStyle(document.querySelector(".appearance-dialog")).backdropFilter==="none"'), 'economy actually disables the glass blur');
+  await close(tab);
+  check(await gameBytes(tab) === initialGame, 'graphics switch preserves primary, backup and result bytes');
+  await app(tab, true);
+  check(await tab.js('document.documentElement.dataset.bfGraphics==="economy"'), 'economy survives an actual reload');
+  const other = await newTab(); await app(other); await open(other);
+  await other.click('input[name="graphics"][value="balanced"]');
+  await tab.until('document.documentElement.dataset.bfGraphics==="balanced"', 'real storage event updates graphics in another tab');
+  check(await gameBytes(other) === initialGame, 'second-tab graphics switch preserves game bytes');
+  await close(other);
+  await other.close();
+  await tab.cdp('Page.bringToFront');
+  await tab.js(stage + '.scrollIntoView({block:"center",behavior:"instant"});true');
+  await tab.until(canvas + '?.dataset.renderScale==="1.5"', 'balanced drawing buffer restored');
+  await tab.viewport(390);
+}
+
 async function palette(tab, value) {
   await tab.click('.appearance-palette button[data-palette="' + value + '"]');
   await savedSettings(tab, value);
@@ -256,6 +305,8 @@ async function integrationRecords(tab, specs) {
   return tab.js('(' + integrationStyleSnapshot.toString() + ')(' + JSON.stringify(specs) + ')');
 }
 async function integrationBounds(tab, selectors, label) {
+  await tab.until('(' + JSON.stringify(selectors) + ').every(selector=>document.querySelector(selector)?.getClientRects().length>0)',
+    label + ' requested panels committed and visible');
   const bounds = await tab.js('(()=>{const selectors=' + JSON.stringify(selectors) + ';return {width:innerWidth,scroll:document.documentElement.scrollWidth,panels:selectors.map(selector=>{const e=document.querySelector(selector),r=e?.getBoundingClientRect();return {selector,present:!!e,client:e?.clientWidth,scroll:e?.scrollWidth,left:r?.left,right:r?.right,visible:!!e?.getClientRects().length}})}})()');
   observations.integrationBounds ??= [];
   observations.integrationBounds.push({ label, ...bounds });
@@ -263,6 +314,13 @@ async function integrationBounds(tab, selectors, label) {
   check(bounds.scroll <= bounds.width, label + ' page has no horizontal overflow');
   for (const panel of bounds.panels) {
     check(panel.present && panel.visible && panel.left >= 0 && panel.right <= bounds.width && panel.scroll <= panel.client, label + ' new panel content stays within its mobile bounds ' + panel.selector);
+  }
+}
+async function openCameraPanels(tab) {
+  for (const [trigger, panel] of [['.bf-catalog-trigger', '.bf-catalog-grid'], ['.bf-guide-trigger', '.bf-guide']]) {
+    await tab.until('!!document.querySelector(' + JSON.stringify(trigger) + ')', 'camera panel toggle mounted');
+    if (!await tab.js('!!document.querySelector(' + JSON.stringify(panel) + ')')) await tab.click(trigger);
+    await tab.until('!!document.querySelector(' + JSON.stringify(panel) + ')', 'camera panel expanded');
   }
 }
 async function preferenceDraftRaces(a, initialGame) {
@@ -345,6 +403,8 @@ async function integrationExperience(tab, initialGame) {
   check(await gameBytes(tab) === initialGame, 'manual steps award no XP or coins and preserve exact game bytes');
   check(await stored(tab) === appearanceBefore, 'manual steps do not rewrite appearance settings');
   await app(tab, true);
+  await tab.until('!!document.querySelector("[data-goal-target]")&&!!document.querySelector("[data-manual-steps]")',
+    'lazy daily goal and manual steps panels mounted after reload');
   check(await tab.js('document.querySelector("[data-goal-target]")?.dataset.goalTarget==="40"&&document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"'), 'daily goal and manual steps survive actual application reload');
   check(await gameBytes(tab) === initialGame, 'reloading goal and steps leaves game primary and backup byte-identical');
 
@@ -400,8 +460,7 @@ async function integrationExperience(tab, initialGame) {
     if (!await tab.js('!!document.querySelector("#daily-plan .bf-goal-editor")')) await tab.click('#daily-plan .bf-small-action');
     const home = await integrationRecords(tab, homeSpecs);
     await tab.click('.mobile-nav button:nth-child(2)');
-    if (!await tab.js('!!document.querySelector(".bf-catalog-grid")')) await tab.click('.bf-catalog-trigger');
-    if (!await tab.js('!!document.querySelector(".bf-guide")')) await tab.click('.bf-guide-trigger');
+    await openCameraPanels(tab);
     const camera = await integrationRecords(tab, cameraSpecs);
     const records = [...home, ...camera];
     const state = { variant, records };
@@ -430,6 +489,7 @@ async function integrationExperience(tab, initialGame) {
         await tab.screenshot('integration-' + variant + '-manual-steps');
       }
       await tab.click('.mobile-nav button:nth-child(2)');
+      await openCameraPanels(tab);
       await integrationBounds(tab, ['.bf-catalog', '.bf-catalog-grid', '.bf-guide', '.bf-guide-visual'], variant + ' ' + width + ' camera guide');
       if (width === 390) {
         await tab.js('document.querySelector(".bf-catalog").scrollIntoView({block:"start",behavior:"instant"});true');
@@ -464,10 +524,14 @@ try {
   await a.js('document.querySelector(".character-card .avatar-stage")?.scrollIntoView({block:"center",behavior:"instant"});true');
   await a.until('document.querySelector(".character-card [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'real human avatar loaded for screenshots', 25000);
   check(await gameBytes(a) === initialGame, 'loading preferences preserves exact primary and backup game bytes');
-  if (process.argv.includes('--preferences-only')) {
+  if (process.argv.includes('--graphics-only')) {
+    await mobileGraphics(a, initialGame);
+    console.log('BODYFORGE_MOBILE_GRAPHICS_PASS assertions=' + assertions, JSON.stringify(observations.mobileGraphics));
+  } else if (process.argv.includes('--preferences-only')) {
     await preferenceDraftRaces(a, initialGame);
     console.log('BODYFORGE_PREFERENCE_DRAFT_E2E_PASS assertions=' + assertions);
   } else {
+  await mobileGraphics(a, initialGame);
   await integrationExperience(a, initialGame);
   await preferenceDraftRaces(a, initialGame);
   if (process.argv.includes('--inspect-320')) {

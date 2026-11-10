@@ -98,6 +98,30 @@ describe('appearance validation without game-save mutations', () => {
 });
 
 describe('optional appearance persistence', () => {
+  it('keeps the optional economy graphics choice on load and reload without changing game saves', () => {
+    const raw = JSON.stringify({ ...DEFAULT_APPEARANCE, palette: 'copper', graphics: 'economy' });
+    const { values, setItem } = storage(raw);
+    expect(loadAppearance().settings).toEqual(JSON.parse(raw));
+    expect(setItem).not.toHaveBeenCalled();
+    expectGameUnchanged(values);
+  });
+
+  it.each([null, 'turbo', 42, {}])('ignores malformed optional graphics %j without losing a valid palette', (graphics) => {
+    const raw = JSON.stringify({ ...DEFAULT_APPEARANCE, palette: 'violet', graphics });
+    const { values, setItem } = storage(raw);
+    expect(loadAppearance().settings).toEqual({ ...DEFAULT_APPEARANCE, palette: 'violet' });
+    expect(values.get(APPEARANCE_KEY)).toBe(raw);
+    expect(setItem).not.toHaveBeenCalled();
+    expectGameUnchanged(values);
+  });
+
+  it('refuses to write an unsupported graphics mode', () => {
+    const { values, setItem } = storage();
+    expect(saveAppearance({ ...DEFAULT_APPEARANCE, graphics: 'turbo' } as unknown as Appearance)).toBe(false);
+    expect(setItem).not.toHaveBeenCalled();
+    expectGameUnchanged(values);
+  });
+
   it('reports unavailable reads without changing a preference or any game data', () => {
     const raw = JSON.stringify(DEFAULT_APPEARANCE);
     const { values, getItem, setItem } = storage(raw);

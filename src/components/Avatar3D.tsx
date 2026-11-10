@@ -17,6 +17,7 @@ import { createAvatarStudio } from '../lib/avatarStudio';
 import { applyAvatarDetailMap, type AvatarDetailMap } from '../lib/avatarDetailMaps';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
+import { avatarPixelRatio, GRAPHICS_CHANGE_EVENT } from '../lib/mobileGraphics';
 
 interface Avatar3DProps {
   build: BodyBuild;
@@ -122,7 +123,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         powerPreference: 'low-power',
         preserveDrawingBuffer: false,
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setPixelRatio(avatarPixelRatio(document.documentElement.dataset.bfGraphics, window.devicePixelRatio));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.05;
@@ -202,6 +203,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           const w = Math.max(1, Math.round(rect.width));
           const h = Math.max(1, Math.round(rect.height));
           if (w > 1 && h > 1) {
+            const ratio = avatarPixelRatio(document.documentElement.dataset.bfGraphics, window.devicePixelRatio);
+            if (renderer.getPixelRatio() !== ratio) renderer.setPixelRatio(ratio);
+            element.dataset.renderScale = String(ratio);
             if (element.width !== Math.round(w * renderer.getPixelRatio()) ||
                 element.height !== Math.round(h * renderer.getPixelRatio())) {
               renderer.setSize(w, h, false);
@@ -272,6 +276,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         if (visible) redraw();
       };
       document.addEventListener('visibilitychange', onVisibility);
+      window.addEventListener(GRAPHICS_CHANGE_EVENT, onVisibility);
+      window.addEventListener('resize', onVisibility);
       const observer = new IntersectionObserver((entries) => {
         intersectsViewport = entries[0]?.isIntersecting === true;
         onVisibility();
@@ -317,6 +323,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           element.removeEventListener('keydown', onArrowKey);
           element.removeEventListener('webglcontextlost', onContextLost);
           document.removeEventListener('visibilitychange', onVisibility);
+          window.removeEventListener(GRAPHICS_CHANGE_EVENT, onVisibility);
+          window.removeEventListener('resize', onVisibility);
           observer.disconnect();
           resize.disconnect();
           disposeThreeTree(scene);

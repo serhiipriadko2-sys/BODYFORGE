@@ -1,3 +1,5 @@
+import { GRAPHICS_CHANGE_EVENT, isGraphicsMode, type GraphicsMode } from './mobileGraphics';
+
 /** Appearance is a separate, optional preference; it never rewrites game saves. */
 export const APPEARANCE_KEY = 'bodyforge:appearance:v1';
 export const PALETTES = [
@@ -13,6 +15,8 @@ export interface Appearance {
   customAccent: string;
   material: 'glass' | 'solid';
   highContrast: boolean;
+  /** Missing in existing v1 saves: retain the original balanced rendering. */
+  graphics?: GraphicsMode;
 }
 export const DEFAULT_APPEARANCE: Appearance = { version: 1, palette: 'mint', customAccent: '#65ead0', material: 'glass', highContrast: false };
 export const isHexColor = (value: string) => /^#[0-9a-f]{6}$/i.test(value);
@@ -24,7 +28,8 @@ export function parseAppearance(raw: string | null): Appearance | null {
     if (!value || value.version !== 1 || ![...PALETTES.map((p) => p.id), 'custom'].includes(value.palette ?? '') ||
         typeof value.customAccent !== 'string' || !isHexColor(value.customAccent) ||
         !['glass', 'solid'].includes(value.material ?? '') || typeof value.highContrast !== 'boolean') return null;
-    return { version: 1, palette: value.palette!, customAccent: value.customAccent.toLowerCase(), material: value.material!, highContrast: value.highContrast };
+    return { version: 1, palette: value.palette!, customAccent: value.customAccent.toLowerCase(), material: value.material!, highContrast: value.highContrast,
+      ...(isGraphicsMode(value.graphics) ? { graphics: value.graphics } : {}) };
   } catch { return null; }
 }
 
@@ -35,6 +40,7 @@ export function loadAppearance(): { settings: Appearance; status: 'ready' | 'inv
   } catch { return { settings: { ...DEFAULT_APPEARANCE }, status: 'unavailable' }; }
 }
 export function saveAppearance(settings: Appearance): boolean {
+  if (settings.graphics !== undefined && !isGraphicsMode(settings.graphics)) return false;
   const raw = JSON.stringify(settings);
   if (!parseAppearance(raw)) return false;
   try { localStorage.setItem(APPEARANCE_KEY, raw); return localStorage.getItem(APPEARANCE_KEY) === raw; }
@@ -70,9 +76,14 @@ export function applyAppearance(settings: Appearance): void {
   root.dataset.bfPalette = settings.palette;
   root.dataset.bfMaterial = settings.material;
   root.dataset.bfContrast = settings.highContrast ? 'high' : 'standard';
+  const previousGraphics = root.dataset.bfGraphics;
+  root.dataset.bfGraphics = settings.graphics ?? 'balanced';
   root.style.setProperty('--bf-accent', colors.accent);
   root.style.setProperty('--bf-accent-ink', colors.ink);
   root.style.setProperty('--bf-accent-copy', colors.copy);
   root.style.setProperty('--bf-accent-rgb', colors.channels);
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0a1018');
+  if (previousGraphics !== root.dataset.bfGraphics && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(GRAPHICS_CHANGE_EVENT));
+  }
 }

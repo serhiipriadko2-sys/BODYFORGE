@@ -60,6 +60,13 @@ export default function AppearancePanel({ disabled = false }: { disabled?: boole
       <label className="appearance-contrast"><span>Повышенный контраст<small>Непрозрачные панели, чёткие границы</small></span>
         <input type="checkbox" name="highContrast" checked={settings.highContrast} onChange={(event) => choose({ ...settings, highContrast: event.target.checked })}/></label>
       <p className="appearance-note">Системное уменьшение прозрачности и движения имеет приоритет. Стекло автоматически упрощается, если браузер его не поддерживает.</p>
+      <fieldset><legend>Графика 3D</legend><div className="appearance-material">
+        <label><input type="radio" name="graphics" value="balanced" checked={settings.graphics !== 'economy'}
+          onChange={() => choose({ ...settings, graphics: 'balanced' })}/><span>Сбалансированная<small>Более чёткий персонаж</small></span></label>
+        <label><input type="radio" name="graphics" value="economy" checked={settings.graphics === 'economy'}
+          onChange={() => choose({ ...settings, graphics: 'economy' })}/><span>Экономная<small>Меньше пикселей и размытия</small></span></label>
+      </div></fieldset>
+      <p className="appearance-note">Экономный режим снижает чёткость 3D и отключает размытие панелей. Качество камеры и правила зачёта упражнений сохраняются.</p>
       <div className="appearance-preview" aria-hidden="true"><span>ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><strong>Стань сильнее</strong><i>20 приседаний</i></div>
       <p className="appearance-message" role="status" aria-live="polite">{message}</p>
       <button type="button" className="appearance-reset" data-action="reset-appearance" onClick={() => {
