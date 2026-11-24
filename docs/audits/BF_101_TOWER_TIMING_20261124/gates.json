@@ -1,0 +1,17 @@
+{
+  "source_count": 235,
+  "frozen_initial_match": true,
+  "owned": {
+    "qa/tower20-e2e.mjs": "9b2af080913803f4e050785784fb3f16d970908f28b30f29b7639485e75ca517",
+    "qa/tower-squat-fixture.mjs": "2201c53e64d7ef867c7753f249fe0e0278ed3c98ddb1003361780527165b2ecd",
+    "qa/tower-squat-fixture.test.mjs": "c1aa810b96eb5eac04a86f537d15a2f3e9f710edea293607f8e2bcba78bc118b"
+  },
+  "prior_patch": {
+    "src/App.tsx": "27407a9eb3e88b4beea59c1c5600b1534f13f869e1930b0c7fd5988cf7b871ab",
+    "src/lib/workoutJournal.ts": "77d4e32f79403f294a86f71378f6065d889e797a2c2ae98cb11b28dee2fefc70",
+    "src/lib/workoutJournal.test.ts": "f69fac98c767102521c86f467c19f8e01226e921c68199b9f64343fda53e1797"
+  },
+  "fixture-frozen": 0,
+  "full-unit": 0,
+  "tsc": 2
+}

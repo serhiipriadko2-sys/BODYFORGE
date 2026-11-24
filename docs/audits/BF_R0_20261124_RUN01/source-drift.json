@@ -1,0 +1,101 @@
+﻿{
+    "observed":  "2026-11-24T20:45:37.5015267+03:00",
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "drift":  [
+                  {
+                      "path":  "qa/avatar-quality-e2e.mjs",
+                      "before":  "db65a165c38a542157f41bbf76604d192498ee227c17b3df9ce39f4e3d71c10c",
+                      "after":  "0e68f753e60323c2357c18f9b6c22ee6d432da5860ad44cde807eb49723c24ac",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/components/Avatar3D.tsx",
+                      "before":  "48a9dcdc82176a06b36ef74e2973cb268a148372236ff7ee65fc231ab0e3323f",
+                      "after":  "299ccb130b2ddddbe70da7fcd913673d9d46177d21597d4d9367b806455496f4",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/components/AvatarLab.tsx",
+                      "before":  "5ef33c7abd02321ccfe99dc00d2a092a99323dcea10ed772608eb70d89f9c747",
+                      "after":  "2ec13b55020a1a4ba23053c4956114beb2316b91ab260001795118feb32762e2",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/components/ForgeWorld.tsx",
+                      "before":  "16d63578ca90c97b0c2a0ca87e953713a5160739aaa5295b19528ecd4995389e",
+                      "after":  "763197f03eea671340e5c227654f04d481e4c54696b7e62c5ecb391225e86312",
+                      "scope":  "UX/shared"
+                  },
+                  {
+                      "path":  "src/components/GameAvatar.tsx",
+                      "before":  "0c492b67dffc761fe575e3dcd38f739295bfbf576c241256f2fb7be2fb629a20",
+                      "after":  "8d545e60e396d52925fa1812acc83adc9a23cd42d0f00e29275ecfecd2ef9393",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/lib/avatarYaw.test.ts",
+                      "before":  "2373b544334a7f49de0ab7ebae58f480341a522d906cfe12c7655d88cad9d0b0",
+                      "after":  "dcfa9776da65d604ccf4218e576148ec162456e9095537076075f210f1a5b70b",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/lib/avatarYaw.ts",
+                      "before":  "201af344776a8f7c67d2a4036cda97383394c3342402cb862b9a28af5e06eff5",
+                      "after":  "ac4142b157695bbeff3fdb97c5ef310bac521124497bd0c38536cbcb4a6b19c5",
+                      "scope":  "Avatar/3D"
+                  },
+                  {
+                      "path":  "src/pulseArmory.css",
+                      "before":  "aa246b46e79d997886ba046fe8b29bce9f5fa6471b21ded9d732e4b08ebcdd2e",
+                      "after":  "6730c3840470a96e19243b4301defed4dd72106ec062edad7f62c7ba94505cfc",
+                      "scope":  "UX/shared"
+                  }
+              ],
+    "newFiles":  [
+                     {
+                         "path":  "public/assets/bodyforge-trainers.glb",
+                         "bytes":  122828,
+                         "sha256":  "6bb23fd585b4c21c81c81c17c3d50e5f902f36936c1c88513f54cd2bd968f957",
+                         "owner":  "parallel/preexisting work; not authored by this turn"
+                     },
+                     {
+                         "path":  "scripts/author-avatar-trainers.py",
+                         "bytes":  7734,
+                         "sha256":  "faef0e26ff7ba6637f4776cd7e3b31e6c1ffaad1fd086356c2486e6e29f5e693",
+                         "owner":  "parallel/preexisting work; not authored by this turn"
+                     },
+                     {
+                         "path":  "src/lib/avatarTrainers.test.ts",
+                         "bytes":  4230,
+                         "sha256":  "fb3512ec28a4140f413e9d656e977e421c0198a94d68e1bea29c59db2311f045",
+                         "owner":  "parallel/preexisting work; not authored by this turn"
+                     },
+                     {
+                         "path":  "src/lib/avatarTrainers.ts",
+                         "bytes":  7079,
+                         "sha256":  "83828f24271cf772029d06c72903bec5174bdad7f7ed3561edcbd9984a0b38c9",
+                         "owner":  "parallel/preexisting work; not authored by this turn"
+                     }
+                 ],
+    "diffCheckExit":  0,
+    "cachedDiffCheckExit":  0,
+    "servers":  [
+                    {
+                        "LocalAddress":  "127.0.0.1",
+                        "LocalPort":  5176,
+                        "OwningProcess":  14972
+                    },
+                    {
+                        "LocalAddress":  "127.0.0.1",
+                        "LocalPort":  5173,
+                        "OwningProcess":  6412
+                    }
+                ],
+    "devHttp":  200,
+    "existingPreviewHttp":  200,
+    "mobilePassLines":  87,
+    "browserErrorLines":  0,
+    "syntheticScreenshots":  10,
+    "productWritesByThisTurn":  0,
+    "distDriftObserved":  true
+}

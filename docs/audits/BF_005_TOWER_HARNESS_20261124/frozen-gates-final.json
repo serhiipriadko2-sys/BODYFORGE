@@ -1,0 +1,17 @@
+﻿{
+    "attempt":  2,
+    "source":  "RUN02 frozen 59-file dist",
+    "buildManifestSha256":  "AF7608A37B467E33B8028F16E9D428851C79E20DF2DA4F1E2109FC581388C8BC",
+    "qaHash":  "6FF79C8E72CDBDEE8E9521299E0AC856477BF1E682F5AF8F2E5E8BF4E715A449",
+    "entry":  "assets/index-vEHoMBly.js",
+    "entrySha256":  "31df69354782786ed195c8d73b4e15f00e3b9c2a2fb5ba62abe64c5925069b03",
+    "wrongEntry":  14,
+    "tower":  0,
+    "previewStopped":  true,
+    "origin":  "http://127.0.0.1:5193",
+    "previewPid":  25788,
+    "preview":  200,
+    "frozenBuildUnchanged":  true,
+    "cleanup":  "PASS",
+    "finished":  "2026-11-24T20:54:55.7122333+03:00"
+}

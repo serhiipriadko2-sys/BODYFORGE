@@ -10,6 +10,11 @@ describe('one deterministic camera yaw for touch, keyboard and buttons', () => {
     expect(clampAvatarYaw(.34629)).toBe(.346);
     expect(clampAvatarYaw(2 * Math.PI + .3)).toBe(.3);
     expect(clampAvatarYaw(-2 * Math.PI - .3)).toBe(-.3);
+    for (const angle of [Math.PI, -Math.PI, Math.PI - .00001]) {
+      const canonical = clampAvatarYaw(angle);
+      expect(clampAvatarYaw(canonical)).toBe(canonical);
+      expect(Math.abs(canonical)).toBeLessThan(Math.PI);
+    }
   });
   it('button rotation continues the most recent pointer angle, not stale state', () => {
     const draggedTo = clampAvatarYaw(INITIAL_AVATAR_YAW + 55 * .011);

@@ -1,0 +1,41 @@
+﻿{
+    "observed":  "2026-11-24T21:07:12.5757534+03:00",
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "owned":  [
+                  {
+                      "path":  "qa/journal-e2e.mjs",
+                      "bytes":  56666,
+                      "sha256":  "BBB1F53A3B225739440FEFE463BF5DA849CE8C45C6EFAA307F9EC45C4001B8B8"
+                  },
+                  {
+                      "path":  "src/lib/durableWorkout.ts",
+                      "bytes":  6680,
+                      "sha256":  "EF70634A334699D18CF381FF118CBE5634F82B206E23DA6BA7849A1A35696249"
+                  },
+                  {
+                      "path":  "src/lib/journalIdentity.test.ts",
+                      "bytes":  6628,
+                      "sha256":  "F50D4A4C582E3A2502F6C8F17181307BB9063DB5B8AB556BC47888CB9C5E8DC9"
+                  },
+                  {
+                      "path":  "src/lib/workoutJournal.ts",
+                      "bytes":  13219,
+                      "sha256":  "851FF0697A44FB17A157A9589D93C17C2F51088EC950C356E3C6AC5EDEB70999"
+                  }
+              ],
+    "frozenSourceCount":  227,
+    "liveSourceChanges":  [
+                              "qa/avatar-quality-e2e.mjs"
+                          ],
+    "liveNewSourcePaths":  [
+
+                           ],
+    "diffCheckExit":  0,
+    "cachedDiffCheckExit":  0,
+    "qaSyntaxExit":  0,
+    "canonExit":  0,
+    "devHttp":  200,
+    "existingPreviewHttp":  200,
+    "ownedPortListeners":  0,
+    "frozenCopyIgnored":  true
+}

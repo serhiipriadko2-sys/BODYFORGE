@@ -1,0 +1,5 @@
+origin=http://127.0.0.1:5181
+entry=assets/index-vEHoMBly.js
+entry-sha256=31df69354782786ed195c8d73b4e15f00e3b9c2a2fb5ba62abe64c5925069b03
+HTTP=200
+index-and-entry-bytes-match=True

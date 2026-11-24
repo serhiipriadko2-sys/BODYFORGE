@@ -32,10 +32,12 @@ export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, 
           <button type="button" data-avatar-view="portrait" aria-pressed={focus === 'portrait'} onClick={() => onFocus('portrait')}>
             <Eye size={16}/> ПОРТРЕТ
           </button>
+          <button type="button" data-avatar-view="torso" aria-pressed={focus === 'torso'} onClick={() => onFocus('torso')}>ТОРС</button>
+          <button type="button" data-avatar-view="legs" aria-pressed={focus === 'legs'} onClick={() => onFocus('legs')}>НОГИ</button>
         </div>
         <div className="armory-yaw-controls" role="group" aria-label="Повернуть персонажа">
           <button type="button" aria-label="Повернуть бойца влево" onClick={() => onYaw(stepAvatarYaw(yaw, -.3))}><ChevronLeft size={20}/></button>
-          <span>ПОВОРОТ</span>
+          <span>360°</span>
           <button type="button" aria-label="Повернуть бойца вправо" onClick={() => onYaw(stepAvatarYaw(yaw, .3))}><ChevronRight size={20}/></button>
         </div>
       </div>

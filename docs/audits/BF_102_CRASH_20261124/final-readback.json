@@ -1,0 +1,54 @@
+﻿{
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "observed":  "2026-11-24T21:24:27.5536974+03:00",
+    "owned":  [
+                  {
+                      "path":  "qa/journal-e2e.mjs",
+                      "bytes":  56915,
+                      "sha256":  "3CB62FC8C3296E432F312B66B299F6E08FF0AFB5A0E16EC3FAF973F194B3DE5D"
+                  },
+                  {
+                      "path":  "qa/multitab-e2e.mjs",
+                      "bytes":  25661,
+                      "sha256":  "5D31989D6D52E239080CD0E8F66D5F4C671F57C7461EC76C793A0B090043F225"
+                  },
+                  {
+                      "path":  "qa/owned-chrome.mjs",
+                      "bytes":  6244,
+                      "sha256":  "74E48A598F39C0AAFE5148ADF936ABFE124E125AB4420DDF71E0B09AB471BCB1"
+                  },
+                  {
+                      "path":  "qa/owned-chrome.test.mjs",
+                      "bytes":  1457,
+                      "sha256":  "E8C50ED1A87A9A60F48701F493817B62B997836C375FECE720DA261814403FE0"
+                  }
+              ],
+    "currentSourceDrift":  [
+                               "qa/avatar-quality-e2e.mjs",
+                               "qa/tower20-e2e.mjs",
+                               "src/App.tsx",
+                               "src/components/Avatar3D.tsx",
+                               "src/components/ForgeWorld.tsx",
+                               "src/components/GameAvatar.tsx",
+                               "src/lib/avatarFabric.ts",
+                               "src/lib/avatarPhysique.ts",
+                               "src/lib/avatarStudio.ts",
+                               "src/lib/workoutJournal.test.ts",
+                               "src/lib/workoutJournal.ts"
+                           ],
+    "currentNewPaths":  [
+                            "public/assets/athlete-studio.hdr",
+                            "public/assets/athlete-studio-source.md",
+                            "qa/tower-squat-fixture.mjs",
+                            "qa/tower-squat-fixture.test.mjs",
+                            "src/lib/avatarLighting.test.ts",
+                            "src/lib/avatarLighting.ts",
+                            "src/lib/avatarMuscleAnatomy.ts"
+                        ],
+    "diffCheck":  0,
+    "cachedDiffCheck":  0,
+    "canonExit":  0,
+    "ownerDevHttp":  200,
+    "ownerPreviewHttp":  200,
+    "testPortListeners":  0
+}

@@ -1,7 +1,7 @@
 import { loadProfileState, type ProfileLoadResult } from './progression';
 import { readDurableJournal, stageDurableResults, markDurableResults } from './durableJournal';
 import { readResultJournal, reconcileWorkoutResults, quarantineWorkoutResults, resultJournalEntry,
-  RESULT_QUARANTINE_PREFIX, type CompletedWorkoutResult, type JournalEntry, type JournalOutcome } from './workoutJournal';
+  resultQuarantineKey, type CompletedWorkoutResult, type JournalEntry, type JournalOutcome } from './workoutJournal';
 
 interface Context { signal: AbortSignal; isCurrent: () => boolean }
 const credited = (state: ProfileLoadResult, result: CompletedWorkoutResult) => state.status === 'ready' &&
@@ -33,7 +33,7 @@ function verifiedTerminalRows(
 }
 
 function preserveQuarantine(entry: { key: string; raw: string }): boolean {
-  const key = RESULT_QUARANTINE_PREFIX + encodeURIComponent(entry.key);
+  const key = resultQuarantineKey(entry.key);
   const raw = JSON.stringify({ schemaVersion: 1, sourceKey: entry.key, raw: entry.raw });
   const existing = localStorage.getItem(key);
   if (existing !== null && existing !== raw) return false;

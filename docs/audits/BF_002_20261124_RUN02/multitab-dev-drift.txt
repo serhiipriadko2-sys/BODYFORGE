@@ -1,0 +1,5 @@
+=> src/components/Avatar3D.tsx | 51016 | 9f28a31a9b67fdfd2c81b4d09c5c53755a31fe20902c58e930eba2b1adec84a1
+=> src/lib/avatarGarmentFolds.ts | 3600 | e4d428d67930ff778f07ae70999b4721ded64bc99e0cde29a186f071f105bc1e
+=> src/lib/avatarPhysique.ts | 7179 | 36d08542c9472bd711f89765ce58eae188685f586024a2aa08a338dd8750994c
+<= src/components/Avatar3D.tsx | 51000 | 1ac2c32c906fadefca5e8b5f09d13fc06045f10b86eefa31ae0828ab55ee3cff
+<= src/lib/avatarPhysique.ts | 6477 | 13c4d5516ab095a3d5fd3f585b117a1a8e92f67bd5a0bd4aa2508d9c6b1ba900

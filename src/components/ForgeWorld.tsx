@@ -107,6 +107,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
   paused = false, busy = false, active = false }: StudioProps) {
   const [focus, setFocus] = useState<AvatarFocus>('full');
   const [yaw, setYaw] = useState(-.21);
+  const [animate, setAnimate] = useState(true);
   const game = profile.game;
   const sum = MUSCLES.reduce((total, muscle) => total + game.muscles[muscle.id], 0);
   return (
@@ -120,13 +121,19 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
         <div className="studio-hero-column">
           <div className="studio-preview" data-studio-focus={focus} data-studio-trim={look.trim}>
           <span className="preview-kicker">BODYFORGE // AVATAR SYSTEM · 01</span>
-          <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {focus === 'portrait' ? 'ПОРТРЕТ' : 'ПОЛНЫЙ РОСТ'}</div>
+          <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {{ full: 'ПОЛНЫЙ РОСТ', portrait: 'ПОРТРЕТ', torso: 'ТОРС', legs: 'НОГИ' }[focus]}</div>
           <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}
-            paused={paused} look={look} focus={focus} yaw={yaw} onYawChange={setYaw}/>
+            paused={paused} look={look} focus={focus} yaw={yaw} onYawChange={setYaw} animate={active && animate} studio={active}/>
           <strong>{game.nickname}</strong>
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
           </div>
+          <button type="button" className="armory-visor studio-motion-toggle" data-avatar-motion
+            aria-pressed={animate} onClick={() => setAnimate(value => !value)}>
+            <span className="armory-visor-icon"><UserRound size={19}/></span>
+            <span><strong>ЖИВОЙ ПЕРСОНАЖ</strong><small>Дыхание, взгляд и моргание. В экономичном режиме движение отключено.</small></span>
+            <span className="armory-toggle" aria-hidden="true"><i/></span>
+          </button>
           <section className="studio-muscle-panel" aria-label="Прокачка мышц">
             <div className="forge-subheading"><Hammer size={18}/> ПРОКАЧКА МЫШЦ <span>МАКСИМУМ 5</span></div>
           <div className="muscle-grid">

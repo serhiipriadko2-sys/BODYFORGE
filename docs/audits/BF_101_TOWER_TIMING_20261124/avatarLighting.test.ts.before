@@ -1,0 +1,54 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+import { avatarRimColor, avatarShadowsEnabled, configureAvatarKey } from './avatarLighting';
+import type { AvatarFocus } from '../components/GameAvatar';
+
+describe('bounded photographic studio lighting', () => {
+  it('retains actual linear HDR energy and a bounded source resolution', () => {
+    const bytes = Uint8Array.from(readFileSync('public/assets/athlete-studio.hdr'));
+    const hdr = new HDRLoader().setDataType(THREE.FloatType).parse(bytes.buffer);
+    expect([hdr.width,hdr.height]).toEqual([512,256]);
+    expect(bytes.length).toBeLessThan(600000);
+    let peak=0, total=0, weights=0;
+    for(let y=0;y<hdr.height;y++) for(let x=0;x<hdr.width;x++){
+      const i=(y*hdr.width+x)*4, w=Math.sin((y+.5)/hdr.height*Math.PI);
+      const lum=hdr.data[i]*.2126+hdr.data[i+1]*.7152+hdr.data[i+2]*.0722;
+      if(!Number.isFinite(lum)||lum<0)throw Error('Invalid HDR luminance');
+      peak=Math.max(peak,lum);total+=lum*w;weights+=w;
+    }
+    expect(peak).toBeGreaterThan(30);
+    expect(peak).toBeLessThan(33);
+    expect(total/weights).toBeCloseTo(.365,2);
+  });
+  it('crops the same directional light for four views without changing light direction', () => {
+    const key=new THREE.DirectionalLight();
+    const baseline=new THREE.Vector3(-4.5,3.5,6);
+    const views: AvatarFocus[]=['full','portrait','torso','legs'];
+    const extents=views.map(view=>{
+      configureAvatarKey(key,view);
+      expect(key.position.clone().sub(key.target.position).distanceTo(baseline)).toBeLessThan(1e-8);
+      expect(key.shadow.mapSize.toArray()).toEqual([1024,1024]);
+      expect(key.shadow.camera.near).toBeGreaterThan(0);
+      expect(key.shadow.camera.far).toBeGreaterThan(baseline.length());
+      expect(key.shadow.camera.left).toBe(-key.shadow.camera.right);
+      expect(key.shadow.camera.bottom).toBe(-key.shadow.camera.top);
+      expect(key.shadow.needsUpdate).toBe(true);
+      return key.shadow.camera.right;
+    });
+    expect(extents[1]).toBeLessThan(extents[2]);
+    expect(extents[2]).toBeLessThan(extents[0]);
+    key.dispose();
+  });
+  it('keeps the economy and static-view shadow budget and neutral rim',()=>{
+    for(const view of ['full','portrait','torso','legs'] as const){
+      expect(avatarShadowsEnabled('economy',view,true)).toBe(false);
+      expect(avatarShadowsEnabled('balanced',view,true)).toBe(true);
+    }
+    expect(avatarShadowsEnabled('balanced','full',false)).toBe(false);
+    expect(avatarShadowsEnabled('balanced','portrait',false)).toBe(true);
+    expect(avatarRimColor('invalid').equals(avatarRimColor('#55e3f2'))).toBe(true);
+    expect(avatarRimColor('#ff0000').b).toBeGreaterThan(.5);
+  });
+});

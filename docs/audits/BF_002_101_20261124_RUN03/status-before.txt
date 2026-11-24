@@ -1,0 +1,35 @@
+## main...origin/main [ahead 1]
+ M qa/avatar-quality-e2e.mjs
+ M qa/tower20-e2e.mjs
+ M src/components/Avatar3D.tsx
+ M src/components/AvatarLab.tsx
+ M src/components/ForgeWorld.tsx
+ M src/components/GameAvatar.tsx
+ M src/lib/avatarPhysique.ts
+ M src/lib/avatarYaw.test.ts
+ M src/lib/avatarYaw.ts
+ M src/pulseArmory.css
+?? docs/audits/BF_001_002_20261124/RECEIPT.md
+?? docs/audits/BF_002_101_20261124_RUN03/
+?? docs/audits/BF_002_20261124_RUN02/
+?? docs/audits/BF_005_TOWER_HARNESS_20261124/
+?? docs/audits/BF_AVATAR_GARMENT_20261124/
+?? docs/audits/BF_AVATAR_TRAINERS_20261124/
+?? docs/audits/BF_R0_20261124_RUN01/RECEIPT.md
+?? docs/audits/BF_R0_20261124_RUN01/artifact-manifest.json
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-360-premium.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-backup-json-inspection.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-forge-upgraded.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-forge.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-home-360-premium.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-home-premium.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-lenses.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-performance-panel.png
+?? docs/audits/BF_R0_20261124_RUN01/mobile-shots/bf-qa-mobile-tower.png
+?? docs/audits/BF_R0_20261124_RUN01/preview-gates.json
+?? docs/audits/BF_R0_20261124_RUN01/source-drift.json
+?? scripts/author-avatar-seams.py
+?? src/lib/avatarGarmentFolds.ts
+?? src/lib/avatarGarmentSeams.json
+?? src/lib/avatarGarmentSeams.test.ts
+?? src/lib/avatarGarmentSeams.ts

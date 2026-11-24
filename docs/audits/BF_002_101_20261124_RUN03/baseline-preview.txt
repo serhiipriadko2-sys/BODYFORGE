@@ -1,0 +1,5 @@
+origin=http://127.0.0.1:5184
+entry=assets/index-FA_3MQvk.js
+entry-sha256=d6dd076d501682aea58b30f2831136736b953c32d39263fdb24a679d8779292c
+HTTP=200
+index-and-entry-bytes-match=True

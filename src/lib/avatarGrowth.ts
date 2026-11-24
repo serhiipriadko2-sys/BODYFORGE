@@ -15,8 +15,9 @@ const protectedNames = new Set(['head', 'wristl', 'wristr', 'footl', 'footr']);
 /**
  * Cosmetic growth for the static, posed MakeHuman rig. Call after its rest-pose
  * correction and before the first growth. Geometry, bind matrices, weights and
- * gameplay progression are unchanged. This is not an animation mixer contract:
- * a future animated rig must supply a fresh per-frame unscaled pose instead.
+ * gameplay progression are unchanged. Idle pose quaternions are absolute
+ * offsets from the captured unscaled athletic pose, not cumulative rotations.
+ * Respiration is a separate bounded thorax factor, never a saved muscle level.
  *
  * Scaling ancestors otherwise enlarges the face, hands and shoes as well as
  * muscles. Preserve each protected root's complete baseline world-space linear
@@ -25,7 +26,7 @@ const protectedNames = new Set(['head', 'wristl', 'wristr', 'footl', 'footr']);
  * ancestor scale and shear. The protected bone deliberately owns its matrix;
  * Three.js skinning reads matrixWorld without decomposing it back into TRS.
  */
-export function applyAvatarGrowth(root: THREE.Object3D, muscles: Partial<Record<Muscle, number>>): void {
+export function applyAvatarGrowth(root: THREE.Object3D, muscles: Partial<Record<Muscle, number>>, breath = 0): void {
   let rest = restRigs.get(root);
   if (!rest) {
     root.updateWorldMatrix(true, true);
@@ -72,8 +73,10 @@ export function applyAvatarGrowth(root: THREE.Object3D, muscles: Partial<Record<
     else if (name.startsWith('lowerleg')) factor = 1 + legs * .009;
     else if (name === 'spine03' || name === 'spine04') factor = 1 + back * .013 + core * .008;
     else if (name === 'spine05') factor = 1 + back * .017;
-    bone.scale.x = scale.x * factor;
-    bone.scale.z = scale.z * factor;
+    const inhalation = Number.isFinite(breath) ? THREE.MathUtils.clamp(breath, 0, 1) : 0;
+    const thorax = name === 'spine02' ? .012 : name === 'spine01' ? .008 : 0;
+    bone.scale.x = scale.x * factor * (1 + thorax * inhalation);
+    bone.scale.z = scale.z * factor * (1 + thorax * 1.55 * inhalation);
   }
   root.updateWorldMatrix(true, true);
 

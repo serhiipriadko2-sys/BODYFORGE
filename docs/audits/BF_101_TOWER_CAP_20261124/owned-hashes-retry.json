@@ -1,0 +1,6 @@
+{
+  "src/App.tsx": "27407a9eb3e88b4beea59c1c5600b1534f13f869e1930b0c7fd5988cf7b871ab",
+  "src/lib/workoutJournal.ts": "77d4e32f79403f294a86f71378f6065d889e797a2c2ae98cb11b28dee2fefc70",
+  "src/lib/workoutJournal.test.ts": "f69fac98c767102521c86f467c19f8e01226e921c68199b9f64343fda53e1797",
+  "qa/tower20-e2e.mjs": "64833e8d06d91d82fcde18abebeef14e84366616016276d57ff8cfcb59d32e11"
+}

@@ -3,7 +3,7 @@ import type { BodyBuild, Muscle, Outfit } from '../lib/game';
 import Avatar from './Avatar';
 import { DEFAULT_AVATAR_LOOK, type AvatarLook } from '../lib/avatarLook';
 
-export type AvatarFocus = 'full' | 'portrait';
+export type AvatarFocus = 'full' | 'portrait' | 'torso' | 'legs';
 
 const Avatar3D = lazy(() => import('./Avatar3D'));
 
@@ -20,6 +20,8 @@ interface GameAvatarProps {
   muscles: Partial<Record<Muscle, number>>;
   outfit: Outfit;
   paused?: boolean;
+  animate?: boolean;
+  studio?: boolean;
   className?: string;
   look?: AvatarLook;
   focus?: AvatarFocus;
@@ -31,7 +33,7 @@ interface GameAvatarProps {
  * Mount WebGL only while visible and never while pose estimation is active.
  * The old lightweight SVG remains the fallback on unsupported devices.
  */
-export default function GameAvatar({ workouts, build, muscles, outfit, paused = false, className,
+export default function GameAvatar({ workouts, build, muscles, outfit, paused = false, animate = false, studio = false, className,
   look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21, onYawChange }: GameAvatarProps) {
   const container = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -58,7 +60,7 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
         </div>}>
         <Suspense fallback={<div className="avatar-3d-wait"><div className="avatar-3d-loading-orb"/><span>КУЗНЕЦ ГОТОВИТ БОЙЦА...</span></div>}>
           <Avatar3D build={build} muscles={muscles} outfit={outfit} look={look}
-            focus={focus} yaw={yaw} onYawChange={onYawChange} />
+            focus={focus} yaw={yaw} onYawChange={onYawChange} animate={animate} studio={studio} />
         </Suspense>
         </AvatarBoundary>
       ) : (

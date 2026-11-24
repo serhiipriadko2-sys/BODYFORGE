@@ -1,0 +1,25 @@
+﻿{
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "started":  "2026-11-24T21:04:02.9378082+03:00",
+    "sourceCount":  261,
+    "unit":  0,
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "preview":  "NOT_RUN",
+    "identity":  "NOT_RUN",
+    "dedup":  "NOT_RUN",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "afterUnit":  {
+                      "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+                      "changed":  [
+                                      "src/components/Avatar3D.tsx"
+                                  ],
+                      "missing":  [
+
+                                  ],
+                      "stable":  false
+                  },
+    "error":  "Source drift during unit",
+    "finished":  "2026-11-24T21:04:25.0453353+03:00"
+}

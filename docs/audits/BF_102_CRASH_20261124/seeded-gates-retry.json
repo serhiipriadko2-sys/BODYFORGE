@@ -1,0 +1,11 @@
+﻿{
+    "scope":  "same verified product bytes, new QA scenario only",
+    "sourceCount":  229,
+    "manifestSha256":  "DF8ACCFB6953DBAB1FAB3E4901B6C1A9E03D2F5CE504B45B544E2C4C125384F4",
+    "seeded":  0,
+    "started":  "2026-11-24T21:23:34.7332797+03:00",
+    "port":  5200,
+    "sourceUnchanged":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-24T21:23:49.0958322+03:00"
+}

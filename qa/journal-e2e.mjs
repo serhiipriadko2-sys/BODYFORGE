@@ -1,14 +1,18 @@
 // Disposable Chrome only: real renderer crashes at the workout commit boundaries.
 // --dedup-only checks damaged reward identity recovery with real IDB and reloads,
 // without crashing a renderer or starting a camera.
+// --identity-only checks malformed IDs, distinct keys and strict quarantine replay.
+// --seeded-crash-only isolates real persistence crash boundaries from camera timing.
 // Synthetic camera frames exercise App finish; no owner's profile, camera or Downloads.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, closeOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
-if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) throw Error('QA requires a loopback HTTP origin');
+try { await requireDevOrigin(origin); }
+catch (error) { console.error('QA_INFRA_BLOCKED', String(error)); process.exit(14); }
 const ownedProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-journal-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
   '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
@@ -28,7 +32,7 @@ const envelope = (sessionId, changes = {}) => ({ schemaVersion: 1, profileId: pl
   repetitions: 20, ...changes });
 const resultKey = (sessionId) => prefix + encodeURIComponent(sessionId);
 const clients = new Set(), observations = {};
-let port, observer, page, assertions = 0, crashes = 0;
+let browser, observer, page, assertions = 0, crashes = 0;
 
 function check(condition, label) {
   if (!condition) throw Error('FAIL ' + label);
@@ -83,12 +87,12 @@ class Client {
     this.requests.clear(); this.socket.close(); clients.delete(this);
   }
   async close() {
-    await fetch(`http://127.0.0.1:${port}/json/close/${this.target.id}`).catch(() => {});
+    await closeOwnedPage(browser, this.target);
     this.dispose();
   }
 }
 async function newPage(observerOnly = false, init, waitMounted = true) {
-  const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const target = await newOwnedPage(browser);
   const tab = new Client(target);
   await tab.cdp('Runtime.enable'); await tab.cdp('Page.enable');
   await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
@@ -216,6 +220,97 @@ async function crashPaused(tab = page) {
 }
 const primaryQuota = `(()=>{const set=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===${JSON.stringify(key)}&&JSON.parse(v).workouts.length>0)throw new DOMException('primary full','QuotaExceededError');return set.call(this,k,v)}})()`;
 
+// Deliberately malformed UTF-16 identifiers and keys are distinct records.
+// Real localStorage, strict IndexedDB, confirmation, export and restart.
+async function identityRecovery() {
+  const originals = [
+    [prefix + 'bad-envelope', JSON.stringify(envelope('bad-\uD800'))],
+    [prefix + 'key-\uD800', '{broken high'],
+    [prefix + 'key-\uDFFF', '{broken low'],
+    [prefix + 'key-\uFFFD', '{replacement character'],
+  ];
+  await reset(originals);
+  page = await newPage();
+  const expected = new Map(originals);
+  const exact = rows => rows.length === expected.size && rows.every(row => expected.get(row.key) === row.raw);
+  const wallet = () => observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+  const baseline = JSON.stringify(player);
+  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='pending-result'", 'malformed identity is recoverable');
+  check(exact(await journals()), 'all distinct malformed originals remain in the active journal');
+  const active = await durableEntries();
+  check(exact(active) && active.every(row => row.state === 'active'), 'strict IndexedDB retains every original exactly');
+  check(await wallet() === baseline, 'malformed identifiers never award or rewrite the profile');
+  const pendingExport = await exportSession();
+  check(exact(pendingExport.pendingResultOriginals), 'recovery export retains every malformed original');
+  await click('[data-action=request-quarantine]');
+  check(exact(await journals()) && await wallet() === baseline, 'confirmation alone changes neither journal nor wallet');
+  await click('[data-action=confirm-quarantine]');
+  await page.until("!!document.querySelector('.app-shell') && !!document.querySelector('[data-quarantined-results]')", 'explicit quarantine restores the working profile');
+  check((await journals()).length === 0 && await wallet() === baseline, 'confirmed quarantine moves only the unresolved results');
+  const held = await durableEntries();
+  check(exact(held) && held.every(row => row.state === 'quarantined'), 'all strict quarantine tombstones are verified');
+  function exactExport(archive) {
+    const rows = archive.quarantinedResults;
+    return rows.length === expected.size && new Set(rows.map(row => row.key)).size === expected.size &&
+      exact(rows.map(row => { const parsed = JSON.parse(row.raw); return {key:parsed.sourceKey,raw:parsed.raw}; }));
+  }
+  check(exactExport(await exportSession()), 'quarantine export has distinct keys and original bytes');
+  await reload();
+  await page.until("!!document.querySelector('.app-shell') && !!document.querySelector('[data-quarantined-results]')", 'quarantine survives reload');
+  check(await wallet() === baseline && exactExport(await exportSession()), 'reload preserves wallet and every quarantined original');
+
+  // Simulate loss of the local mirror only; strict tombstones must repair it.
+  await page.close(); page = undefined;
+  const removed = await observer.js("(()=>{const keys=Object.keys(localStorage).filter(k=>k.startsWith(" +
+    JSON.stringify(key + ':result-quarantine:') + "));for(const k of keys)localStorage.removeItem(k);return keys.length})()");
+  check(removed === originals.length, 'fixture removed only its local quarantine mirrors');
+  page = await newPage();
+  await page.until("!!document.querySelector('.app-shell') && !!document.querySelector('[data-quarantined-results]')", 'durable mirror replay');
+  check((await journals()).length === 0 && await wallet() === baseline, 'tombstone replay never resurrects active results or rewards');
+  check(exactExport(await exportSession()), 'strict IndexedDB repairs missing mirrors without altering original identities');
+  observations.identityRecovery = { originals: originals.length, distinct: true, walletUnchanged: true, reload: true, mirrorReplay: true };
+}
+
+// Isolate real persistence crashes from synthetic camera timing. The fixture
+// already represents a completed workout; this is NOT a camera-finish test.
+async function seededCrashBoundaries() {
+  for (const kind of ['journal', 'primary']) {
+    await reset();
+    const input = envelope('seeded-crash-' + kind);
+    const source = { key: resultKey(input.sessionId), raw: JSON.stringify(input) };
+    const baseline = await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+    const staged = await observer.js("(async()=>{const m=await import('/src/lib/durableJournal.ts');return m.stageDurableResults([" +
+      JSON.stringify(source) + "],localStorage.getItem(" + JSON.stringify(key) + "))})()");
+    check(staged.status === 'saved' && staged.entries.length === 1 &&
+      staged.entries[0].raw === source.raw && staged.entries[0].state === 'active' &&
+      staged.entries[0].baseProfileRaw === baseline, kind + ' exact strict stage acknowledged');
+    check((await journals()).length === 0 && (await readProfile()).xp === 0, kind + ' no local reward before replay');
+    await observer.js("window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(" +
+      JSON.stringify(key + ':write') + ",async()=>{window.__holding=true;await window.__held});true");
+    await observer.until('window.__holding===true', 'observer holds replay lock');
+    page = await newPage(false, undefined, false);
+    await armPause(kind);
+    await observer.js('window.__release();true');
+    await waitFor(() => page.paused, kind + ' seeded replay boundary', 30000);
+    const local = await journals(), before = await readProfile();
+    check(local.length === 1 && local[0].key === source.key && local[0].raw === source.raw, kind + ' exact local result still present');
+    check(kind === 'journal' ? before.xp === 0 && before.coins === 0 && before.workouts.length === 0 :
+      isOneTower(before, input.sessionId), kind + ' expected wallet at interruption');
+    const rows = await durableEntries();
+    check(rows.length === 1 && rows[0].raw === source.raw && rows[0].state === 'active', kind + ' strict record retained before crash');
+    await crashPaused();
+    await waitAward(input.sessionId);
+    await waitFor(async () => (await durableEntries()).some(row => row.key === source.key && row.state === 'settled' && row.raw === source.raw),
+      kind + ' strict settled read-back');
+    check(isOneTower(await readProfile(), input.sessionId), kind + ' actual crash restores exactly one reward and floor');
+    const paid = await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+    await reload();
+    check(await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')') === paid &&
+      (await journals()).length === 0 && isOneTower(await readProfile(), input.sessionId), kind + ' reload preserves exact paid profile');
+    observations['seeded-' + kind] = { sessionId: input.sessionId, actualRendererCrash: true, settled: true, exactReload: true };
+  }
+}
+
 async function stageContracts() {
   for (const terminal of ['settled','quarantined']) {
     await reset();
@@ -327,7 +422,13 @@ async function queuedCompletion() {
   // Session preparation already completed. Block only its eventual finish write.
   await observer.js(`window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(${JSON.stringify(key + ':write')},async()=>{window.__holding=true;await window.__held});true`);
   await observer.until('window.__holding===true', 'observer holds finish-write lock');
-  await page.until("!!document.querySelector('.completion-stage')", '20th rep queues its journal write', 65000);
+  try {
+    await page.until("!!document.querySelector('.completion-stage')", '20th rep queues its journal write', 65000);
+  } catch (error) {
+    const diagnostic = await page.js("({poseCalls:window.__poseCalls,modelsClosed:window.__modelsClosed,cameraError:document.querySelector('.camera-error')?.textContent,counter:document.querySelector('.counter-number')?.textContent,completion:document.querySelector('.completion-stage')?.dataset.resultPersistence,visibility:document.visibilityState})").catch(() => null);
+    console.error('QA_CAMERA_BOUNDARY_DIAGNOSTIC', JSON.stringify(diagnostic));
+    throw error;
+  }
   check(await page.js('window.__poseCalls>=320'), 'queued completion follows the complete synthetic 20-rep workout');
   check(await page.js("document.querySelector('.completion-stage [role=status]')?.textContent.includes('РЕЗУЛЬТАТ')"),
     'accessible completion status announces the unconfirmed save');
@@ -480,23 +581,15 @@ async function hotDedupRecovery() {
 }
 
 try {
-  // On Windows the Chrome launcher may exit 0 after handing off to the browser.
-  // The disposable profile's DevToolsActivePort is the readiness signal.
-  for (let i = 0; i < 150; i++) {
-    const file = path.join(ownedProfile, 'DevToolsActivePort');
-    if (fs.existsSync(file)) {
-      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) { port = candidate; break; }
-    }
-    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
-    await sleep(100);
-  }
-  if (!port) throw Error('Owned DevTools unavailable in disposable profile after 15s');
+  browser = await waitForOwnedBrowser(ownedProfile, chrome);
   observer = await newPage(true);
 
-  if (process.argv.includes('--dedup-only')) { await dedupRecovery(); await hotDedupRecovery(); }
+  if (process.argv.includes('--seeded-crash-only')) { await seededCrashBoundaries(); }
+  else if (process.argv.includes('--identity-only')) { await identityRecovery(); }
+  else if (process.argv.includes('--dedup-only')) { await dedupRecovery(); await hotDedupRecovery(); }
   else {
   if (!process.argv.includes('--recovery-only')) {
+    await identityRecovery();
     await stageContracts();
     await foregroundReconciliation();
     await queuedCompletion();
@@ -633,7 +726,9 @@ try {
   }
   }
 
-  console.log(process.argv.includes('--dedup-only') ? 'BODYFORGE_DEDUP_RECOVERY_PASS' : 'BODYFORGE_JOURNAL_PASS',
+  console.log(process.argv.includes('--seeded-crash-only') ? 'BODYFORGE_SEEDED_CRASH_PASS' :
+    process.argv.includes('--identity-only') ? 'BODYFORGE_JOURNAL_IDENTITY_PASS' :
+    process.argv.includes('--dedup-only') ? 'BODYFORGE_DEDUP_RECOVERY_PASS' : 'BODYFORGE_JOURNAL_PASS',
     JSON.stringify({ assertions, crashes, queueOnly: process.argv.includes('--queue-only'), observations }));
 } catch (error) {
   console.error('BODYFORGE_JOURNAL_FAIL', error.stack || String(error));
@@ -642,41 +737,6 @@ try {
   process.exitCode = 16;
 } finally {
   for (const client of clients) client.dispose();
-  // Windows may leave the owned Chrome browser running after its launcher exits.
-  // Close ONLY the browser advertised by this script's disposable profile.
-  try {
-    const portFile = path.join(ownedProfile, 'DevToolsActivePort');
-    if (fs.existsSync(portFile)) {
-      const ownPort = Number(fs.readFileSync(portFile, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(ownPort) && ownPort > 0 && ownPort <= 65535) {
-        const reply = await fetch('http://127.0.0.1:' + ownPort + '/json/version',
-          { signal: AbortSignal.timeout(1500) });
-        if (!reply.ok) throw Error('Owned CDP version endpoint failed');
-        const { webSocketDebuggerUrl } = await reply.json();
-        const endpoint = new URL(webSocketDebuggerUrl);
-        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
-            endpoint.port !== String(ownPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
-          throw Error('Unverified owned Chrome endpoint');
-        }
-        const owned = new WebSocket(webSocketDebuggerUrl);
-        await new Promise((resolve, reject) => {
-          const timer = setTimeout(() => reject(Error('Owned Chrome CDP open timeout')), 1500);
-          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
-          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned Chrome CDP connection failed')); }, { once: true });
-        });
-        const closed = new Promise((resolve) => {
-          const timer = setTimeout(resolve, 1500);
-          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
-        });
-        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
-        await closed;
-        if (owned.readyState === WebSocket.OPEN) owned.close();
-      }
-    }
-  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
-  chrome.kill(); await sleep(500);
-  // The only recursive deletion is this script's verified mkdtemp directory.
-  if (path.dirname(ownedProfile) !== os.tmpdir() || !path.basename(ownedProfile).startsWith('bf-journal-')) throw Error('Unexpected temp cleanup target');
-  try { fs.rmSync(ownedProfile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
-  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+  try { await cleanupOwnedChrome(ownedProfile, 'bf-journal-', chrome, browser); }
+  catch (error) { console.error('QA_OWNED_CLEANUP FAIL', String(error)); process.exitCode ||= 17; }
 }

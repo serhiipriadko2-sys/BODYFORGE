@@ -121,6 +121,46 @@ describe('profile identity and frozen workout session', () => {
     expect(prepared.session.sessionId).toBeTruthy();
   });
 
+  it.each([true, false])('rejects another tower session after floor five without writes (identified=%s)', (identified) => {
+    const p = player(); p.game.highestClearedFloor = 5;
+    if (!identified) delete p.profileId;
+    const { values, setItem, removeItem } = storage(p);
+    const before = [...values.entries()];
+    expect(prepareWorkoutSession(values.get(STORAGE_KEY)!, 'tower').status).toBe('unavailable');
+    expect([...values.entries()]).toEqual(before);
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
+    const training = prepareWorkoutSession(values.get(STORAGE_KEY)!, 'training');
+    expect(training.status).toBe('ready');
+    if (training.status !== 'ready') throw Error('Expected normal training after tower');
+    expect(training.session).toMatchObject({ mode: 'training', floor: null });
+  });
+
+  it('credits floor five once, then normal training and ghost without more floor bonuses', () => {
+    const p = player(); p.game.highestClearedFloor = 4;
+    const { values } = storage(p);
+    const final = prepareWorkoutSession(values.get(STORAGE_KEY)!, 'tower');
+    expect(final.status).toBe('ready');
+    if (final.status !== 'ready') throw Error('Expected final tower session');
+    expect(final.session.floor).toBe(5);
+    const win = completion({ ...final.session });
+    expect(commitWorkoutResult(win).status).toBe('saved');
+    expect(commitWorkoutResult(win).status).toBe('saved');
+    expect(disk(values)).toMatchObject({ xp: 185, coins: 165, game: { highestClearedFloor: 5 } });
+    expect(prepareWorkoutSession(values.get(STORAGE_KEY)!, 'tower').status).toBe('unavailable');
+    for (const mode of ['training', 'ghost'] as const) {
+      const next = prepareWorkoutSession(values.get(STORAGE_KEY)!, mode);
+      expect(next.status).toBe('ready');
+      if (next.status !== 'ready') throw Error('Expected a normal or ghost session');
+      const result = completion({ ...next.session });
+      expect(commitWorkoutResult(result).status).toBe('saved');
+      expect(commitWorkoutResult(result).status).toBe('saved');
+    }
+    expect(disk(values)).toMatchObject({ xp: 425, coins: 235, game: { highestClearedFloor: 5 } });
+    expect(disk(values).workouts).toHaveLength(3);
+    expect(entries()).toEqual([]);
+  });
+
   it.each(['training', 'ghost'] as const)('does not attach a tower floor to %s', (mode) => {
     const { values } = storage();
     const prepared = prepareWorkoutSession(values.get(STORAGE_KEY)!, mode);

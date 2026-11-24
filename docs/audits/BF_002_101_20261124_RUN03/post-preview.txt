@@ -1,0 +1,5 @@
+origin=http://127.0.0.1:5185
+entry=assets/index-H_U_jz6U.js
+entry-sha256=938bb527a94cafd974789d3f787c41431dcb715c8342703a604f0d1cf44cd535
+HTTP=200
+index-and-entry-bytes-match=True

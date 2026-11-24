@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, closeOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
-if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) throw Error('QA requires a loopback HTTP origin');
+try { await requireDevOrigin(origin); }
+catch (error) { console.error('QA_INFRA_BLOCKED', String(error)); process.exit(14); }
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-multitab-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
   '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
@@ -18,7 +20,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const key = 'bodyforge:pilot:v1', backupKey = key + ':backup';
 const legacy = process.argv.includes('--red');
 const clients = new Set(), observations = {};
-let port, assertions = 0;
+let browser, assertions = 0;
 
 function check(condition, label) {
   if (!condition) throw Error('FAIL ' + label);
@@ -72,7 +74,7 @@ class Client {
   }
   async until(expression, label, timeout) { return waitFor(() => this.js(expression), label, timeout); }
   async close() {
-    await fetch(`http://127.0.0.1:${port}/json/close/${this.target.id}`);
+    await closeOwnedPage(browser, this.target);
     this.socket.close(); clients.delete(this);
   }
 }
@@ -80,7 +82,7 @@ class Client {
 // CDP fulfills only the document, with no application UI. Imports below still
 // execute the actual Vite-served product module in each same-origin tab.
 async function newTab() {
-  const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const target = await newOwnedPage(browser);
   const tab = new Client(target);
   await tab.cdp('Runtime.enable'); await tab.cdp('Page.enable');
   await tab.cdp('Fetch.enable', { patterns: [{ urlPattern: origin + '/?multitab-qa=*', resourceType: 'Document', requestStage: 'Request' }] });
@@ -143,20 +145,7 @@ async function hold(tab, lockName, operation = '') {
 }
 
 try {
-  // Windows may exit the launcher with 0 after handing off to the real browser.
-  // Only the CDP port written by this disposable profile proves readiness.
-  await waitFor(() => {
-    const file = path.join(profile, 'DevToolsActivePort');
-    if (fs.existsSync(file)) {
-      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) {
-        port = candidate;
-        return true;
-      }
-    }
-    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
-    return false;
-  }, 'owned Chrome DevTools', 15000);
+  browser = await waitForOwnedBrowser(profile, chrome);
   let a = await newTab(), b = await newTab();
   check(a.target.id !== b.target.id, 'independent page targets share one disposable Chrome profile');
   check(await a.js('!!navigator.locks?.request') && await b.js('!!navigator.locks?.request'), 'Web Locks available in both actual loopback tabs');
@@ -371,42 +360,6 @@ try {
   process.exitCode = 16;
 } finally {
   for (const tab of clients) tab.socket.close();
-  // The launcher may already have exited, leaving this test's browser running.
-  // Close ONLY the browser endpoint associated with our disposable profile.
-  try {
-    const file = path.join(profile, 'DevToolsActivePort');
-    if (fs.existsSync(file)) {
-      const ownedPort = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(ownedPort) && ownedPort > 0 && ownedPort <= 65535) {
-        const response = await fetch('http://127.0.0.1:' + ownedPort + '/json/version',
-          { signal: AbortSignal.timeout(1500) });
-        if (!response.ok) throw Error('Owned browser CDP unavailable');
-        const { webSocketDebuggerUrl } = await response.json();
-        const endpoint = new URL(webSocketDebuggerUrl);
-        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
-            endpoint.port !== String(ownedPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
-          throw Error('Unverified owned browser endpoint');
-        }
-        const owned = new WebSocket(webSocketDebuggerUrl);
-        await new Promise((resolve, reject) => {
-          const timer = setTimeout(() => reject(Error('Owned CDP connection timeout')), 1500);
-          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
-          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned CDP connection failed')); }, { once: true });
-        });
-        const closed = new Promise((resolve) => {
-          const timer = setTimeout(resolve, 1500);
-          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
-        });
-        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
-        await closed;
-        if (owned.readyState === WebSocket.OPEN) owned.close();
-      }
-    }
-  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
-  chrome.kill(); await sleep(500);
-  if (path.dirname(profile) !== os.tmpdir() || !path.basename(profile).startsWith('bf-multitab-')) {
-    throw Error('Unverified temporary cleanup target');
-  }
-  try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
-  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+  try { await cleanupOwnedChrome(profile, 'bf-multitab-', chrome, browser); }
+  catch (error) { console.error('QA_OWNED_CLEANUP FAIL', String(error)); process.exitCode ||= 17; }
 }

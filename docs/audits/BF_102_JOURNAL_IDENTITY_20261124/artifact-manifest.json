@@ -1,0 +1,137 @@
+﻿[
+    {
+        "path":  "durableWorkout.ts.before",
+        "bytes":  6711,
+        "sha256":  "2933edee70f690abdc495689a3f6daeffe30e2bcbfb1afbfa0f1f5f45d91726b"
+    },
+    {
+        "path":  "final-readback.json",
+        "bytes":  1570,
+        "sha256":  "5a3dc1996b3e4c2f3fb544a8a73acd802fd70d201c0ea3bc1ebbcee2f9ea6f7c"
+    },
+    {
+        "path":  "frozen-build.log",
+        "bytes":  2489,
+        "sha256":  "6f7bb0b5830f53a68e105cf9cec5bfe2540b07b8a8e4db4cebbbfccb85b60eef"
+    },
+    {
+        "path":  "frozen-build-manifest.json",
+        "bytes":  10554,
+        "sha256":  "f66ba658047e61cfbb50d5e9900d9e19da1e21bdfed4c68526aeb5eb181bb03b"
+    },
+    {
+        "path":  "frozen-bundle.log",
+        "bytes":  285,
+        "sha256":  "f37b5d9de5e7d5a2a43649c9d001b36827c482a0bacfe232f4099732a632dbbf"
+    },
+    {
+        "path":  "frozen-dedup-browser.log",
+        "bytes":  2969,
+        "sha256":  "7e93b302de10f0ad6fe98f9b4725437cef7b11c9022ffe25c9eaca7e212ed037"
+    },
+    {
+        "path":  "frozen-dev.log",
+        "bytes":  48,
+        "sha256":  "f042a4594be292b3c3079be10cc3b07caa225f31407acf83081336a8fdd87486"
+    },
+    {
+        "path":  "frozen-dev-err.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "frozen-gates.json",
+        "bytes":  966,
+        "sha256":  "a662c715caaf675b43c61808bac7a095e4a6f2f8adb82a43d1580fcb006112fe"
+    },
+    {
+        "path":  "frozen-identity-browser.log",
+        "bytes":  1216,
+        "sha256":  "097b0da905f1f8ab94be7f82b774f38cd6c2e74f0a492a2160b60d541f671201"
+    },
+    {
+        "path":  "frozen-preview.log",
+        "bytes":  39,
+        "sha256":  "6dd370cee48fae9651e1bad0c4ccf4f601c1dfde9bcc1ecb805afc45795de63a"
+    },
+    {
+        "path":  "frozen-preview-err.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "frozen-source.json",
+        "bytes":  40190,
+        "sha256":  "ef544a36462d65ed37525df9dd730297320addc03dee6c48d770013b42de36cc"
+    },
+    {
+        "path":  "frozen-tsc.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "frozen-unit.log",
+        "bytes":  4976,
+        "sha256":  "89185915afddc3ea39839a70fbec01a94e72bfa4da48447c06852834fb6288ec"
+    },
+    {
+        "path":  "full-gates.json",
+        "bytes":  833,
+        "sha256":  "4d3006c92644de31ce06a5d7c9c643dba73cf4cba373bdee5202480f5a884dce"
+    },
+    {
+        "path":  "full-source-before.json",
+        "bytes":  46471,
+        "sha256":  "26e2b1f8398cbcdbabab3d8c541557a0179b4967eb00d35c9378591650f865a2"
+    },
+    {
+        "path":  "green.log",
+        "bytes":  1462,
+        "sha256":  "953d04a8a5f030db8a3048016b5311a14b89eb90bb7d5cfef8c21e82cb652f6b"
+    },
+    {
+        "path":  "green-exit.txt",
+        "bytes":  3,
+        "sha256":  "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+        "path":  "head.txt",
+        "bytes":  42,
+        "sha256":  "8c4388a89692a712a27945ea2c5c4bed0b71467813b87efa1ec5fe8c37a67542"
+    },
+    {
+        "path":  "journal-e2e.mjs.before",
+        "bytes":  52487,
+        "sha256":  "402a8fe3fa2913964c267383003e174d14be64bd0ddf8d1d60c1d4bf894e445d"
+    },
+    {
+        "path":  "RECEIPT.md",
+        "bytes":  4911,
+        "sha256":  "1fb29d52ddf65f48da1d6a2f2c26acba968d5da6e144f3e5b0ccb06cc7b34c41"
+    },
+    {
+        "path":  "red.log",
+        "bytes":  6067,
+        "sha256":  "17600d69fd9a18b39642d19b8c209277a742223bbb31b14c449efabb6c54ff93"
+    },
+    {
+        "path":  "red-exit.txt",
+        "bytes":  3,
+        "sha256":  "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+        "path":  "status-before.txt",
+        "bytes":  1843,
+        "sha256":  "86e8796545286a43b505d8ee8302d3f980de07af90b3e5b118cd65fd8467d5e8"
+    },
+    {
+        "path":  "unit.log",
+        "bytes":  4984,
+        "sha256":  "e45035a400fab0a9a520499bfee821005a27fd06149e70ac2264ce4dd04c9339"
+    },
+    {
+        "path":  "workoutJournal.ts.before",
+        "bytes":  12447,
+        "sha256":  "8964a4fa0d5ac3985342ce6ed54136ae211c119c3344fe33aba6969579c758d7"
+    }
+]

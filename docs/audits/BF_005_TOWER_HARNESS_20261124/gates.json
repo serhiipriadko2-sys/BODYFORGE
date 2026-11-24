@@ -1,0 +1,35 @@
+﻿{
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "started":  "2026-11-24T20:49:52.3752431+03:00",
+    "sourceCount":  257,
+    "unit":  0,
+    "build":  0,
+    "bundle":  "NOT_RUN",
+    "preview":  "NOT_RUN",
+    "wrongEntry":  "NOT_RUN",
+    "tower":  "NOT_RUN",
+    "previewStopped":  true,
+    "afterUnit":  {
+                      "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+                      "changed":  [
+
+                                  ],
+                      "missing":  [
+
+                                  ],
+                      "stable":  true
+                  },
+    "afterBuild":  {
+                       "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+                       "changed":  [
+                                       "src/lib/avatarGarmentFolds.ts",
+                                       "src/lib/avatarPhysique.ts"
+                                   ],
+                       "missing":  [
+
+                                   ],
+                       "stable":  false
+                   },
+    "error":  "Concurrent source drift during build",
+    "finished":  "2026-11-24T20:50:37.2078050+03:00"
+}

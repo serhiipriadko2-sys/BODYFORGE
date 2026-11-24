@@ -1,0 +1,39 @@
+// Isolate real persistence crashes from synthetic camera timing. The fixture
+// already represents a completed workout; this is NOT a camera-finish test.
+async function seededCrashBoundaries() {
+  for (const kind of ['journal', 'primary']) {
+    await reset();
+    const input = envelope('seeded-crash-' + kind);
+    const source = { key: resultKey(input.sessionId), raw: JSON.stringify(input) };
+    const baseline = await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+    const staged = await observer.js("(async()=>{const m=await import('/src/lib/durableJournal.ts');return m.stageDurableResults([" +
+      JSON.stringify(source) + "],localStorage.getItem(" + JSON.stringify(key) + "))})()");
+    check(staged.status === 'saved' && staged.entries.length === 1 &&
+      staged.entries[0].raw === source.raw && staged.entries[0].state === 'active' &&
+      staged.entries[0].baseProfileRaw === baseline, kind + ' exact strict stage acknowledged');
+    check((await journals()).length === 0 && (await readProfile()).xp === 0, kind + ' no local reward before replay');
+    await observer.js("window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(" +
+      JSON.stringify(key + ':write') + ",async()=>{window.__holding=true;await window.__held});true");
+    await observer.until('window.__holding===true', 'observer holds replay lock');
+    page = await newPage(false, undefined, false);
+    await armPause(kind);
+    await observer.js('window.__release();true');
+    await waitFor(() => page.paused, kind + ' seeded replay boundary', 30000);
+    const local = await journals(), before = await readProfile();
+    check(local.length === 1 && local[0].key === source.key && local[0].raw === source.raw, kind + ' exact local result still present');
+    check(kind === 'journal' ? before.xp === 0 && before.coins === 0 && before.workouts.length === 0 :
+      isOneTower(before, input.sessionId), kind + ' expected wallet at interruption');
+    const rows = await durableEntries();
+    check(rows.length === 1 && rows[0].raw === source.raw && rows[0].state === 'active', kind + ' strict record retained before crash');
+    await crashPaused();
+    await waitAward(input.sessionId);
+    await waitFor(async () => (await durableEntries()).some(row => row.key === source.key && row.state === 'settled' && row.raw === source.raw),
+      kind + ' strict settled read-back');
+    check(isOneTower(await readProfile(), input.sessionId), kind + ' actual crash restores exactly one reward and floor');
+    const paid = await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')');
+    await reload();
+    check(await observer.js('localStorage.getItem(' + JSON.stringify(key) + ')') === paid &&
+      (await journals()).length === 0 && isOneTower(await readProfile(), input.sessionId), kind + ' reload preserves exact paid profile');
+    observations['seeded-' + kind] = { sessionId: input.sessionId, actualRendererCrash: true, settled: true, exactReload: true };
+  }
+}

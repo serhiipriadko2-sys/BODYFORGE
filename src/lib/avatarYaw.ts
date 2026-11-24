@@ -9,7 +9,8 @@ const FULL_TURN = Math.PI * 2;
 export function clampAvatarYaw(value: number): number {
   if (!Number.isFinite(value)) return INITIAL_AVATAR_YAW;
   const wrapped = ((value + Math.PI) % FULL_TURN + FULL_TURN) % FULL_TURN - Math.PI;
-  return Math.round(wrapped * 1000) / 1000;
+  // Keep the quantized value inside the same canonical interval on re-entry.
+  return Math.max(-3.141, Math.min(3.141, Math.round(wrapped * 1000) / 1000));
 }
 export function stepAvatarYaw(current: number, step: number): number {
   return clampAvatarYaw(clampAvatarYaw(current) + (Number.isFinite(step) ? step : 0));

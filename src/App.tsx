@@ -922,6 +922,8 @@ function App() {
     void start(requestedMode, exerciseId);
   }
 
+  const towerFinished = workoutMode === 'tower' && profile.game.highestClearedFloor >= TOWER_FLOORS.length;
+  const restartWorkout = () => goTraining(towerFinished ? 'training' : workoutMode, towerFinished ? 'squat' : undefined);
   const frozenFloor = workoutSessionRef.current?.mode === 'tower' && mode !== 'idle' ? workoutSessionRef.current.floor : null;
   const selectedFloor = frozenFloor ? TOWER_FLOORS.find((floor) => floor.floor === frozenFloor) ?? nextTowerFloor(profile.game) : nextTowerFloor(profile.game);
   const opponentReps = mode === 'active' && workoutMode === 'tower'
@@ -1168,10 +1170,10 @@ function App() {
               {mode === 'error' && (profile.game.created
                 ? cameraModuleUnavailable
                   ? <button className="primary-button" onClick={() => window.location.reload()}><RotateCcw size={19} /> ОБНОВИТЬ ПРИЛОЖЕНИЕ <ArrowRight size={19} /></button>
-                  : <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> ПОВТОРИТЬ ПОПЫТКУ <ArrowRight size={19} /></button>
+                  : <button className="primary-button" onClick={restartWorkout}><RotateCcw size={19} /> {towerFinished ? 'ОБЫЧНАЯ ТРЕНИРОВКА' : 'ПОВТОРИТЬ ПОПЫТКУ'} <ArrowRight size={19} /></button>
                 : <button className="primary-button" onClick={() => { setMode('idle'); navigate('dashboard'); }}><UserRound size={19} /> СОЗДАТЬ БОЙЦА <ArrowRight size={19} /></button>
               )}
-              {mode === 'complete' && <button className="primary-button" onClick={() => goTraining(workoutMode)}><RotateCcw size={19} /> НОВАЯ ЗАКАЛКА <ArrowRight size={19} /></button>}
+              {mode === 'complete' && <button className="primary-button" data-action="restart-workout" disabled={isSaving} onClick={restartWorkout}><RotateCcw size={19} /> {towerFinished ? 'ОБЫЧНАЯ ТРЕНИРОВКА' : 'НОВАЯ ЗАКАЛКА'} <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
               {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем диагностику…</div>}>
                 <RuntimeDiagnosticsPanel />

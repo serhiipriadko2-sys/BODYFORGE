@@ -1,0 +1,18 @@
+﻿{
+    "source":  "BF_002_20261124_RUN02 verified frozen dist",
+    "sourceManifestSha256":  "F89505467147C4AB574FD13F325224ADC896A69E5ADD1776748EF3C82F475899",
+    "buildManifestSha256":  "AF7608A37B467E33B8028F16E9D428851C79E20DF2DA4F1E2109FC581388C8BC",
+    "buildFiles":  59,
+    "entry":  "assets/index-vEHoMBly.js",
+    "entrySha256":  "31df69354782786ed195c8d73b4e15f00e3b9c2a2fb5ba62abe64c5925069b03",
+    "wrongEntry":  14,
+    "tower":  15,
+    "previewStopped":  true,
+    "origin":  "http://127.0.0.1:5193",
+    "previewPid":  25068,
+    "preview":  200,
+    "frozenBuildUnchanged":  true,
+    "qaHash":  "BE650F0D9502472FB17514ED4E7393CCBB8CD72FF545B8F06A278EBD15FAACC8",
+    "error":  "Tower QA failed",
+    "finished":  "2026-11-24T20:52:22.9598352+03:00"
+}

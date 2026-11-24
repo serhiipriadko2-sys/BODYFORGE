@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { disposeThreeTree } from '../lib/threeResources';
 import { runtimeDiagnostics } from '../lib/runtimeDiagnostics';
 import Avatar from './Avatar';
@@ -11,13 +12,17 @@ import { paintFittedBody } from '../lib/avatarSurfaceFit';
 import { createAvatarMaterials, importedSurfaceRole, paintAvatarEyes, tintAvatarNails, tintAvatarLips, type AvatarMaterials } from '../lib/avatarMaterials';
 import { applyAthleticPose } from '../lib/avatarPose';
 import { applyAvatarGrowth } from '../lib/avatarGrowth';
+import { AvatarIdleClock, createAvatarIdle, sampleAvatarIdle, type AvatarIdleRig } from '../lib/avatarIdle';
+import { ActiveFrameLoop } from '../lib/frameLoop';
 import { createAvatarPhysique } from '../lib/avatarPhysique';
-import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial, isAvatarTextile } from '../lib/avatarFabric';
+import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial, isAvatarTextile, tintAvatarTextile } from '../lib/avatarFabric';
 import { installAvatarScanDetail } from '../lib/avatarSkinLighting';
 import { installAvatarTrainers } from '../lib/avatarTrainers';
+import { createAvatarGarmentSeams, type AvatarGarmentSeams } from '../lib/avatarGarmentSeams';
 import { applyAvatarHairMap, createAvatarHairMaterial } from '../lib/avatarHairMaterial';
 import { maskAthleteOcclusion } from '../lib/avatarOcclusion';
-import { createAvatarStudio } from '../lib/avatarStudio';
+import { createAvatarStudio, createMeasuredAvatarStudio } from '../lib/avatarStudio';
+import { avatarRimColor, avatarShadowsEnabled, configureAvatarKey } from '../lib/avatarLighting';
 import { applyAvatarDetailMap, type AvatarDetailMap } from '../lib/avatarDetailMaps';
 import { installAvatarOcularDetail, ownAvatarOcularImages } from '../lib/avatarOcular';
 import { applyAvatarFaceForm, tintAvatarFace, type AvatarFaceForm } from '../lib/avatarFace';
@@ -30,6 +35,8 @@ interface Avatar3DProps {
   muscles: Partial<Record<Muscle, number>>;
   outfit: Outfit;
   paused?: boolean;
+  animate?: boolean;
+  studio?: boolean;
   className?: string;
   look?: AvatarLook;
   focus?: AvatarFocus;
@@ -54,6 +61,9 @@ interface ImportedFigure {
   groomAnchor: THREE.Group;
   strandGroom?: { crop: THREE.Mesh; swept: THREE.Mesh; material: THREE.MeshPhysicalMaterial };
   sculpt?: ReturnType<typeof createAvatarPhysique>;
+  seams?: AvatarGarmentSeams;
+  idle?: AvatarIdleRig;
+  idleBreath: number;
   realistic: boolean;
   groomed: boolean;
   visor: THREE.Mesh;
@@ -67,7 +77,7 @@ interface ImportedFigure {
  * No external image CDN or access to the camera stream.
  */
 export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full',
-  yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, className = '' }: Avatar3DProps) {
+  yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, animate = false, studio: studioView = false, className = '' }: Avatar3DProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const runtime = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -83,6 +93,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     setAccent: (color: string) => void;
   } | null>(null);
   const pausedRef = useRef(paused);
+  const animateRef = useRef(animate);
+  const studioRef = useRef(studioView);
   const onYawChangeRef = useRef(onYawChange);
   onYawChangeRef.current = onYawChange;
   const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit, look });
@@ -99,9 +111,11 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
 
   useEffect(() => {
     pausedRef.current = paused;
+    animateRef.current = animate;
+    studioRef.current = studioView;
     runtime.current?.syncMotion();
     runtime.current?.redraw();
-  }, [paused]);
+  }, [paused, animate, studioView]);
 
   useEffect(() => {
     const element = canvas.current as HTMLCanvasElement;
@@ -124,8 +138,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     let activePointer: number | null = null;
     let pointerX = 0;
     let isDragging = false;
-    // The rig and lights are static between explicit UI interactions.
-    // Perpetual 24 FPS redraws waste GPU time without visible movement.
+    // Only the studio opts into a bounded idle motion loop.
 
     try {
       renderer = new THREE.WebGLRenderer({
@@ -145,34 +158,27 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         studio = createAvatarStudio(renderer);
         scene.environment = studio.texture;
         scene.environmentIntensity = .28;
+        element.dataset.studioIbl = 'synthetic';
       } catch (error) {
         console.warn('BODYFORGE studio IBL unavailable; keeping direct lights:', error);
       }
       const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 60);
       camera.position.set(0, 2.40, 8.35);
       camera.lookAt(0, 2.38, 0);
-      const hemisphere = new THREE.HemisphereLight(0xcbd4df, 0x202735, .40);
+      const hemisphere = new THREE.HemisphereLight(0xe0e8f2, 0x4a3e38, .25);
       scene.add(hemisphere);
-      const warm = new THREE.DirectionalLight(0xfff1e4, 2.4);
-      warm.position.set(-4.5, 7, 6);
+      const warm = new THREE.DirectionalLight(0xfff7ef, 2.25);
       scene.add(warm, warm.target);
-      warm.target.position.set(0, 3.8, 0);
       portraitShadow = warm.shadow;
-      portraitShadow.mapSize.set(1024, 1024);
-      portraitShadow.camera.left = portraitShadow.camera.bottom = -2;
-      portraitShadow.camera.right = portraitShadow.camera.top = 2;
-      portraitShadow.camera.near = .1;
-      portraitShadow.camera.far = 15;
-      portraitShadow.camera.updateProjectionMatrix();
-      portraitShadow.normalBias = .019;
-      portraitShadow.bias = -.0001;
-      portraitShadow.intensity = .70;
-      const cool = new THREE.DirectionalLight(0x80adf2, 1.55);
-      cool.position.set(4, 5, -3);
-      scene.add(cool);
-      const rim = new THREE.PointLight(0xf1b560, 7, 11);
-      rim.position.set(-2.6, 2.35, -2);
-      scene.add(rim);
+      configureAvatarKey(warm, focus);
+      const fill = new THREE.DirectionalLight(0xd2e2f4, .60);
+      fill.position.set(4.2, 5.0, 5);
+      fill.target.position.set(0, 3, 0);
+      scene.add(fill, fill.target);
+      const rim = new THREE.DirectionalLight(0xdce8f4, 1.6);
+      rim.position.set(3, 6, -4.5);
+      rim.target.position.set(0, 3, 0);
+      scene.add(rim, rim.target);
 
       const stage = new THREE.Group();
       scene.add(stage);
@@ -180,6 +186,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       const edgeMaterial = new THREE.MeshStandardMaterial({ color: 0xf1bc65, metalness: .65, roughness: .32, emissive: 0x705025, emissiveIntensity: .24 });
       const base = new THREE.Mesh(new THREE.CylinderGeometry(1.65, 1.78, 0.24, 44), pedestalMaterial);
       base.position.y = -0.12;
+      base.receiveShadow = true;
       stage.add(base);
       const edge = new THREE.Mesh(new THREE.TorusGeometry(1.66, .045, 8, 64), edgeMaterial);
       edge.rotation.x = Math.PI / 2;
@@ -198,14 +205,22 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       let currentView = focus;
       const setView = (next: AvatarFocus) => {
         currentView = next;
+        configureAvatarKey(warm, next);
         if (next === 'portrait') {
           camera.position.set(0, 4.37, 2.55);
           camera.lookAt(0, 4.42, 0);
+        } else if (next === 'torso') {
+          camera.position.set(0, 3.27, 4.6);
+          camera.lookAt(0, 3.23, 0);
+        } else if (next === 'legs') {
+          camera.position.set(0, 1.26, 4.25);
+          camera.lookAt(0, 1.20, 0);
         } else {
           camera.position.set(0, 2.40, 8.35);
           camera.lookAt(0, 2.38, 0);
         }
         element.dataset.avatarView = next;
+        syncMotion();
         redraw();
       };
       const setYaw = (next: number) => {
@@ -217,7 +232,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       const setAccent = (color: string) => {
         const safe = /^#[0-9a-f]{6}$/i.test(color) ? color : '#55e3f2';
         edgeMaterial.color.set(safe);
-        rim.color.set(safe);
+        rim.color.copy(avatarRimColor(safe));
         redraw();
       };
 
@@ -238,10 +253,11 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
               camera.aspect = w / h;
               camera.updateProjectionMatrix();
             }
-            // The tightly framed key-light shadow gives forehead, eyelids and
-            // collar real occlusion in portrait. Skip it for the economy view.
-            const shadows = currentView === 'portrait' && document.documentElement.dataset.bfGraphics !== 'economy';
+            // One fitted key-light depth map, only when a visible frame is
+            // requested. Economy and non-studio full-body views stay cheap.
+            const shadows = avatarShadowsEnabled(document.documentElement.dataset.bfGraphics, currentView, studioRef.current);
             renderer.shadowMap.enabled = warm.castShadow = shadows;
+            element.dataset.studioShadows = shadows ? currentView : 'off';
             renderer.render(scene, camera);
             runtimeDiagnostics.recordAvatarFrame(telemetryId, performance.now(), {
               drawCalls: renderer.info.render.calls,
@@ -314,18 +330,61 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       }, { threshold: .01 });
       observer.observe(element);
       // CSS visibility/size changes need a fresh draw when the stage returns.
-      // No idle RAF is scheduled for this static character.
       const resize = new ResizeObserver(onVisibility);
       resize.observe(element);
 
+      const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const idleClock = new AvatarIdleClock();
+      let moving = false;
+      let motionFailed = false;
+      const frameLoop = new ActiveFrameLoop(time => {
+        const seconds = idleClock.tick(time);
+        const imported = importedRef.current;
+        if (!moving || !imported?.idle || disposed || document.hidden) return;
+        if (seconds === undefined) return;
+        try {
+          const pose = sampleAvatarIdle(seconds);
+          imported.idle.pose(pose);
+          imported.idleBreath = pose.breath;
+          applyAvatarGrowth(imported.root, figureSettingsRef.current.muscles, pose.breath);
+          imported.seams?.update(imported.root);
+          element.dataset.idleBlink = pose.blink.toFixed(3);
+          element.dataset.idleBreath = pose.breath.toFixed(3);
+          redraw();
+        } catch (error) {
+          motionFailed = true;
+          syncMotion();
+          console.warn('BODYFORGE idle pose unavailable; retaining static avatar:', error);
+        }
+      }, callback => window.requestAnimationFrame(callback), id => window.cancelAnimationFrame(id));
+      const onMotionPreference = () => {
+        const wasMoving = moving;
+        syncMotion();
+        if (wasMoving !== moving) redraw();
+      };
+      motionQuery.addEventListener('change', onMotionPreference);
+
       function syncMotion() {
-        // There is no timeline animation in this scene: a repeated render
-        // would paint identical pixels. Turn idle RAF off entirely, including
-        // when reduced-motion is NOT requested. Pointer/keyboard, profile,
-        // GLB/texture and visibility callbacks still call redraw().
-        runtimeDiagnostics.setAvatarAnimating(telemetryId, false);
-        element.dataset.renderLoop = visible && !pausedRef.current && !disposed
-          ? 'on-demand' : 'paused';
+        const shown = visible && !document.hidden && !pausedRef.current && !disposed;
+        const imported = importedRef.current;
+        const enabled = shown && animateRef.current && Boolean(imported?.idle) && !motionFailed &&
+          !motionQuery.matches && document.documentElement.dataset.bfGraphics !== 'economy' &&
+          currentView !== 'legs';
+        if (moving !== enabled) {
+          moving = enabled;
+          idleClock.reset();
+          frameLoop.setActive(enabled);
+          if (!enabled && imported?.idle) {
+            imported.idle.reset();
+            imported.idleBreath = 0;
+            applyAvatarGrowth(imported.root, figureSettingsRef.current.muscles);
+            imported.seams?.update(imported.root);
+            element.dataset.idleBlink = '0';
+            element.dataset.idleBreath = '0';
+          }
+        }
+        runtimeDiagnostics.setAvatarAnimating(telemetryId, enabled);
+        element.dataset.renderLoop = shown ? enabled ? 'idle-motion' : 'on-demand' : 'paused';
       }
       const currentRuntime = {
         renderer,
@@ -341,6 +400,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
         stopped: () => {
           if (disposed) return;
           disposed = true;
+          frameLoop.stop();
+          motionQuery.removeEventListener('change', onMotionPreference);
           element.dataset.renderLoop = 'stopped';
           if (runtime.current === currentRuntime) {
             runtime.current = null;
@@ -437,7 +498,31 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             delete element.dataset.scanDetail;
             element.dataset.fabricMaps = '0';
             delete element.dataset.trainerDetail;
+            element.dataset.garmentSeams = String(imported.seams?.loopCount ?? 0);
+            element.dataset.garmentPatches = String(imported.seams?.patchTriangles ?? 0);
             element.dataset.avatarFace = imported.face ? 'sculpted' : 'base';
+            element.dataset.idleRig = imported.idle ? 'fitted' : 'static';
+            syncMotion();
+            if (preferred) {
+              new HDRLoader().load('/assets/athlete-studio.hdr', texture => {
+                try {
+                  if (disposed || !renderer || currentRuntime.current !== imported.root) return;
+                  const measured = createMeasuredAvatarStudio(renderer, texture);
+                  const previous = studio;
+                  studio = measured;
+                  scene.environment = measured.texture;
+                  scene.environmentIntensity = .78;
+                  scene.environmentRotation.y = -.45;
+                  previous?.dispose();
+                  element.dataset.studioIbl = 'measured-hdr';
+                  redraw();
+                } catch (error) {
+                  console.warn('BODYFORGE measured studio unavailable, keeping fallback:', error);
+                } finally {
+                  texture.dispose();
+                }
+              }, undefined, () => { /* The local synthetic studio remains usable. */ });
+            }
             const loadCardMaps = () => {
               if (disposed || currentRuntime.current !== imported.root) return;
               element.dataset.groomGeometry = 'cards';
@@ -722,7 +807,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
       if (role === 'body') surfaces.push(node);
       if (role === 'nails') nailSurfaces.push(node);
       if (role === 'lips') lipSurfaces.push(node);
-      node.castShadow = role === 'body' || node.name === 'BODYFORGE_Shirt';
+      node.castShadow = role === 'body' || /^BODYFORGE_(Shirt|Shorts|Shoes)$/.test(node.name);
       node.receiveShadow = true;
     }
   });
@@ -809,10 +894,12 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   groomAnchor.matrix.copy(head.matrixWorld).invert().multiply(source.matrixWorld);
   head.add(groomAnchor);
   const face = preferred ? applyAvatarFaceForm(source) : undefined;
-  const sculpt = groomed ? createAvatarPhysique(source) : undefined;
+  const seams = preferred ? createAvatarGarmentSeams(garments) : undefined;
+  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams)) : undefined;
+  const idle = preferred && seams ? createAvatarIdle(source) : undefined;
 
   const imported: ImportedFigure = {
-    root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, buzzHair, hairStyles, realistic, groomed, groomAnchor, sculpt,
+    root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, buzzHair, hairStyles, realistic, groomed, groomAnchor, sculpt, seams, idle, idleBreath: 0,
     eyes: eyeMeshes.length === 1 ? eyeMeshes[0] : undefined,
     face,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
@@ -871,7 +958,7 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
       outfit === 'steel' ? (shirt ? '#263e53' : '#354e61') : outfit === 'ember' ?
         (shirt ? '#453130' : '#764d39') : (shirt ? '#17212d' : '#161d27'));
     if (isAvatarTextile(garment) && material instanceof THREE.MeshPhysicalMaterial) {
-      material.sheenColor.copy(material.color).lerp(new THREE.Color('#788899'), .28);
+      tintAvatarTextile(material);
     }
   }
   styleAvatarHair(imported, look);
@@ -881,7 +968,8 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   imported.visorEdge.visible = look.visor;
   imported.root.scale.x = build === 'solid' ? 1.055 : 1;
   imported.sculpt?.(muscles);
-  applyAvatarGrowth(imported.root, muscles);
+  applyAvatarGrowth(imported.root, muscles, imported.idleBreath);
+  imported.seams?.update(imported.root);
 }
 
 function makeFigure({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK }: FigureParams): THREE.Group {

@@ -1,0 +1,132 @@
+﻿[
+    {
+        "path":  "baseline-gates.json",
+        "bytes":  595,
+        "sha256":  "752534b50fafeefa1d953436765dcae78a03b87c4ebf07390f99dbf07c0b94d6"
+    },
+    {
+        "path":  "build.log",
+        "bytes":  4027,
+        "sha256":  "5fc602f833741d010335d4eca0a12633c5c12483be8f71e4c1dc250be90ffff6"
+    },
+    {
+        "path":  "build-manifest.json",
+        "bytes":  10554,
+        "sha256":  "8e0b701bfa8fd238b68664657283d714fe13dc2759c7eb722d4bc6b06aab070e"
+    },
+    {
+        "path":  "bundle.log",
+        "bytes":  285,
+        "sha256":  "dfee90667f89a714190aa13cb7d4e6a827af87078894a570a197c80f648a9c31"
+    },
+    {
+        "path":  "canon.log",
+        "bytes":  194,
+        "sha256":  "c7fc8feefe74c94b9f9d3527a366f885d5760d72f7e89b0635c5fd9dfd246d3c"
+    },
+    {
+        "path":  "git-status-before.txt",
+        "bytes":  20199,
+        "sha256":  "0f19fe3c9e43f9be9a1cad50d05cb2f876d0627101c2a3fa377d4d1fafc3f55e"
+    },
+    {
+        "path":  "mobile.log",
+        "bytes":  8401,
+        "sha256":  "07ca4f77199c6f18861d2ff46d5c47cbfc0c44cfa5dd20365bf98be3d5418d89"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-360-premium.png",
+        "bytes":  89767,
+        "sha256":  "534d0f749ae28e51717bcba48622ac0e301cf26e4475141c8775b8fe0a295d95"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-backup-json-inspection.png",
+        "bytes":  137986,
+        "sha256":  "cbb436aaca42237a75cf0d405c6b1f0e7751401b87051b7733a4ec364766a366"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-forge.png",
+        "bytes":  185605,
+        "sha256":  "cdfa6444d1b6015ee270cdd54c7e16d8d32bfcede8d0836f210e1657864312ff"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-forge-upgraded.png",
+        "bytes":  201928,
+        "sha256":  "ba0f0798baa39f57b2d28650f2e3d55fb50bb1551dffc4102b64ab1d827322ad"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-home-360-premium.png",
+        "bytes":  197453,
+        "sha256":  "eccac68e69eaa8b13f36b8076210508ae8df3a9954b6141e28d6a8cf4af0b5f5"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-home-premium.png",
+        "bytes":  219736,
+        "sha256":  "3b9303065ffeb1a26fd8a90992c6459098b9c83f30fde0c0ca2faf116e98af1b"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-lenses.png",
+        "bytes":  93578,
+        "sha256":  "01f625384d2edea2e0e5ce5ede6274f398ce2d4d078ebf05ee0cbb46fb6c9769"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-performance-panel.png",
+        "bytes":  93178,
+        "sha256":  "3a2548006a7ce8486109d4de4a07289db8815499471ba7f49dc54ad2de927801"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-setup.png",
+        "bytes":  149955,
+        "sha256":  "a39d0f0e352c9c5d17aff37b90c90f64ab965c434ee9cefccb2dd9b91ed54ed3"
+    },
+    {
+        "path":  "mobile-shots/bf-qa-mobile-tower.png",
+        "bytes":  90922,
+        "sha256":  "00838527aebccfb331cb71f75fcf4dd772b1d46f6d4119f30e36ee9de978457c"
+    },
+    {
+        "path":  "preflight.json",
+        "bytes":  2213,
+        "sha256":  "a784b5a45300e374d852a683a95c1cc10c0729349bd780598965ac5df4f58edf"
+    },
+    {
+        "path":  "preview.log",
+        "bytes":  77,
+        "sha256":  "60e9a5a874b39fd771e2bffe8a92f4f6aa9106cd2086da2a444e39881223da35"
+    },
+    {
+        "path":  "preview-errors.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "preview-gates.json",
+        "bytes":  655,
+        "sha256":  "78d52b0765cfabc82b164b49ef9985c368b129c4b5033bd1ce195625823cfdfe"
+    },
+    {
+        "path":  "privacy-preview.log",
+        "bytes":  1178,
+        "sha256":  "da8973ed2405b4db962e4c97fefff33f05ab5e2afbdebd8db9ad560deb464361"
+    },
+    {
+        "path":  "RECEIPT.md",
+        "bytes":  3010,
+        "sha256":  "ff46fad38951bce64b620a2d5ad1ebf16c73272cdea5a4e723f128713b15de3c"
+    },
+    {
+        "path":  "source-before.json",
+        "bytes":  79470,
+        "sha256":  "4e45785921bb3b94d5c16f0768e3fcaa32f37101d1c3a7c7325f68134b9f7f37"
+    },
+    {
+        "path":  "source-drift.json",
+        "bytes":  5148,
+        "sha256":  "8cdc3c5173384507dad2ff12765384ac8729e2a8e28d20f1fecf2b4b714bb05a"
+    },
+    {
+        "path":  "unit.log",
+        "bytes":  4704,
+        "sha256":  "cbf585c71d62f474d22f3a9d623e542e15d621d705f27a2221ae321ed113d2ca"
+    }
+]

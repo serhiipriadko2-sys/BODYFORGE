@@ -1,0 +1,303 @@
+// Synthetic tower/reward E2E. Own loopback origin and disposable Chrome only.
+// Production preview requires the independently measured entry SHA-256.
+// This proves the game/save path, NOT human pose accuracy or real model startup.
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+
+const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+class InfrastructureError extends Error {}
+const infra = message => new InfrastructureError(message);
+let profile, chrome, launchError, browserURL, ws, seq = 0, pageLoads = 0, assertions = 0;
+const requests = new Map(), browserErrors = [];
+const storageKey = 'bodyforge:pilot:v1';
+const finalFloor = process.env.BODYFORGE_QA_TOWER_FINAL === '1';
+
+async function get(url) {
+  let response;
+  try { response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(5000) }); }
+  catch (error) { throw infra('HTTP unavailable: ' + url + ': ' + error.message); }
+  if (!response.ok) throw infra('HTTP ' + response.status + ': ' + url);
+  return response;
+}
+async function resolveBuild() {
+  if (!/^http:\/\/127\.0\.0\.1:[1-9]\d{0,4}$/.test(origin) || Number(new URL(origin).port) > 65535)
+    throw infra('QA origin must be explicit loopback HTTP');
+  const html = await (await get(origin + '/')).text();
+  const entries = [...html.matchAll(/<script\b[^>]*\bsrc=["'](\/assets\/index-[\w-]+\.js)["']/g)];
+  if (entries.length === 1) {
+    const entry = entries[0][1];
+    const bytes = Buffer.from(await (await get(origin + entry)).arrayBuffer());
+    const actual = sha(bytes);
+    const expected = process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256?.toLowerCase();
+    if (!expected || !/^[0-9a-f]{64}$/.test(expected) || actual !== expected)
+      throw infra('Production entry identity missing or mismatched: ' + actual);
+    const modules = [...new Set([...bytes.toString('utf8').matchAll(/import\(\s*["'\x60](\.\/vision_bundle-[\w-]+\.js)["'\x60]\s*\)/g)].map(m => m[1]))];
+    if (modules.length !== 1) throw infra('Expected exactly one lazy production pose module');
+    const pose = new URL(modules[0], origin + entry).pathname;
+    const poseBytes = Buffer.from(await (await get(origin + pose)).arrayBuffer());
+    console.log('QA_BUILD', JSON.stringify({mode:'preview',origin,entry,entrySha256:actual,pose,poseSha256:sha(poseBytes)}));
+    return { entry, entrySha256: actual, pose };
+  }
+  if (entries.length || !html.includes('/@vite/client') || process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256)
+    throw infra('Unknown build mode or expected preview served dev HTML');
+  const source = await (await get(origin + '/src/App.tsx')).text();
+  const modules = [...new Set([...source.matchAll(/["'](\/node_modules\/\.vite\/deps\/@mediapipe_tasks-vision\.js\?v=[^"']+)["']/g)].map(m => m[1]))];
+  if (modules.length !== 1) throw infra('Dev MediaPipe module URL missing or ambiguous');
+  await get(origin + modules[0]);
+  console.log('QA_BUILD', JSON.stringify({mode:'dev',origin,pose:modules[0],sourceSha256:sha(source)}));
+  return { entry: null, pose: modules[0] };
+}
+function socketURL(value, port, kind) {
+  const u = new URL(value);
+  if (u.protocol !== 'ws:' || u.hostname !== '127.0.0.1' || u.port !== String(port) ||
+      u.username || u.password || u.search || u.hash || !u.pathname.startsWith('/devtools/' + kind + '/'))
+    throw infra('Unexpected owned CDP endpoint');
+  return u.href;
+}
+async function connect(url) {
+  const socket = new WebSocket(url);
+  try {
+    await new Promise((resolve,reject) => {
+      const timer = setTimeout(() => reject(infra('CDP connection timeout')), 3000);
+      socket.addEventListener('open', () => { clearTimeout(timer); resolve(); }, {once:true});
+      socket.addEventListener('error', () => { clearTimeout(timer); reject(infra('CDP connection failed')); }, {once:true});
+    });
+    return socket;
+  } catch (error) { socket.close(); throw error; }
+}
+async function ownChrome() {
+  profile = fs.mkdtempSync(path.join(os.tmpdir(),'bf-tower20-'));
+  chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',[
+    '--headless=new','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader',
+    '--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream',
+    '--no-first-run','--no-default-browser-check','--remote-allow-origins=*',
+    '--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank',
+  ],{stdio:'ignore'});
+  chrome.on('error',error => { launchError = error; });
+  const deadline = Date.now()+15000;
+  while (Date.now()<deadline) {
+    if (launchError) throw infra('Chrome launch failed: '+launchError.message);
+    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw infra('Chrome launcher exit '+chrome.exitCode);
+    try {
+      const [portText,browserPath] = fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').trim().split(/\r?\n/);
+      const port = Number(portText);
+      if (!Number.isSafeInteger(port) || port<1 || port>65535 || !/^\/devtools\/browser\/[\w-]+$/.test(browserPath))
+        throw infra('Invalid disposable DevToolsActivePort');
+      const version = await (await get('http://127.0.0.1:'+port+'/json/version')).json();
+      const advertised = socketURL(version.webSocketDebuggerUrl,port,'browser');
+      if (new URL(advertised).pathname !== browserPath) throw infra('Browser identity mismatch');
+      browserURL = advertised;
+      const tabs = await (await get('http://127.0.0.1:'+port+'/json/list')).json();
+      const tab = tabs.find(t => t.type==='page' && t.url==='about:blank');
+      if (tab) {
+        console.log('CDP_OWNER',process.pid,port,browserPath);
+        return await connect(socketURL(tab.webSocketDebuggerUrl,port,'page'));
+      }
+    } catch (error) {
+      if (error instanceof InfrastructureError && /identity mismatch|Invalid disposable|Unexpected owned/.test(error.message)) throw error;
+    }
+    await sleep(150);
+  }
+  throw infra('Owned DevTools unavailable after 15 seconds');
+}
+function cmd(method,params={}) {
+  if (!ws || ws.readyState!==WebSocket.OPEN) return Promise.reject(infra('CDP disconnected: '+method));
+  return new Promise((resolve,reject)=>{
+    const id=++seq, timer=setTimeout(()=>{requests.delete(id);reject(infra('CDP timeout: '+method));},20000);
+    requests.set(id,{resolve:message=>{clearTimeout(timer);message.error?reject(infra(JSON.stringify(message.error))):resolve(message.result);},reject:error=>{clearTimeout(timer);reject(error);}});
+    try { ws.send(JSON.stringify({id,method,params})); }
+    catch(error){requests.get(id)?.reject(infra(error.message));requests.delete(id);}
+  });
+}
+async function ev(expression) {
+  const r=await cmd('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
+  if(r.exceptionDetails) throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);
+  return r.result.value;
+}
+const obj=async expression=>JSON.parse(await ev('JSON.stringify('+expression+')'));
+async function until(expression,label,timeoutMs=15000) {
+  const deadline=Date.now()+timeoutMs;
+  while(Date.now()<deadline){if(await ev(expression))return;await sleep(120);}
+  throw Error('TIMEOUT '+label);
+}
+function assert(ok,label){if(!ok)throw Error('FAIL '+label);assertions++;console.log('PASS',label);}
+async function click(selector) {
+  await until('!!document.querySelector('+JSON.stringify(selector)+')?.getClientRects().length',selector);
+  assert(await ev("(()=>{const x=document.querySelector("+JSON.stringify(selector)+");if(!x||x.disabled)return false;x.click();return true;})()"),'click '+selector);
+}
+async function shot() {
+  if (!process.env.BODYFORGE_QA_ARTIFACT_DIR) return;
+  const dir=path.resolve(process.env.BODYFORGE_QA_ARTIFACT_DIR);
+  fs.mkdirSync(dir,{recursive:true});
+  const file=path.join(dir,'bf-qa-tower-victory.png');
+  const r=await cmd('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  fs.writeFileSync(file,Buffer.from(r.data,'base64'),{flag:'wx'});
+  console.log('SHOT',file,fs.statSync(file).size);
+}
+const readProfile=()=>obj("JSON.parse(localStorage.getItem("+JSON.stringify(storageKey)+")||'{}')");
+async function installFixture(pose) {
+  // Replace only model creation in this disposable page. The real counter,
+  // video frame gate, App, IndexedDB journal and rewards still execute.
+  return ev("(async()=>{const mp=await import("+JSON.stringify(pose)+");"+
+    "const rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];"+
+    "const angles=[170,170,170,...Array.from({length:20},()=>rep).flat()];"+
+    "window.__bfPose={used:0,total:angles.length,closed:0,tracks:[]};"+
+    "const native=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);"+
+    "navigator.mediaDevices.getUserMedia=async(...args)=>{const s=await native(...args);window.__bfPose.tracks.push(...s.getTracks());return s};"+
+    "mp.FilesetResolver.forVisionTasks=async()=>({});"+
+    "mp.PoseLandmarker.createFromOptions=async()=>({close(){window.__bfPose.closed++},detectForVideo(video){"+
+    "const angle=angles[Math.min(window.__bfPose.used++,angles.length-1)],r=(180-angle)*Math.PI/180;"+
+    "const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:0}));"+
+    "p[23]={x:.5,y:.30,visibility:.98};p[25]={x:.5,y:.51,visibility:.98};"+
+    "p[27]={x:.5+.22*Math.sin(r)/(video.videoWidth/video.videoHeight),y:.51+.22*Math.cos(r),visibility:.98};"+
+    "p[11]={x:.46,y:.14,visibility:.98};p[12]={x:.54,y:.14,visibility:.98};return {landmarks:[p]};}});return true;})()");
+}
+async function closeOwned() {
+  ws?.close();
+  let failed=false;
+  if (browserURL) {
+    let owned;
+    try {
+      owned=await connect(browserURL);
+      const closed=new Promise(resolve=>{const timer=setTimeout(()=>resolve(false),3000);owned.addEventListener('close',()=>{clearTimeout(timer);resolve(true)},{once:true});});
+      owned.send(JSON.stringify({id:1,method:'Browser.close'}));
+      if(!await closed)throw infra('Owned Chrome close unconfirmed');
+    } catch(error){console.error('QA_CLEANUP_ERROR',error.message);failed=true;}
+    finally{if(owned?.readyState===WebSocket.OPEN)owned.close();}
+  }
+  // Browser.close confirms CDP shutdown, not that Windows has released every
+  // file handle. Wait without treating a transient sharing violation as a UI bug.
+  if(chrome && chrome.exitCode===null){
+    const deadline=Date.now()+3000;
+    while(chrome.exitCode===null&&Date.now()<deadline)await sleep(100);
+    if(chrome.exitCode===null)chrome.kill();
+  }
+  if(profile){
+    if(path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('bf-tower20-'))throw infra('Invalid cleanup target');
+    const deadline=Date.now()+15000;
+    let lastError,attempts=0;
+    do{
+      attempts++;
+      try{
+        fs.rmSync(profile,{recursive:true,force:true,maxRetries:0});
+        lastError=undefined;
+      }catch(error){lastError=error;if(!['EPERM','EBUSY','ENOTEMPTY','EACCES'].includes(error.code))break;}
+      if(!fs.existsSync(profile))break;
+      await sleep(350);
+    }while(Date.now()<deadline);
+    if(fs.existsSync(profile)){console.error('QA_CLEANUP_ERROR',lastError?.message??'Temporary profile still exists');failed=true;}
+    console.log('QA_PROFILE_REMOVAL_ATTEMPTS',attempts);
+  }
+  console.log('QA_OWNED_CLEANUP',failed?'FAIL':profile?'PASS':'NOT_NEEDED');
+  if(failed)process.exitCode ||= 15;
+}
+try {
+  const build=await resolveBuild();
+  ws=await ownChrome();
+  ws.addEventListener('close',()=>{for(const req of requests.values())req.reject(infra('CDP disconnected'));requests.clear();});
+  ws.addEventListener('error',()=>{for(const req of requests.values())req.reject(infra('CDP socket error'));requests.clear();});
+  ws.addEventListener('message',e=>{
+    const m=JSON.parse(e.data);
+    if(m.id&&requests.has(m.id)){requests.get(m.id).resolve(m);requests.delete(m.id);}
+    if(m.method==='Page.loadEventFired')pageLoads++;
+    if(m.method==='Runtime.exceptionThrown'){browserErrors.push(m.params?.exceptionDetails?.exception?.description||m.params?.exceptionDetails?.text||'unknown');console.error('BROWSER_EXCEPTION',browserErrors.at(-1));}
+  });
+  await cmd('Page.enable');await cmd('Runtime.enable');
+  await cmd('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await cmd('Page.navigate',{url:origin+'/'});
+  await until("!!document.querySelector('#onboarding .forge-solid-button')",'fresh disposable onboarding',30000);
+  assert(await ev('location.origin')===origin,'browser on requested loopback origin');
+  if(build.entry){
+    await until('performance.getEntriesByType("resource").some(e=>new URL(e.name).pathname==='+JSON.stringify(build.entry)+')','served production entry loaded');
+    const loadedHash=await ev("(async()=>{const r=await fetch("+JSON.stringify(build.entry)+");const bytes=await r.arrayBuffer();return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('')})()");
+    assert(loadedHash===build.entrySha256,'browser production entry matches pinned hash');
+  }
+  await click('#onboarding .forge-solid-button');
+  await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game?.created===true",'fighter saved');
+  const initial=await readProfile();
+  assert(initial.xp===0&&initial.coins===0&&initial.workouts.length===0,'disposable profile has no pre-existing rewards');
+  if (finalFloor) {
+    // Seed only this newly created disposable QA profile at the final floor.
+    await ev("(()=>{const p=JSON.parse(localStorage.getItem('bodyforge:pilot:v1'));p.game.highestClearedFloor=4;localStorage.setItem('bodyforge:pilot:v1',JSON.stringify(p));return true})()");
+    const beforeLoad=pageLoads;
+    await cmd('Page.reload',{ignoreCache:true});
+    const reloadDeadline=Date.now()+30000;
+    while(pageLoads<=beforeLoad){if(Date.now()>reloadDeadline)throw infra('Final-floor fixture reload did not complete');await sleep(100);}
+    await until("document.querySelector('.app-shell')?.dataset.fighterCreated==='true'",'final-floor fixture hydrated',30000);
+    assert((await readProfile()).game.highestClearedFloor===4,'disposable final-floor fixture starts at four');
+  }
+  assert(await installFixture(build.pose),'synthetic pose stream installed in actual lazy module');
+  await click('.mobile-nav button:nth-child(4)');
+  await click('#tower .forge-solid-button');
+  await until("window.__bfPose?.used>0 && !!document.querySelector('.live-tag')",'synthetic camera processes frames',45000);
+  try{
+    await until("document.querySelector('.completion-stage')?.dataset.resultPersistence==='credited' || !!document.querySelector('.camera-error')",'20-rep acknowledged completion',90000);
+  }catch(error){console.error('TRACKING',JSON.stringify(await obj("({used:window.__bfPose?.used,progress:document.querySelector('.counter-number')?.textContent,phase:document.querySelector('.completion-stage')?.dataset.resultPersistence,error:document.querySelector('.camera-error')?.textContent})")));throw error;}
+  assert(await ev("document.querySelector('.completion-stage')?.dataset.resultPersistence==='credited' && !document.querySelector('.camera-visible') && !document.querySelector('.camera-error')"),'camera auto-stops and reward is acknowledged');
+  await until("window.__bfPose.closed>0 && window.__bfPose.tracks.length>0 && window.__bfPose.tracks.every(t=>t.readyState==='ended')",'model and tracks released');
+  const saved=await readProfile();
+  assert(saved.xp===185&&saved.coins===65,'tower gives workout and victory bonus exactly once');
+  assert(saved.game.highestClearedFloor===(finalFloor?5:1),'one tower floor unlocked');
+  assert(saved.workouts.length===1&&saved.workouts[0].repetitions===20,'single workout credited');
+  assert(saved.creditedWorkoutIds?.length===1&&saved.creditedWorkoutIds[0]===saved.workouts[0].id,'exactly one reward identity persisted');
+  assert(saved.game.bestGhost?.splitsMs?.length===20,'ghost records twenty split times');
+  assert(await ev("document.querySelector('.completion-stage [role=status]')?.textContent")==='\u0032\u0030 \u0417\u0410\u0421\u0427\u0418\u0422\u0410\u041d\u041d\u042b\u0425 \u041f\u041e\u0412\u0422\u041e\u0420\u0415\u041d\u0418\u0419','completion confirms saved result');
+  assert(await ev("document.querySelector('#challenge .challenge-type')?.textContent?.trim()")==='\u0411\u0410\u0428\u041d\u042f \u00b7 \u042d\u0422\u0410\u0416 '+(finalFloor?5:1),'completed heading retains original floor');
+  await shot();
+  if (finalFloor) {
+    const restart='#challenge [data-action=restart-workout]';
+    await until("document.querySelector("+JSON.stringify(restart)+")?.disabled===false",'restart is available after durable credit');
+    assert(await ev("document.querySelector("+JSON.stringify(restart)+")?.textContent?.trim()")==='\u041e\u0411\u042b\u0427\u041d\u0410\u042f \u0422\u0420\u0415\u041d\u0418\u0420\u041e\u0412\u041a\u0410','final tower offers normal training');
+    const afterWin=await ev("localStorage.getItem('bodyforge:pilot:v1')");
+    await ev('window.__bfPose.used=0');
+    await click(restart);
+    await until("window.__bfPose?.used>=20 && !!document.querySelector('.live-tag')",'normal training starts after final victory',45000);
+    assert(await ev("!document.querySelector('#challenge .challenge-type')?.textContent.includes('\u0411\u0410\u0428\u041d\u042f')"),'next attempt is not tower');
+    await click('#challenge button.secondary-button');
+    await until("!document.querySelector('.live-tag') && window.__bfPose.tracks.every(t=>t.readyState==='ended')",'partial workout stopped and camera released');
+    assert(await ev("localStorage.getItem('bodyforge:pilot:v1')")===afterWin,'stopped partial workout changes no profile bytes');
+    assert(await ev("!Object.keys(localStorage).some(k=>k.startsWith('bodyforge:pilot:v1:result:'))"),'stopped partial workout creates no pending local result');
+    await ev('window.__bfPose.used=0');
+    await click('#challenge button.primary-button');
+    await until("document.querySelector('.completion-stage')?.dataset.resultPersistence==='credited' || !!document.querySelector('.camera-error')",'ordinary training after tower',90000);
+    assert(await ev("document.querySelector('.completion-stage')?.dataset.resultPersistence==='credited' && !document.querySelector('.camera-error')"),'ordinary workout is credited after final floor');
+    const next=await readProfile();
+    assert(next.xp===305&&next.coins===100&&next.game.highestClearedFloor===5,'ordinary workout pays base reward only');
+    assert(next.workouts.length===2&&next.workouts[0].mode==='training'&&next.creditedWorkoutIds?.length===2,'exactly two workouts and two reward identities');
+  }
+  await click('.mobile-nav button:nth-child(4)');
+  if(finalFloor)assert(await ev("document.querySelector('#tower .forge-solid-button')?.disabled===true"),'completed tower cannot start another floor');
+  await until("document.querySelector('.ghost-panel button')?.disabled===false",'ghost race unlocks');
+  await click('.mobile-nav button:nth-child(1)');
+  const quest='#quests .quest-card:nth-child(2) button';
+  await until('document.querySelector('+JSON.stringify(quest)+')?.getClientRects().length>0','current Forge mission visible');
+  assert(await ev("document.querySelector('#daily-plan')===null"),'removed daily plan remains absent');
+  assert(await ev('document.querySelector('+JSON.stringify(quest)+')?.textContent?.trim()')==='\u0417\u0410\u0411\u0420\u0410\u0422\u042c','daily quest earned after saved squat workout');
+  await click(quest);
+  await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').xp==="+(finalFloor?360:240),'daily quest acknowledged on disk');
+  const claimed=await readProfile();
+  assert(claimed.xp===(finalFloor?360:240)&&claimed.coins===(finalFloor?120:85)&&claimed.workouts.length===(finalFloor?2:1),'daily quest paid once without an extra workout');
+  await until('document.querySelector('+JSON.stringify(quest)+')?.disabled===true','claimed quest disabled');
+  const raw=await ev("localStorage.getItem('bodyforge:pilot:v1')");
+  const previous=pageLoads;
+  await cmd('Page.reload',{ignoreCache:true});
+  const deadline=Date.now()+30000;
+  while(pageLoads<=previous){if(Date.now()>deadline)throw infra('Reload did not complete');await sleep(100);}
+  await until("document.querySelector('.app-shell')?.dataset.fighterCreated==='true'",'saved fighter hydrated after reload',30000);
+  await click('.mobile-nav button:nth-child(1)');
+  await until('document.querySelector('+JSON.stringify(quest)+')?.disabled===true','claim stays disabled after reload');
+  assert(await ev("localStorage.getItem('bodyforge:pilot:v1')")===raw,'reload preserves exact wallet, reward ID and history');
+  assert(browserErrors.length===0,'no uncaught browser exceptions');
+  console.log('BODYFORGE_TOWER_20REPS_E2E_PASS assertions='+assertions);
+} catch(error) {
+  const infrastructure=error instanceof InfrastructureError;
+  console.error(infrastructure?'BODYFORGE_TOWER_QA_INFRA_BLOCKED':'BODYFORGE_TOWER_20REPS_E2E_FAIL',error.stack||String(error));
+  process.exitCode=infrastructure?14:13;
+} finally {
+  try{await closeOwned();}catch(error){console.error('QA_CLEANUP_ERROR',error.message);process.exitCode ||= 15;}
+}

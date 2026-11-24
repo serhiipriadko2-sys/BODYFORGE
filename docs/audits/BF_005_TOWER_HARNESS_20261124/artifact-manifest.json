@@ -1,0 +1,127 @@
+﻿[
+    {
+        "path":  "build.log",
+        "bytes":  4095,
+        "sha256":  "4553b2528676671c9982b2d3339fa532e5db7721ab76c2a3943a7a3ba4ca87e6"
+    },
+    {
+        "path":  "final-readback.json",
+        "bytes":  1096,
+        "sha256":  "33c8a22f73b152623f2e2ac4e7b6f37a95fa28d6e3c39c8843b79d2c04928c6e"
+    },
+    {
+        "path":  "frozen-gates.json",
+        "bytes":  793,
+        "sha256":  "9c2ee1daaf6acb42e653511ee8f8b9e55478f50bdbd6ff2c06b03de89705465e"
+    },
+    {
+        "path":  "frozen-gates-final.json",
+        "bytes":  664,
+        "sha256":  "788d443d7fa2362f95ca6b498a5b4447786ad06b6d3f5eca4f02c64f052f005f"
+    },
+    {
+        "path":  "frozen-gates-retry.json",
+        "bytes":  1023,
+        "sha256":  "32812536ee5f905c464f174e8dfcd581c1a5ad83631723aa51842cbc835845d1"
+    },
+    {
+        "path":  "frozen-preview.log",
+        "bytes":  77,
+        "sha256":  "513d48cf267a472471673bad0c3f2d7c14b41f0dff4a636e7f94cf03ce07a088"
+    },
+    {
+        "path":  "frozen-preview-err.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "gates.json",
+        "bytes":  1205,
+        "sha256":  "713a3586ab9747cc4040b8945932e4ed1be539f324835927eab715c3e6be5902"
+    },
+    {
+        "path":  "head-before.txt",
+        "bytes":  42,
+        "sha256":  "8c4388a89692a712a27945ea2c5c4bed0b71467813b87efa1ec5fe8c37a67542"
+    },
+    {
+        "path":  "preview-final.log",
+        "bytes":  77,
+        "sha256":  "513d48cf267a472471673bad0c3f2d7c14b41f0dff4a636e7f94cf03ce07a088"
+    },
+    {
+        "path":  "preview-final-err.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "preview-retry.log",
+        "bytes":  77,
+        "sha256":  "513d48cf267a472471673bad0c3f2d7c14b41f0dff4a636e7f94cf03ce07a088"
+    },
+    {
+        "path":  "preview-retry-err.log",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "RECEIPT.md",
+        "bytes":  4284,
+        "sha256":  "f228cacdf7438c54ab9ffc0a71909a0977e16cfa60512467c32bb8e130868276"
+    },
+    {
+        "path":  "shots/bf-qa-tower-victory.png",
+        "bytes":  113078,
+        "sha256":  "4da9446e92b4a7b39b31a732eb63e8a08a59aa1e21bcaf3362809976941b68e3"
+    },
+    {
+        "path":  "shots-retry1/bf-qa-tower-victory.png",
+        "bytes":  113078,
+        "sha256":  "4da9446e92b4a7b39b31a732eb63e8a08a59aa1e21bcaf3362809976941b68e3"
+    },
+    {
+        "path":  "source-before.json",
+        "bytes":  45760,
+        "sha256":  "b9fd00b865596d35a7752f4f6d99cb7f73a25655880a9ec9cdd6e993b1c408c2"
+    },
+    {
+        "path":  "status-before.txt",
+        "bytes":  1497,
+        "sha256":  "fdab5000ef5e06c43d9bea007431bdd2a9cea713f6490a10f902ad087f08bf8b"
+    },
+    {
+        "path":  "tower.log",
+        "bytes":  2205,
+        "sha256":  "0adf3ba324881389a7e8ebc4aa1a6dc3b3ba5df12835b5e4ca21b6fd5429d0fa"
+    },
+    {
+        "path":  "tower20-e2e.mjs.before",
+        "bytes":  9448,
+        "sha256":  "c92a6dbf380d348156d84e1cd4fe48a3172c23868aa74746bad9fcb27a5e9328"
+    },
+    {
+        "path":  "tower20-e2e.mjs.retry-before",
+        "bytes":  17498,
+        "sha256":  "be650f0d9502472fb17514ed4e7393ccbb8cd72ff545b8f06a278ebd15faacc8"
+    },
+    {
+        "path":  "tower-retry.log",
+        "bytes":  2085,
+        "sha256":  "a861fa5e965a1f3b865fa3a1d99180c4ee4703c0af2bf0bdd5cda54f7a453195"
+    },
+    {
+        "path":  "unit.log",
+        "bytes":  4906,
+        "sha256":  "9ce6139ac88303565692c1eac6eef61a7b2a3ff7d5ee6ffe0c9e157270a379fe"
+    },
+    {
+        "path":  "wrong-entry.log",
+        "bytes":  774,
+        "sha256":  "ef3911228d8fc74cdba6713776c9f21ad54262c6b69f7ae17ad6e68f141f52eb"
+    },
+    {
+        "path":  "wrong-entry-retry.log",
+        "bytes":  780,
+        "sha256":  "58b02634204bce4892185697bbeaf44e9749d7cce74a81fd8cd9eaa309464d74"
+    }
+]

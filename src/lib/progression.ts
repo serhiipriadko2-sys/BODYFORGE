@@ -133,6 +133,13 @@ function creditedWorkoutIds(value: unknown, history: Workout[]): Set<string> {
   return new Set([...ids, ...history.map((workout) => workout.id).filter(validWorkoutId)]);
 }
 
+/** Validate new reward inputs only. Historical profile records remain readable. */
+export function validWorkoutHold(exerciseId: ExerciseId, durationMs: number, holdSeconds: unknown): boolean {
+  return exerciseId === 'plank'
+    ? holdSeconds === 30 && Number.isFinite(durationMs) && durationMs >= 30_000
+    : holdSeconds === undefined;
+}
+
 /** Applies a verified *local* camera result; not an anti-cheat proof for online PvP. */
 export function addCompletedWorkout(
   profile: Profile, durationMs: number, now = new Date(), options: WorkoutOptions = {},
@@ -143,7 +150,7 @@ export function addCompletedWorkout(
   const exerciseId = options.exerciseId ?? 'squat';
   if (!isExerciseId(exerciseId)) throw new Error('Unknown exercise');
   if (exerciseId !== 'squat' && options.mode !== undefined && options.mode !== 'training') throw new Error('Only squats support competitive modes');
-  if (exerciseId === 'plank' ? options.holdSeconds !== 30 : options.holdSeconds !== undefined) throw new Error('Invalid timed hold');
+  if (!validWorkoutHold(exerciseId, durationMs, options.holdSeconds)) throw new Error('Invalid timed hold');
   const creditedReps = exerciseId === 'plank' ? 0 : TARGET_REPS;
   const creditedHold = exerciseId === 'plank' ? 30 : 0;
   const credited = creditedWorkoutIds(profile.creditedWorkoutIds, profile.workouts);

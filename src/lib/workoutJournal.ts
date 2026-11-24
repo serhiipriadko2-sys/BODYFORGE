@@ -1,6 +1,6 @@
 import { nextTowerFloor, TOWER_FLOORS, type WorkoutMode } from './game';
 import { isExerciseId, type ExerciseId } from './trainingCatalog';
-import { addCompletedWorkout, loadProfileState, saveProfile, STORAGE_KEY, TARGET_REPS, type ProfileLoadResult } from './progression';
+import { addCompletedWorkout, loadProfileState, saveProfile, STORAGE_KEY, TARGET_REPS, validWorkoutHold, type ProfileLoadResult } from './progression';
 
 export const RESULT_JOURNAL_PREFIX = `${STORAGE_KEY}:result:`;
 export const RESULT_QUARANTINE_PREFIX = `${STORAGE_KEY}:result-quarantine:`;
@@ -29,18 +29,36 @@ export type JournalOutcome = {
 const validId = (id: unknown): id is string => typeof id === 'string' && id.trim().length > 0 && id.length <= 128;
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+/** New session IDs must be encodable; historical profile IDs stay opaque. */
+function validSessionId(id: unknown): id is string {
+  if (!validId(id)) return false;
+  try { encodeURIComponent(id); return true; } catch { return false; }
+}
+
+/** Keep existing quarantine keys unchanged. A corrupt UTF-16 source key must
+ * remain distinct and exportable, not be repaired into a different identity.
+ * The literal %u16: marker cannot occur in encodeURIComponent output. */
+export function resultQuarantineKey(sourceKey: string): string {
+  try { return RESULT_QUARANTINE_PREFIX + encodeURIComponent(sourceKey); }
+  catch {
+    const units = sourceKey.split('').map(unit => unit.charCodeAt(0).toString(16).padStart(4, '0')).join('');
+    return RESULT_QUARANTINE_PREFIX + '%u16:' + units;
+  }
+}
+
 function parseResult(value: unknown): CompletedWorkoutResult | null {
   if (!value || typeof value !== 'object') return null;
   const r = value as Partial<CompletedWorkoutResult>;
-  if (r.schemaVersion !== 1 || !validId(r.profileId) || !validId(r.sessionId) ||
+  if (r.schemaVersion !== 1 || !validId(r.profileId) || !validSessionId(r.sessionId) ||
       !['training', 'tower', 'ghost'].includes(r.mode ?? '') ||
       typeof r.durationMs !== 'number' || !Number.isFinite(r.durationMs) || r.durationMs <= 0 ||
       typeof r.finishedAt !== 'string' || !Number.isFinite(Date.parse(r.finishedAt))) return null;
   if (r.exerciseId !== undefined && !isExerciseId(r.exerciseId)) return null;
   const exerciseId = r.exerciseId ?? 'squat';
   if (exerciseId !== 'squat' && r.mode !== 'training') return null;
-  if (exerciseId === 'plank' ? r.repetitions !== 0 || r.holdSeconds !== 30 || r.splitsMs !== undefined
-    : r.repetitions !== TARGET_REPS || r.holdSeconds !== undefined) return null;
+  if (!validWorkoutHold(exerciseId, r.durationMs, r.holdSeconds)) return null;
+  if (exerciseId === 'plank' ? r.repetitions !== 0 || r.splitsMs !== undefined
+    : r.repetitions !== TARGET_REPS) return null;
   if (r.mode === 'tower'
     ? !Number.isInteger(r.floor) || r.floor! < 1 || r.floor! > TOWER_FLOORS.length
     : r.floor !== null) return null;
@@ -95,7 +113,7 @@ export function quarantineWorkoutResults(expected: readonly JournalEntry[]): Jou
   }
   try {
     for (const entry of journal.entries) {
-      const key = RESULT_QUARANTINE_PREFIX + encodeURIComponent(entry.key);
+      const key = resultQuarantineKey(entry.key);
       const raw = JSON.stringify({ schemaVersion: 1, sourceKey: entry.key, raw: entry.raw });
       const existing = localStorage.getItem(key);
       if (existing !== null && existing !== raw) return { status: 'invalid', state: loadProfileState() };
@@ -136,7 +154,8 @@ export function prepareWorkoutSession(expectedRaw: string | null, mode: WorkoutM
   if (state.status === 'unavailable' || state.status === 'recovery-required') return { status: state.status, state };
   if (state.revision !== expectedRaw) return { status: 'conflict', state };
   if (!state.profile.game.created || !['training', 'tower', 'ghost'].includes(mode) || !isExerciseId(exerciseId) ||
-      (exerciseId !== 'squat' && mode !== 'training')) return { status: 'unavailable', state };
+      (exerciseId !== 'squat' && mode !== 'training') ||
+      (mode === 'tower' && state.profile.game.highestClearedFloor >= TOWER_FLOORS.length)) return { status: 'unavailable', state };
   if (!state.profile.profileId) {
     // Establish a new identity and its known ledger in the same locked write.
     // Legacy history cannot prove unknown older IDs, nor adopt pending IDs.

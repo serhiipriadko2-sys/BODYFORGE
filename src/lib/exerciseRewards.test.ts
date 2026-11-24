@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { freshGame } from './game';
 import { getProfileTotals, parseProfile, addCompletedWorkout, STORAGE_KEY, type Profile } from './progression';
-import { commitWorkoutResult, resultJournalEntry, type CompletedWorkoutResult } from './workoutJournal';
+import { commitWorkoutResult, readResultJournal, reconcileWorkoutResults, resultJournalEntry, RESULT_JOURNAL_PREFIX, type CompletedWorkoutResult } from './workoutJournal';
 
 const profile = (): Profile => ({ profileId: 'profile-verified', xp: 0, coins: 0,
   workouts: [], game: { ...freshGame(), created: true } });
@@ -44,6 +44,52 @@ describe('exercise-specific durable reward integrity', () => {
     expect(() => addCompletedWorkout(profile(), 40000, new Date(), {
       exerciseId:'plank', holdSeconds:22, mode:'training',
     })).toThrow();
+  });
+  it.each([1, 29_999, 29_999.99])('rejects an impossible new plank award at %s ms', (durationMs) => {
+    const original = profile();
+    const before = JSON.stringify(original);
+    expect(() => addCompletedWorkout(original, durationMs, new Date('2026-10-27T12:00:00Z'),
+      { exerciseId:'plank', holdSeconds:30, mode:'training', sessionId:'short-plank' })).toThrow();
+    expect(JSON.stringify(original)).toBe(before);
+  });
+  it.each([1, 29_999, 29_999.99])('rejects an impossible journal result at %s ms', (durationMs) => {
+    expect(resultJournalEntry(result('plank', { durationMs }))).toBeNull();
+  });
+  it('rejects a short plank before staging or awarding any storage mutation', () => {
+    const { storage } = mockStorage();
+    const before = [...storage.entries()];
+    expect(commitWorkoutResult(result('plank', { durationMs:29_999 })).status).toBe('invalid');
+    expect([...storage.entries()]).toEqual(before);
+  });
+  it('preserves an old impossible pending plank verbatim without replaying its reward', () => {
+    const { storage } = mockStorage();
+    const pending = result('plank', { durationMs:29_999 });
+    const key = RESULT_JOURNAL_PREFIX + encodeURIComponent(pending.sessionId);
+    const raw = JSON.stringify(pending);
+    storage.set(key, raw);
+    const before = [...storage.entries()];
+    expect(readResultJournal().entries).toContainEqual({ key, raw, result:null });
+    expect(reconcileWorkoutResults().status).toBe('invalid');
+    expect([...storage.entries()]).toEqual(before);
+  });
+  it('accepts the exact 30 second boundary and pays once', () => {
+    const { storage } = mockStorage();
+    const valid = result('plank', { durationMs:30_000 });
+    expect(resultJournalEntry(valid)).not.toBeNull();
+    expect(commitWorkoutResult(valid).status).toBe('saved');
+    expect(commitWorkoutResult(valid).status).toBe('saved');
+    const saved = parseProfile(JSON.parse(storage.get(STORAGE_KEY)!));
+    expect(saved).toMatchObject({ xp:120, coins:35, creditedWorkoutIds:[valid.sessionId] });
+    expect(saved.workouts).toHaveLength(1);
+    expect(getProfileTotals(saved)).toMatchObject({ workouts:1, repetitions:0, holdSeconds:30 });
+  });
+  it('preserves already paid legacy history and balances instead of retroactive deletion', () => {
+    const legacy = { ...profile(), xp:120, coins:35, creditedWorkoutIds:['legacy-plank'],
+      workouts:[{ id:'legacy-plank', finishedAt:'2026-10-27T12:00:00Z', durationMs:29_999,
+        repetitions:0, xp:120, exerciseId:'plank', holdSeconds:30, mode:'training' }] };
+    const parsed = parseProfile(JSON.parse(JSON.stringify(legacy)));
+    expect(parsed).toMatchObject({ xp:120, coins:35, creditedWorkoutIds:['legacy-plank'] });
+    expect(parsed.workouts).toEqual(legacy.workouts);
   });
   it('saves each kind once and never repeats the reward', () => {
     const { storage } = mockStorage();

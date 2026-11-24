@@ -141,7 +141,7 @@
 .armory-lab-heading h3 em {color:#77e9f4;}
 .armory-lab-heading p {color:#b7cbda;line-height:1.65;font-size:12px;margin:0;}
 .armory-viewport-controls {display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;}
-.armory-view-tabs {display:flex;gap:5px;padding:5px;border-radius:14px;border:1px solid #3a5369;background:#0b1926;}
+.armory-view-tabs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:5px;border-radius:14px;border:1px solid #3a5369;background:#0b1926;min-width:0;flex:1 1 210px;}
 .armory-view-tabs button {display:flex;align-items:center;gap:6px;min-height:40px;padding:9px 13px;border-radius:10px;border:1px solid transparent;background:transparent;color:#bfd3e1;font-weight:900;font-size:10px;}
 .armory-view-tabs button[aria-pressed="true"] {background:var(--pulse-ice);color:#062333;}
 .armory-yaw-controls {display:flex;align-items:center;gap:4px;color:#adc4d2;font-size:10px;font-weight:800;}

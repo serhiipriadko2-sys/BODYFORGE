@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial } from './avatarFabric';
+import { applyAvatarFabricMap, avatarTextileShader, createAvatarFabric, createAvatarTextileMaterial, tintAvatarTextile } from './avatarFabric';
 import { disposeThreeTree } from './threeResources';
 
 describe('measured textile PBR', () => {
@@ -36,6 +36,28 @@ describe('measured textile PBR', () => {
     expect(disposeRough).toHaveBeenCalledTimes(1);
     expect(disposeWeave).toHaveBeenCalledTimes(1);
     original.dispose();
+  });
+  it('keeps a dry fabric response with or without measured maps and retains the outfit tint', () => {
+    const source=new THREE.MeshStandardMaterial({color:'#17212d'});
+    const weave=createAvatarFabric();
+    const material=createAvatarTextileMaterial(source,weave);
+    expect(material.roughness).toBeGreaterThanOrEqual(.85);
+    expect(material.specularIntensity).toBeLessThan(.35);
+    expect(material.envMapIntensity).toBeLessThan(.65);
+    expect(material.sheenRoughness).toBeGreaterThan(.85);
+    const fragment='#include <roughnessmap_fragment>';
+    const modified=avatarTextileShader(fragment);
+    expect(modified).toContain('BODYFORGE_MATTE_TEXTILE_V1');
+    expect(modified).toContain('#ifdef USE_ROUGHNESSMAP');
+    expect(modified).toContain('mix(0.72, 1.0, clamp(roughnessFactor, 0.0, 1.0))');
+    expect(avatarTextileShader(modified)).toBe(modified);
+    expect(avatarTextileShader('other fragment')).toBe('other fragment');
+    expect(material.customProgramCacheKey()).toBe('bodyforge-matte-textile-v1');
+    material.color.set('#764d39');
+    tintAvatarTextile(material);
+    expect(material.color.equals(new THREE.Color('#764d39'))).toBe(true);
+    expect(material.sheenColor.equals(material.color.clone().lerp(new THREE.Color('#788899'),.12))).toBe(true);
+    material.dispose();source.dispose();weave.dispose();
   });
   it('refuses a texture if the compatible garment is absent', () => {
     const texture=new THREE.Texture();

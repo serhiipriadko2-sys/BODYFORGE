@@ -1,0 +1,17 @@
+﻿{
+    "task":  "BF-002",
+    "buildManifest":  "8E0B701BFA8FD238B68664657283D714FE13DC2759C7EB722D4BC6B06AAB070E",
+    "origin":  "http://127.0.0.1:5177",
+    "ownedPreviewPid":  13124,
+    "previewHttp":  200,
+    "entryHashMatch":  true,
+    "privacyExit":  0,
+    "mobileExit":  0,
+    "sourceState":  "DRIFT: parallel existing work; frozen build only",
+    "previewStopped":  true,
+    "entry":  "/assets/index-BCq0olae.js",
+    "entrySha256":  "f22f45dde0d1668d4d14b844d10335e4824f3f3b4f067e232fb4dc7da6830db0",
+    "buildHashesUnchanged":  true,
+    "qaHashesUnchanged":  true,
+    "time":  "2026-11-24T20:45:00.3417781+03:00"
+}

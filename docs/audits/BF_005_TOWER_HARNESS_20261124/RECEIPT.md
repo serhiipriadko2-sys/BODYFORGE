@@ -1,0 +1,21 @@
+﻿# BF-005 / Tower QA harness - engineering receipt
+Observed: 2026-11-24T20:55:31.5635280+03:00; workspace E:\github\BODYFORGE; current HEAD 6b2319ac517883857aad2140e50e09c229d63245.
+Status: IMPLEMENTED / TESTED_LOCAL for tower harness on exact RUN02 frozen production build. BF-005 wider suite and BF-002 current source remain PARTIAL due parallel avatar work.
+
+Changed only qa/tower20-e2e.mjs. Original tracked clean hash C92A6DBF380D348156D84E1CD4FE48A3172C23868AA74746BAD9FCB27A5E9328; exact original retained in tower20-e2e.mjs.before. No product source, profile, dependency, APK, Git stage/commit/push or Firebase mutation by this turn.
+Baseline static defect: fixed CDP port 9583 (risk of attaching to an unrelated browser) and removed daily-plan DOM target. Old unsafe test not executed. New code verifies loopback, exact preview entry SHA, browser identity via disposable DevToolsActivePort and dynamic port, real lazy MediaPipe module, current Forge quest, persisted reward ID, exact reload bytes; distinguishes infrastructure exit 14 from scenario exit 13 and cleanup exit 15. Mock model creation and fake camera frames only in disposable Chrome.
+
+Commands: node --check qa/tower20-e2e.mjs; git diff --check; npm test -- --maxWorkers=1 --no-file-parallelism (611/611, exit 0, source stable through unit); npm run build -- --outDir <isolated temporary dist> (exit 0; avatarGarmentFolds.ts/avatarPhysique.ts drift during build -> no current full baseline claim).
+Exact separate RUN02 source manifest stable before/after unit/build (F89505467147C4AB574FD13F325224ADC896A69E5ADD1776748EF3C82F475899). RUN02 build manifest 59 files, AF7608A37B467E33B8028F16E9D428851C79E20DF2DA4F1E2109FC581388C8BC; all files rehashed before/after tower QA; preview HTTP 200 and served index/entry matched.
+RUN02 existing logs: 611/611 unit, build/bundle/Forge exit 0; multitab production exit 16 because it imports /src/lib/progression.ts, then dev exit 0 (31 assertions). Do not label environment mismatch a product bug.
+
+Run 1: wrong entry hash exited 14 before browser launch. Tower passed 24 assertions but process exited 15 due Windows EPERM deleting its disposable profile. Confirmed own Chrome processes and port stopped, then deleted only that exact temporary profile. Added bounded repeated removal on transient Windows sharing violations.
+Retry negative guard: exit 14 before browser launch; outer PowerShell receipt check used positional Select-String incorrectly and failed before starting tower; corrected the outer command (no product change).
+Run 2: same verified RUN02 preview, final qa:tower20 exit 0, 24 assertions; 185 XP/65 coins tower, then 240 XP/85 coins after quest, 1 workout and 1 reward identity, 20 ghost splits; camera/model released, exact profile bytes after reload, no uncaught browser exceptions. Temporary profile removal on attempt 2, QA_OWNED_CLEANUP PASS. Owned preview stopped; all 59 build files unchanged.
+
+Usage on existing dev: npm run qa:tower20 (dev branch retained; not independently rerun this turn because source is changing). Production preview: set BODYFORGE_QA_ORIGIN to owned loopback preview, BODYFORGE_QA_EXPECT_ENTRY_SHA256 to actual precomputed SHA-256 of the build entry (do not derive expectation from the server under test), optionally BODYFORGE_QA_ARTIFACT_DIR to a new screenshot directory; npm run qa:tower20. Use Vite preview --host 127.0.0.1 --strictPort --outDir <isolated dist>.
+
+Final syntax=0 diff=0 stagedDiff=0 canon=0; existing dev/preview HTTP=200/200; owned port listeners=0; remaining tower temp profiles=0. Parallel changed existing inputs=4; new inputs=2. Exact paths in final-readback.json.
+Final QA bytes=18189; SHA-256=6FF79C8E72CDBDEE8E9521299E0AC856477BF1E682F5AF8F2E5E8BF4E715A449.
+Rollback: only if the current target still matches the final QA SHA above, copy the exact saved tower20-e2e.mjs.before bytes over qa/tower20-e2e.mjs; confirm original hash; do not reset or clean other files.
+Nonclaims: no current full-worktree gate, no real human pose accuracy, no physical Android/owner profile verification, no release/publication. Next: finish BF-002 rebaseline after parallel batch settles, BF-003/004/005 remaining scope and BF-101 reward boundary; do not overwrite ongoing avatar work.

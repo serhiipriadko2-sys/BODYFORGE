@@ -29,17 +29,38 @@ export function isAvatarTextile(mesh: THREE.SkinnedMesh): boolean {
   return mesh.name === 'BODYFORGE_Shirt' || mesh.name === 'BODYFORGE_Shorts';
 }
 
-/** The pinned garment GLBs use untextured PBR materials. Add a restrained
- * fibre-sheen lobe; the existing outfit color remains the source of truth. */
+/** Preserve measured roughness variation, but move it into a dry-knit range.
+ * Only the textile material uses this extension; no new texture or pass. */
+export function avatarTextileShader(fragment: string): string {
+  const include = '#include <roughnessmap_fragment>';
+  if (fragment.includes('BODYFORGE_MATTE_TEXTILE_V1') || fragment.split(include).length !== 2) return fragment;
+  return fragment.replace(include, `${include}
+    // BODYFORGE_MATTE_TEXTILE_V1
+    #ifdef USE_ROUGHNESSMAP
+      roughnessFactor = mix(0.72, 1.0, clamp(roughnessFactor, 0.0, 1.0));
+    #endif
+  `);
+}
+
+export function tintAvatarTextile(material: THREE.MeshPhysicalMaterial): void {
+  material.sheenColor.copy(material.color).lerp(new THREE.Color('#788899'), .12);
+}
+
+/** Dry technical jersey: broad low-energy fibre sheen, not polished plastic.
+ * Outfit color remains the source of truth. */
 export function createAvatarTextileMaterial(source: THREE.MeshStandardMaterial, weave: THREE.Texture): THREE.MeshPhysicalMaterial {
-  return new THREE.MeshPhysicalMaterial({
-    name: 'BODYFORGE technical stretch fabric',
+  const material = new THREE.MeshPhysicalMaterial({
+    name: 'BODYFORGE dry technical jersey',
     color: source.color.clone(), side: source.side,
-    roughness: .76, metalness: 0, ior: 1.45, specularIntensity: .66,
-    bumpMap: weave, bumpScale: .004,
-    sheen: .38, sheenColor: source.color.clone().lerp(new THREE.Color('#788899'), .28),
-    sheenRoughness: .74,
+    roughness: .88, metalness: 0, ior: 1.43, specularIntensity: .28,
+    envMapIntensity: .55,
+    bumpMap: weave, bumpScale: .0025,
+    sheen: .24, sheenRoughness: .91,
   });
+  tintAvatarTextile(material);
+  material.onBeforeCompile = shader => { shader.fragmentShader = avatarTextileShader(shader.fragmentShader); };
+  material.customProgramCacheKey = () => 'bodyforge-matte-textile-v1';
+  return material;
 }
 
 /** Only the real shirt and shorts share these maps. The caller owns the
@@ -62,9 +83,8 @@ export function applyAvatarFabricMap(garments: readonly THREE.SkinnedMesh[], kin
   for (const material of materials) {
     if (kind === 'normal') {
       material.normalMap = texture;
-      // The 512px resampling reduces slope amplitude. The bound recovers
-      // cloth grain without adding geometry or exaggerating macro folds.
-      material.normalScale.set(2.2, 2.2);
+      // Keep the measured weave without exaggerating specular microfacets.
+      material.normalScale.set(1.25, 1.25);
     } else {
       material.roughnessMap = texture;
       material.roughness = 1;

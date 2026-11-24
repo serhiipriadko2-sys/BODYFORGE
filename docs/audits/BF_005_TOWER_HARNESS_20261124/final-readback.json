@@ -1,0 +1,28 @@
+﻿{
+    "head":  "6b2319ac517883857aad2140e50e09c229d63245",
+    "observed":  "2026-11-24T20:55:31.5365275+03:00",
+    "ownedFile":  "qa/tower20-e2e.mjs",
+    "sha256":  "6FF79C8E72CDBDEE8E9521299E0AC856477BF1E682F5AF8F2E5E8BF4E715A449",
+    "bytes":  18189,
+    "syntaxExit":  0,
+    "diffCheckExit":  0,
+    "cachedDiffCheckExit":  0,
+    "canonExit":  0,
+    "parallelChanged":  [
+                            "qa/avatar-quality-e2e.mjs",
+                            "src/components/Avatar3D.tsx",
+                            "src/lib/avatarGarmentSeams.ts",
+                            "src/lib/avatarPhysique.ts"
+                        ],
+    "parallelNew":  [
+                        "src/lib/avatarGarmentFolds.ts",
+                        "src/lib/avatarGarmentSeams.test.ts"
+                    ],
+    "devHttp":  200,
+    "existingPreviewHttp":  200,
+    "ownedPortListeners":  0,
+    "remainingTowerTempProfiles":  [
+
+                                   ],
+    "originalRollbackSha256":  "C92A6DBF380D348156D84E1CD4FE48A3172C23868AA74746BAD9FCB27A5E9328"
+}
