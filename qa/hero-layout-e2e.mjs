@@ -106,8 +106,8 @@ try {
     check(data.summaryHeight>=44,'accordion touch target at least 44px at '+width);
     if(width<=428) check(data.appearance.top >= data.muscles.bottom,
       'mobile cosmetics follow muscle upgrades at '+width);
-    check(data.labOpen && data.wardrobeOpen && data.labVisible && data.outfitVisible,
-      'cosmetic panels initially accessible at '+width);
+    check(!data.labOpen && !data.wardrobeOpen && !data.labVisible && !data.outfitVisible,
+      'both cosmetic panels closed by default at '+width);
     await js('document.querySelector("#forge")?.scrollIntoView({block:"start",behavior:"instant"})');
     await sleep(100);
     await screenshot('hero-'+width+'-initial.png');
@@ -116,6 +116,14 @@ try {
   await viewport(390);
   await click('[data-studio-panel="appearance"]>summary');
   let snap=await layout();
+  check(snap.labOpen && snap.labVisible && !snap.wardrobeOpen && !snap.outfitVisible,
+    'appearance opens independently from default closed state');
+  await click('[data-studio-panel="wardrobe"]>summary');
+  snap=await layout();
+  check(snap.labOpen && snap.wardrobeOpen && snap.labVisible && snap.outfitVisible,
+    'wardrobe can open without closing appearance');
+  await click('[data-studio-panel="appearance"]>summary');
+  snap=await layout();
   check(!snap.labOpen && !snap.labVisible && snap.wardrobeOpen && snap.outfitVisible,
     'appearance folds while wardrobe independently stays open');
   await click('[data-studio-panel="wardrobe"]>summary');
@@ -150,6 +158,13 @@ try {
   await cdp('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   check(await js('getComputedStyle(document.querySelector("#forge .studio-accordion-chevron")).transitionDuration')==='0s',
     'reduced-motion preference disables arrow animation');
+  await cdp('Page.reload',{ignoreCache:true});
+  await until('document.readyState==="complete"&&document.querySelector(".app-shell")?.dataset.screen==="dashboard"','fresh document after reload');
+  await click('.mobile-nav button:nth-child(3)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="forge"&&!!document.querySelector("#avatar-lab")','Hero restored after reload');
+  snap=await layout();
+  check(!snap.labOpen&&!snap.wardrobeOpen&&!snap.labVisible&&!snap.outfitVisible,'fresh page starts both panels closed again');
+  check(await js('localStorage.getItem("bodyforge:pilot:v1")')===profileBefore,'profile unchanged after reload');
   check(exceptions.length===0,'no uncaught browser exceptions on Hero');
   console.log('BODYFORGE_HERO_ACCORDION_E2E_PASS');
 } catch(error) {

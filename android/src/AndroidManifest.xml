@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ru.bodyforge.healthqa" android:versionCode="3" android:versionName="0.3.0-health-test.3">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <application android:allowBackup="false" android:usesCleartextTraffic="false"
+        android:hardwareAccelerated="true" android:debuggable="false"
+        android:icon="@drawable/ic_bodyforge" android:label="BODYFORGE Health (TEST)"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+        <activity android:name=".MainActivity" android:exported="true"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+            <intent-filter><action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        </activity>
+        <activity android:name=".HealthStepsActivity" android:exported="false"/>
+        <activity android:name=".PermissionsRationaleActivity" android:exported="false"/>
+        <activity-alias android:name=".ViewPermissionUsageActivity" android:exported="true"
+            android:targetActivity=".PermissionsRationaleActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter><action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/></intent-filter>
+        </activity-alias>
+    </application>
+</manifest>

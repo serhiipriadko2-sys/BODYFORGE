@@ -127,8 +127,9 @@ try {
   await until('!!document.querySelector("#onboarding .forge-solid-button")', 'onboarding');
   await click('.build-options button:nth-child(2)');
   await click('#onboarding .forge-solid-button');
-  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard" && document.querySelectorAll(".pulse-date-button").length===7',
-    'Forge chart mounted');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector(".pulse-trend-card")?.getClientRects().length>0 && document.querySelectorAll(".pulse-date-button").length===7',
+    'Camera chart mounted');
   const before = await js('localStorage.getItem("bodyforge:pilot:v1")');
   for (const width of [320, 360, 390, 428]) {
     await viewport(width);

@@ -1,0 +1,15 @@
+﻿{
+    "task":  "BF-002",
+    "time":  "2026-11-24T20:42:41.0148701+03:00",
+    "unitExit":  0,
+    "buildExit":  0,
+    "bundleExit":  0,
+    "dist":  "C:\\Users\\gabra\\AppData\\Local\\Temp\\bodyforge-r0-20261124-run01\\dist",
+    "buildFiles":  59,
+    "buildManifestSha256":  "8E0B701BFA8FD238B68664657283D714FE13DC2759C7EB722D4BC6B06AAB070E",
+    "sourceManifestSha256":  "4E45785921BB3B94D5C16F0768E3FCAA32F37101D1C3A7C7325F68134B9F7F37",
+    "existingDistIndexUnchanged":  false,
+    "sourceHashesUnchanged":  true,
+    "preview":  "NOT_RUN",
+    "browser":  "NOT_RUN"
+}

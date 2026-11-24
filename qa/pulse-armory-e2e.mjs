@@ -105,6 +105,8 @@ try {
   assert(await js('document.querySelectorAll("[data-quick-action]").length===4'), 'four functional destination cards displayed');
   assert(await js('document.querySelector("[data-weekly-sessions]")?.dataset.weeklySessions==="0"'), 'zero workouts means zero plotted sessions');
   await screenshot('bodyforge-pulse-dashboard', '#pulse-progress');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector(".pulse-trend-card")?.getClientRects().length>0', 'training activity on Camera');
   const progressionBeforeRange = await js('localStorage.getItem("bodyforge:pilot:v1")');
   assert(await js('document.querySelector("#pulse-activity-range")?.value==="7"'), 'seven-day analytics selected by default');
   assert(await js('document.querySelectorAll(".pulse-date-button").length===7'), 'every weekly day has an accessible selection control');
@@ -126,6 +128,8 @@ try {
   await until('document.querySelector(".pulse-linechart")?.dataset.chartPoints==="7"', 'seven-day view restored');
   assert(await js('document.querySelectorAll(".pulse-date-button").length===7'), 'range change resets the visible date controls');
   assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===progressionBeforeRange, 'analytics range and date selection do not rewrite the game');
+  await click('.mobile-nav button:nth-child(1)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'return to Forge');
   await screenshot('bodyforge-neon-actions', '#forge-quick-deck');
   await screenshot('bodyforge-profile-header', '.dashboard-player');
   await viewport(360);
@@ -133,7 +137,8 @@ try {
   await viewport(428);
   await viewport(390);
   await click('[data-quick-action="hero"]');
-  await until('!!document.querySelector("#avatar-lab")', 'avatar editor');
+  if (!await js('document.querySelector("[data-studio-panel=appearance]")?.open')) await click('[data-studio-panel="appearance"]>summary');
+  await until('document.querySelector("#avatar-lab")?.getClientRects().length>0', 'avatar editor visible');
   const profileBefore = await js('localStorage.getItem("bodyforge:pilot:v1")');
   assert(profileBefore !== null, 'fighter progression exists before customization');
   await until('!!document.querySelector(".studio-preview [data-3d-status=active]")', '3D renderer live');
@@ -191,7 +196,8 @@ try {
   await until('window.__pulseBeforeReload === undefined && document.readyState === "complete" && document.querySelector(".mobile-nav button:nth-child(3)")?.disabled === false', 'new document, navigation and saved profile ready after reload');
   // Normal navigation returns to Dashboard on reload; visit Hero again.
   await click('.mobile-nav button:nth-child(3)');
-  await until('!!document.querySelector("#avatar-lab")', 'avatar editor restored after navigation');
+  if (!await js('document.querySelector("[data-studio-panel=appearance]")?.open')) await click('[data-studio-panel="appearance"]>summary');
+  await until('document.querySelector("#avatar-lab")?.getClientRects().length>0', 'avatar editor restored after navigation');
   await js('(()=>{document.querySelector("#forge .studio-preview").scrollIntoView({block:"start"});return true})()');
   await until('document.querySelector(".studio-preview [data-look-skin]")?.dataset.lookSkin==="deep"', 'persisted material restored after reload');
   const reloadLook = await js('({button:document.querySelector("#avatar-lab [data-visor]")?.getAttribute("data-visor"),pressed:document.querySelector("#avatar-lab [data-visor]")?.getAttribute("aria-pressed"),saved:JSON.parse(localStorage.getItem("bodyforge:avatar-look:v1"))?.visor,preview:document.querySelector(".studio-preview [data-look-visor]")?.dataset.lookVisor})');

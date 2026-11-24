@@ -12,7 +12,7 @@ async function actualRig(filename:string) {
 }
 
 describe('athletic stance on the actual pinned rig', () => {
-  it.each(['male-base-mesh-base_male.glb','bodyforge-athlete.glb','bodyforge-athlete-realistic.glb','bodyforge-athlete-detail.glb'])('lowers both wrists without translating bones or changing feet/bind structure: %s', async (filename) => {
+  it.each(['male-base-mesh-base_male.glb','bodyforge-athlete.glb','bodyforge-athlete-realistic.glb','bodyforge-athlete-detail.glb','bodyforge-athlete-efficient.glb'])('lowers both wrists without translating bones or changing feet/bind structure: %s', async (filename) => {
     const root = await actualRig(filename);
     const hands:THREE.Bone[] = [];
     root.traverse((node) => { if(node instanceof THREE.Bone && /^wrist[lr]$/i.test(node.name.replace(/[^a-z0-9]/gi,''))) hands.push(node); });
@@ -26,6 +26,17 @@ describe('athletic stance on the actual pinned rig', () => {
     after.forEach((point, index) => {
       expect(point.y).toBeLessThan(before[index].y - .04);
       expect(Math.abs(point.x)).toBeLessThan(Math.abs(before[index].x));
+      expect(point.z).toBeLessThan(before[index].z - .08);
+      const side = hands[index].name.toLowerCase().endsWith('l') ? 'l' : 'r';
+      let elbow: THREE.Bone | undefined;
+      root.traverse(node => {
+        if (node instanceof THREE.Bone && node.name.replace(/[^a-z0-9]/gi, '').toLowerCase() === 'lowerarm01' + side) elbow = node;
+      });
+      expect(elbow).toBeDefined();
+      const offset = point.clone().sub(elbow!.getWorldPosition(new THREE.Vector3()));
+      expect(offset.y).toBeLessThan(-.22);
+      expect(offset.z).toBeGreaterThan(.04);
+      expect(offset.z).toBeLessThan(.10);
       expect(point.toArray().every(Number.isFinite)).toBe(true);
     });
     root.traverse((node) => expect(node.position.equals(local.get(node)!)).toBe(true));

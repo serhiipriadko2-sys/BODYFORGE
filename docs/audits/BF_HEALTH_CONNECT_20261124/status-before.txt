@@ -1,0 +1,29 @@
+ M qa/appearance-e2e.mjs
+ M qa/avatar-quality-e2e.mjs
+ M qa/forge-home-xp-faq-e2e.mjs
+ M qa/kinetic-e2e.mjs
+ M qa/pulse-armory-e2e.mjs
+ M qa/pulse-day-touch-e2e.mjs
+ M qa/steps-day-e2e.mjs
+ M src/App.tsx
+ M src/components/Avatar3D.tsx
+ M src/components/ProgressPulseBoard.tsx
+ M src/components/StepsBoard.tsx
+ M src/index.css
+ M src/lib/avatarPose.test.ts
+ M src/lib/avatarPose.ts
+ M src/lib/progressPulse.test.ts
+ M src/neonPulseV2.css
+ M src/trainingExperience.css
+?? docs/audits/BF_CAMERA_ACTIVITY_20261124/
+?? docs/audits/BF_FORGE_AVATAR_ONLY_20261124/
+?? docs/audits/BF_FORGE_CHRONICLE_COLLAPSE_20261124/
+?? docs/audits/BF_HEALTH_CONNECT_20261124/
+?? docs/audits/BF_STEPS_COMPACT_20261124/
+?? public/assets/athlete-skin-portrait.jpg
+?? public/assets/bodyforge-strand-groom.glb
+?? scripts/author-strand-groom.py
+?? scripts/bake-portrait-skin.py
+?? src/lib/avatarFabric.ts
+?? src/lib/avatarPhysique.test.ts
+?? src/lib/avatarPhysique.ts

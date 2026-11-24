@@ -134,7 +134,7 @@ async function bounds(tab, label, screen, desktop = false) {
     const rect=e=>{if(!e)return null;const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:s.display,visibility:s.visibility}};
     const nav=document.querySelector(${JSON.stringify(desktop ? '.sidebar nav' : '.mobile-nav')});
     const content=document.querySelector('main.content');
-    const cta=document.querySelector('.character-card .mobile-quickstart button');
+    const cta=document.querySelector('.dashboard-player .profile-training-cta');
     return {label:${JSON.stringify(label)},width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,
       content:rect(content),nav:rect(nav),buttons:[...nav.querySelectorAll('button')].map(e=>({...rect(e),label:e.textContent.trim(),selected:e.getAttribute('aria-current'),disabled:e.disabled})),
       cta:rect(cta),appearance:rect(document.querySelector('.appearance-trigger')),

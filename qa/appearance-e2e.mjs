@@ -176,17 +176,21 @@ function measuredContrast(first, second) {
 }
 async function hoverContrast(tab) {
   await close(tab);
+  await tab.click('.mobile-nav button:nth-child(2)');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#challenge .primary-button")?.getClientRects().length>0', 'camera start action visible');
   await tab.cdp('DOM.enable'); await tab.cdp('CSS.enable');
   const document = await tab.cdp('DOM.getDocument');
-  const node = await tab.cdp('DOM.querySelector', { nodeId: document.root.nodeId, selector: '.character-card .mobile-quickstart button' });
+  const node = await tab.cdp('DOM.querySelector', { nodeId: document.root.nodeId, selector: '#challenge .primary-button' });
   await tab.cdp('CSS.forcePseudoState', { nodeId: node.nodeId, forcedPseudoClasses: ['hover'] });
   try {
-    const hover = await tab.js('(()=>{const s=getComputedStyle(document.querySelector(".character-card .mobile-quickstart button"));return {foreground:s.color,background:s.backgroundColor,filter:s.filter}})()');
+    const hover = await tab.js('(()=>{const s=getComputedStyle(document.querySelector("#challenge .primary-button"));return {foreground:s.color,background:s.backgroundColor,filter:s.filter}})()');
     observations.hover = { ...hover, ratio: measuredContrast(hover.foreground, hover.background) };
     console.log('CUSTOM_BOUNDARY_HOVER', JSON.stringify(observations.hover));
     check(hover.filter === 'none', 'custom #747474 CTA hover does not apply a brightness filter');
     check(observations.hover.ratio >= 4.5, 'actual custom #747474 hovered CTA text contrast remains >=4.5');
   } finally { await tab.cdp('CSS.forcePseudoState', { nodeId: node.nodeId, forcedPseudoClasses: [] }); }
+  await tab.click('.mobile-nav button:nth-child(1)');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'return to Forge');
   await open(tab);
 }
 async function reducedTransparency(tab) {
@@ -329,8 +333,10 @@ async function openCameraPanels(tab) {
 }
 async function trainingScreen(tab) {
   await tab.click('.mobile-nav button:nth-child(2)');
-  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge"&&["#quests","#step-log"].every(s=>document.querySelector(s)?.getClientRects().length>0)&&!document.querySelector("#daily-plan")',
-    'Camera screen shows missions and manual steps without removed daily-plan editor');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge"&&document.querySelector("#step-log")?.getClientRects().length>0&&document.querySelector("#quests")?.getClientRects().length===0&&!document.querySelector("#daily-plan")',
+    'Camera screen shows steps without Forge missions or retired daily-plan editor');
+  if (!await tab.js('document.querySelector("#step-log details")?.open')) await tab.click('#step-log summary');
+  await tab.until('document.querySelector("#bf-steps-today")?.getClientRects().length>0', 'manual step fallback visible after opening compact control');
 }
 async function preferenceDraftRaces(a, initialGame) {
   // The daily-plan editor was deliberately removed from the app, but its
@@ -374,7 +380,7 @@ async function integrationExperience(tab, initialGame) {
   await tab.js('localStorage.setItem(' + JSON.stringify(goalKey) + ',' + JSON.stringify(legacyRaw) + ');true');
   await trainingScreen(tab);
   check(await tab.js('!document.querySelector("#daily-plan") && !!document.querySelector("#quests")'),
-    'Camera keeps missions and omits the retired personal-plan editor');
+    'Camera keeps the shared mission DOM hidden and omits the retired personal-plan editor');
   await tab.input('#bf-steps-today', '4321');
   await tab.click('#step-log .bf-step-input-row button');
   await tab.until('document.querySelector("[data-manual-steps]")?.dataset.manualSteps==="4321"',
@@ -396,9 +402,9 @@ async function integrationExperience(tab, initialGame) {
 
   const stepSpecs = [
     ['#step-log', 'effectiveBackground', '--bf-surface-solid'],
-    ['#step-log .bf-panel-heading strong', 'color', '--bf-copy'],
+    ['#step-log .bf-steps-metric:nth-child(2) strong', 'color', '--bf-copy'],
     ['#step-log .bf-panel-description', 'color', '--bf-muted'],
-    ['#step-log .bf-panel-heading>span', 'color', '--bf-accent-copy'],
+    ['#step-log .bf-steps-metric:first-child strong', 'color', '--bf-accent-copy'],
     ['#step-log .bf-step-summary strong', 'color', '--bf-accent-copy'],
     ['#step-log .bf-step-input-row button', 'backgroundColor', '--bf-accent'],
     ['#step-log .bf-step-input-row button', 'color', '--bf-accent-ink'],
@@ -472,14 +478,20 @@ async function integrationExperience(tab, initialGame) {
     for (const width of [390, 360, 320]) {
       await tab.viewport(width, width === 390 ? 844 : 800);
       await trainingScreen(tab);
-      await integrationBounds(tab, ['#quests', '#step-log', '.bf-step-input-row'],
-        variant + ' ' + width + ' missions and steps');
+      await integrationBounds(tab, ['#step-log', '.bf-step-input-row'],
+        variant + ' ' + width + ' Camera steps');
       if (width === 390) {
-        await tab.js('document.querySelector("#quests").scrollIntoView({block:"start",behavior:"instant"});true');
-        await tab.screenshot('integration-' + variant + '-missions');
         await tab.js('document.querySelector("#step-log").scrollIntoView({block:"start",behavior:"instant"});true');
         await tab.screenshot('integration-' + variant + '-manual-steps');
       }
+      await tab.click('.mobile-nav button:nth-child(1)');
+      await tab.until('document.querySelector("#quests")?.getClientRects().length>0','Forge missions visible');
+      await integrationBounds(tab, ['#quests'], variant + ' ' + width + ' Forge missions');
+      if (width === 390) {
+        await tab.js('document.querySelector("#quests").scrollIntoView({block:"start",behavior:"instant"});true');
+        await tab.screenshot('integration-' + variant + '-missions');
+      }
+      await trainingScreen(tab);
       await openCameraPanels(tab);
       await integrationBounds(tab, [
         '#challenge .bf-catalog', '#challenge .bf-catalog-grid',

@@ -106,6 +106,11 @@ export default function AvatarLab({ look, onChange, focus, onFocus, yaw, onYaw, 
           : 'Хранилище недоступно. Внешность может сохраниться только на текущем экране.'}</p>
       )}
       {message && <p className="armory-message" role="status">{message}</p>}
+      <p className="armory-status">
+        <span>Микрорельеф кожи: Lee Perry-Smith / Infinite-Realities (CC BY 3.0). Ткань: Poly Haven (CC0).{' '}
+          <a href="/assets/athlete-scan-source.md" target="_blank" rel="noopener noreferrer">Источники и лицензии</a>
+        </span>
+      </p>
       <div className="armory-lab-footer">
         <span><Sparkles size={15}/> БЕЗ ПЛАТНЫХ ПРЕИМУЩЕСТВ</span>
         <button type="button" data-action="avatar-look-reset" onClick={() => onChange({ ...DEFAULT_AVATAR_LOOK })}>

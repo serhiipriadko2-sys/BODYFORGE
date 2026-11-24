@@ -376,6 +376,8 @@
 .app-shell .character-card {
   background:radial-gradient(ellipse at 50% 58%,#14394e57,transparent 73%),var(--bf-surface-solid);
 }
+.app-shell .character-card[data-avatar-only="true"] {min-height:0;align-self:start;}
+.app-shell .character-card[data-avatar-only="true"] .avatar-stage {margin-bottom:8px;}
 .app-shell .character-header h2 span,.app-shell .forge-heading h2 em {
   color:var(--aurora-cyan);
 }
@@ -608,16 +610,25 @@
   color:#0b241b;background:#c5f878;border-color:#c5f878;
 }
 
-/* Forge navigation: camera owns daily tasks/steps, FAQ owns backups.
-   Hidden screens keep their existing React state; rewards and storage do not change. */
-.app-shell:not([data-screen="challenge"]) .content > :is(#daily-plan,#quests,#step-log) {display:none;}
+/* Forge navigation: Forge owns missions; Camera owns steps and training activity.
+   Keep the original progress board mounted so date/range state survives tab changes. */
+#pulse-progress .pulse-trend-card[hidden] {display:none;}
+.app-shell[data-screen="challenge"] .content > #pulse-progress {
+  display:flex;margin-top:17px;scroll-margin-top:78px;
+}
+.app-shell[data-screen="challenge"] #pulse-progress > :is(.pulse-head,.pulse-ring-card) {
+  display:none;
+}
+.app-shell:not([data-screen="dashboard"]) .content > #quests {display:none;}
+.app-shell[data-screen="dashboard"] .content > #quests {scroll-margin-top:78px;}
+.app-shell:not([data-screen="challenge"]) .content > :is(#daily-plan,#step-log) {display:none;}
 .app-shell:not([data-screen="settings"]) .content > #settings {display:none;}
 .app-shell[data-screen="settings"] .content > :not(#settings) {display:none;}
 .app-shell[data-screen="settings"] .content > #settings {
   display:block;max-width:950px;margin:0 auto;
   scroll-margin-top:78px;
 }
-.app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log) {
+.app-shell[data-screen="challenge"] .content > :is(#daily-plan,#step-log) {
   display:block;margin-top:17px;scroll-margin-top:78px;
 }
 .bf-settings-screen .forge-heading {margin-bottom:20px;}
@@ -639,7 +650,7 @@
 
 @media(max-width:740px) {
   /* World mobile tabs hide non-camera content. Restore only relocated panels. */
-  .app-shell[data-screen="challenge"] .content > :is(#daily-plan,#quests,#step-log) {
+  .app-shell[data-screen="challenge"] .content > :is(#daily-plan,#step-log) {
     display:block;margin-top:15px;
   }
   .app-shell[data-screen="settings"] .content > #settings {margin-top:0;padding:18px 14px;}

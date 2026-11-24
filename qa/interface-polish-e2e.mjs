@@ -102,7 +102,10 @@ try{
     for(let i=0;i<sections.length;i++){
       await click('.mobile-nav button:nth-child('+(i+1)+')');
       await until('document.querySelector(".app-shell")?.dataset.screen==='+JSON.stringify(sections[i]),'tab '+sections[i]);
-      if(sections[i]==='forge')await until('!!document.querySelector("#avatar-lab")','Avatar Lab loaded');
+      if(sections[i]==='forge'){
+        if(!await js('document.querySelector("[data-studio-panel=appearance]")?.open'))await click('[data-studio-panel="appearance"]>summary');
+        await until('document.querySelector("#avatar-lab")?.getClientRects().length>0','Avatar Lab visible');
+      }
       if(sections[i]==='settings')await until('!!document.querySelector("#settings .progress-install-help")','settings backup loaded');
       await sleep(140);
       const data=JSON.parse(await js('JSON.stringify(('+gatherMetrics.toString()+')())'));

@@ -11,18 +11,30 @@ const RINGS = [76, 56, 36] as const;
 const RING_COLORS = ['#baff38', '#29c9ff', '#d27aff'];
 const icons = { core: Target, back: Shield, arms: Dumbbell, legs: Footprints } as const;
 
-export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar }: {
-  profile: Profile; now: Date; onTraining: () => void; onAvatar: () => void;
+export default function ProgressPulseBoard({ profile, now, activityVisible, actionsDisabled, onTraining, onAvatar }: {
+  profile: Profile; now: Date; activityVisible: boolean; actionsDisabled: boolean;
+  onTraining: () => void; onAvatar: () => void;
 }) {
   const [range, setRange] = useState<PulseRange>(7);
   const [selectedDate, setSelectedDate] = useState('');
   const dateStrip = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Both ranges can scroll on narrow screens. Keep the newest selected day visible
-    // on initial mount and after switching 7 / 30 without scrolling the entire page.
+    // A hidden card has no measurable width. Restore the selected day on Camera entry
+    // or a range change without moving the page or losing the previous selection.
     const strip = dateStrip.current;
-    if (strip) strip.scrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
-  }, [range]);
+    if (!activityVisible || !strip) return;
+    const active = strip.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+    if (!active) return;
+    if (active === strip.lastElementChild) {
+      strip.scrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
+    } else {
+      const rail = strip.getBoundingClientRect();
+      const day = active.getBoundingClientRect();
+      if (day.left < rail.left || day.right > rail.right) {
+        strip.scrollLeft += day.left - rail.left - (strip.clientWidth - day.width) / 2;
+      }
+    }
+  }, [range, activityVisible]);
   const { current: trend, previous, deltaSessions, historyLimited } =
     comparePulsePeriods(profile.workouts, now, range);
   const chart = weeklySessionLine(trend.days);
@@ -39,7 +51,7 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
   const upgradePercent = Math.round(overall * 100);
 
   return (
-    <section id="pulse-progress" className="pulse-dashboard" aria-label="Достоверный прогресс BODYFORGE">
+    <section id="pulse-progress" className="pulse-dashboard" aria-label={activityVisible ? 'Активность тренировок' : 'Достоверный прогресс BODYFORGE'}>
       <header className="pulse-head">
         <div>
           <span className="pulse-eyebrow"><i aria-hidden="true"/> ТВОЙ ПУЛЬС · BODYFORGE</span>
@@ -105,7 +117,7 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
         <p className="pulse-disclaimer">Индикаторы отражают игровые улучшения, а не медицинскую оценку мышц.</p>
       </article>
 
-      <article className="pulse-trend-card" aria-label="Активность тренировок">
+      <article className="pulse-trend-card" aria-label="Активность тренировок" hidden={!activityVisible}>
         <div className="pulse-card-heading pulse-trend-heading">
           <ChartNoAxesCombined size={20}/> АКТИВНОСТЬ ТРЕНИРОВОК
           <label className="pulse-range-control">
@@ -144,8 +156,8 @@ export default function ProgressPulseBoard({ profile, now, onTraining, onAvatar 
           </div>
           <div className="pulse-metric pulse-metric-action">
             <Zap size={18}/><span>СЛЕДУЮЩИЙ ШАГ</span>
-            <button type="button" onClick={onTraining}>Тренировка <ArrowUpRight size={15}/></button>
-            <button type="button" onClick={onAvatar}>Герой <ArrowUpRight size={15}/></button>
+            <button type="button" disabled={actionsDisabled} onClick={onTraining}>Тренировка <ArrowUpRight size={15}/></button>
+            <button type="button" disabled={actionsDisabled} onClick={onAvatar}>Герой <ArrowUpRight size={15}/></button>
           </div>
         </div>
         <div className="pulse-comparison" data-pulse-delta={historyLimited ? 'unavailable' : deltaSessions}

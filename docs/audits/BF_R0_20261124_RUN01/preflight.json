@@ -1,0 +1,56 @@
+﻿{
+    "task":  "BF-001",
+    "observed":  "2026-11-24T20:41:54.0233015+03:00",
+    "workspace":  "E:\\github\\BODYFORGE",
+    "editor":  "code --status: BODYFORGE, workspace_roots=e:/github/BODYFORGE",
+    "head":  "4ddbfa7e74d876ed866ae5cdb1da9a807fa33095",
+    "gitDiffCheckExit":  0,
+    "canonExit":  0,
+    "sourceFileCount":  255,
+    "preexistingProductFileCount":  72,
+    "ownership":  [
+                      {
+                          "scope":  "Android/steps",
+                          "files":  16,
+                          "owner":  "previous work / exact owner unknown; preserve"
+                      },
+                      {
+                          "scope":  "Avatar/3D",
+                          "files":  34,
+                          "owner":  "previous work / exact owner unknown; preserve"
+                      },
+                      {
+                          "scope":  "UX/shared",
+                          "files":  16,
+                          "owner":  "previous work / exact owner unknown; preserve"
+                      },
+                      {
+                          "scope":  "Other/shared",
+                          "files":  6,
+                          "owner":  "previous work / exact owner unknown; preserve"
+                      }
+                  ],
+    "tools":  [
+                  "Remote Desktop Commander",
+                  "Git",
+                  "Node v24.18.1",
+                  "npm 12.2.1",
+                  "Python",
+                  "Chrome available",
+                  "VS Code"
+              ],
+    "ports":  [
+                  5173,
+                  5176
+              ],
+    "devHttp":  200,
+    "productWrites":  0,
+    "status":  "PASS preflight; BF-002 pending",
+    "nonclaims":  [
+                      "no current unit/build/browser PASS yet",
+                      "no owner profile read",
+                      "no APK, Firebase, Git commit or push",
+                      "VS Code extension permissions not changed; no claim of Codex invocation"
+                  ],
+    "next":  "BF-002 isolated source-matched build; do not alter existing dist or servers"
+}

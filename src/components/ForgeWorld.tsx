@@ -146,7 +146,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
           </section>
         </div>
         <div className="studio-content">
-          <details className="studio-accordion" data-studio-panel="appearance" open>
+          <details className="studio-accordion" data-studio-panel="appearance">
             <summary className="studio-accordion-trigger">
               <SlidersHorizontal size={20} aria-hidden="true"/>
               <span className="studio-accordion-copy">
@@ -160,7 +160,7 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
                 yaw={yaw} onYaw={setYaw} message={lookMessage} readStatus={lookStatus}/>
             </Suspense>}
           </details>
-          <details className="studio-accordion" data-studio-panel="wardrobe" open>
+          <details className="studio-accordion" data-studio-panel="wardrobe">
             <summary className="studio-accordion-trigger">
               <Shirt size={20} aria-hidden="true"/>
               <span className="studio-accordion-copy">

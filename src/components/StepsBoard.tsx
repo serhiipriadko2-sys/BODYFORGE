@@ -1,10 +1,38 @@
 import { useEffect, useRef, useState } from 'react';
-import { BookOpen, Footprints, Smartphone } from 'lucide-react';
+import { ChevronRight, Footprints, Settings2 } from 'lucide-react';
+import { hasNativeLiveSteps, hasNativeStepsLink, NATIVE_STEPS_PATH } from '../lib/nativeSteps';
 import { localDay } from '../lib/game';
 import { MANUAL_STEPS_KEY, MAX_MANUAL_STEPS, readManualSteps, saveManualSteps } from '../lib/stepsLog';
 
-interface Props { now: Date }
-export default function StepsBoard({ now }: Props) {
+interface Props { now: Date; busy?: boolean }
+
+export default function StepsBoard({ now, busy = false }: Props) {
+  // Capability is a presentation hint only. Android validates the route,
+  // user gesture and permission again, and never sends a step count to JS.
+  const native = typeof window !== 'undefined' &&
+    hasNativeStepsLink(window.location.origin, window.navigator.userAgent);
+  if (!native) return <ManualStepsBoard now={now}/>;
+  // Native bar owns presentation; this hidden marker carries screen/busy state only.
+  if (hasNativeLiveSteps(window.location.origin, window.navigator.userAgent)) {
+    return <span hidden data-native-live-panel={busy ? 'busy' : 'ready'}/>;
+  }
+
+  const content = <>
+    <span className="bf-steps-trigger-icon"><Footprints size={20} aria-hidden="true"/></span>
+    <span className="bf-steps-trigger-copy"><strong>Шаги</strong>
+      <small>{busy ? 'После тренировки' : 'Health Connect · открыть'}</small></span>
+    <ChevronRight size={18} aria-hidden="true"/>
+  </>;
+  return (
+    <section className="forge-section bf-experience-section" id="step-log" aria-label="Шаги и синхронизация">
+      {busy
+        ? <button type="button" className="bf-steps-trigger bf-steps-native-action" disabled data-sync-state="busy">{content}</button>
+        : <a className="bf-steps-trigger bf-steps-native-action" data-sync-state="native-action" href={NATIVE_STEPS_PATH}>{content}</a>}
+    </section>
+  );
+}
+
+function ManualStepsBoard({ now }: Pick<Props, 'now'>) {
   const [state, setState] = useState(() => readManualSteps(now));
   const [draft, setDraft] = useState(() => ({ value: String(state.data.count), day: state.data.day }));
   const [message, setMessage] = useState('');
@@ -75,28 +103,38 @@ export default function StepsBoard({ now }: Props) {
   }
 
   return (
-    <section className="forge-section bf-experience-section" id="step-log" aria-label="Ручной журнал шагов">
-      <div className="bf-panel-heading"><span><Footprints size={18}/> ШАГИ / ПУТЬ БОЙЦА</span><strong>ДНЕВНИК ДВИЖЕНИЯ</strong></div>
-      <div className="bf-step-summary">
-        <div><small>СЕГОДНЯ · РУЧНАЯ ЗАПИСЬ</small><strong data-manual-steps={state.data.count}>{state.data.count.toLocaleString('ru-RU')}</strong><span>шагов, указанных тобой</span></div>
-        <span className="bf-manual-label"><BookOpen size={14}/> НЕ АВТОЗАМЕР</span>
-      </div>
-      <label className="bf-step-label" htmlFor="bf-steps-today">Сколько шагов показывает телефон или часы?</label>
-      <div className="bf-step-input-row">
-        <input id="bf-steps-today" inputMode="numeric" type="number" min="0" max={MAX_MANUAL_STEPS}
-          value={draft.value} onChange={(event) => setDraft({ value: event.target.value, day: state.data.day })}
-          readOnly={state.status === 'date-conflict'}
-          aria-describedby="bf-steps-privacy" />
-        <button type="button" onClick={save} disabled={state.status === 'date-conflict'}>ЗАПИСАТЬ</button>
-      </div>
-      {message && <p className="bf-trust-note" role="status">{message}</p>}
-      {state.status !== 'ready' && <p className="bf-trust-note" role="alert">{state.status === 'date-conflict'
-        ? 'Сохранена запись за ' + state.recordDay + ', позже местной даты устройства. Она не удалена. Проверь дату и часовой пояс; запись шагов временно недоступна.'
-        : state.status === 'invalid' ? 'Предыдущая запись повреждена. Только явное сохранение заменит её.'
-        : 'Память браузера недоступна; шаги могут не сохраняться.'}</p>}
-      <p className="bf-panel-description" id="bf-steps-privacy">Шаги не синхронизируются автоматически, не отправляются на сервер и <strong>не дают XP, монет или ресурсов</strong>. Завтра дневной счётчик обнулится. Это личная заметка, а не проверенный результат.</p>
-      <div className="bf-step-android"><Smartphone size={18}/><div><strong>HEALTH CONNECT · ЕЩЁ НЕ ПОДКЛЮЧЁН</strong>
-        <span>Для автоматических шагов понадобится отдельная Android-версия и твоё разрешение на чтение шагов. В веб-приложении доступен только ручной ввод.</span></div></div>
+    <section className="forge-section bf-experience-section" id="step-log" aria-label="Шаги и синхронизация">
+      <details className="bf-steps-disclosure">
+        <summary className="bf-steps-trigger bf-steps-dashboard" data-sync-state="unavailable">
+          <span className="bf-steps-metric">
+            <small>Шаги сегодня</small><strong data-step-auto="today">—</strong><small>Health Connect</small>
+          </span>
+          <span className="bf-steps-metric">
+            <small>За сеанс</small><strong data-step-auto="session">—</strong><small>Датчик телефона</small>
+          </span>
+          <span className="bf-steps-settings-icon" aria-label="Настройки шагов"><Settings2 size={21} aria-hidden="true"/></span>
+          <span className="bf-steps-source">Веб · нет синхронизации</span>
+        </summary>
+        <div className="bf-steps-body bf-steps-compact-editor">
+          <p className="bf-panel-description" id="bf-steps-privacy">Автосчёт доступен в Android-приложении. Ручная запись хранится только в браузере и не даёт наград.</p>
+          <div className="bf-step-summary">
+            <label className="bf-step-label" htmlFor="bf-steps-today">Ручная запись за сегодня</label>
+            <strong data-manual-steps={state.data.count}>{state.status === 'ready' ? state.data.count.toLocaleString('ru-RU') : '—'}</strong>
+          </div>
+          <div className="bf-step-input-row">
+            <input id="bf-steps-today" inputMode="numeric" type="number" min="0" max={MAX_MANUAL_STEPS}
+              value={draft.value} onChange={(event) => setDraft({ value: event.target.value, day: state.data.day })}
+              readOnly={state.status === 'date-conflict'}
+              aria-describedby="bf-steps-privacy" />
+            <button type="button" onClick={save} disabled={state.status === 'date-conflict'}>ЗАПИСАТЬ</button>
+          </div>
+          {message && <p className="bf-trust-note" role="status">{message}</p>}
+          {state.status !== 'ready' && <p className="bf-trust-note" role="alert">{state.status === 'date-conflict'
+            ? 'Сохранена запись за ' + state.recordDay + ', позже местной даты устройства. Она не удалена. Проверь дату и часовой пояс; запись шагов временно недоступна.'
+            : state.status === 'invalid' ? 'Предыдущая запись повреждена. Только явное сохранение заменит её.'
+            : 'Память браузера недоступна; шаги могут не сохраняться.'}</p>}
+        </div>
+      </details>
     </section>
   );
 }

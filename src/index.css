@@ -205,6 +205,16 @@ h1,h2,h3 { font-family: 'Barlow Condensed', Impact, 'Arial Narrow', sans-serif; 
 .records-card, .tips-card { padding: 22px 25px 25px; }
 .lower-card-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; border-bottom: 1px solid #2e3531; padding-bottom: 19px; }
 .lower-card-header svg { color: #c79876; }
+.records-card[data-expanded="false"] .lower-card-header { border-bottom: 0; padding-bottom: 0; }
+.records-content[hidden] { display: none; }
+.records-toggle {
+  display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px;
+  padding: 0; border: 1px solid var(--bf-outline, var(--edge)); border-radius: 8px;
+  background: transparent; color: inherit;
+}
+.records-toggle:hover { background: var(--panel-raised); }
+.lower-card-header .records-toggle svg { color: currentColor; }
+.records-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
 .lower-card-header h3 { font: 900 clamp(25px, 2.7vw, 34px)/1 'Barlow Condensed', Impact, sans-serif; margin: 8px 0 0; }
 .lower-card-header h3 em { color: var(--lime); font-style: normal; }
 .record-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding-top: 24px; }
@@ -318,6 +328,16 @@ h1,h2,h3 { font-family: 'Barlow Condensed', Impact, 'Arial Narrow', sans-serif; 
   .record-item strong { font-size: 32px; }
   .record-item strong.time-record { font-size: 23px; }
   .challenge-footnote { font-size: 7px; letter-spacing: 0; }
+}
+@media (max-width: 480px) {
+  .records-card .record-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .records-card .record-item { border-right: 0; padding: 0; min-width: 0; }
+  .records-card .record-item:last-child {
+    grid-column: 1 / -1; flex-direction: row; align-items: center;
+    border-top: 1px solid var(--bf-outline, var(--edge)); padding-top: 12px;
+  }
+  .records-card .record-item > div:last-child { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .records-card .lower-card-header > div { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }

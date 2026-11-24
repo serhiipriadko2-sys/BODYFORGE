@@ -22,6 +22,8 @@ describe('Hero screen composition', () => {
   it('makes Avatar Lab and wardrobe independently accessible native disclosures', () => {
     expect(studio).toContain('data-studio-panel="appearance"');
     expect(studio).toContain('data-studio-panel="wardrobe"');
+    expect(studio).toContain('<details className="studio-accordion" data-studio-panel="appearance">');
+    expect(studio).toContain('<details className="studio-accordion" data-studio-panel="wardrobe">');
     expect(studio.match(/<details className="studio-accordion"/g)).toHaveLength(2);
     expect(studio.match(/<summary className="studio-accordion-trigger"/g)).toHaveLength(2);
     expect(studio).toContain('СОБЕРИ');

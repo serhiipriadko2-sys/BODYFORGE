@@ -161,11 +161,11 @@ try{
   await click('.build-options button:nth-child(2)');
   await click('#onboarding .forge-solid-button');
   await until("JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game?.created===true", 'fighter creation acknowledged on disk');
-  // The personal daily-plan card has been removed; missions and steps remain.
+  // Missions belong to Forge; steps belong to Camera.
   const profileBeforeNavigation=await js("localStorage.getItem('bodyforge:pilot:v1')");
   await click('.mobile-nav button:nth-child(2)');
-  await until("document.querySelector('.app-shell')?.dataset.screen==='challenge' && document.querySelector('#quests')?.getClientRects().length>0 && document.querySelector('#step-log')?.getClientRects().length>0",
-    'camera missions and manual steps visible without deleted daily plan');
+  await until("document.querySelector('.app-shell')?.dataset.screen==='challenge' && document.querySelector('#quests')?.getClientRects().length===0 && document.querySelector('#step-log')?.getClientRects().length>0",
+    'Camera shows manual steps but not Forge missions');
   check(await js("document.querySelector('#daily-plan')===null"),'removed daily-plan card is absent from the mobile DOM');
   check(!(await js(downloadedPanelsExpression)).dailyPlan,'removed daily-plan chunk is never downloaded');
   check(await js("localStorage.getItem('bodyforge:pilot:v1')")===profileBeforeNavigation,
@@ -311,8 +311,9 @@ try{
   await js('document.querySelector("#forge .studio-preview")?.scrollIntoView({block:"start",behavior:"instant"});true');
   await until('document.querySelector("#forge [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'studio CC0 asset fully loaded', 30000);
   await screenshot('bf-qa-mobile-forge.png');
-  // Daily quest actions moved alongside camera workouts.
-  await click('.mobile-nav button:nth-child(2)');
+  // Daily quest actions belong to Forge.
+  await click('.mobile-nav button:nth-child(1)');
+  await until("document.querySelector('#quests')?.getClientRects().length>0",'Forge missions visible before reward');
   await click('#quests .quest-button');
   s=await snapshot();
   check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
@@ -325,6 +326,7 @@ try{
   await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.game?.muscles?.arms===1&&p.coins===155})()', 'persisted muscle upgrade confirmed');
   s=await snapshot();
   check(s.game.muscles.arms===1&&s.coins===155,'muscle upgrade spends coins and changes state');
+  if (!await js('document.querySelector("[data-studio-panel=wardrobe]")?.open')) await click('[data-studio-panel="wardrobe"]>summary');
   await until("document.querySelector('#forge .outfit-item:nth-child(2)')?.disabled===false", 'outfit purchase enabled after muscle save');
   await click('#forge .outfit-item:nth-child(2)');
   await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.game?.outfit==="ember"&&p.coins===95})()', 'outfit purchase acknowledged and persisted');

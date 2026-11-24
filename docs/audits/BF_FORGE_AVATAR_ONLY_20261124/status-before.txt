@@ -1,0 +1,11 @@
+ M qa/forge-home-xp-faq-e2e.mjs
+ M qa/pulse-armory-e2e.mjs
+ M qa/pulse-day-touch-e2e.mjs
+ M src/App.tsx
+ M src/components/ProgressPulseBoard.tsx
+ M src/index.css
+ M src/lib/progressPulse.test.ts
+ M src/neonPulseV2.css
+?? docs/audits/BF_CAMERA_ACTIVITY_20261124/
+?? docs/audits/BF_FORGE_AVATAR_ONLY_20261124/
+?? docs/audits/BF_FORGE_CHRONICLE_COLLAPSE_20261124/

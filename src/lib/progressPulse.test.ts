@@ -16,13 +16,26 @@ describe('pulse dashboard — derived from stored, verified sessions', () => {
       workout('earlier', new Date(2026, 9, 24, 10)),
     ] };
     const html = renderToStaticMarkup(createElement(ProgressPulseBoard, {
-      profile, now, onTraining: () => {}, onAvatar: () => {},
+      profile, now, activityVisible: true, actionsDisabled: false, onTraining: () => {}, onAvatar: () => {},
     }));
     const activity = html.split('class="pulse-trend-card"')[1]?.split('</article>')[0] ?? '';
     expect(activity).toContain('АКТИВНОСТЬ ТРЕНИРОВОК');
     expect(activity).toContain('data-period-reps="40"');
     expect(activity).toContain('data-active-days="2"');
     expect(activity).toContain('/7');
+  });
+
+  it('keeps activity hidden outside Camera and disables actions when a workout is in progress', () => {
+    const props = { profile: EMPTY_PROFILE, now: new Date(2026, 9, 26, 12), onTraining: () => {}, onAvatar: () => {} };
+    const hidden = renderToStaticMarkup(createElement(ProgressPulseBoard, {
+      ...props, activityVisible: false, actionsDisabled: false,
+    }));
+    expect(hidden).toMatch(/<article class="pulse-trend-card"[^>]* hidden=""/);
+    const busy = renderToStaticMarkup(createElement(ProgressPulseBoard, {
+      ...props, activityVisible: true, actionsDisabled: true,
+    }));
+    expect(busy).not.toMatch(/<article class="pulse-trend-card"[^>]* hidden=""/);
+    expect(busy.match(/<button[^>]* disabled=""[^>]*>/g)).toHaveLength(2);
   });
 
   it('never counts more than 7 or 30 active calendar days in the selected period', () => {

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Activity, ArrowRight, Award, CameraOff, Check, ChevronRight,
+  Activity, ArrowRight, CameraOff, Check, ChevronDown, ChevronRight,
   CircleHelp, Clock3, Coins, Dumbbell, Flame, Info,
   Hammer, Medal, Play, RotateCcw, ShieldCheck, Smartphone, Target,
   Trophy, Volume2, VolumeX, WifiOff, X, Zap, UserRound,
@@ -210,6 +210,7 @@ function App() {
   const [error, setError] = useState('');
   const [lastResultMs, setLastResultMs] = useState<number | null>(null);
   const [section, setSection] = useState('dashboard');
+  const [recordsExpanded, setRecordsExpanded] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [videoOrientation, setVideoOrientation] = useState<CameraOrientation>('unknown');
   const [cameraSource, setCameraSource] = useState<CameraSource>(DEFAULT_CAMERA);
@@ -928,6 +929,7 @@ function App() {
     : mode === 'active' && workoutMode === 'ghost' && profile.game.bestGhost
       ? ghostRepetitions(profile.game.bestGhost.splitsMs, elapsedMs) : 0;
   const canNavigate = mode !== 'active' && mode !== 'loading';
+  const homeAvatarOnly = profile.game.created && section === 'dashboard';
   const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading' ||
     window.matchMedia('(min-width: 741px)').matches;
 
@@ -1001,30 +1003,32 @@ function App() {
           </section>
 
           <section className="cards-grid" aria-label="Герой и испытание">
-            <article className="character-card">
+            <article className="character-card" data-avatar-only={homeAvatarOnly || undefined}>
               <div className="card-topline"><span className="section-index">01 / ТВОЯ СТАЛЬ</span><span className="tag outlined"><span className="online-dot" /> {getRank(workoutCount)}</span></div>
               <div className="character-header"><div><div className="character-subtitle">ДВИЖЕНИЕ СОЗДАЁТ ФОРМУ</div><h2>ТВОЯ <span>ЭВОЛЮЦИЯ.</span></h2></div><span className="character-level">LVL <strong>{String(level).padStart(2, '0')}</strong></span></div>
               <div className="avatar-stage">
                 <div className="forge-furnace" aria-hidden="true" /><div className="arena-dashes" aria-hidden="true">BODY<span>FORGE</span></div>
                 <div className="kinetic-orbit" aria-hidden="true"><i /><b /></div>
-                <span className="kinetic-axis" aria-hidden="true">MOVE / BUILD / EVOLVE</span>
+                {!homeAvatarOnly && <span className="kinetic-axis" aria-hidden="true">MOVE / BUILD / EVOLVE</span>}
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
                 <GameAvatar workouts={workoutCount} build={profile.game.build}
                   muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown} look={avatarLook}/>
                 <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
               </div>
-              <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
-                <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
-                  <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
-                <button type="button" disabled={!profile.game.created || !canNavigate}
-                  onClick={() => goTraining('training', 'squat')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
-              </div>
-              <div className="character-footer">
-                <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПОВТОРОВ <strong>{repetitionsDone}</strong></span></div>
-                <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
-                <div className="xp-track"><div className="xp-progress" style={{ width: `${levelPercent}%` }} /></div>
-                <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО НОВОЙ ЗАКАЛКИ: {250 - (profile.xp % 250)} XP</span></div>
-              </div>
+              {!homeAvatarOnly && <>
+                <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
+                  <div className="quickstart-copy"><span>ТВОЙ СЛЕДУЮЩИЙ УРОВЕНЬ</span><strong>20 ПРИСЕДАНИЙ</strong>
+                    <small><Zap size={13}/> +{XP_REWARD} XP <Coins size={13}/> +{COIN_REWARD}</small></div>
+                  <button type="button" disabled={!profile.game.created || !canNavigate}
+                    onClick={() => goTraining('training', 'squat')}><Play size={21} fill="currentColor"/> ТРЕНИРОВАТЬСЯ</button>
+                </div>
+                <div className="character-footer">
+                  <div className="character-detail-row"><span><Activity size={14} /> ТРЕНИРОВОК <strong>{workoutCount}</strong></span><span><Target size={14} /> ПОВТОРОВ <strong>{repetitionsDone}</strong></span></div>
+                  <div className="xp-heading"><span><Hammer size={16} /> ПРОЧНОСТЬ / XP</span><strong>{profile.xp % 250} <small>/ 250 XP</small></strong></div>
+                  <div className="xp-track"><div className="xp-progress" style={{ width: `${levelPercent}%` }} /></div>
+                  <div className="xp-foot"><span>УРОВЕНЬ {level}</span><span>ДО НОВОЙ ЗАКАЛКИ: {250 - (profile.xp % 250)} XP</span></div>
+                </div>
+              </>}
             </article>
 
             <article className={`challenge-card${isCameraShown ? ' challenge-card-live' : ''}`} id="challenge">
@@ -1188,10 +1192,11 @@ function App() {
             }}
             onTraining={() => goTraining('training', 'squat')}/>
           {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем шаги за день…</div>}>
-            <StepsBoard now={today}/>
+            <StepsBoard now={today} busy={!canNavigate || isSaving}/>
           </Suspense>}
           {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
-            <ProgressPulseBoard profile={profile} now={today} onTraining={() => goTraining('training', 'squat')}
+            <ProgressPulseBoard profile={profile} now={today} activityVisible={section === 'challenge'}
+              actionsDisabled={!canNavigate || isSaving} onTraining={() => goTraining('training', 'squat')}
               onAvatar={() => navigate('forge')}/>
           </Suspense>}
           {profile.game.created && <Suspense fallback={<section id="forge-quick-deck" className="forge-quick-deck" role="status">Загружаем быстрые действия…</section>}>
@@ -1199,9 +1204,12 @@ function App() {
               onTraining={() => goTraining('training', 'squat')} onAvatar={() => navigate('forge')}
               onTower={() => navigate('tower')}
               onDaily={() => {
-                navigate('challenge');
-                // Wait for the Camera screen before scrolling to the remaining daily missions.
-                requestAnimationFrame(() => document.getElementById('quests')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                navigate('dashboard');
+                // Missions stay mounted on Forge; scroll after the tab state settles.
+                requestAnimationFrame(() => document.getElementById('quests')?.scrollIntoView({
+                  behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+                  block: 'start',
+                }));
               }}/>
           </Suspense>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
@@ -1214,14 +1222,28 @@ function App() {
           <OnlineBoard/>
 
           <section className="lower-grid" id="progress" aria-label="Прогресс тренировок">
-            <div className="records-card">
-              <div className="lower-card-header"><div><span className="section-index">03 / ЛЕТОПИСЬ КУЗНИ</span><h3>СЛЕДЫ <em>ТВОЕЙ СИЛЫ</em></h3></div><Award size={22} /></div>
-              <div className="record-list">
-                <div className="record-item"><div className="record-icon"><Dumbbell size={22} /></div><div><strong>{repetitionsDone}</strong><span>ВСЕГО ПОВТОРЕНИЙ</span></div></div>
-                <div className="record-item"><div className="record-icon"><Medal size={22} /></div><div><strong>{workoutCount}</strong><span>ИСПЫТАНИЙ ПРОЙДЕНО</span></div></div>
-                <div className="record-item"><div className="record-icon"><Clock3 size={22} /></div><div><strong className="time-record">{best === null ? '— : —' : formatTime(best)}</strong><span>ЛУЧШЕЕ ВРЕМЯ</span></div></div>
+            <div className="records-card" data-expanded={recordsExpanded}>
+              <div className="lower-card-header">
+                <div><span className="section-index">03 / ЛЕТОПИСЬ КУЗНИ</span><h3>СЛЕДЫ <em>ТВОЕЙ СИЛЫ</em></h3></div>
+                <button
+                  type="button"
+                  className="records-toggle"
+                  aria-expanded={recordsExpanded}
+                  aria-controls="forge-records-content"
+                  aria-label={recordsExpanded ? 'Свернуть летопись кузни' : 'Развернуть летопись кузни'}
+                  onClick={() => setRecordsExpanded((expanded) => !expanded)}
+                >
+                  <ChevronDown size={22} aria-hidden="true" />
+                </button>
               </div>
-              <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{workout.exerciseId === 'plank' ? '30 сек. планки' : `${workout.repetitions} · ${exerciseGuide(workout.exerciseId ?? 'squat').name.toLowerCase()}`}</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
+              <div id="forge-records-content" className="records-content" hidden={!recordsExpanded}>
+                <div className="record-list">
+                  <div className="record-item"><div className="record-icon"><Dumbbell size={22} /></div><div><strong>{repetitionsDone}</strong><span>ВСЕГО ПОВТОРЕНИЙ</span></div></div>
+                  <div className="record-item"><div className="record-icon"><Medal size={22} /></div><div><strong>{workoutCount}</strong><span>ИСПЫТАНИЙ ПРОЙДЕНО</span></div></div>
+                  <div className="record-item"><div className="record-icon"><Clock3 size={22} /></div><div><strong className="time-record">{best === null ? '— : —' : formatTime(best)}</strong><span>ЛУЧШЕЕ ВРЕМЯ</span></div></div>
+                </div>
+                <div className="recent-history"><strong>ПОСЛЕДНИЕ ТРЕНИРОВКИ</strong>{profile.workouts.length === 0 ? <span>Пока пусто. Пройди первое испытание!</span> : <ul>{profile.workouts.slice(0, 3).map((workout) => <li key={workout.id}><Check size={14} /><span>{new Date(workout.finishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })}</span><span>{workout.exerciseId === 'plank' ? '30 сек. планки' : `${workout.repetitions} · ${exerciseGuide(workout.exerciseId ?? 'squat').name.toLowerCase()}`}</span><strong>{formatTime(workout.durationMs)}</strong></li>)}</ul>}</div>
+              </div>
             </div>
           </section>
           <section id="settings" className="forge-section bf-settings-screen" aria-label="Настройки и FAQ">

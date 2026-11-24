@@ -1,0 +1,452 @@
+{
+  "status": "TESTED_LOCAL",
+  "createdAt": "2026-11-24T17:31:59.465112+00:00",
+  "origin": "http://127.0.0.1:5205/",
+  "gitHeadAtReadback": "4ddbfa7e74d876ed866ae5cdb1da9a807fa33095",
+  "http": 200,
+  "checks": [
+    {
+      "command": "npm test -- --maxWorkers=1 --no-file-parallelism",
+      "exitCode": 0,
+      "tests": 601,
+      "files": 56
+    },
+    {
+      "command": "npm run build -- --outDir .bodyforge-qa/face-20261124/dist",
+      "exitCode": 0
+    },
+    {
+      "command": "node qa/bundle-on-demand.mjs (face dist)",
+      "exitCode": 0,
+      "entryBytes": 394235
+    },
+    {
+      "command": "node qa/athlete-efficient.mjs (face dist)",
+      "exitCode": 0,
+      "bones": 163
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run qa:avatar-quality",
+      "origin": "http://127.0.0.1:5205/",
+      "exitCode": 0,
+      "assertions": 100
+    },
+    {
+      "command": "npm run qa:avatar-observers",
+      "origin": "http://127.0.0.1:5205/",
+      "exitCode": 0,
+      "assertions": 21
+    },
+    {
+      "command": "npm run qa:mobile",
+      "origin": "http://127.0.0.1:5205/",
+      "exitCode": 0,
+      "assertions": null
+    },
+    {
+      "command": "node bf-face-pair.mjs",
+      "origin": "http://127.0.0.1:5205/",
+      "exitCode": 0,
+      "assertions": 19
+    }
+  ],
+  "blender": {
+    "version": "5.2.0 LTS",
+    "changedVerticesOver50um": 2071,
+    "peakMm": 3.876,
+    "aperture": {
+      "before": 4264,
+      "after": 4264,
+      "newlyExposed": 0,
+      "newlyCovered": 0
+    },
+    "shapeKeyReadback": "PASS"
+  },
+  "matchedPortrait": {
+    "metrics": {
+      "front": {
+        "changed": 964,
+        "sampled": 13090,
+        "total": 34353
+      },
+      "turn": {
+        "changed": 954,
+        "sampled": 13090,
+        "total": 38751
+      }
+    },
+    "assertions": 19
+  },
+  "artifacts": [
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 47797,
+      "sha256": "e1bf00ce689bc069ce55e4960b951201abced8639b39e76757e696a4bb31687f"
+    },
+    {
+      "path": "src/lib/avatarFace.ts",
+      "bytes": 4372,
+      "sha256": "6192bdbecdab3ab6a182a0b155f6a925237d394e29ca67ea034195b81f252e73"
+    },
+    {
+      "path": "src/lib/avatarFace.test.ts",
+      "bytes": 5188,
+      "sha256": "ac04c770ee7cd65f3f2a42a2bf1deba514003a0f784720c355ca8035325e760d"
+    },
+    {
+      "path": "src/lib/avatarFaceProfile.json",
+      "bytes": 1356,
+      "sha256": "63db6eaeccb3dedb3d7645576b800acbd3c5f644581543a507e24cb2c6f9ea02"
+    },
+    {
+      "path": "qa/avatar-quality-e2e.mjs",
+      "bytes": 36755,
+      "sha256": "50a274b4c6ed1a11a44fc49cb70399d9807f8a1340b3e6cf2ae6b841a287b39a"
+    },
+    {
+      "path": "scripts/author-avatar-face.py",
+      "bytes": 4456,
+      "sha256": "3ca5170f05204768b61147fd36829d2b0fd4042bdaabaf3e053e5e03eb0dce76"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/face-study.blend",
+      "bytes": 7252269,
+      "sha256": "2e8fabbe823a5f6a64fda1ac461e6cb2bd1e8250990e510abe8665857d5ee4e3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/avatar-observers.log",
+      "bytes": 3462,
+      "sha256": "580f19878ad3e914359bb3332a987b2dd6ccf28b967da2df7be926c62c02cb0a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/avatar-quality.log",
+      "bytes": 16670,
+      "sha256": "655c50a4326c112fa1e581b29ce5cd26a311820a35b48bc2d83f0d392d9eb81b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/control-near-front.png",
+      "bytes": 187984,
+      "sha256": "0f006147426f082a78df1bcc7cefffcfe0e1a4dc9ba55ce925da8299754a2a87"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/control-turned.png",
+      "bytes": 190457,
+      "sha256": "a5bc55e273686e6fc673e27cc501b95028cd8fdc08016ae43db82f8b204f7484"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/max-growth-portrait.png",
+      "bytes": 185443,
+      "sha256": "444ecf891cf5fdb49e91155ba90e24acdd4ee64106f7477b85666cb2a5cfdba2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/mobile.log",
+      "bytes": 15496,
+      "sha256": "6251e5f55bbef99487c0068e61bef267d69bf390071949c5fb1c8f21055ff3db"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/reference-comparison.log",
+      "bytes": 2714,
+      "sha256": "efc28c6a8ffc441159350e854450153cf8fafe466ae1e4a7e7bf277f8cb6ca4b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/reference-comparison.mjs",
+      "bytes": 16553,
+      "sha256": "d7b743d787c3e1d22e2abbfbee881cf319ce1c91e767b9ddb8075ba47b4aea78"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/report.md",
+      "bytes": 3724,
+      "sha256": "9c31f6ff3094fb2a2dcec11c5b1c3b62ee6dc8c9bca8e43b7b2187f255e71528"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/sculpted-near-front.png",
+      "bytes": 188135,
+      "sha256": "d4e719733e975a8cfcda3559e861481b33fafa722fb9b9e3579e3a44d5fc1a0d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_FACE_20261124/sculpted-turned.png",
+      "bytes": 190560,
+      "sha256": "4410647b6ca1c777a7bd87dd5f1b04d106675236983edb981b442a45fc01d832"
+    }
+  ],
+  "compiled": [
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-eyes.jpg",
+      "bytes": 30484,
+      "sha256": "286cbc415b376fb69871d0e4dde159b20ba307e3e7497274347a5c9617e72338"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-groom-source.md",
+      "bytes": 3867,
+      "sha256": "bf587d8b94367e9d25340e8e3582ccd840d43b84d20f7c4a2157f56b289c4ad0"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-hair-normal.png",
+      "bytes": 228087,
+      "sha256": "a3cc46bf1b45b668c9cf8a611c0b586779559f4488d1f9cdbc74c745767a5169"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-hair.png",
+      "bytes": 465622,
+      "sha256": "bf407d26fc79c7fa48c7eb5ce580384b2a5cb02b23cf97e5326c3335a2d70530"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-normal.png",
+      "bytes": 425857,
+      "sha256": "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-orm.png",
+      "bytes": 219446,
+      "sha256": "31a794d88e45423ccf1540846d607941946ace03a38741ebc1ce0b8ebf87b02a"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-realism-source.md",
+      "bytes": 2882,
+      "sha256": "928f8fca852a33b65f0c6f4219b4267f38ae9fc3f327ca48ecaab94116c9b5a7"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-skin-dermal.jpg",
+      "bytes": 714509,
+      "sha256": "3d5fd26f0241d9f21097b619421b0cca3352b4398e2bdbb0c67bc08bb0fe14ab"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-skin-detail.jpg",
+      "bytes": 668292,
+      "sha256": "e5d5d5d7eee9568b386ad4a4457714dace161c11fa45f9dd6161a437fc6deaec"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-skin-portrait.jpg",
+      "bytes": 705959,
+      "sha256": "e633c84f1ae7647005cf622e2ba1f866bc8d72ff6905b3c97e4ee8497b7a2be7"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-skin-source.md",
+      "bytes": 2051,
+      "sha256": "269c03fe3b003a1c2c0ecd9ac28d6ad878c86ab2318199c364d82831238cbbd7"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/athlete-skin.jpg",
+      "bytes": 130759,
+      "sha256": "33077073e7c16cb850310d0697392099711463f5704a442506c89bb893cbfd70"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/Avatar3D-B4RDOlZw.js",
+      "bytes": 662154,
+      "sha256": "dcc75132fe1f6f56dcb57813cb3a893e50a5bc920ed8cf7cb23a5a344a1a80e0"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/AvatarLab-CWqZ7_YO.js",
+      "bytes": 7346,
+      "sha256": "4052b3ec5a78dbb02dc87272e5e9b9effb951a172350cc01f1442b1df07e9128"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/avatarYaw-BAlZR6XA.js",
+      "bytes": 191,
+      "sha256": "41dd011150107b8d4691a58ad3ca1964f8a4ef9f43086ed91ca9569aee142857"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-athlete-detail.glb",
+      "bytes": 6038680,
+      "sha256": "16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-athlete-efficient.glb",
+      "bytes": 4639184,
+      "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-athlete-realistic.glb",
+      "bytes": 6757648,
+      "sha256": "4c7754507aed2b48a0fd1ceaa9bfacf8bcd35befe0091afc39f8798e3a561834"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-athlete.glb",
+      "bytes": 5011480,
+      "sha256": "e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-ocular-detail.glb",
+      "bytes": 96248,
+      "sha256": "bb558f02e88846add66bf4007b9038844eae9cec7f532aef8005bb453a7bbb39"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/bodyforge-strand-groom.glb",
+      "bytes": 383436,
+      "sha256": "3c424b36e83abfea646edefde112b7dd04ccfda9f6fd4308a44f29d5529fea9e"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/camera-kxEfslU3.js",
+      "bytes": 237,
+      "sha256": "22737632fff094641d3d76d28abfe3c2491f6daabec8b3d296b787e726b782fc"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/CameraControls-ChOH0PEH.js",
+      "bytes": 4981,
+      "sha256": "df4bc085d1ee8944dfd93a5f8e6ba1901db17d41474aff82eb7f687dd63fad63"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/ExerciseCatalog-DifXtVEk.js",
+      "bytes": 3438,
+      "sha256": "d5ac5c920532d0466b8130903c21f49fcd9a596bc93cca00acc431d0b6c97656"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/ForgeQuickDeck-C6LxtjPv.js",
+      "bytes": 3047,
+      "sha256": "a2c301e36b56d8b9319c7756cb244839c45c225d3375b592d66e654899544773"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/index-BElxbW9U.js",
+      "bytes": 394235,
+      "sha256": "b52378443976d8bc51899cdccedc08c6d4878728652e85d8586a7b1b9c643866"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/index-BWuh20c_.css",
+      "bytes": 175499,
+      "sha256": "ec8fcad7452a9195b4609b7a900f839283e9dbab2a8355badc1d90133caa5005"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/jsx-runtime-DyZJNswf.js",
+      "bytes": 8784,
+      "sha256": "006c8c36904a2f42ac8e86d3e56badc6473450e8a3988d87f12c632a6487218b"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/male-base-mesh-base_male.glb",
+      "bytes": 4498248,
+      "sha256": "d15a07e2b4cf1d08a3b91cb212a9a06a91438077f05a3f2a62f45351e8a71eb8"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/ProgressBackupPanel-Cy1R19Pg.js",
+      "bytes": 12719,
+      "sha256": "dc9cb212c5d1f99dd5f92e3efa339e76d3c29f7ca259e21e16720940998c284d"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/ProgressBackupPanel-Dt0z2VpD.css",
+      "bytes": 3088,
+      "sha256": "b70b509ed525beb05070a67e435b59488e27f5a21e85da91b5eab18c63c2f59a"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/ProgressPulseBoard-BfYYfcbw.js",
+      "bytes": 14347,
+      "sha256": "dff838c976a13712dd46921b79f835ca47215e5dbeaec9a2559c00554d2357dd"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/RuntimeDiagnosticsPanel-CkGblOtl.js",
+      "bytes": 4896,
+      "sha256": "e4d6ca7c981b9ce7fe3610b1f85825c2999434149ed46b744e88e148244103c1"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/SettingsFaq-CJmA3kiA.js",
+      "bytes": 5100,
+      "sha256": "5e176846e793bb8cbead7917d77bcad2ddfe73157ba44259bda10c0354b500b5"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/shield-3O0oxAq6.js",
+      "bytes": 261,
+      "sha256": "23eceb762e542723723938cbc7b24b077db5499b3587ac9992a54848e5a0574b"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/sparkles-Dj2gdT98.js",
+      "bytes": 497,
+      "sha256": "c2559913f51ae22a612b43e3b2c9c99809ceb27526d0f022059b6402c3dea644"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/StepsBoard-tSlc_-am.js",
+      "bytes": 7171,
+      "sha256": "1259666c082fd9afe61e29a02582c5563bbe4d7da33d3f75e1005b2d06947d64"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/assets/vision_bundle-lEJc6GYl.js",
+      "bytes": 154276,
+      "sha256": "e59866fe0127019a2669eda7d1a53fcca0b6d7f223cda0c9ffb2a7dda299aa8b"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/favicon.svg",
+      "bytes": 436,
+      "sha256": "495339d1b02a00931d8f986f1822507ae4c77cfd99d2784ca071338fd39bd12b"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/manrope-cyrillic-variable.woff2",
+      "bytes": 14500,
+      "sha256": "c268b459a9329e59fecf39a17618efd44c71735532048d60b12aab76a8c14914"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/manrope-latin-variable.woff2",
+      "bytes": 24836,
+      "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/Manrope-OFL.txt",
+      "bytes": 4387,
+      "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/README.md",
+      "bytes": 2275,
+      "sha256": "c72bec53390b14d22238d07a358f58b996c10e35a5fb457c90f4b56e45c1d6b6"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/unbounded-cyrillic-variable.woff2",
+      "bytes": 31424,
+      "sha256": "e30bf6a6063b6a47232bbd657e24c7cf4fdaf76fc2c50d92d9ee63e2ad2087cf"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/unbounded-latin-variable.woff2",
+      "bytes": 50904,
+      "sha256": "22f9b928aa3928a896340422b54d690fbb5875c30eae4c106f029c61f2289fd6"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/fonts/Unbounded-OFL.txt",
+      "bytes": 4392,
+      "sha256": "31e5d4e83955e7103c34570dd49b0570ef490800bd65b42923c0dd02445263b3"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-180.png",
+      "bytes": 3223,
+      "sha256": "43115d5e3a50e7b229ddcc5c1c11277bebf1f88d4ed5af0336480977dc086ee1"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-192.png",
+      "bytes": 3362,
+      "sha256": "c91eb5e74c5ec9371edb896e230932d799b81749a1ac638601d85adfffc43332"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-512.png",
+      "bytes": 5525,
+      "sha256": "2e4223c25a93edecec87e1280f704b386372bb2111ef0617ef7942d258bf6e8d"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-icon.svg",
+      "bytes": 514,
+      "sha256": "0d16aac886f994b2229064e4bd95fae691823287b329c3f579440a4dac24d4be"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-maskable-512.png",
+      "bytes": 4593,
+      "sha256": "0b83a297284e68381ada89b8ac4225ffb98db2f7f7ce9eb7482c8a1c26b0ebee"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/icons/bodyforge-maskable.svg",
+      "bytes": 579,
+      "sha256": "b902f0a4e50a56d78bbb5879d52724114db83dd140c2c2c5306978987b243975"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/index.html",
+      "bytes": 1188,
+      "sha256": "c6cfa03802c1c48127a5592d2507ed3b52255cff3f6af306ffaf4bb2b193c4d8"
+    },
+    {
+      "path": ".bodyforge-qa/face-20261124/dist/manifest.webmanifest",
+      "bytes": 927,
+      "sha256": "c0f1b84ce0e4f9a79e83198aebc9de7d4f0e8b9c2176dacbff2f17a02e955f0e"
+    }
+  ],
+  "unverified": [
+    "physical Android GPU",
+    "photorealistic reference parity"
+  ]
+}

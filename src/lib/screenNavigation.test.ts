@@ -17,7 +17,7 @@ describe('Forge screen responsibilities', () => {
     expect(css).toContain('.app-shell[data-screen="settings"] .content > :not(#settings)');
   });
 
-  it('removes the personal daily-plan card without removing Camera missions or steps', () => {
+  it('keeps missions on Forge and steps on Camera without the retired daily-plan card', () => {
     expect(app).not.toContain("import('./components/DailyPlanBoard')");
     expect(app).not.toContain('<DailyPlanBoard');
     expect(app).not.toContain('id="daily-plan"');
@@ -27,6 +27,11 @@ describe('Forge screen responsibilities', () => {
     expect(css).toContain('.app-shell[data-screen="challenge"]');
     const quickDeck = readFileSync(new URL('../components/ForgeQuickDeck.tsx', import.meta.url), 'utf8');
     expect(quickDeck).toContain("title: 'Миссии'");
+    expect(quickDeck).toContain("kicker: 'МИССИИ · ГОРН'");
+    expect(css).toContain('.app-shell:not([data-screen="dashboard"]) .content > #quests {display:none;}');
+    expect(css).not.toContain(':is(#daily-plan,#quests,#step-log)');
+    expect(app).toMatch(/onDaily=\{\(\) => \{\s*navigate\('dashboard'\)/);
+    expect(app.match(/<DailyBoard profile=/g)).toHaveLength(1);
   });
 
   it('moves the entire pre-workout camera guide from Forge to Settings FAQ', () => {

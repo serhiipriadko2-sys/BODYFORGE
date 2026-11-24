@@ -177,7 +177,9 @@ try {
   await until(`(()=>{try{const p=JSON.parse(localStorage.getItem(${JSON.stringify(profileKey)})||'null');return p?.game?.created&&p.game.nickname===${JSON.stringify(nickname)}&&p.workouts.length===0&&p.xp===0&&p.coins===0}catch{return false}})()`, 'only synthetic zero-workout profile persisted');
   const profileBefore = await js(`localStorage.getItem(${JSON.stringify(profileKey)})`);
   await click('.mobile-nav button:nth-child(3)');
-  await until('document.querySelector(".app-shell")?.dataset.screen==="forge"&&!!document.querySelector("#avatar-lab")', 'Hero screen and ordinary editor controls');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="forge"','Hero screen');
+  if (!await js('document.querySelector("[data-studio-panel=appearance]")?.open')) await click('[data-studio-panel="appearance"]>summary');
+  await until('document.querySelector("#avatar-lab")?.getClientRects().length>0','ordinary editor controls visible');
   await js('document.querySelector(".studio-preview").scrollIntoView({block:"center",behavior:"instant"});true');
   await until(`(()=>{const e=document.querySelector('.studio-preview [data-avatar-source]');return e?.dataset.avatarSource==='cc0'&&e.dataset.avatarAsset==='athlete'&&e.dataset.avatarRevision==='detail-v2'&&e.dataset.skinMap==='ready'&&e.dataset.detailMaps==='3'&&e.dataset.hairMaps==='2'})()`, 'compact anatomical model and all maps ready', 60000);
   report.measurements.assets = await js(String.raw`performance.getEntriesByType('resource').filter(e=>/\/(bodyforge-athlete[^/]*\.glb|athlete-[^/]+\.(?:png|jpg))$/.test(new URL(e.name).pathname)).map(e=>({file:new URL(e.name).pathname.split('/').at(-1),durationMs:e.duration,transferBytes:e.transferSize,encodedBytes:e.encodedBodySize}))`);

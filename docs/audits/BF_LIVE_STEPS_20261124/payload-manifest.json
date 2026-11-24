@@ -1,0 +1,230 @@
+{
+  "assets/web/assets/athlete-eyes.jpg": {
+    "bytes": 30484,
+    "sha256": "286cbc415b376fb69871d0e4dde159b20ba307e3e7497274347a5c9617e72338"
+  },
+  "assets/web/assets/athlete-groom-source.md": {
+    "bytes": 3867,
+    "sha256": "bf587d8b94367e9d25340e8e3582ccd840d43b84d20f7c4a2157f56b289c4ad0"
+  },
+  "assets/web/assets/athlete-hair-normal.png": {
+    "bytes": 228087,
+    "sha256": "a3cc46bf1b45b668c9cf8a611c0b586779559f4488d1f9cdbc74c745767a5169"
+  },
+  "assets/web/assets/athlete-hair.png": {
+    "bytes": 465622,
+    "sha256": "bf407d26fc79c7fa48c7eb5ce580384b2a5cb02b23cf97e5326c3335a2d70530"
+  },
+  "assets/web/assets/athlete-normal.png": {
+    "bytes": 425857,
+    "sha256": "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c"
+  },
+  "assets/web/assets/athlete-orm.png": {
+    "bytes": 219446,
+    "sha256": "31a794d88e45423ccf1540846d607941946ace03a38741ebc1ce0b8ebf87b02a"
+  },
+  "assets/web/assets/athlete-realism-source.md": {
+    "bytes": 2882,
+    "sha256": "928f8fca852a33b65f0c6f4219b4267f38ae9fc3f327ca48ecaab94116c9b5a7"
+  },
+  "assets/web/assets/athlete-skin-detail.jpg": {
+    "bytes": 668292,
+    "sha256": "e5d5d5d7eee9568b386ad4a4457714dace161c11fa45f9dd6161a437fc6deaec"
+  },
+  "assets/web/assets/athlete-skin-portrait.jpg": {
+    "bytes": 705959,
+    "sha256": "e633c84f1ae7647005cf622e2ba1f866bc8d72ff6905b3c97e4ee8497b7a2be7"
+  },
+  "assets/web/assets/athlete-skin-source.md": {
+    "bytes": 2051,
+    "sha256": "269c03fe3b003a1c2c0ecd9ac28d6ad878c86ab2318199c364d82831238cbbd7"
+  },
+  "assets/web/assets/athlete-skin.jpg": {
+    "bytes": 130759,
+    "sha256": "33077073e7c16cb850310d0697392099711463f5704a442506c89bb893cbfd70"
+  },
+  "assets/web/assets/Avatar3D-DBStOIv0.js": {
+    "bytes": 658321,
+    "sha256": "5627d4b450c3fd0e8ea459cd399c0164c40e89fa87be705959f292ce30135f32"
+  },
+  "assets/web/assets/AvatarLab-AweBSEk1.js": {
+    "bytes": 7346,
+    "sha256": "0dc805b06556eb9b71a9d482eee8631ae1f881c7e83fd00793b717c565ace5cf"
+  },
+  "assets/web/assets/avatarYaw-BAlZR6XA.js": {
+    "bytes": 191,
+    "sha256": "41dd011150107b8d4691a58ad3ca1964f8a4ef9f43086ed91ca9569aee142857"
+  },
+  "assets/web/assets/bodyforge-athlete-detail.glb": {
+    "bytes": 6038680,
+    "sha256": "16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6"
+  },
+  "assets/web/assets/bodyforge-athlete-efficient.glb": {
+    "bytes": 4639184,
+    "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+  },
+  "assets/web/assets/bodyforge-athlete-realistic.glb": {
+    "bytes": 6757648,
+    "sha256": "4c7754507aed2b48a0fd1ceaa9bfacf8bcd35befe0091afc39f8798e3a561834"
+  },
+  "assets/web/assets/bodyforge-athlete.glb": {
+    "bytes": 5011480,
+    "sha256": "e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97"
+  },
+  "assets/web/assets/bodyforge-ocular-detail.glb": {
+    "bytes": 96248,
+    "sha256": "bb558f02e88846add66bf4007b9038844eae9cec7f532aef8005bb453a7bbb39"
+  },
+  "assets/web/assets/bodyforge-strand-groom.glb": {
+    "bytes": 383436,
+    "sha256": "3c424b36e83abfea646edefde112b7dd04ccfda9f6fd4308a44f29d5529fea9e"
+  },
+  "assets/web/assets/camera-7_XftXs9.js": {
+    "bytes": 237,
+    "sha256": "d6056200e6b7f585e687c10299b873de35810d5ab4aedb8ef6461bea8cab037d"
+  },
+  "assets/web/assets/CameraControls-CqmbA36G.js": {
+    "bytes": 4981,
+    "sha256": "b9d1ebd08b03fe3b04c3fb06a8d0f8e7e4b06a1a7b9a2aa115097ccd7b126797"
+  },
+  "assets/web/assets/ExerciseCatalog-BqCK1BFP.js": {
+    "bytes": 3438,
+    "sha256": "09f61ce53ea9cc5579da421a51a6ebd9f1da5469ee5f920ab427a635444d4c8a"
+  },
+  "assets/web/assets/ForgeQuickDeck-YL7WLt7g.js": {
+    "bytes": 3055,
+    "sha256": "e94d66616047719b24f9046a11cf1cb0f6af2a03fe302911de56bc5b6cb0eeeb"
+  },
+  "assets/web/assets/index-DlZo9n-3.js": {
+    "bytes": 394179,
+    "sha256": "ca259b8cc074c9880eb73378da5451c5c402d16ccd2277ced3b04055aa70963e"
+  },
+  "assets/web/assets/index-DVcP9GP9.css": {
+    "bytes": 174644,
+    "sha256": "e1d7ed60f59346212d7d7e511115856d4dadfa262827f22d57a9ad48ecef23a2"
+  },
+  "assets/web/assets/jsx-runtime-DyZJNswf.js": {
+    "bytes": 8784,
+    "sha256": "006c8c36904a2f42ac8e86d3e56badc6473450e8a3988d87f12c632a6487218b"
+  },
+  "assets/web/assets/male-base-mesh-base_male.glb": {
+    "bytes": 4498248,
+    "sha256": "d15a07e2b4cf1d08a3b91cb212a9a06a91438077f05a3f2a62f45351e8a71eb8"
+  },
+  "assets/web/assets/ProgressBackupPanel-C0h6izYD.js": {
+    "bytes": 12719,
+    "sha256": "d0d12095be7ee1069fcbba6e42a432d81eff9f8e89b64cda73fd06930de38f98"
+  },
+  "assets/web/assets/ProgressBackupPanel-Dt0z2VpD.css": {
+    "bytes": 3088,
+    "sha256": "b70b509ed525beb05070a67e435b59488e27f5a21e85da91b5eab18c63c2f59a"
+  },
+  "assets/web/assets/ProgressPulseBoard-CYu1Eiwi.js": {
+    "bytes": 14347,
+    "sha256": "839dfb0f4d042adaf04371716e715d134787c31b1e391f5bbbb48eaf0063808d"
+  },
+  "assets/web/assets/RuntimeDiagnosticsPanel-ChyzbHVM.js": {
+    "bytes": 4896,
+    "sha256": "eddca7b2048af97116bdb92635b76639b4d9e938b918341b9c58c754a2174838"
+  },
+  "assets/web/assets/SettingsFaq-CdEciFKe.js": {
+    "bytes": 5100,
+    "sha256": "cc56351190eb25907476e9340aaaf6add1f18a3fbb0f6281eaa5f030c5ecf84f"
+  },
+  "assets/web/assets/shield-B1dGldsA.js": {
+    "bytes": 261,
+    "sha256": "8b1f74679c30f71fe0b50784c101affb6aa083f5e14c4921418f939c24d427dc"
+  },
+  "assets/web/assets/sparkles-fybYlVgo.js": {
+    "bytes": 497,
+    "sha256": "19760729d8cb5c2d1fe4d226215c74a0e2dc75dd9e76af4888b9bdb9eea5aa9e"
+  },
+  "assets/web/assets/StepsBoard-ChdoyB5h.js": {
+    "bytes": 7894,
+    "sha256": "5524007d44b8a1d1ee600974786e5f2d2bccdbaf0828d44a045ce3fea99d73c5"
+  },
+  "assets/web/assets/vision_bundle-Cw6F-g9q.js": {
+    "bytes": 154276,
+    "sha256": "b3286084d4873782a1074a83abf00f7857f733739a75e7d31591e3f43e806a54"
+  },
+  "assets/web/favicon.svg": {
+    "bytes": 436,
+    "sha256": "495339d1b02a00931d8f986f1822507ae4c77cfd99d2784ca071338fd39bd12b"
+  },
+  "assets/web/fonts/manrope-cyrillic-variable.woff2": {
+    "bytes": 14500,
+    "sha256": "c268b459a9329e59fecf39a17618efd44c71735532048d60b12aab76a8c14914"
+  },
+  "assets/web/fonts/manrope-latin-variable.woff2": {
+    "bytes": 24836,
+    "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+  },
+  "assets/web/fonts/Manrope-OFL.txt": {
+    "bytes": 4387,
+    "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+  },
+  "assets/web/fonts/README.md": {
+    "bytes": 2275,
+    "sha256": "c72bec53390b14d22238d07a358f58b996c10e35a5fb457c90f4b56e45c1d6b6"
+  },
+  "assets/web/fonts/unbounded-cyrillic-variable.woff2": {
+    "bytes": 31424,
+    "sha256": "e30bf6a6063b6a47232bbd657e24c7cf4fdaf76fc2c50d92d9ee63e2ad2087cf"
+  },
+  "assets/web/fonts/unbounded-latin-variable.woff2": {
+    "bytes": 50904,
+    "sha256": "22f9b928aa3928a896340422b54d690fbb5875c30eae4c106f029c61f2289fd6"
+  },
+  "assets/web/fonts/Unbounded-OFL.txt": {
+    "bytes": 4392,
+    "sha256": "31e5d4e83955e7103c34570dd49b0570ef490800bd65b42923c0dd02445263b3"
+  },
+  "assets/web/icons/bodyforge-180.png": {
+    "bytes": 3223,
+    "sha256": "43115d5e3a50e7b229ddcc5c1c11277bebf1f88d4ed5af0336480977dc086ee1"
+  },
+  "assets/web/icons/bodyforge-192.png": {
+    "bytes": 3362,
+    "sha256": "c91eb5e74c5ec9371edb896e230932d799b81749a1ac638601d85adfffc43332"
+  },
+  "assets/web/icons/bodyforge-512.png": {
+    "bytes": 5525,
+    "sha256": "2e4223c25a93edecec87e1280f704b386372bb2111ef0617ef7942d258bf6e8d"
+  },
+  "assets/web/icons/bodyforge-icon.svg": {
+    "bytes": 514,
+    "sha256": "0d16aac886f994b2229064e4bd95fae691823287b329c3f579440a4dac24d4be"
+  },
+  "assets/web/icons/bodyforge-maskable-512.png": {
+    "bytes": 4593,
+    "sha256": "0b83a297284e68381ada89b8ac4225ffb98db2f7f7ce9eb7482c8a1c26b0ebee"
+  },
+  "assets/web/icons/bodyforge-maskable.svg": {
+    "bytes": 579,
+    "sha256": "b902f0a4e50a56d78bbb5879d52724114db83dd140c2c2c5306978987b243975"
+  },
+  "assets/web/index.html": {
+    "bytes": 1188,
+    "sha256": "7d3c002fd6f4f0d3d0371a49fbb124f90639d023d010dec5024e4f0db2d0b787"
+  },
+  "assets/web/manifest.webmanifest": {
+    "bytes": 927,
+    "sha256": "c0f1b84ce0e4f9a79e83198aebc9de7d4f0e8b9c2176dacbff2f17a02e955f0e"
+  },
+  "classes.dex": {
+    "bytes": 43484,
+    "sha256": "2dbce5b318c2153801ffc4643d5dd33e74d6766f11ebf0737955598b7e8a2743"
+  },
+  "AndroidManifest.xml": {
+    "bytes": 4256,
+    "sha256": "5ec7b7d13bd6c50596352af55026722cca1f5b1db7a95a6654e32d16f796d0f5"
+  },
+  "res/drawable-nodpi-v4/ic_bodyforge.png": {
+    "bytes": 3142,
+    "sha256": "9b3525ce8e7a0b52383e3414f2f47ae3261d6e5c5e6e596693c2164c3c07df45"
+  },
+  "resources.arsc": {
+    "bytes": 600,
+    "sha256": "640259e291a665639bfa029a7d3d3332a6f962b03a473dddd7927c3ffa76dac9"
+  }
+}

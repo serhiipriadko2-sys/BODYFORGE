@@ -1,0 +1,235 @@
+package ru.bodyforge.healthqa;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.health.connect.AggregateRecordsRequest;
+import android.health.connect.AggregateRecordsResponse;
+import android.health.connect.HealthConnectException;
+import android.health.connect.HealthConnectManager;
+import android.health.connect.TimeInstantRangeFilter;
+import android.health.connect.datatypes.StepsRecord;
+import android.os.OutcomeReceiver;
+import android.os.SystemClock;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import java.text.NumberFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
+/** Native-only foreground presentation. No values are passed to WebView. */
+final class LiveStepsPanel extends LinearLayout {
+    private static final int ACCENT = 0xff63e3d8;
+    private static final int MUTED = 0xffb8c7d5;
+    private final Activity activity;
+    private final TextView today, live;
+    private final Button settings;
+    private final SensorManager sensors;
+    private final Sensor detector;
+    private final LiveStepPolicy.Refresh refresh = new LiveStepPolicy.Refresh();
+    private LiveStepPolicy.Session session;
+    private SensorEventListener listener;
+    private boolean attemptedSensor, enabled, healthGranted;
+    private StepsPolicy.DayWindow queryWindow, displayedWindow;
+
+    LiveStepsPanel(Activity activity, Runnable configure) {
+        super(activity);
+        this.activity = activity;
+        setOrientation(HORIZONTAL);
+        setGravity(android.view.Gravity.CENTER_VERTICAL);
+        setPadding(dp(12),dp(5),dp(8),dp(5));
+        setBackgroundColor(0xff101f2c);
+        LinearLayout labels = new LinearLayout(activity);
+        labels.setOrientation(VERTICAL);
+        today = label(labels, "Сегодня: —", 14, ACCENT);
+        live = label(labels, "Сейчас: —", 13, MUTED);
+        addView(labels, new LinearLayout.LayoutParams(0, -2, 1f));
+        settings = new Button(activity);
+        settings.setAllCaps(false);
+        settings.setText("Шаги ›");
+        settings.setTextSize(12);
+        settings.setMinWidth(dp(48));
+        settings.setMinimumWidth(dp(48));
+        settings.setMinHeight(dp(48));
+        settings.setContentDescription("Настроить источники шагов");
+        settings.setOnClickListener(v -> { if (enabled && settings.isEnabled()) configure.run(); });
+        addView(settings, new LinearLayout.LayoutParams(-2,-2));
+        sensors = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+        detector = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        setVisibility(View.GONE);
+    }
+
+    private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
+    private TextView label(LinearLayout parent, String text, int size, int color) {
+        TextView v = new TextView(activity);
+        v.setText(text); v.setTextSize(size); v.setTextColor(color);
+        v.setSaveEnabled(false);
+        parent.addView(v, new LinearLayout.LayoutParams(-1,-2));
+        return v;
+    }
+    private boolean granted(String permission) {
+        return activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+    }
+    private String format(long value) {
+        return NumberFormat.getIntegerInstance(new Locale("ru","RU")).format(value);
+    }
+
+    void updateScreen(LiveStepPolicy.Screen screen) {
+        if (screen == LiveStepPolicy.Screen.OFF) { stop(); return; }
+        if (!enabled) {
+            enabled = true;
+            setVisibility(View.VISIBLE);
+        }
+        settings.setEnabled(screen == LiveStepPolicy.Screen.READY);
+        tick();
+    }
+
+    void stop() {
+        if (!enabled) return;
+        enabled = false;
+        stopSensor();
+        attemptedSensor = false;
+        healthGranted = false;
+        refresh.reset();
+        queryWindow = displayedWindow = null;
+        today.setText("Сегодня: —");
+        live.setText("Сейчас: —");
+        setVisibility(View.GONE);
+    }
+
+    private void stopSensor() {
+        SensorEventListener previous = listener;
+        listener = null;
+        session = null;
+        if (previous != null && sensors != null) sensors.unregisterListener(previous);
+    }
+
+    private void tickSensor() {
+        if (detector == null) {
+            live.setText("Сейчас: датчик недоступен");
+            return;
+        }
+        if (!granted(Manifest.permission.ACTIVITY_RECOGNITION)) {
+            stopSensor();
+            attemptedSensor = false;
+            live.setText("Сейчас: нужен доступ к активности");
+            return;
+        }
+        if (listener != null || attemptedSensor) return;
+        attemptedSensor = true;
+        final LiveStepPolicy.Session candidate = new LiveStepPolicy.Session(SystemClock.elapsedRealtimeNanos());
+        final SensorEventListener newListener = new SensorEventListener() {
+            @Override public void onSensorChanged(SensorEvent event) {
+                if (!enabled || listener != this || session != candidate ||
+                    !granted(Manifest.permission.ACTIVITY_RECOGNITION)) return;
+                if (event.sensor == detector && event.values.length > 0 &&
+                    candidate.accept(event.timestamp, SystemClock.elapsedRealtimeNanos(), event.values[0])) {
+                    live.setText("Сейчас: " + format(candidate.count()) + " · за сеанс");
+                }
+            }
+            @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+        };
+        listener = newListener;
+        session = candidate;
+        try {
+            if (sensors.registerListener(newListener, detector, SensorManager.SENSOR_DELAY_NORMAL, 0)) {
+                live.setText("Сейчас: 0 · за сеанс");
+                return;
+            }
+        } catch (RuntimeException ignored) { }
+        stopSensor();
+        live.setText("Сейчас: датчик недоступен");
+    }
+
+    private void tick() {
+        tickSensor();
+        if (!HealthStepsActivity.available(activity) || !granted(HealthStepsActivity.READ_STEPS)) {
+            if (healthGranted) refresh.reset();
+            healthGranted = false;
+            queryWindow = displayedWindow = null;
+            today.setText("Сегодня: — · нужен Health Connect");
+            return;
+        }
+        if (!healthGranted) { healthGranted = true; refresh.reset(); }
+        final Instant now = Instant.now();
+        final ZoneId zone = ZoneId.systemDefault();
+        if ((queryWindow != null && !queryWindow.isCurrent(now, zone)) ||
+            (displayedWindow != null && !displayedWindow.isCurrent(now, zone))) {
+            refresh.reset();
+            queryWindow = displayedWindow = null;
+            today.setText("Сегодня: — · новая дата");
+        }
+        final long elapsed = SystemClock.elapsedRealtime();
+        if (refresh.expired(elapsed)) {
+            refresh.finish();
+            queryWindow = displayedWindow = null;
+            today.setText("Сегодня: — · источник не ответил");
+        }
+        if (!refresh.due(elapsed)) return;
+        final StepsPolicy.DayWindow window = new StepsPolicy.DayWindow(now, zone);
+        if (!window.valid()) { today.setText("Сегодня: — · новый день"); return; }
+        final int ticket = refresh.begin(elapsed);
+        queryWindow = window;
+        if (displayedWindow == null) today.setText("Сегодня: — · обновление");
+        try {
+            HealthConnectManager manager = activity.getSystemService(HealthConnectManager.class);
+            if (manager == null) { complete(ticket, window, null, "источник недоступен"); return; }
+            TimeInstantRangeFilter filter = new TimeInstantRangeFilter.Builder()
+                .setStartTime(window.start).setEndTime(window.end).build();
+            AggregateRecordsRequest<Long> request = new AggregateRecordsRequest.Builder<Long>(filter)
+                .addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build();
+            manager.aggregate(request, activity.getMainExecutor(),
+                new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
+                    @Override public void onResult(AggregateRecordsResponse<Long> response) {
+                        if (!enabled || !refresh.current(ticket)) return;
+                        try {
+                            Long value = response == null ? null : response.get(StepsRecord.STEPS_COUNT_TOTAL);
+                            complete(ticket, window, value, "нет данных");
+                        } catch (RuntimeException error) {
+                            complete(ticket, window, null, "ошибка источника");
+                        }
+                    }
+                    @Override public void onError(HealthConnectException error) {
+                        complete(ticket, window, null, "ошибка источника");
+                    }
+                });
+        } catch (RuntimeException | LinkageError error) {
+            complete(ticket, window, null, "источник недоступен");
+        }
+    }
+
+    private void complete(int ticket, StepsPolicy.DayWindow window, Long value, String unavailable) {
+        if (!enabled || !refresh.current(ticket)) return;
+        if (refresh.expired(SystemClock.elapsedRealtime())) {
+            refresh.finish();
+            queryWindow = displayedWindow = null;
+            today.setText("Сегодня: — · источник не ответил");
+            return;
+        }
+        refresh.finish();
+        queryWindow = null;
+        if (!granted(HealthStepsActivity.READ_STEPS) ||
+            !window.isCurrent(Instant.now(), ZoneId.systemDefault())) {
+            displayedWindow = null;
+            today.setText("Сегодня: — · доступ или дата изменились");
+            return;
+        }
+        if (StepsPolicy.validCount(value)) {
+            displayedWindow = window;
+            String time = DateTimeFormatter.ofPattern("HH:mm").withZone(window.zone).format(window.end);
+            today.setText("Сегодня: " + format(value) + " · Health Connect " + time);
+        } else {
+            displayedWindow = null;
+            today.setText("Сегодня: — · " + unavailable);
+        }
+    }
+}

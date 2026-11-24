@@ -117,32 +117,57 @@ try {
     'fighter level banner ready');
   await until('(()=>{const a=document.querySelector(".dashboard-player")?.getBoundingClientRect();const b=document.querySelector(".character-card")?.getBoundingClientRect();return !!a&&!!b&&b.top-a.bottom>=0&&b.top-a.bottom<=32})()',
     'fighter and 01 / Твоя сталь settled directly adjacent');
-  await until('document.querySelector("#pulse-progress .pulse-trend-card [data-period-reps]")?.getClientRects().length>0',
-    'training activity counters visibly mounted on Forge');
+  assert(await js('document.querySelectorAll(".character-card .kinetic-axis,.character-card .mobile-quickstart,.character-card .character-footer").length===0'),
+    'created fighter card contains none of the three removed sections');
+  assert(await js('document.querySelector(".character-card .avatar-stage")?.getClientRects().length>0'),
+    'avatar stage remains visible');
+  await until('!!document.querySelector("#pulse-progress .pulse-trend-card")', 'progress board mounted');
+  assert(await js('document.querySelector("#quests")?.getClientRects().length>0 && document.querySelectorAll("#quests").length===1'), 'one missions panel visible on Forge');
+  assert(await js('document.querySelector("#pulse-progress .pulse-ring-card")?.getClientRects().length>0'),
+    'fighter development stays on Forge');
+  assert(await js('document.querySelector("#pulse-progress .pulse-trend-card")?.getClientRects().length===0'),
+    'training activity is absent from visible Forge');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#pulse-progress .pulse-trend-card [data-period-reps]")?.getClientRects().length>0',
+    'training activity counters visibly mounted on Camera');
+  assert(await js('document.querySelector("#pulse-progress .pulse-ring-card")?.getClientRects().length===0'),
+    'fighter development is not duplicated on Camera');
+  assert(await js('document.querySelectorAll(".pulse-trend-card").length===1'),
+    'one activity card only');
+  assert(await js('document.querySelector("#pulse-progress").getBoundingClientRect().top>document.querySelector("#challenge").getBoundingClientRect().bottom'),
+    'activity follows the existing Camera controls');
   const storedBeforePeriod = await js('localStorage.getItem("bodyforge:pilot:v1")');
   const weeklyStats = JSON.parse(await js('JSON.stringify((()=>{const root=document.querySelector("#pulse-progress .pulse-trend-card");return {range:document.querySelector("#pulse-activity-range")?.value,period:root?.querySelector("[data-activity-period]")?.dataset.activityPeriod,active:root?.querySelector("[data-period-active-days]")?.dataset.periodActiveDays,reps:root?.querySelector("[data-period-reps]")?.dataset.periodReps,denom:root?.querySelector("[data-active-days]")?.textContent?.trim(),chart:root?.querySelector(".pulse-linechart")?.dataset.chartPoints}})())'));
-  console.log('FORGE_WEEKLY_ACTIVITY', JSON.stringify(weeklyStats));
+  console.log('CAMERA_WEEKLY_ACTIVITY', JSON.stringify(weeklyStats));
   assert(weeklyStats.range === '7' && weeklyStats.period === '7' &&
     weeklyStats.active === '0' && weeklyStats.reps === '0' &&
     weeklyStats.denom === '0/7' && weeklyStats.chart === '7',
-    'empty Forge activity shows 0/7 active days and 0 repetitions for 7 days');
+    'empty Camera activity shows 0/7 active days and 0 repetitions for 7 days');
   await js('(()=>{const e=document.querySelector("#pulse-activity-range");e.value="30";e.dispatchEvent(new Event("change",{bubbles:true}));})()');
   await until('document.querySelector("#pulse-progress .pulse-metric-grid")?.dataset.activityPeriod==="30"',
     'period changed to 30 days');
   const monthlyStats = JSON.parse(await js('JSON.stringify((()=>{const root=document.querySelector("#pulse-progress .pulse-trend-card");return {range:document.querySelector("#pulse-activity-range")?.value,active:root?.querySelector("[data-period-active-days]")?.dataset.periodActiveDays,reps:root?.querySelector("[data-period-reps]")?.dataset.periodReps,denom:root?.querySelector("[data-active-days]")?.textContent?.trim(),chart:root?.querySelector(".pulse-linechart")?.dataset.chartPoints}})())'));
-  console.log('FORGE_MONTHLY_ACTIVITY', JSON.stringify(monthlyStats));
+  console.log('CAMERA_MONTHLY_ACTIVITY', JSON.stringify(monthlyStats));
   assert(monthlyStats.range === '30' && monthlyStats.active === '0' &&
     monthlyStats.reps === '0' && monthlyStats.denom === '0/30' &&
     monthlyStats.chart === '30',
-    'empty Forge activity shows 0/30 active days and 0 repetitions for 30 days');
+    'empty Camera activity shows 0/30 active days and 0 repetitions for 30 days');
   await js('document.querySelector("#pulse-progress .pulse-trend-card")?.scrollIntoView({block:"start",behavior:"auto"})');
   await sleep(200);
-  await snapshot('forge-activity-30days-360.png');
+  await snapshot('camera-activity-30days-360.png');
+  await click('.mobile-nav button:nth-child(1)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'Forge return from activity');
+  assert(await js('document.querySelector(".pulse-trend-card")?.getClientRects().length===0'), 'activity stays hidden on Forge');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector(".pulse-trend-card")?.getClientRects().length>0', 'Camera return');
+  assert(await js('document.querySelector("#pulse-activity-range")?.value==="30"'), 'selected period preserved across tabs');
   await js('(()=>{const e=document.querySelector("#pulse-activity-range");e.value="7";e.dispatchEvent(new Event("change",{bubbles:true}));})()');
   await until('document.querySelector("#pulse-progress .pulse-metric-grid")?.dataset.activityPeriod==="7"',
     'seven-day period restored');
   assert(await js('localStorage.getItem("bodyforge:pilot:v1")') === storedBeforePeriod,
     'changing 7/30 day statistics does not rewrite progress or rewards');
+  await click('.mobile-nav button:nth-child(1)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'Forge ready after activity checks');
   await js('window.scrollTo(0,0)');
   const initial = await state();
   console.log('HOME_XP_360', JSON.stringify(initial));
@@ -167,21 +192,37 @@ try {
   assert(compact.navWidths.length === 6 && compact.navWidths.every((n) => n >= 44),
     'six navigation targets remain at least 44 CSS px wide');
   await snapshot('home-320-fighter-xp.png');
+  for (const width of [320,360,390,428]) {
+    await viewport(width);
+    const avatar = await js('(()=>{const card=document.querySelector(".character-card"),stage=card.querySelector(".avatar-stage"),c=card.getBoundingClientRect(),s=stage.getBoundingClientRect();return {removed:!card.querySelector(".kinetic-axis,.mobile-quickstart,.character-footer"),width:innerWidth,scroll:document.documentElement.scrollWidth,stageH:s.height,bottomGap:c.bottom-s.bottom}})()');
+    // Preserve the existing appearance.css mobile avatar height: clamp(270px,75vw,315px).
+    const expectedStage = Math.max(270,Math.min(315,width*.75));
+    console.log("AVATAR_ONLY_LAYOUT", JSON.stringify({...avatar,expectedStage}));
+    assert(avatar.removed && avatar.stageH>=expectedStage-1 && avatar.bottomGap>=0 && avatar.bottomGap<=24 && avatar.scroll<=avatar.width+1,
+      'compact avatar fits '+width+'px without removed zones or empty footer');
+  }
+  await viewport(390);
+  await js('document.querySelector(".character-card .avatar-stage").scrollIntoView({block:"center",behavior:"instant"})');
+  await until('document.querySelector(".character-card [data-avatar-source]")?.dataset.avatarSource==="cc0"', 'real 3D fighter is visible', 30000);
+  assert(await js('!!document.querySelector(".character-card .avatar-3d-drag")'), 'avatar rotation hint retained');
+  await snapshot('forge-avatar-only-390.png');
 
   await viewport(390);
-  const cta = await js('JSON.stringify({label:document.querySelector(".dashboard-player .profile-training-cta")?.getAttribute("aria-label"),quick:document.querySelector(".mobile-quickstart strong")?.textContent})');
+  const cta = await js('JSON.stringify({label:document.querySelector(".dashboard-player .profile-training-cta")?.getAttribute("aria-label"),quick:document.querySelector(".character-card .mobile-quickstart")!==null})');
   console.log('FORGE_SQUAT_CTA', cta);
   const action = JSON.parse(cta);
-  assert(/присед/i.test(action.label) && /20 ПРИСЕДАНИЙ/i.test(action.quick),
-    'Forge quick starts still explicitly request squats');
+  assert(/присед/i.test(action.label) && !action.quick,
+    'above-card Forge start still requests squats; redundant avatar CTA removed');
   await click('.mobile-nav button:nth-child(2)');
   await until('document.querySelector(".app-shell")?.dataset.screen==="challenge"', 'camera screen ready');
   await until('!!document.querySelector("#step-log") && !!document.querySelector("#quests")',
-    'missions and steps mounted on Camera');
+    'steps and single shared mission component mounted');
   const camera = await state();
   console.log('CAMERA_390', JSON.stringify(camera));
-  assert(camera.camera && !camera.daily && camera.quests && camera.steps,
-    'camera shows missions and steps but no personal daily plan card');
+  assert(await js('document.querySelector(".pulse-trend-card")?.getClientRects().length>0'),
+    'activity remains visible on Camera at 390 px');
+  assert(camera.camera && !camera.daily && !camera.quests && camera.steps,
+    'Camera shows steps but not missions or the retired plan');
   assert(await js('document.querySelector("#daily-plan") === null'),
     'removed daily-plan card is absent from DOM, not merely hidden');
   assert(!camera.home && !camera.settings && !camera.forgeGuide,
@@ -198,6 +239,8 @@ try {
     'FAQ, camera guide and progress backup ready');
   const settings = await state();
   console.log('FAQ_390', JSON.stringify(settings));
+  assert(await js('document.querySelector(".pulse-trend-card")?.getClientRects().length===0'),
+    'activity is not visible on FAQ');
   assert(settings.settings && settings.backup && settings.guide &&
     !settings.camera && !settings.daily && !settings.quests && !settings.steps,
     'FAQ contains the complete guide and backup, excluding Forge and Camera panels');
@@ -217,15 +260,36 @@ try {
   await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'return Forge');
   const returned = await state();
   assert(returned.home && returned.xp && !returned.guide &&
-    !returned.daily && !returned.quests && !returned.steps,
-    'Forge retains XP banner but does not show the moved FAQ or daily panels');
+    !returned.daily && returned.quests && !returned.steps,
+    'Forge retains XP and missions but not FAQ or steps');
   await until('!!document.querySelector("[data-quick-action=daily]")',
     'Forge mission shortcut ready');
   assert(await js('document.querySelector("[data-quick-action=daily]")?.textContent?.includes("Миссии")'),
     'Forge shortcut correctly says Миссии rather than deleted personal plan');
   await click('[data-quick-action=daily]');
-  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#quests")?.getClientRects().length>0',
-    'Forge shortcut opens Camera missions');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard" && document.querySelector("#quests")?.getClientRects().length>0',
+    'Forge shortcut stays on Forge missions');
+  assert(await js('document.querySelector("[data-quick-action=daily]")?.getAttribute("aria-label")?.includes("Горн")'), 'mission shortcut names correct screen');
+  for (const width of [320,360,390,428]) {
+    await viewport(width);
+    const layout = await js('(()=>{const q=document.querySelector("#quests"),r=q.getBoundingClientRect(),b=document.querySelector("#forge-quick-deck").getBoundingClientRect(),h=document.querySelector("#progress").getBoundingClientRect();return {width:innerWidth,scroll:document.documentElement.scrollWidth,left:r.left,right:r.right,top:r.top,bottom:r.bottom,deckBottom:b.bottom,historyTop:h.top}})()');
+    assert(layout.left>=-1&&layout.right<=width+1&&layout.scroll<=width+1&&layout.top>=layout.deckBottom&&layout.bottom<=layout.historyTop, 'missions fit after quick actions and before chronicle at '+width+'px');
+  }
+  await viewport(390);
+  await js('document.querySelector("#quests").scrollIntoView({block:"start",behavior:"instant"})');
+  await snapshot('forge-missions-390.png');
+  const beforeLogin = JSON.parse(await js('localStorage.getItem("bodyforge:pilot:v1")'));
+  await click('#quests .quest-button');
+  await until('JSON.parse(localStorage.getItem("bodyforge:pilot:v1")).coins==='+(beforeLogin.coins+10),'login reward acknowledged on disk');
+  assert(await js('document.querySelector("#quests .quest-button").disabled'), 'claimed login reward disabled');
+  const claimedRaw = await js('localStorage.getItem("bodyforge:pilot:v1")');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="challenge"', 'Camera after reward');
+  assert(await js('document.querySelector("#quests").getClientRects().length===0'), 'claimed mission hidden on Camera');
+  await click('.mobile-nav button:nth-child(1)');
+  await until('document.querySelector(".app-shell")?.dataset.screen==="dashboard"', 'return to claimed missions');
+  assert(await js('document.querySelector("#quests .quest-button").disabled'), 'claimed status survives tab switch');
+  assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===claimedRaw, 'tab switch never rewrites or duplicates reward');
   assert(await js('document.querySelector("#daily-plan") === null'),
     'daily-plan remains absent after mission shortcut navigation');
   assert(browserErrors.length === 0, 'no uncaught exceptions while switching screens');

@@ -23,6 +23,7 @@ const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chro
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const clients = new Set();
 let port, assertions = 0;
+let compactLayoutChecked = false, compactEditorChecked = false;
 function check(value, label) {
   if (!value) throw Error('FAIL ' + label);
   assertions++;
@@ -143,8 +144,41 @@ async function app(tab, reload = false) {
   if (await tab.js('!!document.querySelector("#onboarding .forge-solid-button")')) {
     await tab.js('document.querySelector("#onboarding .forge-solid-button").click();true');
   }
-  await tab.until('!!document.querySelector("#step-log")&&!document.querySelector("#onboarding")', 'manual steps panel');
+  await tab.until('!!document.querySelector("#step-log")&&!document.querySelector("#onboarding")', 'steps panel mounted');
+  await tab.js('document.querySelector(".mobile-nav button:nth-child(2)").click();true');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#step-log")?.getClientRects().length>0', 'Camera steps visible');
   await tab.until('!!localStorage.getItem("bodyforge:pilot:v1")', 'fighter persisted');
+  const before = await tab.js('JSON.stringify(Object.entries(localStorage).sort(([a],[b])=>a.localeCompare(b)))');
+  check(await tab.js('(()=>{const d=document.querySelector("#step-log details"),s=d?.querySelector("summary"),input=document.querySelector("#bf-steps-today");return !!d&&!d.open&&!!s&&s.getBoundingClientRect().height>=44&&input.getClientRects().length===0&&s.dataset.syncState==="unavailable"&&!s.querySelector("[data-manual-steps]")})()'), 'compact steps button defaults closed with honest unavailable sync status');
+  if (!compactLayoutChecked) {
+    compactLayoutChecked = true;
+    for (const width of [320,360,390,428]) {
+      await tab.cdp('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:true});
+      await sleep(160);
+      const layout=await tab.js('(()=>{const s=document.querySelector("#step-log summary"),r=s.getBoundingClientRect(),a=s.querySelector(".bf-steps-settings-icon")?.getBoundingClientRect(),v=[...s.querySelectorAll("[data-step-auto]")].map(n=>n.textContent);return {width:innerWidth,right:r.right,left:r.left,height:r.height,overflow:s.scrollWidth-s.clientWidth,iconW:a?.width,iconH:a?.height,values:v,source:s.querySelector(".bf-steps-source")?.textContent,old:!!document.querySelector("#step-log .bf-step-android,#step-log .bf-panel-heading")}})()');
+      console.log('STEPS_LAYOUT',JSON.stringify(layout));
+      check(layout.height>=44&&layout.left>=-1&&layout.right<=width+1&&layout.overflow<=1&&layout.iconW>=44&&layout.iconH>=44&&layout.values.join(',')==='—,—'&&layout.source==='Веб · нет синхронизации'&&!layout.old,'compact automatic-step dashboard '+width+'px, no fake readings or old diary');
+    }
+    await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await tab.js('document.querySelector("#step-log").scrollIntoView({block:"center",behavior:"instant"});true');
+    await sleep(200);
+    const shot=await tab.cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    fs.writeFileSync(path.resolve('docs/audits/BF_STEPS_WEB_DASHBOARD_20261124/steps-closed-390.png'),Buffer.from(shot.data,'base64'));
+  }
+  await tab.js('document.querySelector("#step-log summary").click();true');
+  await tab.until('document.querySelector("#step-log details")?.open&&document.querySelector("#bf-steps-today")?.getClientRects().length>0', 'manual fallback opens on Camera');
+  check(await tab.js('JSON.stringify(Object.entries(localStorage).sort(([a],[b])=>a.localeCompare(b)))')===before, 'opening steps never writes or fabricates synced data');
+  if (!compactEditorChecked) {
+    compactEditorChecked = true;
+    const editor=await tab.js('(()=>{const e=document.querySelector("#step-log .bf-steps-compact-editor"),s=document.querySelector("#step-log");return {height:e?.getBoundingClientRect().height,old:!!s.querySelector(".bf-step-android,.bf-panel-heading"),label:s.querySelector("label[for=bf-steps-today]")?.textContent}})()');
+    console.log('STEPS_EDITOR',JSON.stringify(editor));
+    check(editor.height>0&&editor.height<=230&&!editor.old&&editor.label==='Ручная запись за сегодня','expanded manual fallback is compact and explicitly labeled');
+    await tab.js('document.querySelector("#step-log").scrollIntoView({block:"center",behavior:"instant"});true');
+    await sleep(180);
+    const shot=await tab.cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    fs.writeFileSync(path.resolve('docs/audits/BF_STEPS_WEB_DASHBOARD_20261124/steps-open-390.png'),Buffer.from(shot.data,'base64'));
+  }
+
 }
 async function gameBytes(tab) {
   return tab.js('JSON.stringify(Object.entries(localStorage).filter(([key])=>key.startsWith("bodyforge:pilot:v1")).sort(([a],[b])=>a.localeCompare(b)))');
@@ -198,7 +232,9 @@ async function timezoneDay() {
 try {
   check((await fetch(origin)).status === 200, 'existing loopback Vite responds HTTP 200');
   await waitFor(() => {
-    if (chrome.exitCode !== null) throw Error('Disposable Chrome exited before CDP');
+    // Windows Chrome can hand off to a new process and exit its launcher with code 0.
+    // A fresh, isolated profile's CDP file remains the bounded readiness gate.
+    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Disposable Chrome exited before CDP');
     try { port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]); return !!port; } catch { return false; }
   }, 'disposable Chrome CDP port');
   if (selectedCase === 'timezone-day') {
@@ -305,6 +341,11 @@ try {
   process.exitCode = 21;
   for (const tab of clients) { try { console.log('FAILURE_STATE', JSON.stringify(await tab.snapshot())); } catch {} }
 } finally {
+  const active = [...clients].find(tab => tab.socket.readyState === WebSocket.OPEN);
+  if (active) {
+    try { active.socket.send(JSON.stringify({ id: 1000000, method: 'Browser.close' })); } catch {}
+    await sleep(500);
+  }
   for (const tab of clients) tab.socket.close();
   chrome.kill();
   await sleep(500);

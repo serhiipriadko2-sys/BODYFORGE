@@ -115,6 +115,12 @@ async function newTab() {
   await tab.cdp('Page.addScriptToEvaluateOnNewDocument', { source: `
     window.__hairQa = { draws: new WeakMap(), programs: new WeakMap() };
     const seenPrograms = new WeakMap();
+    const ocularPrograms = new WeakSet();
+    window.__ocularDraws = new WeakSet();
+    window.__dermalDraws = new WeakSet();
+    const dermalPrograms = new WeakSet();
+    const scanPrograms = new WeakSet(), textilePrograms = new WeakSet();
+    window.__scanDraws = new WeakSet(); window.__textileDraws = new WeakSet();
     for (const type of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
       if (!type) continue;
       for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced']) {
@@ -127,11 +133,21 @@ async function newTab() {
           if (program && !seenPrograms.has(program)) {
             const sources = (this.getAttachedShaders(program) || []).map(shader => this.getShaderSource(shader) || '').join('\\n');
             const enabled = name => new RegExp('^#define ' + name + '(?:\\\\s|$)', 'm').test(sources);
+            if (enabled('USE_CLEARCOATMAP') && enabled('USE_CLEARCOAT_ROUGHNESSMAP')) ocularPrograms.add(program);
+            if (sources.includes('BODYFORGE_DERMAL_WRAP_V1') && this.getProgramParameter(program, this.LINK_STATUS)) dermalPrograms.add(program);
+            if (this.getProgramParameter(program, this.LINK_STATUS)) {
+              if (sources.includes('BODYFORGE_SCAN_MICRO_V2') && enabled('USE_NORMALMAP_TANGENTSPACE') && enabled('USE_BUMPMAP')) scanPrograms.add(program);
+              if (enabled('USE_SHEEN') && enabled('USE_NORMALMAP') && enabled('USE_ROUGHNESSMAP')) textilePrograms.add(program);
+            }
             seenPrograms.set(program, enabled('USE_ANISOTROPY') ? {
               albedo: enabled('USE_MAP'), normal: enabled('USE_NORMALMAP'), alphaTest: enabled('USE_ALPHATEST'),
               doubleSided: enabled('DOUBLE_SIDED'),
             } : null);
           }
+          if (program && ocularPrograms.has(program)) window.__ocularDraws.add(this.canvas);
+          if (program && dermalPrograms.has(program)) window.__dermalDraws.add(this.canvas);
+          if (program && scanPrograms.has(program)) window.__scanDraws.add(this.canvas);
+          if (program && textilePrograms.has(program)) window.__textileDraws.add(this.canvas);
           const hair = program && seenPrograms.get(program);
           if (hair) window.__hairQa.programs.set(this.canvas, { ...hair, depthWrite: this.getParameter(this.DEPTH_WRITEMASK) });
           return result;
@@ -154,7 +170,7 @@ async function app(tab, reload = false) {
 
 try {
   check((await fetch(origin + '/')).status === 200, 'existing Vite HTTP 200');
-  await waitFor(() => { const f=path.join(profile,'DevToolsActivePort'); if(fs.existsSync(f)){port=Number(fs.readFileSync(f,'utf8').split('\n')[0]);return port>0;} if(chrome.exitCode!==null)throw Error('Owned Chrome exited '+chrome.exitCode); return false; }, 'owned Chrome CDP', 10000);
+  await waitFor(() => { const f=path.join(profile,'DevToolsActivePort'); if(fs.existsSync(f)){port=Number(fs.readFileSync(f,'utf8').split('\n')[0]);return port>0;} if(chrome.exitCode!==null && chrome.exitCode!==0)throw Error('Owned Chrome exited '+chrome.exitCode); return false; }, 'owned Chrome CDP', 10000);
   const tab=await newTab(); await app(tab);
   await tab.click('#onboarding .forge-solid-button');
   await tab.until('!!document.querySelector(".dashboard-player")','synthetic fighter created');
@@ -168,13 +184,138 @@ try {
   const chosenAsset = await tab.js("performance.getEntriesByType('resource').filter(e=>/bodyforge-athlete-(efficient|detail)\\.glb/.test(e.name)).map(e=>e.name.split('/').at(-1))");
   check(chosenAsset.includes('bodyforge-athlete-efficient.glb') && !chosenAsset.includes('bodyforge-athlete-detail.glb'),
     'new compact GLB renders directly rather than silently falling back to the old 6MB original');
-  await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"','CC0 hair alpha atlas and fibre normal loaded');
+  await tab.until('document.querySelector(".studio-preview canvas")?.dataset.groomGeometry==="strands"', 'Blender strand geometry installed in the live scene');
+  check(!await tab.js("performance.getEntriesByType('resource').some(e=>/athlete-hair[^/]*\\.png/.test(e.name))"),
+    'the new geometry replaces the two legacy hair texture requests');
   await tab.until('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="3"','normal, ORM and eye maps loaded');
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','local skin albedo applied');
+  await tab.until('window.__dermalDraws.has(document.querySelector(".studio-preview canvas"))', 'linked dermal shader actually draws skin');
+  check(await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/athlete-skin-dermal.jpg'))"), 'new Blender pigment atlas requested');
+  if (process.env.BODYFORGE_QA_SCAN_ONLY === '1') {
+    const canvas = 'document.querySelector(".studio-preview canvas")';
+    const scanReady = canvas+'?.dataset.scanDetail==="scan-microrelief"';
+    const fabricReady = canvas+'?.dataset.fabricMaps==="2"';
+    const fullyReady = 'document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="3"&&document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"&&'+canvas+'?.dataset.groomGeometry==="strands"';
+    await tab.until(scanReady+'&&'+fabricReady, 'new measured skin and fabric maps loaded',35000);
+    await tab.until('window.__scanDraws.has('+canvas+')&&window.__textileDraws.has('+canvas+')', 'both new PBR shader variants actually draw',35000);
+    await sleep(400); await tab.screenshot('scan-full');
+    await tab.click('[data-avatar-view="portrait"]');
+    await tab.until(canvas+'?.dataset.avatarView==="portrait"','portrait view');
+    await sleep(400); const scanShot=await tab.screenshot('scan-portrait');
+    const failedBefore = tab.failedUrls.length;
+    await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-scan-pores.png*','*athlete-fabric-normal.jpg*','*athlete-fabric-roughness.jpg*']});
+    await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.until(fullyReady,'fallback scene retains original skin and hair',35000);
+    await waitFor(()=>['athlete-scan-pores.png','athlete-fabric-normal.jpg','athlete-fabric-roughness.jpg'].every(file=>tab.failedUrls.slice(failedBefore).some(url=>url?.endsWith('/'+file))),'all three new assets actually blocked');
+    check(await tab.js(canvas+'?.dataset.scanDetail===undefined&&'+canvas+'?.dataset.fabricMaps==="0"'),'missing scan and textile assets retain fallback');
+    check(!await tab.js('window.__scanDraws.has('+canvas+')||window.__textileDraws.has('+canvas+')'),'optional shader variants not drawn on fallback');
+    await tab.click('[data-avatar-view="portrait"]');
+    await tab.until(canvas+'?.dataset.avatarView==="portrait"','fallback portrait view');
+    await sleep(400); const fallbackShot=await tab.screenshot('fallback-portrait');
+    const change=await tab.js('(async()=>{async function pixels(data){const b=await createImageBitmap(await(await fetch("data:image/png;base64,"+data)).blob());const c=new OffscreenCanvas(b.width,b.height);const ctx=c.getContext("2d");ctx.drawImage(b,0,0);b.close();return ctx.getImageData(150,350,95,115).data;}const a=await pixels('+JSON.stringify(scanShot)+'),b=await pixels('+JSON.stringify(fallbackShot)+');let n=0,sum=0;for(let i=0;i<a.length;i+=4){const d=Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]);sum+=d;if(d>=5)n++;}return {changed:n,sum};})()');
+    check(change.changed>0,'portrait pixels change on new measured materials');
+    observations.scanPixelChange=change;
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'scan fallback leaves game data unchanged');
+    await tab.cdp('Network.setBlockedURLs',{urls:[]});
+    const maximum=JSON.parse(gameBefore);
+    maximum.game.muscles={arms:5,core:5,legs:5,back:5};
+    const maxRaw=JSON.stringify(maximum);
+    await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(maxRaw)+');true');
+    await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.until(fullyReady+'&&'+scanReady+'&&'+fabricReady,'maximum growth retains scan and fabric',35000);
+    await tab.until('window.__scanDraws.has('+canvas+')&&window.__textileDraws.has('+canvas+')','max growth draws both shader variants',35000);
+    await sleep(400); await tab.screenshot('scan-level5-full');
+    await tab.click('[data-avatar-view="portrait"]');
+    await tab.until(canvas+'?.dataset.avatarView==="portrait"','max portrait view');
+    await sleep(400); await tab.screenshot('scan-level5-portrait');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===maxRaw,'scan rendering preserves maximum-growth fixture');
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_SCAN_PASS',JSON.stringify({assertions,...observations}));
+  } else if (process.env.BODYFORGE_QA_GROWTH_ONLY === '1') {
+    const yaw = 'document.querySelector(".studio-preview canvas")?.dataset.avatarYaw';
+    const baselineYaw = await tab.js(yaw);
+    await sleep(500);
+    const zero = await tab.screenshot('growth-0-front');
+    const maximum = JSON.parse(gameBefore);
+    maximum.game.muscles = {arms:5,core:5,legs:5,back:5};
+    const maxRaw = JSON.stringify(maximum);
+    await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(maxRaw)+');true');
+    await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.js('document.querySelector(".studio-preview .avatar-3d-slot").scrollIntoView({block:"center",behavior:"instant"});window.scrollTo(0,0);true');
+    await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','max-growth skin ready',35000);
+    await tab.until('document.querySelector(".studio-preview canvas")?.dataset.groomGeometry==="strands"','max-growth hair ready',35000);
+    await tab.until('window.__dermalDraws.has(document.querySelector(".studio-preview canvas"))','max-growth dermal material drew',35000);
+    check(await tab.js(yaw) === baselineYaw,'baseline and maximum match yaw');
+    await sleep(500);
+    const grown = await tab.screenshot('growth-5-front');
+    const measure = await tab.js('(async()=>{async function pixels(data){const b=await createImageBitmap(await(await fetch("data:image/png;base64,"+data)).blob());const c=new OffscreenCanvas(b.width,b.height);const ctx=c.getContext("2d");ctx.drawImage(b,0,0);b.close();return ctx.getImageData(125,294,140,223).data;}const a=await pixels('+JSON.stringify(zero)+'),b=await pixels('+JSON.stringify(grown)+');let n=0;for(let i=0;i<a.length;i+=4)if(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2])>=30)n++;return n;})()');
+    check(measure > 500,'same-angle body crop has visible growth');
+    observations.growthChangedPixels=measure;
+    for(let step=0;step<8;step++) await tab.click('.armory-yaw-controls button:last-child');
+    await sleep(350); await tab.screenshot('growth-5-back');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===maxRaw,'max-growth leaves disposable fixture unchanged');
+    check(tab.errors.length===0,'no uncaught browser errors in final growth render');
+    console.log('ATHLETE_GROWTH_PASS',JSON.stringify({assertions,...observations}));
+  } else {
   await sleep(500); await tab.screenshot('athlete-full');
   await tab.click('[data-avatar-view="portrait"]');
   await tab.until('document.querySelector(".studio-preview canvas")?.dataset.avatarView==="portrait"','portrait view');
   await sleep(300); const inkPortrait=await tab.screenshot('athlete-portrait');
+  const faceMode = 'document.querySelector(".studio-preview canvas")?.dataset.avatarFace';
+  check(await tab.js(faceMode+'==="sculpted"'), 'the live compact figure uses the measured facial form');
+  await tab.click('.armory-yaw-controls button:last-child');
+  await tab.click('.armory-yaw-controls button:last-child');
+  await tab.click('.armory-yaw-controls button:last-child');
+  await tab.until('Number(document.querySelector(".studio-preview canvas")?.dataset.avatarYaw)>.68', 'face turns beyond 39 degrees');
+  await tab.screenshot('athlete-face-three-quarter');
+  await tab.click('.armory-yaw-controls button:first-child');
+  await tab.click('.armory-yaw-controls button:first-child');
+  await tab.click('.armory-yaw-controls button:first-child');
+  const ocularMode = 'document.querySelector(".studio-preview canvas")?.dataset.ocularDetail';
+  check(await tab.js(ocularMode+'==="fitted-pbr"'), 'compact hero adopts the Blender eye geometry');
+  check(await tab.js('window.__ocularDraws.has(document.querySelector(".studio-preview canvas"))'),
+    'the live WebGL eye material draws with mapped specular coat and coat roughness');
+  check(!await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/athlete-eyes.jpg'))"),
+    'the previous eye atlas is not requested on the primary path');
+  const blockedOcularBefore = tab.failedUrls.length;
+  await tab.cdp('Network.setBlockedURLs', { urls: ['*bodyforge-ocular-detail.glb*'] });
+  await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
+  await waitFor(() => tab.failedUrls.slice(blockedOcularBefore).some(url => url?.endsWith('/bodyforge-ocular-detail.glb')),
+    'the fitted eye asset is actually blocked');
+  await tab.until(ocularMode+'==="atlas"', 'the original rigged eyes recover with their old atlas', 35000);
+  await tab.until('document.querySelector(".studio-preview canvas")?.dataset.groomGeometry==="strands"&&document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="3"&&document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"', 'same portrait materials ready');
+  await tab.click('[data-avatar-view="portrait"]');
+  await tab.until('document.querySelector(".studio-preview canvas")?.dataset.avatarView==="portrait"', 'same portrait view');
+  await sleep(300);
+  const beforeEyes = await tab.screenshot('athlete-portrait-before-ocular');
+  function compareEyePixels(a, b) {
+    async function pixels(png) {
+      const bytes = await (await fetch('data:image/png;base64,' + png)).blob();
+      const image = await createImageBitmap(bytes);
+      const canvas = new OffscreenCanvas(image.width, image.height), ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0);
+      image.close();
+      // Standard 390 px portrait fixture. Fixed yaw and stage; target the gaze.
+      return ctx.getImageData(166, 373, 66, 28).data;
+    }
+    return Promise.all([pixels(a), pixels(b)]).then(([oldPixels, newPixels]) => {
+      let changed = 0;
+      let absoluteDifference = 0;
+      for (let i = 0; i < oldPixels.length; i += 4) {
+        const delta = Math.abs(oldPixels[i] - newPixels[i]) + Math.abs(oldPixels[i+1] - newPixels[i+1]) + Math.abs(oldPixels[i+2] - newPixels[i+2]);
+        if (delta >= 18) changed++;
+        absoluteDifference += delta;
+      }
+      return { changedPixels: changed, samplePixels: oldPixels.length / 4, absoluteDifference };
+    });
+  }
+  observations.ocularPixels = await tab.js('(' + compareEyePixels.toString() + ')(' + JSON.stringify(beforeEyes) + ',' + JSON.stringify(inkPortrait) + ')');
+  check(observations.ocularPixels.changedPixels >= 20, 'the captured portrait contains visible eye-area pixel changes');
+  check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore, 'eye fallback preserves the exact fighter save');
+  await tab.cdp('Network.setBlockedURLs', { urls: [] });
+  await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
+  await tab.until(ocularMode+'==="fitted-pbr"', 'fitted eye returns after clean reload', 35000);
+  await tab.click('[data-avatar-view="portrait"]');
   for(const style of ['buzz','swept','crop']) {
     await tab.click('[data-hair-style="'+style+'"]');
     await tab.until('document.querySelector(".studio-preview [data-look-hair-style]")?.dataset.lookHairStyle==='+JSON.stringify(style),'hair '+style);
@@ -228,10 +369,10 @@ try {
   check(await tab.js('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="basic"'),'missing skin texture retains a usable basic material');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'network fallback paths preserve game bytes');
   const detailsBlockedBefore=tab.blockedFailures;
-  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-normal.png*','*athlete-orm.png*','*athlete-eyes.jpg*']});
+  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-normal.png*','*athlete-orm.png*','*bodyforge-ocular-detail.glb*','*athlete-eyes.jpg*']});
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','refined geometry survives missing optional detail maps',35000);
-  await waitFor(()=>tab.blockedFailures>=detailsBlockedBefore+3,'all optional detail-map failures observed');
+  await waitFor(()=>tab.blockedFailures>=detailsBlockedBefore+4,'all optional detail-map failures observed');
   check(await tab.js('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="0"'),'missing detail maps retain the usable base materials');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing optional maps preserve game bytes');
   observations.hairFallbacks = [];
@@ -241,7 +382,7 @@ try {
     { name: 'both', blocked: ['athlete-hair.png', 'athlete-hair-normal.png'], ready: 0, albedo: false, normal: false },
   ]) {
     const failedBefore = tab.failedUrls.length;
-    await tab.cdp('Network.setBlockedURLs', { urls: scenario.blocked.map(file => '*/assets/' + file + '*') });
+    await tab.cdp('Network.setBlockedURLs', { urls: ['bodyforge-strand-groom.glb', ...scenario.blocked].map(file => '*/assets/' + file + '*') });
     await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
     await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"',
       scenario.name + ' hair failure keeps the detailed scene', 35000);
@@ -263,15 +404,19 @@ try {
   }
   // Hold the real image responses until GameAvatar has disposed its old scene.
   // Releasing them must neither redraw that canvas nor contaminate a remount.
-  await tab.cdp('Network.setBlockedURLs', { urls: [] });
+  await tab.cdp('Network.setBlockedURLs', { urls: ['*bodyforge-strand-groom.glb*'] });
   tab.pausedResponses = [];
-  await tab.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/athlete-hair*.png*', requestStage: 'Response' }] });
+  await tab.cdp('Fetch.enable', { patterns: [
+    { urlPattern: '*/assets/athlete-hair*.png*', requestStage: 'Response' },
+    { urlPattern: '*/assets/bodyforge-ocular-detail.glb*', requestStage: 'Response' },
+  ] });
   try {
     await app(tab, true); await tab.click('.mobile-nav button:nth-child(3)');
-    await waitFor(() => ['athlete-hair.png', 'athlete-hair-normal.png'].every(file =>
+    await waitFor(() => ['athlete-hair.png', 'athlete-hair-normal.png', 'bodyforge-ocular-detail.glb'].every(file =>
       tab.pausedResponses.some(response => response.request.url.endsWith('/' + file) && response.responseStatusCode === 200)),
-      'both real hair responses held before image callbacks', 35000);
+      'real hair and eye responses held before asset callbacks', 35000);
     await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="0"', 'held hair responses have not been applied');
+    check(await tab.js(ocularMode+'===undefined'), 'held eye response has not been adopted');
     await tab.js('window.__oldHairCanvas=document.querySelector(".studio-preview canvas");true');
     await tab.click('.mobile-nav button:first-child');
     await tab.until('!document.querySelector(".studio-preview canvas")', 'leaving the studio unmounts its WebGL scene');
@@ -282,11 +427,12 @@ try {
     await waitFor(() => held.every(response => response.networkId && tab.finishedRequests.has(response.networkId)),
       'late hair responses actually finish after scene disposal');
     await tab.js('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
-    check(await tab.js('window.__hairQa.draws.get(window.__oldHairCanvas)||0') === draws, 'late hair callbacks never draw the disposed canvas');
+    check(await tab.js('window.__hairQa.draws.get(window.__oldHairCanvas)||0') === draws, 'late eye and hair callbacks never draw the disposed canvas');
     check(tab.errors.length === 0, 'late hair callbacks produce no uncaught browser errors');
     await tab.click('.mobile-nav button:nth-child(3)');
     await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"', 'fresh scene applies both hair maps after late response cleanup', 35000);
-    check(await tab.js('localStorage.getItem(' + JSON.stringify(gameKey) + ')') === gameBefore, 'late hair cleanup and remount preserve game bytes');
+    await tab.until(ocularMode+'==="fitted-pbr"', 'fresh scene adopts the eyes after late response cleanup', 35000);
+    check(await tab.js('localStorage.getItem(' + JSON.stringify(gameKey) + ')') === gameBefore, 'late eye and hair cleanup preserve game bytes');
   } finally {
     await tab.cdp('Fetch.disable');
   }
@@ -300,7 +446,8 @@ try {
   await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(maxRaw)+');true');
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','max-growth synthetic rig with skin map',35000);
-  await tab.until('document.querySelector(".studio-preview [data-hair-maps]")?.dataset.hairMaps==="2"','max-growth hair detail loaded',35000);
+  await tab.until('document.querySelector(".studio-preview canvas")?.dataset.groomGeometry==="strands"','max-growth strand hair loaded',35000);
+  await tab.until(ocularMode+'==="fitted-pbr"', 'max-growth fighter retains the detailed eyes', 35000);
   await tab.click('[data-avatar-view="portrait"]');
   await sleep(250); await tab.screenshot('athlete-max-portrait');
   await tab.click('.armory-yaw-controls button:last-child');
@@ -308,14 +455,60 @@ try {
   await sleep(200); await tab.screenshot('athlete-max-three-quarter');
   await tab.click('[data-avatar-view="full"]');
   await sleep(200); await tab.screenshot('athlete-max-full');
+  for (let step = 0; step < 6; step++) await tab.click('.armory-yaw-controls button:last-child');
+  await sleep(200); await tab.screenshot('athlete-max-rotated');
+  check(await tab.js(faceMode+'==="sculpted"'), 'facial rest form stays installed at maximum muscle growth');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===maxRaw,'max-growth rendering preserves synthetic fixture bytes');
   await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(gameBefore)+');true');
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
-  await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','zero-growth rig restored',35000);
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="forge"', 'restored Hero screen committed');
+  // Chrome may restore the scroll position from the previous navigation. The
+  // avatar intentionally mounts only inside the intersection observer margin.
+  await tab.js('document.querySelector(".studio-preview .avatar-3d-slot").scrollIntoView({block:"center",behavior:"instant"});true');
+  try {
+    await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','zero-growth rig restored',35000);
+  } catch (error) {
+    const state = await tab.js(`(()=>{
+      const p=document.querySelector('.studio-preview'), slot=p?.querySelector('.avatar-3d-slot'), r=slot?.getBoundingClientRect();
+      const canvas=p?.querySelector('canvas');
+      return {visibility:document.visibilityState, scroll:scrollY, height:innerHeight, rect:r?.toJSON(),
+        mounted:!!canvas, fallback:!!p?.querySelector('[data-3d-status=fallback]'), model:canvas?.dataset.avatarSource,
+        skin:canvas?.dataset.skinMap, ocular:canvas?.dataset.ocularDetail};
+    })()`);
+    console.error('ZERO_GROWTH_RESTORE_STATE', JSON.stringify({ state, lastFailed: tab.failedUrls.slice(-5), errors: tab.errors.slice(-3) }));
+    throw error;
+  }
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'zero-growth restoration preserves original synthetic save');
   await tab.js('document.querySelector(".studio-preview canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();true');
   await tab.until('!!document.querySelector(".studio-preview [data-3d-status=fallback]")','lost GPU context shows fallback');
   check(tab.errors.length===0,'no uncaught browser errors');
   console.log('ATHLETE_QUALITY_PASS',JSON.stringify({assertions,...observations}));
+  }
 } catch(error){console.error('ATHLETE_QUALITY_FAIL',error.stack||String(error));process.exitCode=18;}
-finally {for(const client of clients)client.socket.close();chrome.kill();await sleep(500);const resolved=path.resolve(profile),root=path.resolve(os.tmpdir())+path.sep;if(resolved.startsWith(root)&&path.basename(resolved).startsWith('bf-athlete-quality-')){try{fs.rmSync(resolved,{recursive:true,force:true});}catch{console.log('OWNED_PROFILE_CLEANUP_INCOMPLETE',resolved);}}}
+finally {
+  for (const client of clients) client.socket.close();
+  // On elevated Windows launch, Chrome can transfer to a non-elevated child.
+  // Close only the browser identified by this test's disposable profile.
+  try {
+    const ownedPort = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+    if (Number.isInteger(ownedPort) && ownedPort > 0) {
+      const version = await (await fetch('http://127.0.0.1:' + ownedPort + '/json/version', { signal: AbortSignal.timeout(1000) })).json();
+      const socket = new WebSocket(version.webSocketDebuggerUrl);
+      await Promise.race([
+        new Promise(resolve => {
+          socket.onopen = () => socket.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
+          socket.onclose = socket.onerror = resolve;
+        }),
+        sleep(1500),
+      ]);
+      socket.close();
+    }
+  } catch {}
+  if (chrome.exitCode === null) chrome.kill();
+  await sleep(500);
+  const resolved = path.resolve(profile), root = path.resolve(os.tmpdir()) + path.sep;
+  if (resolved.startsWith(root) && path.basename(resolved).startsWith('bf-athlete-quality-')) {
+    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 2, retryDelay: 250 }); }
+    catch { console.log('OWNED_PROFILE_CLEANUP_INCOMPLETE', resolved); }
+  }
+}

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { installAvatarSkinLighting } from './avatarSkinLighting';
 
 export type ImportedSurfaceRole = 'body' | 'eyes' | 'lips' | 'nails';
 
@@ -55,12 +56,15 @@ function createMicroSurface(): THREE.DataTexture {
 
 /** Scene-owned materials; disposeThreeTree releases the shared texture once. */
 export function createAvatarMaterials() {
+  const body = new THREE.MeshPhysicalMaterial({
+    name: 'BF dermal skin', color: 0xffffff, vertexColors: true,
+    metalness: 0, roughness: .72, side: THREE.FrontSide,
+    ior: 1.43, specularIntensity: .78,
+    bumpMap: createMicroSurface(), bumpScale: .0012,
+  });
+  installAvatarSkinLighting(body);
   return {
-    body: new THREE.MeshStandardMaterial({
-      name: 'BF skin and fitted fabric', color: 0xffffff, vertexColors: true,
-      metalness: 0, roughness: .72, side: THREE.FrontSide,
-      bumpMap: createMicroSurface(), bumpScale: .0012,
-    }),
+    body,
     eyes: new THREE.MeshPhysicalMaterial({
       name: 'BF cornea and iris', color: 0xffffff, vertexColors: true,
       metalness: 0, roughness: .22, clearcoat: .8, clearcoatRoughness: .13,
