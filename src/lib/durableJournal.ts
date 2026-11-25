@@ -60,35 +60,66 @@ function openDatabase(signal?: AbortSignal): Promise<IDBDatabase | null> {
   });
 }
 
-/** Opaque raw records are preserved; unknown store schema fails closed. */
-export async function readDurableJournal(): Promise<ReadResult> {
-  const db = await openDatabase();
-  if (!db) return { status: 'unavailable', entries: [] };
+/** A page limit bounds the number of cloned records, not individual record
+ * size or total history. One readonly transaction gives a consistent view.
+ * Selected readback retains only requested originals but validates EVERY row.
+ * Never treat a corrupt, incomplete or cancelled scan as an empty history. */
+const JOURNAL_PAGE_ROWS = 32;
+async function readJournalSnapshot(selected?: ReadonlySet<string>, signal?: AbortSignal): Promise<ReadResult> {
+  const unavailable: ReadResult = { status: 'unavailable', entries: [] };
+  const db = await openDatabase(signal);
+  if (!db || signal?.aborted) { db?.close(); return unavailable; }
   return new Promise((resolve) => {
-    let done = false;
+    let done = false, complete = false;
+    const entries: DurableJournalEntry[] = [];
+    let tx: IDBTransaction | undefined;
     const finish = (result: ReadResult) => {
       if (done) return;
-      done = true; clearTimeout(timer); db.close(); resolve(result);
+      done = true; clearTimeout(timer); signal?.removeEventListener('abort', abort);
+      db.close(); resolve(result);
     };
-    let tx: IDBTransaction | undefined;
-    const timer = setTimeout(() => {
+    const abort = () => {
       try { tx?.abort(); } catch { /* Already inactive. */ }
-      finish({ status: 'unavailable', entries: [] });
-    }, TIMEOUT_MS);
+      finish(unavailable);
+    };
+    const timer = setTimeout(abort, TIMEOUT_MS);
+    signal?.addEventListener('abort', abort, { once: true });
     try {
       tx = db.transaction(STORE, 'readonly');
+      tx.oncomplete = () => finish(complete && !signal?.aborted ? { status: 'ready', entries } : unavailable);
+      tx.onabort = tx.onerror = () => finish(unavailable);
       const store = tx.objectStore(STORE);
-      if (store.keyPath !== 'key') { tx.abort(); finish({ status: 'unavailable', entries: [] }); return; }
-      let rows: StoredEntry[] | null = null;
-      const request = store.getAll();
-      request.onsuccess = () => {
-        const decoded = (request.result as unknown[]).map(storedEntry);
-        if (decoded.every((entry): entry is StoredEntry => entry !== null)) rows = decoded;
+      if (store.keyPath !== 'key' || signal?.aborted) { abort(); return; }
+      let previous: string | undefined;
+      // Schedule the next page synchronously inside the active IDB callback.
+      // No async gap, separate transaction or offset/count truncation.
+      const page = () => {
+        const range = previous === undefined ? undefined : IDBKeyRange.lowerBound(previous, true);
+        const request = store.getAll(range, JOURNAL_PAGE_ROWS);
+        request.onsuccess = () => {
+          if (done || signal?.aborted) { abort(); return; }
+          try {
+            const values: unknown[] = request.result;
+            if (!Array.isArray(values) || values.length > JOURNAL_PAGE_ROWS) { abort(); return; }
+            for (const value of values) {
+              const row = storedEntry(value);
+              if (!row || (previous !== undefined && row.key <= previous)) { abort(); return; }
+              previous = row.key;
+              if (!selected || selected.has(row.key)) entries.push(publicEntry(row));
+            }
+            if (values.length < JOURNAL_PAGE_ROWS) complete = true;
+            else page();
+          } catch { abort(); }
+        };
       };
-      tx.oncomplete = () => finish(rows ? { status: 'ready', entries: rows.map(publicEntry) } : { status: 'unavailable', entries: [] });
-      tx.onabort = tx.onerror = () => finish({ status: 'unavailable', entries: [] });
-    } catch { finish({ status: 'unavailable', entries: [] }); }
+      page();
+    } catch { abort(); }
   });
+}
+
+/** Opaque raw records are preserved; unknown store schema fails closed. */
+export function readDurableJournal(): Promise<ReadResult> {
+  return readJournalSnapshot();
 }
 
 async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileRaw: string | null,
@@ -161,7 +192,7 @@ async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileR
   if (signal?.aborted) return { status: 'unavailable' };
   // A request success is insufficient: only transaction complete plus a new
   // readonly transaction can authorize the caller to credit localStorage.
-  const checked = await readDurableJournal();
+  const checked = await readJournalSnapshot(new Set(expected.keys()), signal);
   if (checked.status !== 'ready' || signal?.aborted) return { status: 'unavailable' };
   const actual = new Map(checked.entries.map((entry) => [entry.key, entry]));
   const entriesReadBack: DurableJournalEntry[] = [];

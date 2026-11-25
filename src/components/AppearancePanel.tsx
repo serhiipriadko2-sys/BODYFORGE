@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { Check, Palette as PaletteIcon, X } from 'lucide-react';
-import { APPEARANCE_KEY, DEFAULT_APPEARANCE, PALETTES, applyAppearance, isHexColor, loadAppearance, saveAppearance, type Appearance } from '../lib/appearance';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { Palette as PaletteIcon, X } from 'lucide-react';
+import { APPEARANCE_KEY, applyAppearance, loadAppearance, saveAppearance, type Appearance } from '../lib/appearance';
+import type { AppearanceDialogContentProps } from './AppearanceDialogContent';
 
 export default function AppearancePanel({ disabled = false }: { disabled?: boolean }) {
   const [initial] = useState(loadAppearance);
@@ -26,52 +27,49 @@ export default function AppearancePanel({ disabled = false }: { disabled?: boole
     setSettings(next);
     setMessage(saveAppearance(next) ? 'Оформление сохранено в этом браузере.' : 'Стиль применён только к этой странице: браузер не подтвердил сохранение.');
   }
-  const validDraft = isHexColor(draft);
+  const [Editor, setEditor] = useState<ComponentType<AppearanceDialogContentProps> | null>(null);
+  const [loadState, setLoadState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const loading = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  async function loadEditor() {
+    if (Editor || loading.current) return;
+    loading.current = true;
+    setLoadState('loading');
+    try {
+      const module = await import('./AppearanceDialogContent');
+      if (!mounted.current) return;
+      setEditor(() => module.default);
+      setLoadState('ready');
+    } catch {
+      if (mounted.current) setLoadState('error');
+    } finally { loading.current = false; }
+  }
+
+  function openEditor() {
+    if (disabled || !dialog.current || dialog.current.open) return;
+    dialog.current.showModal();
+    void loadEditor();
+  }
   return <>
     <button type="button" className="appearance-trigger" aria-label="Внешний вид" title="Внешний вид" disabled={disabled}
-      aria-haspopup="dialog" onClick={() => dialog.current?.showModal()}><PaletteIcon size={20}/></button>
-    <dialog ref={dialog} className="appearance-dialog" aria-labelledby="appearance-title" onClick={(event) => {
+      aria-haspopup="dialog" onClick={openEditor}><PaletteIcon size={20}/></button>
+    <dialog ref={dialog} className="appearance-dialog" data-appearance-load={loadState} aria-labelledby="appearance-title" onClick={(event) => {
       if (event.target !== event.currentTarget) return;
       const rect = event.currentTarget.getBoundingClientRect();
       if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.current?.close();
     }}>
       <div className="appearance-heading"><div><span>BODYFORGE / НАСТРОЙКИ</span><h2 id="appearance-title">Твой стиль</h2></div>
         <button type="button" className="appearance-close" aria-label="Закрыть внешний вид" onClick={() => dialog.current?.close()}><X size={21}/></button></div>
-      <p className="appearance-intro">Цвет и материал интерфейса. Прогресс и внешний вид бойца настраиваются отдельно.</p>
-      <fieldset><legend>Палитра</legend><div className="appearance-palette">
-        {PALETTES.map((palette) => <button type="button" key={palette.id} data-palette={palette.id} aria-pressed={settings.palette === palette.id}
-          onClick={() => choose({ ...settings, palette: palette.id })}>
-          <i style={{ background: palette.color }} aria-hidden="true"/>{palette.label}{settings.palette === palette.id && <Check size={15} aria-hidden="true"/>}
-        </button>)}
-        <button type="button" data-palette="custom" aria-pressed={settings.palette === 'custom'} onClick={() => choose({ ...settings, palette: 'custom' })}>
-          <i style={{ background: settings.customAccent }} aria-hidden="true"/>Свой{settings.palette === 'custom' && <Check size={15} aria-hidden="true"/>}</button>
-      </div></fieldset>
-      <div className="appearance-custom"><label className="appearance-color">Свой акцент<input type="color" aria-label="Свой акцент" value={settings.customAccent}
-        onChange={(event) => { setDraft(event.target.value); choose({ ...settings, palette: 'custom', customAccent: event.target.value }); }}/></label>
-        <label className="appearance-hex">HEX акцента<input type="text" aria-label="HEX акцента" value={draft} maxLength={7} spellCheck={false}
-          aria-invalid={!validDraft} aria-describedby={!validDraft ? 'appearance-hex-error' : undefined} onChange={(event) => setDraft(event.target.value)}/></label>
-        <button type="button" data-action="apply-custom" disabled={!validDraft} onClick={() => choose({ ...settings, palette: 'custom', customAccent: draft.toLowerCase() })}>Применить</button>
-      </div>
-      {!validDraft && <p id="appearance-hex-error" className="appearance-validation">Нужен цвет в формате #12abef.</p>}
-      <fieldset><legend>Материал</legend><div className="appearance-material">
-        <label><input type="radio" name="material" value="glass" checked={settings.material === 'glass'} onChange={() => choose({ ...settings, material: 'glass' })}/><span>Стекло<small>Мягкая глубина навигации</small></span></label>
-        <label><input type="radio" name="material" value="solid" checked={settings.material === 'solid'} onChange={() => choose({ ...settings, material: 'solid' })}/><span>Матовый<small>Без прозрачности и размытия</small></span></label>
-      </div></fieldset>
-      <label className="appearance-contrast"><span>Повышенный контраст<small>Непрозрачные панели, чёткие границы</small></span>
-        <input type="checkbox" name="highContrast" checked={settings.highContrast} onChange={(event) => choose({ ...settings, highContrast: event.target.checked })}/></label>
-      <p className="appearance-note">Системное уменьшение прозрачности и движения имеет приоритет. Стекло автоматически упрощается, если браузер его не поддерживает.</p>
-      <fieldset><legend>Графика 3D</legend><div className="appearance-material">
-        <label><input type="radio" name="graphics" value="balanced" checked={settings.graphics !== 'economy'}
-          onChange={() => choose({ ...settings, graphics: 'balanced' })}/><span>Сбалансированная<small>Более чёткий персонаж</small></span></label>
-        <label><input type="radio" name="graphics" value="economy" checked={settings.graphics === 'economy'}
-          onChange={() => choose({ ...settings, graphics: 'economy' })}/><span>Экономная<small>Меньше пикселей и размытия</small></span></label>
-      </div></fieldset>
-      <p className="appearance-note">Экономный режим снижает чёткость 3D и отключает размытие панелей. Качество камеры и правила зачёта упражнений сохраняются.</p>
-      <div className="appearance-preview" aria-hidden="true"><span>ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><strong>Стань сильнее</strong><i>20 приседаний</i></div>
-      <p className="appearance-message" role="status" aria-live="polite">{message}</p>
-      <button type="button" className="appearance-reset" data-action="reset-appearance" onClick={() => {
-        setDraft(DEFAULT_APPEARANCE.customAccent); choose({ ...DEFAULT_APPEARANCE });
-      }}>Вернуть стандартный стиль</button>
+      {Editor ? <Editor settings={settings} draft={draft} setDraft={setDraft} choose={choose} message={message}/>
+        : loadState === 'error' ? <div data-appearance-load-error role="status" className="appearance-message">
+            Не удалось загрузить редактор оформления. Закрой окно и открой его снова; если ошибка повторится, обнови страницу.
+            Текущий стиль и прогресс не изменены.
+          </div> : <p role="status" className="appearance-message">Загружаем настройки оформления…</p>}
     </dialog>
   </>;
 }

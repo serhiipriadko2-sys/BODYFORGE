@@ -1,0 +1,115 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T21:03:38.890168+03:00",
+  "sourceCount": 349,
+  "buildCount": 74,
+  "sourceManifestSha256": "7558308253cca0e106dc4c5cbef2f567dd5318fd4721c7d7d57ea9914768ddae",
+  "buildManifestSha256": "f8a0c1e66ca912aa05b0d57a6a6dee6519f44b1304504d3c0cbc508b604d9090",
+  "ownedHashesMatch": true,
+  "v1SourceMatches": true,
+  "liveChangedPaths": [],
+  "liveNewPaths": [],
+  "ownedDiffCheck": 0,
+  "ownedCachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": {
+    "qa/appearance-e2e.mjs": 0,
+    "qa/bundle-on-demand.mjs": 0,
+    "qa/appearance-lazy-e2e.mjs": 0
+  },
+  "passLines": {
+    "appearance-lazy.log": 13,
+    "journal.log": 69,
+    "appearance-preferences.log": 18,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "bundle": {
+    "entryBytes": 394581,
+    "entryGzipBytes": 120757,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 102180,
+    "entryReductionPercent": 20.6,
+    "entryName": "index-C5Dm8wHk.js",
+    "poseName": "vision_bundle-C6fujGGL.js"
+  },
+  "entrySha256": "5fb3d1a3c232d8bdf31a64ab731566f38e5ff7a5e98b172e4dc7e94fcbe2b7e9",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89373,
+      "sha256": "e9817629efd9273c1d7f078cf607732d4c2b4944138b2d77dddcd757da5db83a",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204523,
+      "sha256": "287fe33a9c74edf29a49d5f288d0079cec736df875a6bf7cdabb349d66202b16",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195352,
+      "sha256": "29d87180567658bfeefaaff4295475b140f94b4ebba30da0fa5213348bf319e1",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 95067,
+      "sha256": "ea451b8e2bb7f8dfa0f66c96587aa8ecc18197e0588246faccf3e1c5f8c1028a",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93818,
+      "sha256": "ef9945b850fe1ecaf6446e14a5e4df35fdfbe985352cfede6a60702aac9b09fc",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91445,
+      "sha256": "3258950176b73fc89a5cd2aafa97c9cb009fbdaad9e5a970645c3256b2a8a58b",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "acceptance": "TESTED_LOCAL",
+  "privateQaPaths": "NOT_RUN",
+  "toolchainVersion": "8.3.4"
+}

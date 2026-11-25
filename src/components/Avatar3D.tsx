@@ -15,6 +15,7 @@ import { applyAvatarGrowth } from '../lib/avatarGrowth';
 import { AvatarIdleClock, createAvatarIdle, sampleAvatarIdle, type AvatarIdleRig } from '../lib/avatarIdle';
 import { ActiveFrameLoop } from '../lib/frameLoop';
 import { createAvatarPhysique } from '../lib/avatarPhysique';
+import { SCAN_TORSO_REVIEW_DATA } from '../lib/avatarScanTorsoReviewData';
 import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial, isAvatarTextile, tintAvatarTextile } from '../lib/avatarFabric';
 import { installAvatarScanDetail, installAvatarSkinLighting } from '../lib/avatarSkinLighting';
 import { installDermalRegions } from '../lib/avatarDermalRegions';
@@ -541,6 +542,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             setHairMaps(0);
             delete element.dataset.groomGeometry;
             delete element.dataset.groomRevision;
+            delete element.dataset.scanTorsoRelief;
             delete element.dataset.ocularDetail;
             delete element.dataset.scanDetail;
             delete element.dataset.normalSurface;
@@ -552,6 +554,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             delete element.dataset.trainerDetail;
             element.dataset.garmentSeams = String(imported.seams?.loopCount ?? 0);
             element.dataset.garmentFit = String(imported.garmentFit);
+            if (typeof imported.root.userData.BODYFORGE_scanTorsoRelief === 'string') {
+              element.dataset.scanTorsoRelief = imported.root.userData.BODYFORGE_scanTorsoRelief;
+            }
             element.dataset.sleeveRepair = String(imported.sleeveRepair);
             element.dataset.garmentPatches = String(imported.seams?.patchTriangles ?? 0);
             element.dataset.avatarFace = imported.face ? 'sculpted' : 'base';
@@ -1018,7 +1023,13 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const seams = preferred ? createAvatarGarmentSeams(garments) : undefined;
   const garmentFit = seams ? applyAvatarGarmentFit(garments) : 0;
   const sleeveRepair = garmentFit ? repairAvatarSleeve(garments) : 0;
-  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams)) : undefined;
+  const landmarksReview = preferred && import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarLandmarks') === '1';
+  const scanTorsoReview = preferred && import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarScanTorso') === '1'
+    ? SCAN_TORSO_REVIEW_DATA : undefined;
+  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview) : undefined;
+  if (typeof source.userData.BODYFORGE_scanTorsoRelief === 'string') {
+    root.userData.BODYFORGE_scanTorsoRelief = source.userData.BODYFORGE_scanTorsoRelief;
+  }
   const idle = preferred && seams ? createAvatarIdle(source) : undefined;
 
   const imported: ImportedFigure = {

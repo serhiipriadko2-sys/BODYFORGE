@@ -125,6 +125,7 @@ async function open(tab) {
   await tab.js(query('button[aria-label="Внешний вид"]') + '.focus();true');
   await tab.click('button[aria-label="Внешний вид"]');
   await tab.until('document.querySelector("dialog.appearance-dialog")?.open===true', 'native appearance dialog opened');
+  await tab.until('document.querySelector("dialog.appearance-dialog")?.dataset.appearanceLoad==="ready"', 'appearance editor loaded');
 }
 async function close(tab) {
   await tab.click('button[aria-label="Закрыть внешний вид"]');

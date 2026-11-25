@@ -4,12 +4,20 @@ import { createGarmentFoldProfile, sampleGarmentFold, type GarmentFoldProfile } 
 
 import { MUSCLE_LOBES, addMuscleLobe } from './avatarMuscleAnatomy';
 import { createAvatarChestMarkFit } from './avatarChestMarkFit';
+import { addTorsoLandmarks } from './avatarTorsoLandmarks';
+import { addAvatarScanTorsoRelief, type ScanTorsoReviewField } from './avatarScanTorsoRelief';
 
 const groups = Object.keys(MUSCLE_LOBES) as Muscle[];
 const fitted = new Set(['BODYFORGE_Body', 'BODYFORGE_SkinNipples', 'BODYFORGE_Shirt', 'BODYFORGE_Shorts', 'BODYFORGE_ChestMark']);
 type Surface = { positions: THREE.BufferAttribute; normals: THREE.BufferAttribute; rest: Float32Array; normalsAtRest: Float32Array; folds?: GarmentFoldProfile };
 
-export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): (muscles: Partial<Record<Muscle, number>>) => void {
+export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, landmarks = false, scanTorso?: ScanTorsoReviewField): (muscles: Partial<Record<Muscle, number>>) => void {
+  const body = root.getObjectByName('BODYFORGE_Body');
+  const knownAthlete = body instanceof THREE.SkinnedMesh &&
+    body.userData.BODYFORGE_groom === 'v2' && body.geometry.getAttribute('position')?.count === 65895;
+  const scanField = knownAthlete ? scanTorso : undefined;
+  const landmarksEnabled = landmarks && knownAthlete && !scanField;
+  if (scanField) root.userData.BODYFORGE_scanTorsoRelief = scanField.id;
   const surfaces: Surface[] = [];
   root.traverse(node => {
     if (!(node instanceof THREE.SkinnedMesh) || !fitted.has(node.name)) return;
@@ -34,7 +42,7 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): 
   });
 
   const fitChestMark = clothFolds ? createAvatarChestMarkFit(root) : undefined;
-  let previous = clothFolds ? '' : '0,0,0,0';
+  let previous = clothFolds || landmarksEnabled || scanField ? '' : '0,0,0,0';
   const j = new Float64Array(9);
   const displacement = new Float64Array(3);
   const normalMatrix = new THREE.Matrix3();
@@ -45,6 +53,7 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): 
       const level = muscles[group] ?? 0;
       return Number.isFinite(level) ? THREE.MathUtils.clamp(level, 0, 5) / 5 : 0;
     });
+    const coreLevel = levels[groups.indexOf('core')], backLevel = levels[groups.indexOf('back')];
     const signature = levels.join(',');
     if (signature === previous) return;
     previous = signature;
@@ -55,6 +64,8 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): 
         const x = rest[offset], y = rest[offset + 1], z = rest[offset + 2];
         displacement.fill(0);
         j.fill(0); j[0] = j[4] = j[8] = 1;
+        if (landmarksEnabled) addTorsoLandmarks(x, y, z, displacement, j);
+        if (scanField) addAvatarScanTorsoRelief(scanField, x, y, z, coreLevel, backLevel, displacement, j);
         for (const { lobe, weight } of active) {
           addMuscleLobe(lobe, weight, x, y, z, displacement, j);
         }

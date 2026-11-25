@@ -1,0 +1,7 @@
+{
+  "src/components/AppearancePanel.tsx": "4ee4453f03703d7fc6ee259f069310350456b6a7b6f9742a6a15e6c5b5b4e698",
+  "qa/appearance-e2e.mjs": "19cb11a53197340da63d3bb5a01e71dcbf134bf1303896a7ba73b7bc819f48ff",
+  "qa/bundle-on-demand.mjs": "b2d404f720ce68e98849f7b75b60d55f21d6738f1485f39bc9dba3d5213b6a7f",
+  "src/components/AppearanceDialogContent.tsx": "9c573c7a3e3bbe21cf3981c71d08d8f163a4766b172f0451ba36a5d3e859b019",
+  "qa/appearance-lazy-e2e.mjs": "0090eb4c2bce5a03443f23cb47b3f06aee92c513723f2a8341d122d90e5788e5"
+}

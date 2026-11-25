@@ -1,0 +1,22 @@
+{
+  "status": "VALID_REPLAY_PASS",
+  "first_exit": 16,
+  "first_max_gap_ms": 486.10000000000036,
+  "unchanged_fixture_limit_ms": 400,
+  "bounded_retry_count": 1,
+  "replay_exit": 0,
+  "entry_sha256": "14605b883416d022dee56cddf0f6e0a00f93880d1baeca976940d593269444d6",
+  "original_receipt_sha256": "34d2c2936bf35cb084c87b8c0c5964d011e27a7af3ea461398f4ced830dd092c",
+  "first_log_sha256": "023396b66488edbf81a338bcc00e299904fe4c27f7a0f5c126a0b01fe26b2988",
+  "replay_log_sha256": "4facd772e727f9ccf6bbe55c8d01583b7b86ab013ba5e30b8ed0808506f1cdbd",
+  "preview_stopped": true,
+  "source_and_build_unchanged": true,
+  "root_drift": [
+    "qa/durable-journal-e2e.mjs",
+    "src/lib/durableJournal.ts"
+  ],
+  "root_package_unchanged": true,
+  "root_server_5173_running": true,
+  "root_adoption": "NOT_PERFORMED",
+  "note": "First run is preserved as invalid synthetic timing; replay does not erase failure. No production thresholds or test limits changed. No assertion of actual field recognition. Root adoption remains blocked by active user server and parallel source drift."
+}

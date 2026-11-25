@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "label": "public manifest exact bytes",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "label": "local app HTML",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "label": ".bodyforge-qa GET synthetic canary",
+      "status": 403,
+      "no_store": true,
+      "canary_returned": false,
+      "pass": true
+    },
+    {
+      "label": ".bodyforge-qa HEAD synthetic canary",
+      "status": 403,
+      "no_store": true,
+      "canary_returned": false,
+      "pass": true
+    },
+    {
+      "label": "docs/audits GET synthetic canary",
+      "status": 403,
+      "no_store": true,
+      "canary_returned": false,
+      "pass": true
+    },
+    {
+      "label": "docs/audits HEAD synthetic canary",
+      "status": 403,
+      "no_store": true,
+      "canary_returned": false,
+      "pass": true
+    }
+  ],
+  "pid": 37960,
+  "server_unchanged": true,
+  "scope": "Existing loopback dev server; benign synthetic canaries only. No exploit probe or real private content. Original vulnerable Vite still installed. This smoke does not substitute for upstream upgrade.",
+  "cleanup": true
+}

@@ -1,0 +1,83 @@
+{
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate",
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 346,
+  "owned": {
+    "src/lib/workoutHud.ts": "de3aa2f3ead3555af2fee988aac1929d6a60804ba191851e7c34b26374300d30",
+    "src/lib/trainingCatalog.ts": "cea9ca7da8a7fec471d6e98c2b0b4054324e8b6e7f033a65109872240611de7e",
+    "src/lib/workoutHudParity.test.ts": "753ab3d7c6163bc1302ef2d8b50d5a884c0278609437563f483fac50b3eeb12d"
+  },
+  "installed": {
+    "vite": {
+      "version": "8.3.7",
+      "package_sha256": "e257b73faf6731ada0b3faf2fb728c23d5a76afd8563918cee157c27e71aa0a1"
+    },
+    "rolldown": {
+      "version": "1.2.19",
+      "package_sha256": "73ea5ca898ac22574e23d66e54dc9c5b3714f9d8c1be934412824d62f25e21fc"
+    },
+    "@rolldown/binding-win32-x64-msvc": {
+      "version": "1.2.19",
+      "package_sha256": "f7f54af48c8268c4401471b4a0c6e9947671cb6f232b319c01ef15d0fc2d5d8c"
+    },
+    "vitest": {
+      "version": "5.0.5",
+      "package_sha256": "d00333f3a13ed44fedc77184c8675bae45246534f06684d94cff5e4f8a9f7c10"
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "package_sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    "@mediapipe/tasks-vision": {
+      "version": "1.1.1",
+      "package_sha256": "ed8a115ed6a703014465111bfe5f7321a94769dc19f6eb7936ece7ae6a8c8c1e"
+    }
+  },
+  "commands": {
+    "npm-ci": 0,
+    "private-qa": 0,
+    "catalog-parity": 0,
+    "final-tsc": 0,
+    "final-build": 0,
+    "final-bundle": 0,
+    "pwa": 0,
+    "full-unit": 0,
+    "field-metrics-unit": 0,
+    "camera-frame": 0,
+    "workout-hud": 0,
+    "pushup": 0,
+    "forge-home": 0
+  },
+  "initial_bundle_failed": true,
+  "root_package_before": {
+    "package.json": "d12b1c4980345a8b05fbc50023cd9548aebc28bbc392b782c182047a9dd61963",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "candidate_package": {
+    "package.json": "5a5e6876cb35587e61dcae692e71ece209f530089d0a8c305a03570406400b2a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "started": "2026-11-25T20:56:55.946735",
+  "build_count": 73,
+  "entry": {
+    "name": "/assets/index-DG6-pLfb.js",
+    "bytes": 397212,
+    "sha256": "e5770aeafc429c8df1ed6da1d8aede10b50ef44af7b8a20b4e62fd02f8df2e80"
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:61154",
+    "entry_sha256": "e5770aeafc429c8df1ed6da1d8aede10b50ef44af7b8a20b4e62fd02f8df2e80",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "root_package_unchanged": true,
+  "live_changed": [
+    "qa/appearance-e2e.mjs",
+    "qa/bundle-on-demand.mjs",
+    "src/components/AppearancePanel.tsx",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarPhysique.ts"
+  ],
+  "finished": "2026-11-25T21:00:49.071408"
+}

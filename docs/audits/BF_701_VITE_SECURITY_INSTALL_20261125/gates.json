@@ -1,0 +1,48 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate",
+  "source_count": 345,
+  "root_package_before": {
+    "package.json": "d12b1c4980345a8b05fbc50023cd9548aebc28bbc392b782c182047a9dd61963",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "candidate_package": {
+    "package.json": "5a5e6876cb35587e61dcae692e71ece209f530089d0a8c305a03570406400b2a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "commands": {
+    "npm-ci": 0,
+    "private-qa": 0,
+    "tsc": 0,
+    "build": 0,
+    "bundle": 1
+  },
+  "installed": {
+    "vite": {
+      "version": "8.3.7",
+      "package_sha256": "e257b73faf6731ada0b3faf2fb728c23d5a76afd8563918cee157c27e71aa0a1"
+    },
+    "rolldown": {
+      "version": "1.2.19",
+      "package_sha256": "73ea5ca898ac22574e23d66e54dc9c5b3714f9d8c1be934412824d62f25e21fc"
+    },
+    "@rolldown/binding-win32-x64-msvc": {
+      "version": "1.2.19",
+      "package_sha256": "f7f54af48c8268c4401471b4a0c6e9947671cb6f232b319c01ef15d0fc2d5d8c"
+    },
+    "vitest": {
+      "version": "5.0.5",
+      "package_sha256": "d00333f3a13ed44fedc77184c8675bae45246534f06684d94cff5e4f8a9f7c10"
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "package_sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    "@mediapipe/tasks-vision": {
+      "version": "1.1.1",
+      "package_sha256": "ed8a115ed6a703014465111bfe5f7321a94769dc19f6eb7936ece7ae6a8c8c1e"
+    }
+  },
+  "frozen_initial_match": true,
+  "started": "2026-11-25T20:52:48.579197"
+}

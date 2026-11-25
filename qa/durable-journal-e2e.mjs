@@ -444,6 +444,92 @@ try {
     ['readback','mixed writer lost acknowledgement is unverified and retry is exact'],
     ['race','mixed writer detects competing physical change before adding result'],
   ])check(mixedWriter[flag]===true,label);
+
+  // A real large legacy journal exceeds both candidate bounds. The normal
+  // production API must not silently truncate, discard or cap that history.
+  const largeHistory=await js(`(async()=>{
+    const prefix='bodyforge:pilot:v1:result:large-';
+    const count=4105,base='long-original-checkpoint-'.repeat(1500)+'\\ud800';
+    const rows=Array.from({length:count},(_,i)=>({schemaVersion:1,key:prefix+String(i).padStart(5,'0'),
+      raw:'original-'+i,baseProfileRaw:i<520?base:null,state:'settled'}));
+    const small={key:prefix+'new',raw:'new original'};
+    const putDirect=async list=>{
+      const db=await openNative();
+      try{await new Promise((resolve,reject)=>{const tx=db.transaction('results','readwrite',{durability:'strict'}),store=tx.objectStore('results');
+        tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);list.forEach(row=>store.add(row))})}finally{db.close()}
+    };
+    const countRows=async()=>{
+      const db=await openNative();
+      try{return await new Promise((resolve,reject)=>{const tx=db.transaction('results','readonly'),r=tx.objectStore('results').count();
+        tx.oncomplete=()=>resolve(r.result);tx.onabort=()=>reject(tx.error)})}finally{db.close()}
+    };
+    await resetDB();await mod.readDurableJournal();await putDirect(rows);
+    const old=IDBObjectStore.prototype.getAll, result={};
+    let pages=0,largest=0,unbounded=0;
+    IDBObjectStore.prototype.getAll=function(...args){
+      if(this.transaction.db.name===dbName){
+        pages++;if(args[1]!==32)unbounded++;
+        const r=old.apply(this,args);
+        r.addEventListener('success',()=>{largest=Math.max(largest,r.result.length)});
+        return r;
+      }
+      return old.apply(this,args);
+    };
+    try{
+      const start=performance.now(),stage=await mod.stageDurableResults([small],null),elapsed=performance.now()-start;
+      result.stage=stage.status==='saved'&&stage.entries.length===1&&stage.entries[0].key===small.key&&stage.entries[0].baseProfileRaw===null&&stage.entries[0].state==='active';
+      result.pageBound=unbounded===0&&largest<=32&&pages===Math.floor((count+1)/32)+1;
+      result.pages=pages;result.maxPage=largest;result.elapsedMs=Math.round(elapsed);
+      pages=0;largest=0;unbounded=0;
+      const full=await mod.readDurableJournal();
+      result.full=full.status==='ready'&&full.entries.length===count+1&&full.entries.slice(0,count).every((row,i)=>row.key===rows[i].key&&row.raw===rows[i].raw&&row.baseProfileRaw===rows[i].baseProfileRaw&&row.state==='settled')&&full.entries[count].key===small.key;
+      result.fullPages=unbounded===0&&largest<=32&&pages===Math.floor((count+1)/32)+1;
+      result.count=count;result.logicalBaselineBytes=520*new TextEncoder().encode(base).byteLength;
+      result.retained=(await countRows())===count+1;
+    }finally{IDBObjectStore.prototype.getAll=old}
+    // An unrelated damaged row on the final page still blocks the receipt.
+    const bad={schemaVersion:99,key:prefix+'zz-invalid',raw:'future',baseProfileRaw:null,state:'active'};
+    await putDirect([bad]);
+    const refused=await mod.markDurableResults([small],'settled'),invalid=await mod.readDurableJournal();
+    result.damage=refused.status==='unavailable'&&invalid.status==='unavailable'&&invalid.entries.length===0&&(await countRows())===count+2;
+    // Even if the write commits, cancellation or an interrupted later page
+    // cannot authorize a saved receipt. Do not claim zero writes.
+    await resetDB();await mod.readDurableJournal();
+    await putDirect(rows.slice(-65));
+    const controller=new AbortController(),native=IDBObjectStore.prototype.getAll;
+    let seen=0;
+    IDBObjectStore.prototype.getAll=function(...args){
+      const r=native.apply(this,args);
+      if(this.transaction.db.name===dbName&&++seen===2)r.addEventListener('success',()=>controller.abort());
+      return r;
+    };
+    let cancelled;
+    try{cancelled=await mod.stageDurableResults([small],null,controller.signal)}finally{IDBObjectStore.prototype.getAll=native}
+    const recovered=await mod.stageDurableResults([small],'later baseline');
+    result.cancel=cancelled.status==='unavailable'&&seen===2&&recovered.status==='saved'&&recovered.entries[0].baseProfileRaw===null&&(await countRows())===66;
+    const pageOriginal=IDBObjectStore.prototype.getAll;
+    let interrupted=0;
+    IDBObjectStore.prototype.getAll=function(...args){
+      if(this.transaction.db.name===dbName&&++interrupted===2)throw Error('QA second page unavailable');
+      return pageOriginal.apply(this,args);
+    };
+    let failed;
+    try{failed=await mod.readDurableJournal()}finally{IDBObjectStore.prototype.getAll=pageOriginal}
+    result.noPartial=failed.status==='unavailable'&&failed.entries.length===0&&interrupted===2&&(await mod.readDurableJournal()).entries.length===66;
+    await resetDB();await mod.readDurableJournal();
+    return result;
+  })()`);
+  console.log('LARGE_JOURNAL_PAGES',JSON.stringify(largeHistory));
+  for(const [flag,label] of [
+    ['stage','large legacy journal acknowledges new result beyond candidate size and count limits'],
+    ['pageBound','write readback scans all originals in pages of at most 32'],
+    ['full','full history read restores every large legacy original exactly'],
+    ['fullPages','full history also uses a consistent bounded page scan'],
+    ['retained','large history retains every physical record'],
+    ['damage','damaged final page prevents trusted receipt and partial history'],
+    ['cancel','cancelled later readback page cannot acknowledge and exact retry preserves baseline'],
+    ['noPartial','failed second page never returns partial trusted history'],
+  ])check(largeHistory[flag]===true,label);
   await test(`(async()=>{const result=await mod.stageDurableResults([entry],null);const db=await openNative(2);db.close();return result.status==='saved'})()`, 'module releases every handle so a later version upgrade is unblocked');
 
   // A real version fence blocks the existing v1 module after upgrade.

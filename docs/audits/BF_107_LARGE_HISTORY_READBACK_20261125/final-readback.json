@@ -1,0 +1,172 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T21:22:31.420441+03:00",
+  "sourceCount": 349,
+  "buildCount": 74,
+  "sourceManifestSha256": "89ffce4d9b9e8c8d59b988790f206a37d6703fc62691141cc782eec5bf52c401",
+  "buildManifestSha256": "c62360e712c0ed14295faf5e7c4c50ee8707e3cdc6e0e4f7e2d3a6e125351ef5",
+  "ownedHashesMatch": true,
+  "liveChangedPaths": [
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarPhysique.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/avatarScanTorsoRelief.test.ts",
+    "src/lib/avatarScanTorsoRelief.ts",
+    "src/lib/avatarScanTorsoReviewData.ts"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 77,
+    "mobile.log": 91,
+    "privacy.log": 13,
+    "mobile-retry.log": 124
+  },
+  "largeHistory": {
+    "stage": true,
+    "pageBound": true,
+    "pages": 129,
+    "maxPage": 32,
+    "elapsedMs": 103,
+    "full": true,
+    "fullPages": true,
+    "count": 4105,
+    "logicalBaselineBytes": 19501560,
+    "retained": true,
+    "damage": true,
+    "cancel": true,
+    "noPartial": true
+  },
+  "bundle": {
+    "entryBytes": 394853,
+    "entryGzipBytes": 120930,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 101908,
+    "entryReductionPercent": 20.5,
+    "entryName": "index-5r7RBePE.js",
+    "poseName": "vision_bundle-CIr5aEhR.js"
+  },
+  "entrySha256": "6f2495cdf2e5deb3b0cd6d8d98bea915c019f413bd8d275892596c37d6186f2a",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204579,
+      "sha256": "f17eb139e1c446d32dd4800fbac9e47ac18dd84607a1cc43585e3f9ce2803d91",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195385,
+      "sha256": "0ce26e7f32ec28614ecf63875d7d8f71f0f2f3020e8d85a9141998ad6f88ec4e",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-360-premium.png",
+      "bytes": 89474,
+      "sha256": "ec785c4915a22c8779f4c57b92d5d385a59ffdc8a4d3540528cb0e2ad70f9114",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204615,
+      "sha256": "3269468004c07d3d4dbf4ef669446401919c83fe7fde3156eb747eca9bd5eca9",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-forge.png",
+      "bytes": 195379,
+      "sha256": "494ce28341b98cde61b701dcaceb7a0d010061695aa887f6d27872a5a45ab235",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-lenses.png",
+      "bytes": 93913,
+      "sha256": "5b9e97b2875bfd1f8609eda338188bd45221d81ed457218337227fe2eaf74cb0",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-performance-panel.png",
+      "bytes": 93386,
+      "sha256": "d87813a7e1a7c684c632c6ba45cef0ab87f928bb4e518dbd1629f088f82eda0d",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-tower.png",
+      "bytes": 90750,
+      "sha256": "61129fd0b0cfcc0fe9844e43ce4be78b041a01b645fab5d9439b5e9bd302d0e3",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "firstProfileRemaining": true,
+  "acceptance": "TESTED_LOCAL_WITH_HARNESS_RETRY",
+  "retryPassed": true
+}

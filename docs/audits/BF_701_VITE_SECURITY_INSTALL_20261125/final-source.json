@@ -1,0 +1,1386 @@
+{
+  "index.html": {
+    "bytes": 1008,
+    "sha256": "704f478fa0d444ebd2ba1e71705dd8bdbc3902686ee6bd1cb45077836e104694"
+  },
+  "public/assets/athlete-eyes.jpg": {
+    "bytes": 30484,
+    "sha256": "286cbc415b376fb69871d0e4dde159b20ba307e3e7497274347a5c9617e72338"
+  },
+  "public/assets/athlete-fabric-normal.jpg": {
+    "bytes": 20917,
+    "sha256": "6c3ec0b37b85344f26c4aa927583fbe4612a33ddb9adac4419568d190ab8103e"
+  },
+  "public/assets/athlete-fabric-roughness.jpg": {
+    "bytes": 31510,
+    "sha256": "0c146a3d40e551c84135d90cc8974d3fbb68bf5561ee8c6cf7b391968da90d40"
+  },
+  "public/assets/athlete-face-relief-normal.png": {
+    "bytes": 231443,
+    "sha256": "1740a2f83974d90745684454302d65951ebbaeeca8cb275f5e528a139251c830"
+  },
+  "public/assets/athlete-face-relief-source.md": {
+    "bytes": 1959,
+    "sha256": "364c12908e002018bbfa7eb9685973d98e2d0e8cc26f5a1a6166024fcd544d7f"
+  },
+  "public/assets/athlete-groom-source.md": {
+    "bytes": 3867,
+    "sha256": "bf587d8b94367e9d25340e8e3582ccd840d43b84d20f7c4a2157f56b289c4ad0"
+  },
+  "public/assets/athlete-hair-normal.png": {
+    "bytes": 228087,
+    "sha256": "a3cc46bf1b45b668c9cf8a611c0b586779559f4488d1f9cdbc74c745767a5169"
+  },
+  "public/assets/athlete-hair.png": {
+    "bytes": 465622,
+    "sha256": "bf407d26fc79c7fa48c7eb5ce580384b2a5cb02b23cf97e5326c3335a2d70530"
+  },
+  "public/assets/athlete-lip-response.png": {
+    "bytes": 48119,
+    "sha256": "8a2ca0bb0b5889304cfa03d858c03befb17f900a768b5f9974ddc4608c0ac7fc"
+  },
+  "public/assets/athlete-normal.png": {
+    "bytes": 425857,
+    "sha256": "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c"
+  },
+  "public/assets/athlete-orm.png": {
+    "bytes": 219446,
+    "sha256": "31a794d88e45423ccf1540846d607941946ace03a38741ebc1ce0b8ebf87b02a"
+  },
+  "public/assets/athlete-realism-source.md": {
+    "bytes": 2882,
+    "sha256": "928f8fca852a33b65f0c6f4219b4267f38ae9fc3f327ca48ecaab94116c9b5a7"
+  },
+  "public/assets/athlete-scan-pores.png": {
+    "bytes": 61364,
+    "sha256": "56628fec1902669f0cabb7b2dcda7f5bc7837d042db81f068805aa2a3cae0685"
+  },
+  "public/assets/athlete-scan-source.md": {
+    "bytes": 2338,
+    "sha256": "ac97a1e13cf9872ed6ba24e130f5e2438aa70625e76515ca7ac6bdf5b4dd803f"
+  },
+  "public/assets/athlete-scan-transfer-source.md": {
+    "bytes": 1702,
+    "sha256": "309e642ac7fb2e2f520c860263b3ab15f039911e8b09bc12981fff76ccff77f4"
+  },
+  "public/assets/athlete-skin-dermal.jpg": {
+    "bytes": 714509,
+    "sha256": "3d5fd26f0241d9f21097b619421b0cca3352b4398e2bdbb0c67bc08bb0fe14ab"
+  },
+  "public/assets/athlete-skin-detail.jpg": {
+    "bytes": 668292,
+    "sha256": "e5d5d5d7eee9568b386ad4a4457714dace161c11fa45f9dd6161a437fc6deaec"
+  },
+  "public/assets/athlete-skin-perioral.jpg": {
+    "bytes": 714818,
+    "sha256": "8cb93dfdb95c20fcb73d5eb9b5e3f0f9e636855cf44733074cec259c87eb19c0"
+  },
+  "public/assets/athlete-skin-portrait.jpg": {
+    "bytes": 705959,
+    "sha256": "e633c84f1ae7647005cf622e2ba1f866bc8d72ff6905b3c97e4ee8497b7a2be7"
+  },
+  "public/assets/athlete-skin-source.md": {
+    "bytes": 2051,
+    "sha256": "269c03fe3b003a1c2c0ecd9ac28d6ad878c86ab2318199c364d82831238cbbd7"
+  },
+  "public/assets/athlete-skin.jpg": {
+    "bytes": 130759,
+    "sha256": "33077073e7c16cb850310d0697392099711463f5704a442506c89bb893cbfd70"
+  },
+  "public/assets/athlete-studio-source.md": {
+    "bytes": 1092,
+    "sha256": "079aa5d4316f59a1bff62f5e13942f3bb0a7fe9f6da2dc121091189d9a4e841e"
+  },
+  "public/assets/athlete-studio.hdr": {
+    "bytes": 424097,
+    "sha256": "47904da51b108266a26ab71e56626304cfe744c49767472ca640a22ac4067614"
+  },
+  "public/assets/bodyforge-athlete-detail.glb": {
+    "bytes": 6038680,
+    "sha256": "16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6"
+  },
+  "public/assets/bodyforge-athlete-efficient.glb": {
+    "bytes": 4639184,
+    "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+  },
+  "public/assets/bodyforge-athlete-realistic.glb": {
+    "bytes": 6757648,
+    "sha256": "4c7754507aed2b48a0fd1ceaa9bfacf8bcd35befe0091afc39f8798e3a561834"
+  },
+  "public/assets/bodyforge-athlete.glb": {
+    "bytes": 5011480,
+    "sha256": "e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97"
+  },
+  "public/assets/bodyforge-brows-v2.glb": {
+    "bytes": 257884,
+    "sha256": "dde831c44d835a7c6e078cba6d1654f0f4cd8b9833581985ca87c88ac9302bad"
+  },
+  "public/assets/bodyforge-brows-v3.glb": {
+    "bytes": 285860,
+    "sha256": "57ebb9ddeab1b5cfd43c9efc89348a931e3aef64fd7c2af663c4baf58316b98e"
+  },
+  "public/assets/bodyforge-ocular-detail.glb": {
+    "bytes": 96248,
+    "sha256": "bb558f02e88846add66bf4007b9038844eae9cec7f532aef8005bb453a7bbb39"
+  },
+  "public/assets/bodyforge-strand-groom-v2.glb": {
+    "bytes": 805772,
+    "sha256": "1f1d2d3d40a043bfbebf185be3614854588f755d1ce3028e3498976436714bc1"
+  },
+  "public/assets/bodyforge-strand-groom.glb": {
+    "bytes": 383436,
+    "sha256": "3c424b36e83abfea646edefde112b7dd04ccfda9f6fd4308a44f29d5529fea9e"
+  },
+  "public/assets/bodyforge-trainers.glb": {
+    "bytes": 122828,
+    "sha256": "6bb23fd585b4c21c81c81c17c3d50e5f902f36936c1c88513f54cd2bd968f957"
+  },
+  "public/assets/male-base-mesh-base_male.glb": {
+    "bytes": 4498248,
+    "sha256": "d15a07e2b4cf1d08a3b91cb212a9a06a91438077f05a3f2a62f45351e8a71eb8"
+  },
+  "public/favicon.svg": {
+    "bytes": 436,
+    "sha256": "495339d1b02a00931d8f986f1822507ae4c77cfd99d2784ca071338fd39bd12b"
+  },
+  "public/fonts/Manrope-OFL.txt": {
+    "bytes": 4387,
+    "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+  },
+  "public/fonts/README.md": {
+    "bytes": 2275,
+    "sha256": "c72bec53390b14d22238d07a358f58b996c10e35a5fb457c90f4b56e45c1d6b6"
+  },
+  "public/fonts/Unbounded-OFL.txt": {
+    "bytes": 4392,
+    "sha256": "31e5d4e83955e7103c34570dd49b0570ef490800bd65b42923c0dd02445263b3"
+  },
+  "public/fonts/manrope-cyrillic-variable.woff2": {
+    "bytes": 14500,
+    "sha256": "c268b459a9329e59fecf39a17618efd44c71735532048d60b12aab76a8c14914"
+  },
+  "public/fonts/manrope-latin-variable.woff2": {
+    "bytes": 24836,
+    "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+  },
+  "public/fonts/unbounded-cyrillic-variable.woff2": {
+    "bytes": 31424,
+    "sha256": "e30bf6a6063b6a47232bbd657e24c7cf4fdaf76fc2c50d92d9ee63e2ad2087cf"
+  },
+  "public/fonts/unbounded-latin-variable.woff2": {
+    "bytes": 50904,
+    "sha256": "22f9b928aa3928a896340422b54d690fbb5875c30eae4c106f029c61f2289fd6"
+  },
+  "public/icons/bodyforge-180.png": {
+    "bytes": 3223,
+    "sha256": "43115d5e3a50e7b229ddcc5c1c11277bebf1f88d4ed5af0336480977dc086ee1"
+  },
+  "public/icons/bodyforge-192.png": {
+    "bytes": 3362,
+    "sha256": "c91eb5e74c5ec9371edb896e230932d799b81749a1ac638601d85adfffc43332"
+  },
+  "public/icons/bodyforge-512.png": {
+    "bytes": 5525,
+    "sha256": "2e4223c25a93edecec87e1280f704b386372bb2111ef0617ef7942d258bf6e8d"
+  },
+  "public/icons/bodyforge-icon.svg": {
+    "bytes": 514,
+    "sha256": "0d16aac886f994b2229064e4bd95fae691823287b329c3f579440a4dac24d4be"
+  },
+  "public/icons/bodyforge-maskable-512.png": {
+    "bytes": 4593,
+    "sha256": "0b83a297284e68381ada89b8ac4225ffb98db2f7f7ce9eb7482c8a1c26b0ebee"
+  },
+  "public/icons/bodyforge-maskable.svg": {
+    "bytes": 579,
+    "sha256": "b902f0a4e50a56d78bbb5879d52724114db83dd140c2c2c5306978987b243975"
+  },
+  "public/manifest.webmanifest": {
+    "bytes": 927,
+    "sha256": "c0f1b84ce0e4f9a79e83198aebc9de7d4f0e8b9c2176dacbff2f17a02e955f0e"
+  },
+  "qa/all-exercises-motion-e2e.mjs": {
+    "bytes": 14922,
+    "sha256": "8f6a23e505e0134ef9735fdf57db7dfae997c96aeebb93b7b41f3c9b54894c01"
+  },
+  "qa/appearance-e2e.mjs": {
+    "bytes": 50864,
+    "sha256": "7116d481bfa0ce749213c4e02d93b4e2428abda7ee32e6d107fbe9687a5be89d"
+  },
+  "qa/athlete-efficient.mjs": {
+    "bytes": 6496,
+    "sha256": "684bd0f6b303950bb9460c6dfd7fb838dcf515c89625a48ee21f57f23e14dfb9"
+  },
+  "qa/avatar-glb-inspect.mjs": {
+    "bytes": 2590,
+    "sha256": "ce6036a96d61d3c70086e8efb9f9e25f776101f0f220ecc832ce345f98e9b431"
+  },
+  "qa/avatar-lifecycle-e2e.mjs": {
+    "bytes": 12571,
+    "sha256": "0c1ae9f59d941732a5f22d40f3a550fcc2af03b91dafbb6d65acf30fc0dab6e5"
+  },
+  "qa/avatar-observers-e2e.mjs": {
+    "bytes": 10483,
+    "sha256": "ef70a153a999d55c6b410a7563d76e258dac12e355f90a4c143091442204f27d"
+  },
+  "qa/avatar-quality-e2e.mjs": {
+    "bytes": 116313,
+    "sha256": "205ff6a6a57711a064bfccd21f213fdc0b32e4689839db091aa2435939d37c00"
+  },
+  "qa/browser-crash-e2e.mjs": {
+    "bytes": 16702,
+    "sha256": "c8424d929f63aac4af6bed8c50eff513cf611151f3ac0be34b98cf030219c142"
+  },
+  "qa/bundle-on-demand.mjs": {
+    "bytes": 2587,
+    "sha256": "6feea6e2701a19ea12e815983cb28a36ef278388a2dea6b293e1093b3da882dd"
+  },
+  "qa/camera-frame-gate-e2e.mjs": {
+    "bytes": 9636,
+    "sha256": "2c4ab558135b1054b35c8e2d6379e416c6053458e2122a500ef3a7e31d85bb98"
+  },
+  "qa/camera-lifecycle-e2e.mjs": {
+    "bytes": 9956,
+    "sha256": "1be957777bf4b822b92d5a7ef664861fbbe1fd5b50ccc059e584b11ac38e9ac4"
+  },
+  "qa/crunch-replay-e2e.mjs": {
+    "bytes": 14089,
+    "sha256": "784a5a35b0651d2a6a71b3b1dedc238fe0de976e4d38ac70be6db1f1b9838bcb"
+  },
+  "qa/durable-journal-e2e.mjs": {
+    "bytes": 46902,
+    "sha256": "c28d08806f242f1813375fd47fd45d9d8b2790a2435da6eac0b21cd97e91fad4"
+  },
+  "qa/eight-exercise-catalog-e2e.mjs": {
+    "bytes": 4163,
+    "sha256": "42e446000c94742f4e7738da3da93dc675b8980e0c0d125d8f9246e0f8b0f503"
+  },
+  "qa/field-study-metrics.mjs": {
+    "bytes": 13835,
+    "sha256": "b915023abdfd97102a18abff436fd23cb2e1c4f6dacb3d2358d80a42f817f293"
+  },
+  "qa/field-study-metrics.test.mjs": {
+    "bytes": 8036,
+    "sha256": "c96ba677561ea5bcc0d7e15d74e301b3b9c1584468a416700bcb503520b52f71"
+  },
+  "qa/finish-save-e2e.mjs": {
+    "bytes": 17586,
+    "sha256": "aa02a662e5555d7534a05bdfa641e4a3850a9769c1c35abcb68c63a7076290ed"
+  },
+  "qa/forge-home-xp-faq-e2e.mjs": {
+    "bytes": 33336,
+    "sha256": "e957af783eea976aa19e62c391e44b31a50712c8b3e796b9d55b5a59f185d7d8"
+  },
+  "qa/hero-layout-e2e.mjs": {
+    "bytes": 11434,
+    "sha256": "9cd156641f9e6553370ed4d7ebe5d1eec55e97dc9ad10300da592970b65e0552"
+  },
+  "qa/import-preview-e2e.mjs": {
+    "bytes": 21301,
+    "sha256": "fe83e87ed9c6d0527dbfce7451a3d535b67503ea1d0b567ced5808a2b964ec2e"
+  },
+  "qa/interface-polish-e2e.mjs": {
+    "bytes": 10162,
+    "sha256": "8c0e286d97afa35951953eca1ad9200e0bdb9c9457111c32d9ade445c0418abe"
+  },
+  "qa/jack-replay-e2e.mjs": {
+    "bytes": 13648,
+    "sha256": "6f7b35efe922adeaf3b3ec206c432caec251db994290fb2db7f02feefffcedbc"
+  },
+  "qa/journal-e2e.mjs": {
+    "bytes": 59367,
+    "sha256": "e544f7fb3504a07ee4f480d836aaa51bbcd11723ef352f082d25ac3b2b2992f4"
+  },
+  "qa/journal-gate-e2e.mjs": {
+    "bytes": 15666,
+    "sha256": "40ef6edf4690d8f50952d34abe4338d6c0742b33fd1ab07197cf3beab5f3cdcc"
+  },
+  "qa/kinetic-e2e.mjs": {
+    "bytes": 19117,
+    "sha256": "6dc0b936c3639ec83f004c0111a9209643301582757deb75a058209bc944966e"
+  },
+  "qa/knees-replay-e2e.mjs": {
+    "bytes": 13677,
+    "sha256": "ed4da9bb7709374d82d536a271f3ff21131cee56f26b603b381725598421bf6d"
+  },
+  "qa/leg-raise-replay-e2e.mjs": {
+    "bytes": 14522,
+    "sha256": "ab850ff28ed16e919c763b50584483e5b4ba6c1493dd6e189b34072870a7002b"
+  },
+  "qa/lunge-replay-e2e.mjs": {
+    "bytes": 13388,
+    "sha256": "0d729960c2d20b43270fda8402bb9c5aeae9d3131f32f84f40ed70acdac7aca1"
+  },
+  "qa/mobile-e2e.mjs": {
+    "bytes": 55872,
+    "sha256": "dce2c8a9c0b0ad95c69e75a86eea7d0fc53f01d256fb96013040e6863375fff7"
+  },
+  "qa/multitab-e2e.mjs": {
+    "bytes": 25661,
+    "sha256": "5d31989d6d52e239080cd0e8f66d5f4c671f57c7461ec76c793a0b090043f225"
+  },
+  "qa/on-demand-camera-e2e.mjs": {
+    "bytes": 12239,
+    "sha256": "4cfe7f63e685923da325c4bd6030d7f14c09b1b0a7914872f300c08e056c69f9"
+  },
+  "qa/owned-chrome.mjs": {
+    "bytes": 7562,
+    "sha256": "3ae37d318fa7be58bf8795d6b86ea1b9bd98291379fb049e06d0bbb015515c3b"
+  },
+  "qa/owned-chrome.test.mjs": {
+    "bytes": 3191,
+    "sha256": "2e7f3a24d787c00e2c6486b02dc49c5811371c51c8fb0aa7bf76b32c9cbe91dd"
+  },
+  "qa/plank-replay-e2e.mjs": {
+    "bytes": 15412,
+    "sha256": "3dfd70e610a45ab7359f8ed8f143a261ad125f087e18fc71c324eb1c0c81b9a8"
+  },
+  "qa/pose-worker-spike.mjs": {
+    "bytes": 15310,
+    "sha256": "5f7a19cd1f5ca72b750e163dc8c4aaa88e7e8b3a02c9b5bcb867f4ffcb92e89c"
+  },
+  "qa/privacy-server-e2e.mjs": {
+    "bytes": 1799,
+    "sha256": "c3597329ee69fb09ec27a86f9bb5b31dc08db313cb55885f6853dacd1ce4516b"
+  },
+  "qa/private-qa-paths-e2e.mjs": {
+    "bytes": 5877,
+    "sha256": "0cdc454e8a2624b66883c756f5ddd1a9b8c50b7b530b494619f3015ab8dabba2"
+  },
+  "qa/profile-replacement-e2e.mjs": {
+    "bytes": 26512,
+    "sha256": "a75221bd9c36d8095b3b079702fb7ecf310f5695dd5e4258ec87886726985f31"
+  },
+  "qa/pulse-armory-e2e.mjs": {
+    "bytes": 17009,
+    "sha256": "908d227bfdb30d924b2ba0b3bac222bb0aae6c451f247e14e4b29af636b21ea7"
+  },
+  "qa/pulse-day-touch-e2e.mjs": {
+    "bytes": 10923,
+    "sha256": "6888cc81a8d515835ea2756c7f693e5eff8ca9610b6fc2c4914a858842b8a803"
+  },
+  "qa/pushup-replay-e2e.mjs": {
+    "bytes": 13694,
+    "sha256": "7e19d5c30fdeabad0b11a132be69ec51ec60775919d1d99cbe7d8f5133cfb907"
+  },
+  "qa/pwa-install.mjs": {
+    "bytes": 4124,
+    "sha256": "8c0ab6f5e2bbfa95bf8984b4acf604388c7d1bbb24a4a2657beee2d1145518c8"
+  },
+  "qa/realme-camera-e2e.mjs": {
+    "bytes": 9895,
+    "sha256": "0de3af80d5cd7e36c836efb9fa760b277e830aef64e4078ccacbb2b7d8c65867"
+  },
+  "qa/realme-usb-e2e.mjs": {
+    "bytes": 19290,
+    "sha256": "ea2afb1e87e09f024ab1be6a0754838911b6c0b0542efe5d8bb122a14e703bc3"
+  },
+  "qa/receipt-preview-e2e.mjs": {
+    "bytes": 12016,
+    "sha256": "8ce311347cf7cbaf25b334df460f093e7ca32557dbcb5ef34a9107fbcc7d77cc"
+  },
+  "qa/resilience-e2e.mjs": {
+    "bytes": 26451,
+    "sha256": "e19a935eb5fef8119f8de10831a6f00cffeff28ce84712d73763fffe4d6eecf0"
+  },
+  "qa/settings-recovery-e2e.mjs": {
+    "bytes": 10751,
+    "sha256": "468b48967c54bdf3f0ff9e4f70091d7f13de7d606a67a29dec76b16ee4fb5516"
+  },
+  "qa/stable-dev-server.mjs": {
+    "bytes": 952,
+    "sha256": "b840f59b0348b37663fa9544597538768f0f1287b2ce28554ecf831c783c393d"
+  },
+  "qa/steps-day-e2e.mjs": {
+    "bytes": 26784,
+    "sha256": "d3f9695e5a80887dba20554a2002e880e82f3a0e6ad1a17e8cfe8e966cf067e7"
+  },
+  "qa/tower-squat-fixture.mjs": {
+    "bytes": 1738,
+    "sha256": "2201c53e64d7ef867c7753f249fe0e0278ed3c98ddb1003361780527165b2ecd"
+  },
+  "qa/tower-squat-fixture.test.mjs": {
+    "bytes": 2348,
+    "sha256": "c1aa810b96eb5eac04a86f537d15a2f3e9f710edea293607f8e2bcba78bc118b"
+  },
+  "qa/tower20-e2e.mjs": {
+    "bytes": 23142,
+    "sha256": "de277f5dfd1fd13d4a9ff066e0c1cb501d8b235bb3086a3c97796183876cc3c5"
+  },
+  "qa/training-experience-e2e.mjs": {
+    "bytes": 11482,
+    "sha256": "09697f930a0e85c64791e426a73cddbb450dc7e8f5860cac1319e68d103364d7"
+  },
+  "qa/workout-epoch-e2e.mjs": {
+    "bytes": 14580,
+    "sha256": "42cd57201e6aa0edda47fbece1a222eb4fb884ea1f98adb6b097347a10f5e8ba"
+  },
+  "qa/workout-hud-e2e.mjs": {
+    "bytes": 13666,
+    "sha256": "875dd576d20f3a8f1b887a422efea8d3c74241457f3a469885316003c9d1e7b5"
+  },
+  "src/App.tsx": {
+    "bytes": 78477,
+    "sha256": "e050140c6d2630b461b67904021ec0d3b19cb9141b48c241e70c0d281001c95c"
+  },
+  "src/appearance.css": {
+    "bytes": 26985,
+    "sha256": "ee3bd541163f548fdac343f8f99da466e47c662195bb5756a48f45394fc70ee8"
+  },
+  "src/components/AppearancePanel.tsx": {
+    "bytes": 7924,
+    "sha256": "42c976ba363159c034dac566c0f491134acd83ab3cb0bfa8c7f7d4f01ffd5059"
+  },
+  "src/components/Avatar.tsx": {
+    "bytes": 12227,
+    "sha256": "23296f609cc679bbab45f06f54f884ed756a2a878a753783f7acfd3a267b6ecc"
+  },
+  "src/components/Avatar3D.tsx": {
+    "bytes": 62930,
+    "sha256": "9de180186c674df45d8ca216f925cf8e4dc5bf7138e6cbf5bac6ef04c9c999ed"
+  },
+  "src/components/AvatarLab.tsx": {
+    "bytes": 8096,
+    "sha256": "2ec13b55020a1a4ba23053c4956114beb2316b91ab260001795118feb32762e2"
+  },
+  "src/components/BrandMark.tsx": {
+    "bytes": 676,
+    "sha256": "9aeda58703267e99f862e70c0025b25cb666d415febeaf68b6352f20f30dd2dc"
+  },
+  "src/components/CameraControls.tsx": {
+    "bytes": 5925,
+    "sha256": "8bc41f552daec655730bb6577879f4f7b667634db27e6456adbef1743c2dcedb"
+  },
+  "src/components/DailyPlanBoard.tsx": {
+    "bytes": 6259,
+    "sha256": "d612b466238dd77abe80f4940975b4ff478ef6af21dab4b6a61aee1e19dd45c1"
+  },
+  "src/components/ExerciseCatalog.tsx": {
+    "bytes": 4130,
+    "sha256": "905f40941ff61030e8e5170f32ee51b567cba5b149688ce0254a634845105477"
+  },
+  "src/components/FighterLevelProgress.tsx": {
+    "bytes": 1337,
+    "sha256": "791c36d13381defd1845fab5a9bb917257dd46a28a89d72937fe7d546076879d"
+  },
+  "src/components/ForgeGlyph.tsx": {
+    "bytes": 2158,
+    "sha256": "00761610bf99a908745058238710fe8fe7ffad173590fea6f7ad1659d77aadc9"
+  },
+  "src/components/ForgeQuickDeck.tsx": {
+    "bytes": 3305,
+    "sha256": "1e195e59f320b06d0112769c46cbe755c24a0cfe8513c6bd729bdf5b5dcc2905"
+  },
+  "src/components/ForgeWorld.tsx": {
+    "bytes": 18820,
+    "sha256": "712cab858a4d4e0c0b275270fd60ecd1de5b8b75ec1e245cdbadea1e65c32ce5"
+  },
+  "src/components/GameAvatar.tsx": {
+    "bytes": 3228,
+    "sha256": "9c8bdde5d2cbd54297e32be7605b1e8b72b4be4344cf3d83abcf0e2c4147f1a5"
+  },
+  "src/components/ProgressBackupPanel.tsx": {
+    "bytes": 27447,
+    "sha256": "a4bb83109667f151a0f05d48cbb3e30f508eabd8060bd4fedbed976888aee217"
+  },
+  "src/components/ProgressPulseBoard.tsx": {
+    "bytes": 17674,
+    "sha256": "05458c68e1b83725aae0b18d481547298e57615e2a02cd6cbab31efe93e6889b"
+  },
+  "src/components/ReplacementRecoveryPanel.tsx": {
+    "bytes": 7396,
+    "sha256": "7dd8533c8de930378ed764d8841efc161ea64cbfeac3dffea7333c65c6f45b5a"
+  },
+  "src/components/RuntimeDiagnosticsPanel.tsx": {
+    "bytes": 5678,
+    "sha256": "c62b7ee4f27c4547ef39029615b07fa75eff005191293a0d69645c9bf0d1fc3d"
+  },
+  "src/components/SettingsFaq.tsx": {
+    "bytes": 4692,
+    "sha256": "0bbd1d1930502e6d79229b78785cd1fd4d6a8c5e8904a64bb1e6d2da10e590d1"
+  },
+  "src/components/SettingsFaqBoundary.tsx": {
+    "bytes": 930,
+    "sha256": "438b9a8fc88a05754e2c53d7473b5340cf92b426354cd0ecaffebd82d2dc0298"
+  },
+  "src/components/StepsBoard.tsx": {
+    "bytes": 8886,
+    "sha256": "7f8fea23724563ff5156e0893e9015ca1309d93bfa17d3e1dbf921e5f4df6425"
+  },
+  "src/components/StorageRecovery.tsx": {
+    "bytes": 12356,
+    "sha256": "e4cb38de47702017a0363f98311df1d042d0a4426705c259d093ee48286a016e"
+  },
+  "src/components/progressBackup.css": {
+    "bytes": 5513,
+    "sha256": "13c853fc3e563793f6d3a478f06db0dce64b334ab8ae5bb0c6f7c479f6572762"
+  },
+  "src/fonts.css": {
+    "bytes": 1357,
+    "sha256": "9732640ae82264a9c44cdc8405e7f740c06d70549a5a0bbbbf26882fe355703e"
+  },
+  "src/forge.css": {
+    "bytes": 23012,
+    "sha256": "7adacc00887693cd0438591c3fa598b06f6499a1adfbfd4895c234642bbb1c9d"
+  },
+  "src/hooks/useAvatarLook.ts": {
+    "bytes": 1472,
+    "sha256": "17bdc78a10a59eeef26dc75f51691576c45efdb8031ab7939b6bc8b4d9b18ffb"
+  },
+  "src/hooks/useProfileStorage.ts": {
+    "bytes": 20105,
+    "sha256": "4de6ccf0795dc1b9451a619c0c63809ef3e000f07c8a479902c2c2766735e910"
+  },
+  "src/index.css": {
+    "bytes": 28424,
+    "sha256": "b841e98262956ded909ba0d64378006551a70a5364f75e0ffb72599e0a71daf0"
+  },
+  "src/lib/activityHistory.test.ts": {
+    "bytes": 5598,
+    "sha256": "039ff632f4db51bcc5cae7a430a3d532249a705bb16a64aba18493d4d324f2a0"
+  },
+  "src/lib/activityHistory.ts": {
+    "bytes": 6496,
+    "sha256": "d0ded94810f5ff40e0df2e573580709770c7f543a15d79148f6953648e6ec2d8"
+  },
+  "src/lib/appearance.test.ts": {
+    "bytes": 11406,
+    "sha256": "360263dc34aa2ec4e5771041fabbddd33ddc51146dda18e42b3d1e99dfc0e0c9"
+  },
+  "src/lib/appearance.ts": {
+    "bytes": 5019,
+    "sha256": "75f6eb46c92071e37ac08abb9574e51cc9cbf44608c9c423143e3b6ec95546f8"
+  },
+  "src/lib/athlete-skin-scan-review.jpg": {
+    "bytes": 714727,
+    "sha256": "983d75f94cdd5d408bbce1aebbaa734cc27da7fe80deccdafa8af262df5d80e8"
+  },
+  "src/lib/auditRegression.test.ts": {
+    "bytes": 5768,
+    "sha256": "aa57cf8f2880af207aa0afef68828d55198429f26c1a594f21541cd9859e89bb"
+  },
+  "src/lib/avatarBakedNormal.test.ts": {
+    "bytes": 1744,
+    "sha256": "e61c63df90985d19d215e9bdb4364812ad752f4240efa25143290149b474bd5c"
+  },
+  "src/lib/avatarBodyDermal.test.ts": {
+    "bytes": 4808,
+    "sha256": "31954d85a2e0b817a290152395a6bcc3c2531d462ce99375d50696ce3225185e"
+  },
+  "src/lib/avatarBodyDermal.ts": {
+    "bytes": 1775,
+    "sha256": "5a2b50eaaba459ccb3ce40bed87d29178c9eb57c584e5b2f068bbf2935b5e567"
+  },
+  "src/lib/avatarBrows.test.ts": {
+    "bytes": 3687,
+    "sha256": "93ce36da1c0c15ed647e59d48d9a1594dcaa23806b445876442da1cf73d0cc92"
+  },
+  "src/lib/avatarBrows.ts": {
+    "bytes": 4560,
+    "sha256": "73dd8702759a93eed6c9cec27d17cf60537e8b40d8086036564692a42157e250"
+  },
+  "src/lib/avatarBrowsV3.test.ts": {
+    "bytes": 6089,
+    "sha256": "df0f4a64bb2cf69f440ceb0e78359bb007a4d2324a1292aebb589f659b6344b3"
+  },
+  "src/lib/avatarChestMarkFit.ts": {
+    "bytes": 3074,
+    "sha256": "bef4324448f5e19e7a5d861d7fba357b70a757fd3bcd3bb8fdb02a4a59d3a8a0"
+  },
+  "src/lib/avatarDermalRegions.test.ts": {
+    "bytes": 6066,
+    "sha256": "68dace4e633da3edbb56933d1ecf96c62b39b095de71ef24a86b2d3e9b08da2f"
+  },
+  "src/lib/avatarDermalRegions.ts": {
+    "bytes": 3799,
+    "sha256": "9df1d7340cda32f52dc1bfad523084af0c472eb3b4e51fb0bdd001ff16c38e03"
+  },
+  "src/lib/avatarDetailMaps.test.ts": {
+    "bytes": 1630,
+    "sha256": "a3293af0634f3a6bdea7da8cd5e31c57c5dd3adc39b0c3b7e7e0d1ddfb04f3cf"
+  },
+  "src/lib/avatarDetailMaps.ts": {
+    "bytes": 1258,
+    "sha256": "981fd74758cb17faa57d541b4aebc86d9799dff06ff4a72cf76ad4ebd7790ec4"
+  },
+  "src/lib/avatarFabric.test.ts": {
+    "bytes": 3904,
+    "sha256": "a00ea1fe2abfb23f50f0d1ab7e84469551f2d2e2a7c350844a198a4a854bd944"
+  },
+  "src/lib/avatarFabric.ts": {
+    "bytes": 3985,
+    "sha256": "39ac6d567a56cf9ff7a4edbd4393c84eb77be74d26c609ee3c286a5541ce5322"
+  },
+  "src/lib/avatarFace.test.ts": {
+    "bytes": 5376,
+    "sha256": "dd972f0c397aef45cd24ba4c5e9251eb9670017ad288c9c583fe90e7d28bf2a1"
+  },
+  "src/lib/avatarFace.ts": {
+    "bytes": 4371,
+    "sha256": "69f7bd76266f623f1bad0b5b955705d094ab34d6458b580fdd349ac99cd5af64"
+  },
+  "src/lib/avatarFaceBake.test.ts": {
+    "bytes": 3623,
+    "sha256": "69588689a6ed82c2a98ccae6585243683f41ddf278713cc23cbb34bd5f8aa5af"
+  },
+  "src/lib/avatarFaceContour.json": {
+    "bytes": 791,
+    "sha256": "4d7c2665c0abe5428c10f88274b23708007506b4ee1bd21daf88690e148f6330"
+  },
+  "src/lib/avatarFaceContour.test.ts": {
+    "bytes": 6879,
+    "sha256": "af3a217ba647526d5f69761fe0b257c063a7ad77bd16b61ee7f0d7d97424dd10"
+  },
+  "src/lib/avatarFaceContour.ts": {
+    "bytes": 2919,
+    "sha256": "a5bf2257e1116218a970e645892914f0f9d0de4ba2af311e07567c868b6f100b"
+  },
+  "src/lib/avatarFaceProfile.json": {
+    "bytes": 2052,
+    "sha256": "e51dc7b5631443400da7e04022aa9bf696b27a99ebec200c531e87390dc243f9"
+  },
+  "src/lib/avatarGarmentFit.json": {
+    "bytes": 69424,
+    "sha256": "40b4fd36413e8736a6377ae385a0a33ebad14e78acb8e506acb92626f53c0764"
+  },
+  "src/lib/avatarGarmentFit.test.ts": {
+    "bytes": 4090,
+    "sha256": "dc4140739511053f97fc18651c9b87aabb2b3cc1cbc565005486e53c7fc8be25"
+  },
+  "src/lib/avatarGarmentFit.ts": {
+    "bytes": 4086,
+    "sha256": "aeefd2f27393af54ee3e5f05d54177c590d320c9cdd4d01f081f883e575f85e5"
+  },
+  "src/lib/avatarGarmentFolds.ts": {
+    "bytes": 3600,
+    "sha256": "e4d428d67930ff778f07ae70999b4721ded64bc99e0cde29a186f071f105bc1e"
+  },
+  "src/lib/avatarGarmentSeams.json": {
+    "bytes": 28551,
+    "sha256": "be33083fbbda9e60ac516bef95d8cc7c6afa725236f8c83ecf375c044391c8e7"
+  },
+  "src/lib/avatarGarmentSeams.test.ts": {
+    "bytes": 6244,
+    "sha256": "6f8133062798ba1cb61d79c44f8c562ca0857762501bc746f363650693185559"
+  },
+  "src/lib/avatarGarmentSeams.ts": {
+    "bytes": 9041,
+    "sha256": "aaa0b52d4c52faae1094a478a48efb53418cd3ef1c7f451e8f488a118c939777"
+  },
+  "src/lib/avatarGroom.test.ts": {
+    "bytes": 5561,
+    "sha256": "f7b1b45a7ebc713ff866ace954f1aba7d41072bd1d05942ea3a3a2e238c2ab7b"
+  },
+  "src/lib/avatarGrowth.test.ts": {
+    "bytes": 5824,
+    "sha256": "939ed3ee004fedd0ca5ea34b517005eb430c377a4cf3de8c611691c10921d281"
+  },
+  "src/lib/avatarGrowth.ts": {
+    "bytes": 4146,
+    "sha256": "b7724e1a0d34c6aaed08bb3ec10fab9c4b3e0e0630d7f816d351586d6a839164"
+  },
+  "src/lib/avatarGrowthBudget.test.ts": {
+    "bytes": 4754,
+    "sha256": "c1a319a891bbe7ec69ddcd22fcde43bbed508bdeb028b371f5fc76e29f86c383"
+  },
+  "src/lib/avatarGrowthBudget.ts": {
+    "bytes": 4774,
+    "sha256": "864a19299199077e0adb3d7cbfe27fcd08202be74195bf443d194fbc621f0e49"
+  },
+  "src/lib/avatarGrowthPipeline.test.ts": {
+    "bytes": 3422,
+    "sha256": "2a6ef724622f8e86ad7730ec4347db924f41ff40c1ed0a122685c5046d04c684"
+  },
+  "src/lib/avatarHair.test.ts": {
+    "bytes": 4522,
+    "sha256": "f4a8feca38656c35658e43fb5e702449b7a62522a32eff1bc49537cda1747ae0"
+  },
+  "src/lib/avatarHair.ts": {
+    "bytes": 6668,
+    "sha256": "6b85f6ad41683ec6e4a1a6539ff2d6839af9892e5a28afee89ab99a7004c56dd"
+  },
+  "src/lib/avatarHairMaterial.test.ts": {
+    "bytes": 4056,
+    "sha256": "2305aec8d05a63ced814e50370835e8a6efde96541645b4c2f0ea720a4298456"
+  },
+  "src/lib/avatarHairMaterial.ts": {
+    "bytes": 2444,
+    "sha256": "081088ccfb4e6d776f6935a701fceeddfa0814ef33196d12bc6299b0fcc4a19d"
+  },
+  "src/lib/avatarHipAnatomy.test.ts": {
+    "bytes": 4087,
+    "sha256": "e1a342c7e89d962c5adfc1a890cbf7971789c60478b043ff00a42914f473e62c"
+  },
+  "src/lib/avatarIdle.test.ts": {
+    "bytes": 7466,
+    "sha256": "77d1bfbce4bde040707f147d62d28ac99276cd89656878bb17d8c9535c96c0df"
+  },
+  "src/lib/avatarIdle.ts": {
+    "bytes": 5052,
+    "sha256": "37a6e2ca058a933ead82d4890ad7f796d377d0400bd21eca232333908b64b1f3"
+  },
+  "src/lib/avatarLashGuides.json": {
+    "bytes": 30465,
+    "sha256": "0068fa5cfd377529495d85b5f4733b60393cfb3badd9d701a91db0ffa721a489"
+  },
+  "src/lib/avatarLashes.test.ts": {
+    "bytes": 4817,
+    "sha256": "f32a209a339f24f00e7f3f54f1fff2ba2dc18c2a60610cf8e6ed700fe7917f1e"
+  },
+  "src/lib/avatarLashes.ts": {
+    "bytes": 4823,
+    "sha256": "b2848c4f97783a54df4efb3db7b438b55f65999864c7f62631c17746f424ec3d"
+  },
+  "src/lib/avatarLighting.test.ts": {
+    "bytes": 3191,
+    "sha256": "9c5d7ef618fce6857c12ff88a2f7ccac6873e343d8ff8d1c03ba7e9ce631b861"
+  },
+  "src/lib/avatarLighting.ts": {
+    "bytes": 1946,
+    "sha256": "5cbe7af9c3dc40542d0948d8159fc049896f4de976152ae7ba98658bcb203a8a"
+  },
+  "src/lib/avatarLipResponse.ts": {
+    "bytes": 2124,
+    "sha256": "69575620b188391c662698e9208000d6a158b669093cbbd875c0731e41e6802d"
+  },
+  "src/lib/avatarLook.test.ts": {
+    "bytes": 5209,
+    "sha256": "5ede4b3266886bb0def543cb57125690ad428f07fcda03a3401460420718ad1b"
+  },
+  "src/lib/avatarLook.ts": {
+    "bytes": 5260,
+    "sha256": "136f0b9b2474eabf1d3c3c7bbdd6daa1bca849ea07e0ada2c8c241c456025294"
+  },
+  "src/lib/avatarLookDev.test.ts": {
+    "bytes": 1632,
+    "sha256": "cc0860ce828b526fa53528b795a3ef24095dd29a5b87b255f8fa88832efeacf3"
+  },
+  "src/lib/avatarLookDev.ts": {
+    "bytes": 1867,
+    "sha256": "9f97711fd01b93b932d952130f437e99eb8fc3263aafcce920e498204f75a6cf"
+  },
+  "src/lib/avatarMaterials.test.ts": {
+    "bytes": 11304,
+    "sha256": "1b7e1c1b4d5b4ec61669aab47f7b105691d1d667abeb62f7e14d7a1fa4d52ad5"
+  },
+  "src/lib/avatarMaterials.ts": {
+    "bytes": 6625,
+    "sha256": "77784a32edf522d23fd85925a95b8b1f9c4ae44eb8d63499331e0fd34dcef33f"
+  },
+  "src/lib/avatarMuscleAnatomy.test.ts": {
+    "bytes": 7576,
+    "sha256": "8d9959e2a57183a43e3384b142e84e93632770c085add385c1bf20af5c672e5b"
+  },
+  "src/lib/avatarMuscleAnatomy.ts": {
+    "bytes": 5676,
+    "sha256": "4d167106d31dd1aadbb3926e267cead3ef23f8cc450be08f899ef9cd8c2fdc86"
+  },
+  "src/lib/avatarOcclusion.test.ts": {
+    "bytes": 7052,
+    "sha256": "273381577862ce5aea79e8e1babcbe9a881c5296eaaea51d1b4f20fee7eec7b1"
+  },
+  "src/lib/avatarOcclusion.ts": {
+    "bytes": 7941,
+    "sha256": "521441e15c2293a0b993066248d6dec549417d19925f4c3a0fa14a237d5c630b"
+  },
+  "src/lib/avatarOcular.test.ts": {
+    "bytes": 6407,
+    "sha256": "f2fdc751c455fba91adb47f3725a9b4794c35d3bd067a48bf77e590ed58448c9"
+  },
+  "src/lib/avatarOcular.ts": {
+    "bytes": 3919,
+    "sha256": "f0ace092ce35ea741c1015152acef6fc25564a2b67e0800715a892319230c793"
+  },
+  "src/lib/avatarPhysique.test.ts": {
+    "bytes": 4032,
+    "sha256": "3229dcfcf9a726d063f91da5aff1e1571f6c6b3efb08317834c7096ae8d26bd6"
+  },
+  "src/lib/avatarPhysique.ts": {
+    "bytes": 4352,
+    "sha256": "19257f6606fb49905d87cdf79ac5d6ac3fa4f25ca4915524654bac5d3dca414e"
+  },
+  "src/lib/avatarPose.test.ts": {
+    "bytes": 2913,
+    "sha256": "adfcc7c86f81a3658a78b62f5b92465ac220c2260b84ef97e84c97ffae74b447"
+  },
+  "src/lib/avatarPose.ts": {
+    "bytes": 1924,
+    "sha256": "4b84069276e4eff8d6b85da2ef67c87b2e0c68fbf37f02d7ff8fe9e72d77bc09"
+  },
+  "src/lib/avatarRealism.test.ts": {
+    "bytes": 6361,
+    "sha256": "be622ce6448b2a809c2aab8930e937a02c20e07af6698b39a9d04741a1a11a11"
+  },
+  "src/lib/avatarScalpDensity.test.ts": {
+    "bytes": 4182,
+    "sha256": "52ddd93a9c78151213c73fcedcdd6f5175ac8e0b61e9e30341868be8d125be9a"
+  },
+  "src/lib/avatarScalpDensity.ts": {
+    "bytes": 4360,
+    "sha256": "868da5ed5517bfc7969e5e8986948b91e2c9f018b15b5361d07e4d4d8dcd5247"
+  },
+  "src/lib/avatarScanColor.ts": {
+    "bytes": 169,
+    "sha256": "a93f2cdd8df1b26aa4c05fe2e0221c1be8145cf04a7b4808a71f574b3e4ba9b2"
+  },
+  "src/lib/avatarScanTransfer.test.ts": {
+    "bytes": 4367,
+    "sha256": "edfff7f96da6abcab0317484d50edc0c7548254497a00c69a71073b0ee5f31f8"
+  },
+  "src/lib/avatarScanTransfer.ts": {
+    "bytes": 3721,
+    "sha256": "8495acf9805b1d4f5e2354b8f3b679f672e4cf4fa4c8549147662b48acd46424"
+  },
+  "src/lib/avatarScanTransferField.json": {
+    "bytes": 54953,
+    "sha256": "b9c06e31e43aaa794cd8f3752157a123cf228647f278ff10d5e2c1b56e8068a8"
+  },
+  "src/lib/avatarSkinAtlas.test.ts": {
+    "bytes": 3090,
+    "sha256": "eeb02100c183b11c26f5aec845eb93fc6f50c53518fd42d05d75cd078b325a97"
+  },
+  "src/lib/avatarSkinAtlas.ts": {
+    "bytes": 921,
+    "sha256": "90cb1624648ec49d9ae0e0511a1c4c59ce48259f60353cd79315ebab91e09d30"
+  },
+  "src/lib/avatarSkinLighting.test.ts": {
+    "bytes": 2823,
+    "sha256": "59cd9544fe66e92ce8d95e6699baac16d5e543c8cc1245b0cf3117c2a40ce46b"
+  },
+  "src/lib/avatarSkinLighting.ts": {
+    "bytes": 4151,
+    "sha256": "696cea45569eec3f5bf848e3d76bacd8df98844f388045b7955d9b6c449ed6fb"
+  },
+  "src/lib/avatarSleeveRepair.test.ts": {
+    "bytes": 5528,
+    "sha256": "2fb09c6e5da62c598aff2a585a7df078b65dfc8cf8e54504e18fec18ab544234"
+  },
+  "src/lib/avatarSleeveRepair.ts": {
+    "bytes": 3944,
+    "sha256": "b56968d74e038838639ffcc43de5d89d28fb96a8a2e5f8e0161ccb1a37b42a8f"
+  },
+  "src/lib/avatarStrandGroom.test.ts": {
+    "bytes": 2154,
+    "sha256": "be283d9c2058e290268615281ca13674af0f8a09c467236d3a90b41ab1f1ff59"
+  },
+  "src/lib/avatarStrandGroom.ts": {
+    "bytes": 2375,
+    "sha256": "0b650d384fa13fb909773b55b45c3775fdc1eff8df4d42ca23f07faa21d8bbab"
+  },
+  "src/lib/avatarStudio.ts": {
+    "bytes": 1397,
+    "sha256": "aa191b90a0e0ee49c54a9ca328f6a21dcfc61f48fb65b3f4921d5ae430d17f35"
+  },
+  "src/lib/avatarSurfaceFit.test.ts": {
+    "bytes": 2346,
+    "sha256": "8de5e5ca6b07d7cb2a72dc4329c0ade27c38304e3d7c85df41c8afb7151d8849"
+  },
+  "src/lib/avatarSurfaceFit.ts": {
+    "bytes": 3518,
+    "sha256": "d14935382d92c78b798f0427b4fc7d5199fdd098a9e37952e8fae22f626222b2"
+  },
+  "src/lib/avatarTrainers.test.ts": {
+    "bytes": 4230,
+    "sha256": "fb3512ec28a4140f413e9d656e977e421c0198a94d68e1bea29c59db2311f045"
+  },
+  "src/lib/avatarTrainers.ts": {
+    "bytes": 7079,
+    "sha256": "83828f24271cf772029d06c72903bec5174bdad7f7ed3561edcbd9984a0b38c9"
+  },
+  "src/lib/avatarViewFraming.test.ts": {
+    "bytes": 4041,
+    "sha256": "45824b1afac240becb08c5875c366ce497d565e8217ac05f5a1b4eb490d6f9e2"
+  },
+  "src/lib/avatarViewFraming.ts": {
+    "bytes": 347,
+    "sha256": "83baeea9c53ad34720cd2a56af7398b329afd7e11c9479f19fa73e46b212456b"
+  },
+  "src/lib/avatarWardrobe.test.ts": {
+    "bytes": 7688,
+    "sha256": "dd0c26e9632dfe465160c3ae0496fd2487af32c613f4158c88c43b5b9c3a3bc6"
+  },
+  "src/lib/avatarYaw.test.ts": {
+    "bytes": 1461,
+    "sha256": "dcfa9776da65d604ccf4218e576148ec162456e9095537076075f210f1a5b70b"
+  },
+  "src/lib/avatarYaw.ts": {
+    "bytes": 881,
+    "sha256": "ac4142b157695bbeff3fdb97c5ef310bac521124497bd0c38536cbcb4a6b19c5"
+  },
+  "src/lib/backupArchive.test.ts": {
+    "bytes": 4627,
+    "sha256": "9ffde048b410d228c5b6bfbb26df0cd31b369cb004b019917b2db3541dd7f8ee"
+  },
+  "src/lib/backupArchive.ts": {
+    "bytes": 5714,
+    "sha256": "f1f6b0fffa81dab33cfb208327208d4ad6c2703b0d09c52162b545ad63aa1fd9"
+  },
+  "src/lib/calibrationHudReplay.test.ts": {
+    "bytes": 3204,
+    "sha256": "80ed8dae7f9b0a802ec6f1a80abce6bedcea2ce8a41ba848203e49934b584d7e"
+  },
+  "src/lib/camera.test.ts": {
+    "bytes": 10423,
+    "sha256": "6277207b3f5390bae07f228766f631d20507c0d20d8df5e8c5210cf649e1c2ab"
+  },
+  "src/lib/camera.ts": {
+    "bytes": 8302,
+    "sha256": "c486ff257e0cd95476cd387cba3994107bf080162c37f6f5879319df8ea51ef2"
+  },
+  "src/lib/cameraSelection.test.ts": {
+    "bytes": 2683,
+    "sha256": "c077f888cc5dc7aaef11bf93af3e91509ea8b2161ff554257f594da41b374cef"
+  },
+  "src/lib/completionPersistence.test.ts": {
+    "bytes": 4485,
+    "sha256": "52b12f7b49ac7eea4cc1c08ccb2b3fe4841b60e53c07f736249729e06f187df1"
+  },
+  "src/lib/completionPersistence.ts": {
+    "bytes": 2770,
+    "sha256": "defa6c37c180f22a4105dddb2c625585e9cb31b95f2c74e0c43d6228b0e85247"
+  },
+  "src/lib/crunchReplay.test.ts": {
+    "bytes": 7722,
+    "sha256": "075026595163bdc25cadc110d7107b362d5f3ec4cfe9a28b2fafb7d30f2deacd"
+  },
+  "src/lib/dailyPlan.test.ts": {
+    "bytes": 4176,
+    "sha256": "6927b650d3f5fd890088d0b9323bc9afba9b1a701a0a1754edf922ee551c5b0f"
+  },
+  "src/lib/dailyPlan.ts": {
+    "bytes": 3354,
+    "sha256": "0c0df71c400b1890dbe7c971e099a236742ca8e947dfe213e17b3b194c8573ba"
+  },
+  "src/lib/dashboardDisplay.test.ts": {
+    "bytes": 2921,
+    "sha256": "bea78bfdf5dc166488326b186430d47f395adba3cb3c8388ac97c93fd43f0d94"
+  },
+  "src/lib/dashboardDisplay.ts": {
+    "bytes": 2865,
+    "sha256": "57b8480143e98732da28332ed14f0819b310c479cce067b4e4060624206fd2c9"
+  },
+  "src/lib/dashboardOrder.test.ts": {
+    "bytes": 1200,
+    "sha256": "523009936940c966889df569b74bcb3942410fc3031ed2788d2b216dccc7130d"
+  },
+  "src/lib/dedupRecovery.test.ts": {
+    "bytes": 10686,
+    "sha256": "91e3135871c299bbe8a3ca6bed416124c59a4eb66a858f5c388cf9093c99aad2"
+  },
+  "src/lib/durableJournal.ts": {
+    "bytes": 11022,
+    "sha256": "99b5ab24987995dca1845c0c6256e27cb6ddb55958d4d7adf632fd4a99f3b062"
+  },
+  "src/lib/durableJournalGate.test.ts": {
+    "bytes": 2579,
+    "sha256": "7ccfc0caf61f51e1ef9940df504613e0a8c4f2decd36356c607f28c869ab801e"
+  },
+  "src/lib/durableJournalGate.ts": {
+    "bytes": 1912,
+    "sha256": "9387363d7a6db62d32457d9b3b697af8078702674ba3bd6760a8ac1ccbc6c1ac"
+  },
+  "src/lib/durableWorkout.test.ts": {
+    "bytes": 14922,
+    "sha256": "e4f8080f39c4080f86cca91d32e580266bbb869460e8e03425b029aaed602e13"
+  },
+  "src/lib/durableWorkout.ts": {
+    "bytes": 6897,
+    "sha256": "ce7399ccf4691f5d0bb9a9ee769024b6a2390a66e65f32799ccc21122723a5f8"
+  },
+  "src/lib/economyBoundaries.test.ts": {
+    "bytes": 4537,
+    "sha256": "595a90df2ab594626b5fee04f0813845fab4947a6bc848d08d70ba16a2facdf2"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 21003,
+    "sha256": "93710e78e06445f70ca3a1fbb1eab8b2dc6c1768e0158c347cf04da425b12b14"
+  },
+  "src/lib/exerciseFraming.test.ts": {
+    "bytes": 6122,
+    "sha256": "ed470ebea299e7243fcf6211357ae1a37c0e3002a0a3d8496fd5b22f5cc06db6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8335,
+    "sha256": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701"
+  },
+  "src/lib/exerciseRewards.test.ts": {
+    "bytes": 6495,
+    "sha256": "ed035f4030be88b02071bb0a3dc9cd074202f5055f25da8385478c5b01f6f1f7"
+  },
+  "src/lib/forgeHomeXp.test.ts": {
+    "bytes": 2416,
+    "sha256": "a86387d90fc55c2ca826197822bf2a54c7d969b203db222a250830b43eb01995"
+  },
+  "src/lib/frameLoop.test.ts": {
+    "bytes": 2885,
+    "sha256": "a166ffa17154ab42926dd5f1f6d5be9ee18d2875bc498a44d71d7e505469f9b1"
+  },
+  "src/lib/frameLoop.ts": {
+    "bytes": 1560,
+    "sha256": "f28cbbcb31bf96ff149767995b2b5f50eec18fd97bccce14aa8c4e45714aec6a"
+  },
+  "src/lib/game.test.ts": {
+    "bytes": 6479,
+    "sha256": "cd3d101c85faa3375ca3a6c3709dcb0e81bf08b5fbb1d5a40a30f4ff3a80a573"
+  },
+  "src/lib/game.ts": {
+    "bytes": 11398,
+    "sha256": "04dc00d3cafe9d65e8c73dbfbcf62a2230fd42b6b685251c3cfeda73cab4dbfd"
+  },
+  "src/lib/heroLayout.test.ts": {
+    "bytes": 2206,
+    "sha256": "1216ec88535969c558aa464a254cb53eb1d4d82a2bf0d18ff00f8ddd9a28d9a9"
+  },
+  "src/lib/historyRetention.test.ts": {
+    "bytes": 8497,
+    "sha256": "1efb043ec62d2770710e076c83bcefbd70e5cdb76922fae2dd1467d8154b2838"
+  },
+  "src/lib/jackReplay.test.ts": {
+    "bytes": 7614,
+    "sha256": "e02df1875922560591c02670efd9d148936d6c97e0ff819bc2a6f8579500b91f"
+  },
+  "src/lib/journalCheckpointBatch.test.ts": {
+    "bytes": 5851,
+    "sha256": "e1187de3f68d5208596653058a38a6b8a93fbb22395a17f359897ace7ddb17a5"
+  },
+  "src/lib/journalCheckpointBatch.ts": {
+    "bytes": 11253,
+    "sha256": "1f887f75b0d0fdd3b43e896a6828009aae3b7bd3f188d825e824b33a8598dd44"
+  },
+  "src/lib/journalIdentity.test.ts": {
+    "bytes": 6628,
+    "sha256": "f50d4a4c582e3a2502f6c8f17181307bb9063db5b8ab556bc47888cb9c5e8dc9"
+  },
+  "src/lib/journalMixedStorage.test.ts": {
+    "bytes": 7856,
+    "sha256": "d6113c7f692daed70d14fac999dbdb0bcc615a8c6b484bca7a05ce41e3988bf3"
+  },
+  "src/lib/journalMixedStorage.ts": {
+    "bytes": 25772,
+    "sha256": "2583437cb8a585604a7ae439336614ff9388eef8e44b58c327431f04da539382"
+  },
+  "src/lib/kneesReplay.test.ts": {
+    "bytes": 6755,
+    "sha256": "40664a41311ccd532801ce52da692a8536225081e8e12d292a26b147ae5ee35c"
+  },
+  "src/lib/legRaiseReplay.test.ts": {
+    "bytes": 9049,
+    "sha256": "e1ec1a4829fcde1dfcf61f18d037a3b9cbebc3cb08e3e6f53865b197b4604927"
+  },
+  "src/lib/lungeReplay.test.ts": {
+    "bytes": 6436,
+    "sha256": "4932f64e6326be58e34c19d85e2e2583e5c484cf742ae7a0952a0ba9869cd077"
+  },
+  "src/lib/mobileGraphics.test.ts": {
+    "bytes": 787,
+    "sha256": "69374c670f52110ff7c1d59f0819a939e4b51e25c82a3074f02d54741d995e52"
+  },
+  "src/lib/mobileGraphics.ts": {
+    "bytes": 636,
+    "sha256": "850bcf553348e2cf0e8cc7ce5c3f2e04cbf6c70dfb36a7bccff548d2b7558937"
+  },
+  "src/lib/nativeSteps.test.ts": {
+    "bytes": 1041,
+    "sha256": "f480b8f98b16d0cf7e8fbcff780bb52a1186b579761e9916c10f3ea70d6a2823"
+  },
+  "src/lib/nativeSteps.ts": {
+    "bytes": 796,
+    "sha256": "5515c1a6ce308c16aae3d4b23479324b0aa3727bb7ff9ecf0acd6198ab68e966"
+  },
+  "src/lib/nativeStepsView.test.ts": {
+    "bytes": 2221,
+    "sha256": "d60369fb11cdbe935dd089a2f595c173269836bc1daa26072584cd1a77ea5c56"
+  },
+  "src/lib/plankReplay.test.ts": {
+    "bytes": 8243,
+    "sha256": "0dce8c7d9978aa45dff5b1bea729821d262a349671876de9701dc5a81883b18d"
+  },
+  "src/lib/poseGuidance.test.ts": {
+    "bytes": 3332,
+    "sha256": "dc3f88de745bffac04cd76675d2c17c04e496d21d9626e987d71805db5840b56"
+  },
+  "src/lib/poseGuidance.ts": {
+    "bytes": 4586,
+    "sha256": "91e89ad88c4975f92bdca688eb6a7bfa3bd29166411630fecd9244e10836df11"
+  },
+  "src/lib/profileEpoch.ts": {
+    "bytes": 1249,
+    "sha256": "15166f9dd9cf5ece1f24f0f54d7cddbd6905489fea2b6a06ec212041565f074c"
+  },
+  "src/lib/profileLock.test.ts": {
+    "bytes": 10077,
+    "sha256": "4fa343a23c05272121c55a72012c33dd3e24b418aaad30f227534eae8a66aa91"
+  },
+  "src/lib/profileLock.ts": {
+    "bytes": 2100,
+    "sha256": "6ca5d7959ce739eddb0bd10fd63999134b5f187821f9c75bf7c07855825277ce"
+  },
+  "src/lib/profileQuarantineExport.test.ts": {
+    "bytes": 2436,
+    "sha256": "22475de18d901577e76f87d569692b341ba51b5613422279ea952638ec36dbb5"
+  },
+  "src/lib/profileQuarantineExport.ts": {
+    "bytes": 1441,
+    "sha256": "94c1a5450b415340aee13b076a34adc3febfdebc6d2a261786389f29db522cb1"
+  },
+  "src/lib/profileReplacement.test.ts": {
+    "bytes": 24005,
+    "sha256": "b3d65e9aa9373cc77ab11573819b321232c7c6557899878b29a0ee24565be1ca"
+  },
+  "src/lib/profileReplacement.ts": {
+    "bytes": 19596,
+    "sha256": "b6c4163c487a5545bf85e8f5948566179c2707dc5923371fae3e31d98b532087"
+  },
+  "src/lib/profileReplacementFence.test.ts": {
+    "bytes": 3279,
+    "sha256": "81de41bace4bdcea4422614af8b12e1234b0a8f6bdc56e51efdf08fddd412daa"
+  },
+  "src/lib/profileReplacementRecovery.test.ts": {
+    "bytes": 8601,
+    "sha256": "d6fa0e7b2451454d17d04bc99ff1fd896e6a2854b4188c07fdaa429a24f7b630"
+  },
+  "src/lib/profileReplacementRecovery.ts": {
+    "bytes": 8171,
+    "sha256": "bc71b58518137e4830825e70097f61c00d044801dce61cf77af92dc0c826df8f"
+  },
+  "src/lib/profileWrite.test.ts": {
+    "bytes": 4530,
+    "sha256": "3dd45f28ffacbb58af89fabc19452c86c3c92cd1fb42be9989c865694dd2e526"
+  },
+  "src/lib/progressBackup.test.ts": {
+    "bytes": 10160,
+    "sha256": "12d9d9a9e715b391590bdf71173d45cb51bd6afb363d775702d6755e014e1545"
+  },
+  "src/lib/progressBackup.ts": {
+    "bytes": 4331,
+    "sha256": "d4098f57f38ab3ca1206eed32532cd8098dda67b5bab9dc6a337359b72a4367b"
+  },
+  "src/lib/progressBackupInspector.test.ts": {
+    "bytes": 7979,
+    "sha256": "9868ce56dd00281b5e55091388bb28b7fab36f42dc083ce5516d75fc29cc9c2a"
+  },
+  "src/lib/progressBackupInspector.ts": {
+    "bytes": 9040,
+    "sha256": "c0303d46d4586ce7d962ab9422e396923d5b2a7a5a488d8c0d0c739fd03fe8a2"
+  },
+  "src/lib/progressExport.test.ts": {
+    "bytes": 7808,
+    "sha256": "a51a4b2bdc9e53d3b6cd3fd5b5c7f98d4b69be842d0dacdc8efcd7aa010dcb11"
+  },
+  "src/lib/progressExport.ts": {
+    "bytes": 2483,
+    "sha256": "a45520a55eedb0a9f6085e46e7ffb7ee18b972d0cfba585d1d453e53a19e9310"
+  },
+  "src/lib/progressImportPreview.test.ts": {
+    "bytes": 9918,
+    "sha256": "e018e757cfe2e89630a4e0144ab41193baee328a1f4e37a22a54fe9aeaa61c57"
+  },
+  "src/lib/progressImportPreview.ts": {
+    "bytes": 10019,
+    "sha256": "cc85af6b931d5ba6093d537ced81e9ab77201e021088a8620e2f3185abf1a051"
+  },
+  "src/lib/progressPulse.test.ts": {
+    "bytes": 9574,
+    "sha256": "b72c09e4ec47a64a74f35dad640412ef11f94586f8895214e7bb5016a490b308"
+  },
+  "src/lib/progressPulse.ts": {
+    "bytes": 4187,
+    "sha256": "ca7b38ff227080011c97d5094e20c2ba0d79fa69e6f5b4c2da31e8b704529b04"
+  },
+  "src/lib/progression.test.ts": {
+    "bytes": 15077,
+    "sha256": "62fb9f4cef5f2b15079fffc48ea68620dcfc6b04823f49d67c12c7994ae1d5c0"
+  },
+  "src/lib/progression.ts": {
+    "bytes": 25066,
+    "sha256": "cafc31cc4c43f9019cf8c45508bf6c5c84207ee0cee4a1519746bc089e3e4ff6"
+  },
+  "src/lib/pushupReplay.test.ts": {
+    "bytes": 7898,
+    "sha256": "18df0e258e300fbf69159eef6745eb2acbe55ce57e9daa1169a7211969e56dae"
+  },
+  "src/lib/receiptCompatibility.test.ts": {
+    "bytes": 10770,
+    "sha256": "1585e9aff81ed6ecb4f4ce349c4cf8a743124cbcbbe7ae4167a0da31b271f85f"
+  },
+  "src/lib/receiptCompatibility.ts": {
+    "bytes": 12062,
+    "sha256": "5312e5013f21eebea0ac5544858fc822aa4bb4ace650d7bf9c13249d4a04c471"
+  },
+  "src/lib/rewardIntegrity.test.ts": {
+    "bytes": 11324,
+    "sha256": "000978d71a3fd57abd81492c5deab69a6394f0b443babda426d411d71f657932"
+  },
+  "src/lib/runtimeDiagnostics.test.ts": {
+    "bytes": 5938,
+    "sha256": "a50c4017f3dda87b7e8bf04b2b13412b63230d343893fe7bd32e3d2f909fc8b9"
+  },
+  "src/lib/runtimeDiagnostics.ts": {
+    "bytes": 6744,
+    "sha256": "e698c768f7e6fefc4d3ae100c289b9da4e1bc0e64bee4b3dfcdc77e435594340"
+  },
+  "src/lib/screenNavigation.test.ts": {
+    "bytes": 3040,
+    "sha256": "b16c9f789f3ba5cbacbe0a85d836a12ba9d9f3b2f53ff086b9d3f9b697ecc5e7"
+  },
+  "src/lib/settledImportHistory.ts": {
+    "bytes": 3848,
+    "sha256": "a7aacc81ad235383c3a53340ec447f12aca5b6e4a876f5170f337d74afc0985d"
+  },
+  "src/lib/squatCounter.test.ts": {
+    "bytes": 10274,
+    "sha256": "52a733407806c27d5aa8c25f4a04a9360a27757dd567a0a41bf31d2f89fac0a7"
+  },
+  "src/lib/squatCounter.ts": {
+    "bytes": 11804,
+    "sha256": "5bf166210e230003166df59a6ecedb1e58b70af8754d7be0cf1d5677fdce03e4"
+  },
+  "src/lib/squatReplay.test.ts": {
+    "bytes": 3818,
+    "sha256": "2728661468a5ee4138228f2834dbde5689489e207964e81b85f918b298a9ddb3"
+  },
+  "src/lib/stepsLog.test.ts": {
+    "bytes": 3791,
+    "sha256": "7d8561ed2c53827f348050160cb2f4100a77c971f2532c13bd4bf69cb9e57d9f"
+  },
+  "src/lib/stepsLog.ts": {
+    "bytes": 3384,
+    "sha256": "7703b795f159f97311de4af078154dc600a7eb234fee08a60a34223c239cc32b"
+  },
+  "src/lib/storageCapacity.test.ts": {
+    "bytes": 4120,
+    "sha256": "15032317c91d824774a6b130de932ba15bb963261e5967feb1897ead9c36f94d"
+  },
+  "src/lib/storageCapacity.ts": {
+    "bytes": 3492,
+    "sha256": "79505d32c6a6b18856a1041bca86e0323ff4f06e669cee954a316497456a8c98"
+  },
+  "src/lib/threeResources.test.ts": {
+    "bytes": 1903,
+    "sha256": "c84bd2e8f1939fd935d4428fb9cfbc57e858c59f9b6f284fe18a139fac441224"
+  },
+  "src/lib/threeResources.ts": {
+    "bytes": 1456,
+    "sha256": "71ebc4926019938bcae2e793d46c445e8ec857694f4b19de61c4bc74f13c46f1"
+  },
+  "src/lib/trainingCatalog.test.ts": {
+    "bytes": 2704,
+    "sha256": "90f76af85fe301407c20d07f6c689544b37bcaad78602f0226ee456a15142ddc"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8625,
+    "sha256": "cea9ca7da8a7fec471d6e98c2b0b4054324e8b6e7f033a65109872240611de7e"
+  },
+  "src/lib/withTimeout.test.ts": {
+    "bytes": 1953,
+    "sha256": "c6ed3e2b74d58599b73ae036a881d466f7fdf22750865e1d825d58988a82b905"
+  },
+  "src/lib/withTimeout.ts": {
+    "bytes": 831,
+    "sha256": "ee443d8d202fcf70232d379c2304338d5202cd2b35f324363a1cc16d9899f1e5"
+  },
+  "src/lib/workoutEpoch.test.ts": {
+    "bytes": 7162,
+    "sha256": "cdeea42ec8be49d9ec04fbf9418a2a408425a21aff10164592e121233aa824a3"
+  },
+  "src/lib/workoutHud.test.ts": {
+    "bytes": 6396,
+    "sha256": "914c2c5eaeea8b26967d135fbaf5d0678d5e2a860737f9eb6577c8df078465e3"
+  },
+  "src/lib/workoutHud.ts": {
+    "bytes": 7273,
+    "sha256": "de3aa2f3ead3555af2fee988aac1929d6a60804ba191851e7c34b26374300d30"
+  },
+  "src/lib/workoutJournal.test.ts": {
+    "bytes": 22701,
+    "sha256": "f69fac98c767102521c86f467c19f8e01226e921c68199b9f64343fda53e1797"
+  },
+  "src/lib/workoutJournal.ts": {
+    "bytes": 13998,
+    "sha256": "ed352fdd3ee6a3a9f6bf91bb3a6065a30f2dc82ef4e368d345fbf07d6c19ac8a"
+  },
+  "src/lib/workoutQuarantine.test.ts": {
+    "bytes": 14482,
+    "sha256": "ee687e48eaaa8857677397252dece5adc6101473bf1b531fc380d12f8a465cc6"
+  },
+  "src/lib/workoutReceipt.test.ts": {
+    "bytes": 6524,
+    "sha256": "40b362fe5cb7c2ecb50a0b7c33def42740b024b15e7fc3e7889fb7bb4dd6c8fd"
+  },
+  "src/lib/workoutReceipt.ts": {
+    "bytes": 3344,
+    "sha256": "0a4d55bc930aad4d0229b78ba351807838fc1beefb7d230e41a49b5d87b25a7f"
+  },
+  "src/lib/workoutWakeLock.test.ts": {
+    "bytes": 4426,
+    "sha256": "a042f3ef81d5d8520a419fe5ccaa210b0d96f3f8805be5f2c2185c4d684e2bf4"
+  },
+  "src/lib/workoutWakeLock.ts": {
+    "bytes": 1675,
+    "sha256": "ed49bea658f8251334aa4db55197701eca98a0c50ad0a7928015210f0e893f1e"
+  },
+  "src/main.tsx": {
+    "bytes": 543,
+    "sha256": "04e8336c99bc85f2f528f799e7191be7da2726326cb0104e0c797ec1d8c92bdf"
+  },
+  "src/neonPulseV2.css": {
+    "bytes": 35306,
+    "sha256": "eb21a4d38146407990dcca44e9ecfc3ef069f5e76c41f1164902aa4f62aa5a41"
+  },
+  "src/premium.css": {
+    "bytes": 22324,
+    "sha256": "b55bef06ca71f918e9216d1c431ef8fa800bfcbb5d0b852498e44d34bb261f51"
+  },
+  "src/pulseArmory.css": {
+    "bytes": 19961,
+    "sha256": "6730c3840470a96e19243b4301defed4dd72106ec062edad7f62c7ba94505cfc"
+  },
+  "src/recovery.css": {
+    "bytes": 2369,
+    "sha256": "2ab4fe8af1bc3e0a3548f29b54e6ef52cd398687876723b81d98a271146f02b5"
+  },
+  "src/trainingExperience.css": {
+    "bytes": 15251,
+    "sha256": "5b0f82b6b4827b23dc31b0315ae17fcfbb8d211f1b2bff32d146d6464480a21e"
+  },
+  "src/vite-env.d.ts": {
+    "bytes": 39,
+    "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+  },
+  "src/world.css": {
+    "bytes": 32678,
+    "sha256": "71fe24da727402f98f13f508ab531a003e9ddb0d371a931aaad580784bad16af"
+  },
+  "tsconfig.app.json": {
+    "bytes": 604,
+    "sha256": "3e1add6f8251cc2025fd352bd026df7e434109785f42eee4849f9aa0e9cd8c57"
+  },
+  "tsconfig.json": {
+    "bytes": 126,
+    "sha256": "ad28d132ee48d6e23917cf5827cace785d0fc01a44ca68b0dda51cc8c3fd3f52"
+  },
+  "tsconfig.node.json": {
+    "bytes": 436,
+    "sha256": "26f9edfd4b786e4a44e0a6c7e4f77914fbab698b6eaf6cfb58a908c5985f8ef8"
+  },
+  "vite.config.ts": {
+    "bytes": 2687,
+    "sha256": "3919cd43ebc9ad24478089e0918b5c06398256df0b1e0e0d134b19a2b6f05bb3"
+  },
+  "package.json": {
+    "bytes": 2005,
+    "sha256": "5a5e6876cb35587e61dcae692e71ece209f530089d0a8c305a03570406400b2a"
+  },
+  "package-lock.json": {
+    "bytes": 70381,
+    "sha256": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "src/lib/workoutHudParity.test.ts": {
+    "bytes": 3112,
+    "sha256": "753ab3d7c6163bc1302ef2d8b50d5a884c0278609437563f483fac50b3eeb12d"
+  }
+}

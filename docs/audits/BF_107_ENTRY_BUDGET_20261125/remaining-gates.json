@@ -1,0 +1,15 @@
+﻿{
+    "journal":  0,
+    "appearancePreferences":  0,
+    "mobile":  0,
+    "privacy":  0,
+    "privateQaPaths":  "NOT_RUN",
+    "started":  "2026-11-25T21:00:04.4812796+03:00",
+    "devPort":  8100,
+    "previewPort":  8100,
+    "preview":  200,
+    "frozenSourceAndBuildUnchanged":  true,
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T21:02:56.8537322+03:00"
+}

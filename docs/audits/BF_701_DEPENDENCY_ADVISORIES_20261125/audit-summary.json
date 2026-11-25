@@ -1,0 +1,47 @@
+{
+  "status": "AUDIT_QUERY_COMPLETE",
+  "lock_sha256": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9",
+  "entries": 131,
+  "license_metadata_counts": {
+    "MIT": 104,
+    "Apache-2.0": 6,
+    "CC-BY-4.0": 1,
+    "ISC": 6,
+    "MPL-2.0": 12,
+    "BSD-3-Clause": 1,
+    "0BSD": 1
+  },
+  "audits": {
+    "all": {
+      "exit": 0,
+      "status": "NO_REPORTED_ADVISORIES",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "packages": {}
+    },
+    "production": {
+      "exit": 0,
+      "status": "NO_REPORTED_ADVISORIES",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "packages": {}
+    }
+  },
+  "checked_at": "2026-11-25T21:16:21.814820",
+  "root_unchanged": true,
+  "limitations": [
+    "Registry coverage may lag published maintainer advisories. No claim of no unknown vulnerabilities. License fields are metadata, not legal review. No npm audit fix, new install, or root adoption."
+  ]
+}

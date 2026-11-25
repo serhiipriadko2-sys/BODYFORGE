@@ -1,0 +1,19 @@
+﻿{
+    "controlBuild":  0,
+    "controlBundle":  1,
+    "entryEqual":  true,
+    "mobile":  0,
+    "privacy":  0,
+    "started":  "2026-11-25T20:50:40.2688661+03:00",
+    "entry":  "assets/index-CEMgTGZ5.js",
+    "entryBytes":  398302,
+    "entrySha256":  "c22c4ec4395b0126dc83f5b039f5777a23d18c7feb81a221ef875d65511673f0",
+    "controlEntryBytes":  398302,
+    "controlEntrySha256":  "c22c4ec4395b0126dc83f5b039f5777a23d18c7feb81a221ef875d65511673f0",
+    "controlSourceManifestSha256":  "94ADA210C9A4ED615D85F47C3DAA421F4D1DC0AB8877D71A5E27159F1E72ABAD",
+    "preview":  200,
+    "previewPort":  7900,
+    "frozenSourceAndBuildUnchanged":  true,
+    "previewStopped":  true,
+    "finished":  "2026-11-25T20:52:47.4926932+03:00"
+}

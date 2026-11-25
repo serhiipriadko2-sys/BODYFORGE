@@ -1,0 +1,116 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T20:53:30.142748+03:00",
+  "sourceCount": 345,
+  "buildCount": 73,
+  "sourceManifestSha256": "d6526ac8785c18703335671b41b02a7c26479b4d0eadd2e83f7c46781937cbb1",
+  "controlManifestSha256": "94ada210c9a4ed615d85f47c3daa421f4d1dc0ab8877d71a5e27159f1e72abad",
+  "buildManifestSha256": "cfa016675a6f6f61ba2bb3fe536c1d86900491928c5442ca2664ea714c88e689",
+  "ownedHashesMatch": true,
+  "v1SourceMatches": true,
+  "liveChangedPaths": [
+    "qa/private-qa-paths-e2e.mjs",
+    "vite.config.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/avatarTorsoLandmarks.ts"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 69,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "mixedWriterSample": {
+    "stage": true,
+    "active": true,
+    "pack": true,
+    "retry": true,
+    "conflict": true,
+    "abort": true,
+    "materialize": true,
+    "quarantine": true,
+    "cancel": true,
+    "readback": true,
+    "race": true
+  },
+  "entryBytes": 398302,
+  "entrySha256": "c22c4ec4395b0126dc83f5b039f5777a23d18c7feb81a221ef875d65511673f0",
+  "controlEntrySha256": "c22c4ec4395b0126dc83f5b039f5777a23d18c7feb81a221ef875d65511673f0",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89308,
+      "sha256": "556df1fb8fd70d2e47f06ba5e2ff8ca6eef5881decc48cbe0c7de5561b81b14a",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204582,
+      "sha256": "7ccf4461cc86058c0db5890c7b95520821220afc1ee650d5e868a811dcaeaff9",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195463,
+      "sha256": "4c55213e039132c935d5a3892b67ff10b3284755831111d383a9339d7cf858d6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 93783,
+      "sha256": "403da0927e74c05f4ed19aa6d65c1cecf61edbdacd673556991371109222f1b2",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93491,
+      "sha256": "72a664593b89e15ffd5c5dfac9cb059dc8ff53aaf812e6d6ac6e17e6f81cd566",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91536,
+      "sha256": "bd95c0a5fd7317e36faba8aed361e5a0c6086f488197a18811907d4772cd0aee",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "acceptance": "BLOCKED_BUNDLE_BUDGET",
+  "candidate": "TESTED_LOCAL"
+}

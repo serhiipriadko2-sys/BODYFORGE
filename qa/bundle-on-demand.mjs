@@ -16,6 +16,7 @@ const only = (pattern, label) => {
 const entryName = only(/^index-[\w-]+\.js$/, 'App entry');
 const poseName = only(/^vision_bundle-[\w-]+\.js$/, 'Pose library');
 const cameraControlsName = only(/^CameraControls-[\w-]+\.js$/, 'Camera controls');
+const appearanceName = only(/^AppearanceDialogContent-[\w-]+\.js$/, 'Appearance editor');
 // The user removed the personal plan UI. Keep its unused module out of production bundles.
 if (files.some((name) => /^DailyPlanBoard-[\w-]+\.js$/.test(name))) {
   throw Error('Removed daily plan must not ship as an unused chunk');
@@ -37,6 +38,8 @@ if (entry >= baseline * 0.8) throw Error('Initial bundle regression: ' + JSON.st
 if (pose < 100000 || pose > 300000) throw Error('Unexpected pose chunk size: ' + JSON.stringify(result));
 if (html.includes(poseName)) throw Error('Camera-only chunk was preloaded in index.html');
 if (html.includes(cameraControlsName)) throw Error('Mobile camera controls were preloaded in index.html');
+if (html.includes(appearanceName)) throw Error('Appearance editor was preloaded in index.html');
+if (!entryBytes.toString('utf8').includes(appearanceName)) throw Error('Appearance editor lacks dynamic entry reference');
 if (!entryBytes.toString('utf8').includes(cameraControlsName)) {
   throw Error('Camera controls no longer use a dynamic import');
 }
