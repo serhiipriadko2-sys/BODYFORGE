@@ -1,0 +1,144 @@
+{
+  "status": "TESTED_LOCAL",
+  "checks": {
+    "diff": 0,
+    "cachedDiff": 0,
+    "canon": 0
+  },
+  "results": {
+    "focused": 0,
+    "unit": 0,
+    "build": 0,
+    "bundle": 0,
+    "forge": 0,
+    "privacy": 0,
+    "receipt-preview": 0,
+    "dedup": 0
+  },
+  "counts": {
+    "focused": 0,
+    "unit": 0,
+    "build": 0,
+    "bundle": 0,
+    "forge": 76,
+    "privacy": 13,
+    "receipt-preview": 33,
+    "dedup": 34
+  },
+  "bundle": {
+    "entryBytes": 397283,
+    "entryGzipBytes": 121166,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 99478,
+    "entryReductionPercent": 20,
+    "entryName": "index-9qSnb8Rz.js",
+    "poseName": "vision_bundle-BR_nJxk-.js"
+  },
+  "files": {
+    "src/lib/progressPulse.ts": {
+      "before": {
+        "bytes": 3889,
+        "sha256": "c5aeaf88be103371a40419edc6a9394d7ac5a318f58dbdce5cd4d29ff3b210c5"
+      },
+      "after": {
+        "bytes": 3965,
+        "sha256": "8f68b7b4f7d9c385c1d92ce1fcc088212b3f7ed06b058113ed8dd25b67dce61d"
+      }
+    },
+    "src/lib/progressPulse.test.ts": {
+      "before": {
+        "bytes": 7785,
+        "sha256": "dde3061c330da73eca736e60b2438ab818a5f94c517e487a4055cdba7f6c488c"
+      },
+      "after": {
+        "bytes": 9574,
+        "sha256": "b72c09e4ec47a64a74f35dad640412ef11f94586f8895214e7bb5016a490b308"
+      }
+    },
+    "src/components/ProgressPulseBoard.tsx": {
+      "before": {
+        "bytes": 14295,
+        "sha256": "dcd353783d3cf437182229265430483cff091a45ef79d4c77e061874741728c7"
+      },
+      "after": {
+        "bytes": 15594,
+        "sha256": "50863efd9d27fff3bfcd3abba94198dbf16dc4cca7509526db2eee203a58d882"
+      }
+    },
+    "qa/forge-home-xp-faq-e2e.mjs": {
+      "before": {
+        "bytes": 22158,
+        "sha256": "001f26c17200f4b7831426803265179094390eea72c28e5db94136124415459a"
+      },
+      "after": {
+        "bytes": 24937,
+        "sha256": "e9a217b21c0fdf28191bf9b5611f6e82b748a38111e5ecf7ca8e0f65ef9a78f1"
+      }
+    }
+  },
+  "artifacts": {
+    "docs/audits/BF_107_ACTIVITY_COVERAGE_20261125/gates.json": {
+      "bytes": 3044,
+      "sha256": "9779ff03b212f3cbeb62863d2083afd45a5e31783c0cd7dfbc91afd1f354f0df"
+    },
+    "docs/audits/BF_107_ACTIVITY_COVERAGE_20261125/source-manifest.json": {
+      "bytes": 38230,
+      "sha256": "75f6af972ce836bdb2beb764a260e129f129f041b4872181abce58dfc7028bd8"
+    },
+    "docs/audits/BF_107_ACTIVITY_COVERAGE_20261125/build-manifest.json": {
+      "bytes": 9727,
+      "sha256": "f8b972bbd91f9ca05e62bd89794d1242dcd6d4c882812451bdba96207a7cfbf3"
+    },
+    ".bodyforge-qa/bf107-verify-run1/focused.log": {
+      "bytes": 640,
+      "sha256": "35184daf7867277ce8ccdfebb558e3ab5fee7489f2beccd2a31e66f680781d01"
+    },
+    ".bodyforge-qa/bf107-verify-run1/unit.log": {
+      "bytes": 486,
+      "sha256": "79d0cc4be60e628582813aa72048d1bb67e7be99234d385d7c5f8e32c3e93e9a"
+    },
+    ".bodyforge-qa/bf107-verify-run1/build.log": {
+      "bytes": 2866,
+      "sha256": "d5ea1807ce28fc8bbac34de88c626e728b7732cec2c11870f5a6e6461fdac611"
+    },
+    ".bodyforge-qa/bf107-verify-run1/bundle.log": {
+      "bytes": 278,
+      "sha256": "cb4753edc6d3e49cc3b70d08458f30b40cb0e45f55e0df791d9f9d34527e32d3"
+    },
+    ".bodyforge-qa/bf107-verify-run1/forge.log": {
+      "bytes": 7439,
+      "sha256": "24a7a0225f24032285b5bde92ea4bf641e348e274ed5f2302f124ceb1d98af73"
+    },
+    ".bodyforge-qa/bf107-verify-run1/privacy.log": {
+      "bytes": 848,
+      "sha256": "05b418e19a96bd78ab4ac703c883103d04c73ac36165a2a5bada7135679ce1fd"
+    },
+    ".bodyforge-qa/bf107-verify-run1/receipt-preview.log": {
+      "bytes": 1756,
+      "sha256": "6a6700680e7fe8d99e9a83c88f63679021712fa5e12205fd3ff81eabe4a738a8"
+    },
+    ".bodyforge-qa/bf107-verify-run1/dedup.log": {
+      "bytes": 3168,
+      "sha256": "54f15a8df6441e73e0e6da0ae1decc39c8a7f01cae7730c966580e085ab9fd5f"
+    },
+    ".bodyforge-qa/bf107-verify-run1/preview.log": {
+      "bytes": 40,
+      "sha256": "99177a2385d304ebbe726ec36ca56feb82b3096cca03310608435d5dde4e78a6"
+    },
+    ".bodyforge-qa/bf107-verify-run1/stable-dev.log": {
+      "bytes": 195,
+      "sha256": "809affd641dfd48e328a0268c35e4c627ae3c0ede52dfb9deccf8d2d1a66af81"
+    },
+    "docs/audits/BF_107_ACTIVITY_COVERAGE_20261125/pulse-incomplete-history-390.png": {
+      "bytes": 143862,
+      "sha256": "86ebab36e62a3069d28f708220ff7cd8185423bb73af0ccb48eb01666330c2fd"
+    },
+    "docs/audits/BF_107_ACTIVITY_COVERAGE_20261125/RECEIPT.md": {
+      "bytes": 2850,
+      "sha256": "e65ab79661b24e4514f669897bccc613da23a939746a53b2909cc29071773ece"
+    }
+  },
+  "rollback": "Compare after SHA-256 and restore only matching .before files from .bodyforge-qa/bf107-coverage-patch."
+}

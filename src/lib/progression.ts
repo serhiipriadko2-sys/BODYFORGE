@@ -3,6 +3,8 @@ import {
   type GameState, type WorkoutMode,
 } from './game';
 import { isExerciseId, type ExerciseId } from './trainingCatalog';
+import { readWorkoutReceipt, recordWorkoutReceipt } from './workoutReceipt';
+import { readProfileEpoch } from './profileEpoch';
 
 export const TARGET_REPS = 20;
 export const XP_REWARD = 120;
@@ -10,6 +12,18 @@ export const COIN_REWARD = 35;
 // Do not change the key: upgrading a game must not destroy prior workout progress.
 export const STORAGE_KEY = 'bodyforge:pilot:v1';
 export const PROFILE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
+export const PROFILE_REPLACEMENT_MARKER_KEY = `${STORAGE_KEY}:replace-pending:v1`;
+
+/** A staged replacement owns the profile pair until explicit settlement. */
+export function profileReplacementPending(): boolean {
+  return localStorage.getItem(PROFILE_REPLACEMENT_MARKER_KEY) !== null;
+}
+
+function readUsablePrimary(): string | null {
+  if (profileReplacementPending()) throw Error('Replacement pending');
+  readProfileEpoch(); // Corrupt lineage cannot authorize writes or rewards.
+  return localStorage.getItem(STORAGE_KEY);
+}
 const QUARANTINE_PREFIX = `${STORAGE_KEY}:quarantine:`;
 
 export interface Workout {
@@ -25,6 +39,8 @@ export interface Workout {
   holdSeconds?: number;
   /** Measured finish times, in ms from calibrated start, for each rep. */
   splitsMs?: number[];
+  /** Use readWorkoutReceipt to access supported versions. Opaque values round-trip. */
+  receipt?: unknown;
 }
 
 export interface ProfileTotals { workouts: number; repetitions: number; bestDurationMs: number | null; holdSeconds?: number }
@@ -113,6 +129,12 @@ function validWorkoutSplits(splits: unknown, durationMs: number): splits is numb
 const validWorkoutId = (id: unknown): id is string =>
   typeof id === 'string' && id.trim().length > 0 && id.length <= 128;
 
+/** Historical IDs remain opaque; newly credited IDs must be usable as journal keys. */
+function validNewWorkoutId(id: unknown): id is string {
+  if (!validWorkoutId(id)) return false;
+  try { encodeURIComponent(id); return true; } catch { return false; }
+}
+
 /** Read-only reward-ledger gate shared by storage and backup inspection. */
 export function hasAmbiguousWorkoutIds(profile: object): boolean {
   if (!('creditedWorkoutIds' in profile)) {
@@ -145,7 +167,7 @@ export function addCompletedWorkout(
   profile: Profile, durationMs: number, now = new Date(), options: WorkoutOptions = {},
 ): Profile {
   if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('Время тренировки должно быть положительным');
-  if (options.sessionId !== undefined && !validWorkoutId(options.sessionId)) throw new Error('Invalid workout session ID');
+  if (options.sessionId !== undefined && !validNewWorkoutId(options.sessionId)) throw new Error('Invalid workout session ID');
   if (hasAmbiguousWorkoutIds(profile)) throw new Error('Reward identity ledger requires recovery');
   const exerciseId = options.exerciseId ?? 'squat';
   if (!isExerciseId(exerciseId)) throw new Error('Unknown exercise');
@@ -155,11 +177,13 @@ export function addCompletedWorkout(
   const creditedHold = exerciseId === 'plank' ? 30 : 0;
   const credited = creditedWorkoutIds(profile.creditedWorkoutIds, profile.workouts);
   if (options.sessionId && credited.has(options.sessionId)) return profile;
+  const sessionId = options.sessionId ?? `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`;
+  if (credited.has(sessionId)) throw new Error('Workout session ID collision');
   const totals = getProfileTotals(profile);
   const splits = options.splitsMs;
   const validSplits = validWorkoutSplits(splits, durationMs);
   const workout: Workout = {
-    id: options.sessionId ?? `${now.getTime()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: sessionId,
     finishedAt: now.toISOString(),
     durationMs,
     repetitions: creditedReps,
@@ -181,7 +205,9 @@ export function addCompletedWorkout(
       ...((totals.holdSeconds ?? 0) + creditedHold ? { holdSeconds: (totals.holdSeconds ?? 0) + creditedHold } : {}) },
   };
   const withGhost = exerciseId === 'squat' && validSplits ? storeGhost(updated, durationMs, splits) : updated;
-  return options.mode === 'tower' ? beatTowerFloor(withGhost, durationMs) : withGhost;
+  const final = options.mode === 'tower' ? beatTowerFloor(withGhost, durationMs) : withGhost;
+  workout.receipt = recordWorkoutReceipt(workout, profile, updated, final !== withGhost ? final : undefined);
+  return final;
 }
 
 function validProfileRoot(value: unknown): value is Pick<Profile, 'xp' | 'coins' | 'workouts'> & { game?: unknown } {
@@ -207,13 +233,16 @@ export function parseProfile(value: unknown): Profile {
   });
   const workouts = history.slice(0, 60).map((workout) => {
     const { splitsMs, mode, exerciseId, holdSeconds, ...rest } = workout;
-    return {
+    const normalized: Workout = {
       ...rest,
       ...(mode === 'training' || mode === 'tower' || mode === 'ghost' ? { mode } : {}),
       ...(exerciseId && isExerciseId(exerciseId) ? { exerciseId } : {}),
       ...(exerciseId === 'plank' ? { holdSeconds } : {}),
       ...(validWorkoutSplits(splitsMs, workout.durationMs) ? { splitsMs: [...splitsMs] } : {}),
     };
+    const receipt = readWorkoutReceipt(normalized);
+    if (receipt) normalized.receipt = receipt;
+    return normalized;
   });
   const parsed: Profile = { xp: record.xp, coins: record.coins, workouts, game: normalizeGame(record.game) };
   if ('profileId' in record && validWorkoutId(record.profileId)) parsed.profileId = record.profileId;
@@ -243,9 +272,10 @@ function decodeStoredProfile(raw: string | null, allowAmbiguousIds = false): Pro
 
 export function loadProfileState(): ProfileLoadResult {
   const empty = parseProfile(null);
-  if (typeof window === 'undefined') return { profile: empty, status: 'unavailable', backupAvailable: false, revision: null };
+  const unavailable: ProfileLoadResult = { profile: empty, status: 'unavailable', backupAvailable: false, revision: null };
+  if (typeof window === 'undefined') return unavailable;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readUsablePrimary();
     const profile = decodeStoredProfile(raw);
     if (profile) return { profile, status: 'ready', backupAvailable: false, revision: raw };
     const backupRaw = localStorage.getItem(PROFILE_BACKUP_KEY);
@@ -258,7 +288,7 @@ export function loadProfileState(): ProfileLoadResult {
       revision: raw,
     };
   } catch {
-    return { profile: empty, status: 'unavailable', backupAvailable: false, revision: null };
+    return unavailable;
   }
 }
 
@@ -278,7 +308,7 @@ export function saveProfile(profile: Profile, options: { expectedRaw?: string | 
   if (!validProfileRoot(profile)) return { status: 'unavailable' };
   if (hasAmbiguousWorkoutIds(profile)) return { status: 'recovery-required' };
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readUsablePrimary();
     // Detect a stale tab BEFORE altering the validated backup. This is optimistic
     // conflict detection, not server-authoritative or a transactional anti-cheat.
     if ('expectedRaw' in options && raw !== options.expectedRaw) return { status: 'conflict' };
@@ -290,14 +320,14 @@ export function saveProfile(profile: Profile, options: { expectedRaw?: string | 
     // React StrictMode/reload must not replace yesterday's fallback with an
     // identical current snapshot. Seed a backup only when it is missing/invalid.
     if (previous && JSON.stringify(previous) === next && decodeStoredProfile(localStorage.getItem(PROFILE_BACKUP_KEY))) {
-      if (localStorage.getItem(STORAGE_KEY) !== raw) return { status: 'conflict' };
+      if (readUsablePrimary() !== raw) return { status: 'conflict' };
       return raw === next || writeVerified(STORAGE_KEY, next)
         ? { status: 'saved', revision: next } : { status: 'unavailable' };
     }
     const backup = previous ? JSON.stringify(previous) : next;
     // Preserve a validated fallback before touching the primary; quota/no-op failures fail closed.
     if (!writeVerified(PROFILE_BACKUP_KEY, backup)) return { status: 'unavailable' };
-    if (localStorage.getItem(STORAGE_KEY) !== raw) return { status: 'recovery-required' };
+    if (readUsablePrimary() !== raw) return { status: 'recovery-required' };
     return writeVerified(STORAGE_KEY, next)
       ? { status: 'saved', revision: next } : { status: 'unavailable' };
   } catch {
@@ -332,7 +362,7 @@ export function recoverProfile(source: 'backup' | 'empty'): ProfileLoadResult {
       if (!preserved) return { ...state, status: 'unavailable' };
     }
     // A changed primary is never overwritten using a stale recovery decision.
-    if (localStorage.getItem(STORAGE_KEY) !== raw) return loadProfileState();
+    if (readUsablePrimary() !== raw) return loadProfileState();
     if (!writeVerified(STORAGE_KEY, JSON.stringify(restored))) return { ...state, status: 'unavailable' };
     return loadProfileState();
   } catch {

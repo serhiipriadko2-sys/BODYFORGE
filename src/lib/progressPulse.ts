@@ -7,7 +7,7 @@ export type PulseDay = { date: string; label: string; sessions: number; reps: nu
 export type PulseTrend = { days: PulseDay[]; sessions: number; reps: number; holdSeconds: number; activeDays: number; peak: number };
 export type PulseComparison = {
   current: PulseTrend; previous: PulseTrend; deltaSessions: number;
-  /** Only the 60 most recent workouts are retained as detailed history. */
+  /** The available records cannot establish complete coverage of calendar dates. */
   historyLimited: boolean;
 };
 
@@ -64,21 +64,22 @@ export function weeklyPulse(workouts: readonly Workout[], now: Date): PulseTrend
 }
 
 /** Compare two non-overlapping periods with equal LOCAL-calendar lengths.
- * When the displayed history hits the 60-entry retention ceiling, suppress
- * potentially misleading comparisons, not the current visible period.
+ * A capped history or a larger lifetime count tells us that some records may
+ * be missing, but does not tell us on which dates.
  */
 export function comparePulsePeriods(
-  workouts: readonly Workout[], now: Date, range: PulseRange,
+  workouts: readonly Workout[], now: Date, range: PulseRange, recordedWorkoutCount = workouts.length,
 ): PulseComparison {
+  const historyLimited = workouts.length >= 60 || recordedWorkoutCount > workouts.length;
   const current = activityPulse(workouts, now, range);
   if (!current.days.length) return {
     current, previous: { ...EMPTY, days: [] }, deltaSessions: 0,
-    historyLimited: workouts.length >= 60,
+    historyLimited,
   };
   const previousEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - range, 12);
   const previous = activityPulse(workouts, previousEnd, range);
   return {
     current, previous, deltaSessions: current.sessions - previous.sessions,
-    historyLimited: workouts.length >= 60,
+    historyLimited,
   };
 }

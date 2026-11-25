@@ -38,7 +38,7 @@ function eyeShape(root: THREE.Object3D): THREE.Vector3[] {
   return vertices.map((vertex) => vertex.sub(centre));
 }
 
-describe.each(['bodyforge-athlete.glb', 'bodyforge-athlete-realistic.glb', 'bodyforge-athlete-detail.glb', 'male-base-mesh-base_male.glb'])('protected anatomy growth: %s', (file) => {
+describe.each(['bodyforge-athlete.glb', 'bodyforge-athlete-realistic.glb', 'bodyforge-athlete-detail.glb', 'bodyforge-athlete-efficient.glb', 'male-base-mesh-base_male.glb'])('protected anatomy growth: %s', (file) => {
   it('grows torso and arms while preserving the complete head, wrist and foot world basis', async () => {
     const { root } = await fixture(file);
     applyAvatarGrowth(root, {});
@@ -49,8 +49,15 @@ describe.each(['bodyforge-athlete.glb', 'bodyforge-athlete-realistic.glb', 'body
     for (const [name, matrix] of matrices(root)) expectLinear(matrix, before.get(name)!);
     expect(root.getObjectByName('spine03')!.matrixWorld.determinant() / chest).toBeGreaterThan(1.1);
     expect(root.getObjectByName('upperarm01L')!.matrixWorld.determinant() / arm).toBeGreaterThan(1.1);
-    expect(new THREE.Vector3().setFromMatrixPosition(root.getObjectByName('head')!.matrixWorld)
-      .distanceTo(new THREE.Vector3().setFromMatrixPosition(before.get('head')!))).toBeGreaterThan(.001);
+    const headDrift = new THREE.Vector3().setFromMatrixPosition(root.getObjectByName('head')!.matrixWorld)
+      .distanceTo(new THREE.Vector3().setFromMatrixPosition(before.get('head')!));
+    // The independently budgeted detailed rigs preserve axial length;
+    // older rigs retain their original follow-parent translation contract.
+    if (file === 'bodyforge-athlete-detail.glb' || file === 'bodyforge-athlete-efficient.glb') {
+      expect(headDrift).toBeLessThan(1e-6);
+    } else {
+      expect(headDrift).toBeGreaterThan(.001);
+    }
     disposeThreeTree(root);
   });
 

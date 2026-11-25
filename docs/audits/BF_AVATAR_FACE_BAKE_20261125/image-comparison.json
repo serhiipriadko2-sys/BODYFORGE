@@ -1,0 +1,26 @@
+{
+  "front": {
+    "crop": [
+      300,
+      640,
+      220,
+      290
+    ],
+    "changedAtSum5": 318,
+    "changedAtSum15": 2,
+    "maxSum": 15,
+    "meanAbsoluteChannelDifference": 0.07590909090909091
+  },
+  "turned": {
+    "crop": [
+      300,
+      640,
+      220,
+      290
+    ],
+    "changedAtSum5": 132,
+    "changedAtSum15": 0,
+    "maxSum": 8,
+    "meanAbsoluteChannelDifference": 0.06150992685475445
+  }
+}

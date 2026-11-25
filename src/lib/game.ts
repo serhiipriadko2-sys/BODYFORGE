@@ -11,8 +11,8 @@ export type Outfit = 'base' | 'ember' | 'steel';
 export type WorkoutMode = 'training' | 'tower' | 'ghost';
 
 export const MUSCLES: ReadonlyArray<{ id: Muscle; label: string; description: string }> = [
-  { id: 'arms', label: 'Руки', description: 'Бицепсы и трицепсы' },
-  { id: 'core', label: 'Пресс', description: 'Мышцы корпуса' },
+  { id: 'arms', label: 'Руки', description: 'Плечи, бицепсы и трицепсы' },
+  { id: 'core', label: 'Корпус', description: 'Грудь, пресс и боковые мышцы' },
   { id: 'legs', label: 'Ноги', description: 'Сила приседа' },
   { id: 'back', label: 'Спина', description: 'Ширина и осанка' },
 ];
@@ -146,7 +146,8 @@ export function createFighter(profile: Profile, build: BodyBuild, nickname: stri
 export function upgradeMuscle(profile: Profile, muscle: Muscle): Profile {
   if (!MUSCLES.some((entry) => entry.id === muscle)) return profile;
   const currentLevel = profile.game.muscles[muscle];
-  if (!profile.game.created || currentLevel >= MAX_MUSCLE_LEVEL) return profile;
+  if (!profile.game.created || !Number.isFinite(profile.coins) || profile.coins < 0 ||
+      !Number.isInteger(currentLevel) || currentLevel < 0 || currentLevel >= MAX_MUSCLE_LEVEL) return profile;
   const cost = muscleCost(currentLevel);
   if (profile.coins < cost) return profile;
   return {
@@ -160,10 +161,11 @@ export function upgradeMuscle(profile: Profile, muscle: Muscle): Profile {
 }
 
 export function buyOrEquipOutfit(profile: Profile, outfit: Outfit): Profile {
-  if (!profile.game.created) return profile;
+  if (!profile.game.created || !Number.isFinite(profile.coins) || profile.coins < 0) return profile;
   const definition = OUTFITS.find((item) => item.id === outfit);
   if (!definition) return profile;
   const alreadyOwned = profile.game.ownedOutfits.includes(outfit);
+  if (alreadyOwned && profile.game.outfit === outfit) return profile;
   if (!alreadyOwned && profile.coins < definition.price) return profile;
   return {
     ...profile,

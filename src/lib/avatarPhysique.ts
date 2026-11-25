@@ -3,6 +3,7 @@ import type { Muscle } from './game';
 import { createGarmentFoldProfile, sampleGarmentFold, type GarmentFoldProfile } from './avatarGarmentFolds';
 
 import { MUSCLE_LOBES, addMuscleLobe } from './avatarMuscleAnatomy';
+import { createAvatarChestMarkFit } from './avatarChestMarkFit';
 
 const groups = Object.keys(MUSCLE_LOBES) as Muscle[];
 const fitted = new Set(['BODYFORGE_Body', 'BODYFORGE_SkinNipples', 'BODYFORGE_Shirt', 'BODYFORGE_Shorts', 'BODYFORGE_ChestMark']);
@@ -32,6 +33,7 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): 
       folds: clothFolds ? createGarmentFoldProfile(node.name, rest) : undefined });
   });
 
+  const fitChestMark = clothFolds ? createAvatarChestMarkFit(root) : undefined;
   let previous = clothFolds ? '' : '0,0,0,0';
   const j = new Float64Array(9);
   const displacement = new Float64Array(3);
@@ -75,5 +77,6 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false): 
       }
       positions.needsUpdate = normals.needsUpdate = true;
     }
+    fitChestMark?.();
   };
 }

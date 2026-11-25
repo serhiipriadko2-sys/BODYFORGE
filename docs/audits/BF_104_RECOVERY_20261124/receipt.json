@@ -1,0 +1,68 @@
+{
+  "status": "TESTED_LOCAL",
+  "tests": {
+    "finish-save": {
+      "exit": 0,
+      "passLines": 28,
+      "summary": "{\"assertions\":28,\"observations\":{\"race\":{\"profile\":{\"xp\":500,\"coins\":900,\"workouts\":[],\"game\":{\"created\":true,\"nickname\":\"OTHER TAB\",\"build\":\"lean\",\"muscles\":{\"arms\":0,\"core\":0,\"legs\":0,\"back\":0},\"outfit\":\"base\",\"ownedOutfits\":[\"base\"],\"lastLoginDay\":null,\"lastQuestClaimDay\":null,\"highestClearedFloor\":1,\"bestGhost\":null}},\"status\":\"conflict\"},\"quota\":{\"xp\":185,\"coins\":65,\"workouts\":1,\"id\":\"8e77f237-2655-4006-b2fa-091549da6f5b\"},\"conflict\":{\"exportedResults\":1,\"durableCoins\":900}}}",
+      "failure": null,
+      "log": ".bodyforge-qa/roadmap-baseline-20261124-r7/bf104-finish-save.log",
+      "bytes": 2173,
+      "sha256": "981add5768ebf8d81adc48dc49ae12dd774c06079a24f680861b7fd771593999"
+    },
+    "resilience": {
+      "exit": 0,
+      "passLines": 63,
+      "summary": "assertions=63",
+      "failure": null,
+      "log": ".bodyforge-qa/roadmap-baseline-20261124-r7/bf104-resilience.log",
+      "bytes": 3718,
+      "sha256": "fdd13718397ded720da3cfbb171029b989005402af18695de9eba85067dfdf8d"
+    }
+  },
+  "gates": {
+    "commands": {
+      "bf104-finish-save": {
+        "args": [
+          "cmd.exe",
+          "/d",
+          "/c",
+          "npm.cmd",
+          "run",
+          "qa:finish-save"
+        ],
+        "exit": 0,
+        "seconds": 75.1
+      },
+      "bf104-resilience": {
+        "args": [
+          "cmd.exe",
+          "/d",
+          "/c",
+          "npm.cmd",
+          "run",
+          "qa:resilience"
+        ],
+        "exit": 0,
+        "seconds": 61.9
+      }
+    },
+    "ports": {
+      "bf104-stable-dev": {
+        "origin": "http://127.0.0.1:50130",
+        "pid": 27980
+      }
+    },
+    "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceIdentical": true
+  },
+  "report": {
+    "bytes": 1265,
+    "sha256": "6d85ffd02705470c2b5ecbf055e014b98b1b8c1471f559a3a9ff5da5a060b327"
+  },
+  "gatesFile": {
+    "path": ".bodyforge-qa/roadmap-baseline-20261124-r7/bf104-gates.json",
+    "bytes": 657,
+    "sha256": "89bb12295f77e3b8b57a9719b2fa0d12d0286154ed465a8e62ec9c80f594bcac"
+  }
+}

@@ -24,7 +24,8 @@ import { canStartCameraExercise, exerciseCameraLayout, exerciseGuide, exerciseTa
 import { ExerciseMotionCounter, exerciseMetric } from './lib/exerciseCounter';
 import './trainingExperience.css';
 import { runtimeDiagnostics } from './lib/runtimeDiagnostics';
-import StorageRecovery, { ResultQuarantineNotice } from './components/StorageRecovery';
+const StorageRecovery = lazy(() => import('./components/StorageRecovery'));
+const ResultQuarantineNotice = lazy(() => import('./components/StorageRecovery').then(module => ({ default: module.ResultQuarantineNotice })));
 import './recovery.css';
 import { useProfileStorage } from './hooks/useProfileStorage';
 import { withTimeout } from './lib/withTimeout';
@@ -384,16 +385,27 @@ function App() {
       throw new Error('Не найден видеоплеер');
     }
     try {
-      streamRef.current = stream;
-      video.srcObject = stream;
-      await withTimeout(video.play(), 12000, 'Video playback timeout');
-      if (requestId !== requestIdRef.current) {
-        throw new DOMException('Camera request cancelled', 'AbortError');
-      }
-      setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
-      videoFramesRef.current.reset();
       const track = stream.getVideoTracks()[0];
       if (!track) throw new DOMException('No video track', 'NotFoundError');
+      if (track.readyState !== 'live') throw new DOMException('Video track ended', 'NotReadableError');
+      streamRef.current = stream;
+      // Own disconnect/revoke from acquisition, not only after video.play().
+      // A pending playback promise must not keep an ended camera attached.
+      const ownsStream = () => requestId === requestIdRef.current && streamRef.current === stream;
+      const ended = () => {
+        if (ownsStream()) interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
+      };
+      track.addEventListener('ended', ended);
+      streamCleanupRef.current = () => track.removeEventListener('ended', ended);
+      video.srcObject = stream;
+      await withTimeout(video.play(), 12000, 'Video playback timeout');
+      if (!ownsStream()) {
+        throw new DOMException('Camera request cancelled', 'AbortError');
+      }
+      // stop() does not emit ended; also reject a silently ended track.
+      if (track.readyState !== 'live') throw new DOMException('Video track ended', 'NotReadableError');
+      setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
+      videoFramesRef.current.reset();
       {
         // Track settings are optional device metadata. A privacy-restricted
         // browser must not lose an otherwise working workout if this throws.
@@ -406,10 +418,6 @@ function App() {
         setCameraMirrored(mirrored);
         frameWatchdogRef.current.reset();
         stallReportedRef.current = false;
-        const ownsStream = () => requestId === requestIdRef.current && streamRef.current === stream;
-        const ended = () => {
-          if (ownsStream()) interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
-        };
         const muted = () => {
           if (!ownsStream()) return;
           invalidateObservation();
@@ -425,7 +433,6 @@ function App() {
           setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
           invalidateObservation();
         };
-        track.addEventListener('ended', ended);
         track.addEventListener('mute', muted);
         track.addEventListener('unmute', resumed);
         video.addEventListener('resize', resized);
@@ -596,6 +603,7 @@ function App() {
       }
       workoutSessionRef.current = session;
       stream = await connectCamera(cameraSource, requestId);
+      if (requestId !== requestIdRef.current) return;
 
       // Pose decoding is used only by workouts, never by the home/forge screens.
       // A dynamic import keeps its JavaScript outside the initial application chunk.
@@ -935,9 +943,10 @@ function App() {
   const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading' ||
     window.matchMedia('(min-width: 741px)').matches;
 
-  if (storageStatus !== 'ready') return <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
+  if (storageStatus !== 'ready') return <Suspense fallback={<main className="storage-recovery" role="status">Проверяем сохранение…</main>}>
+    <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
     writeIssue={writeIssue} isSaving={isSaving} profile={profile} pendingResult={pendingResult} journalEntries={journalEntries}
-    onOpenCurrent={openCurrent} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage} onQuarantine={quarantine}/>;
+    onOpenCurrent={openCurrent} onRetry={retryStorage} onRecover={recoverStorage} onReload={reloadStorage} onQuarantine={quarantine}/></Suspense>;
 
   return (
     <div className="app-shell" data-screen={section} data-fighter-created={profile.game.created ? 'true' : 'false'}>
@@ -970,7 +979,9 @@ function App() {
         </header>
 
         <main className="content">
-          <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
+          {(quarantined.entries.length > 0 || quarantined.status === 'unavailable') && <Suspense fallback={null}>
+            <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
+          </Suspense>}
           {profile.game.created && (
             <section className="dashboard-player" aria-label="Прогресс бойца">
               <div className="dashboard-player-icon"><Avatar workouts={workoutCount} build={profile.game.build}

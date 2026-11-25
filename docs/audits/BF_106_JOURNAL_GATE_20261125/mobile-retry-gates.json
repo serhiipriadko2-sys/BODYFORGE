@@ -1,0 +1,14 @@
+﻿{
+    "scope":  "same frozen product and build; external corrected mobile harness",
+    "qaSha256":  "d8bad97f3aef80286c619587f16e3714189a50166b390d71668ae3de804f5dc7",
+    "sourceManifestSha256":  "D697E27D27F6081331721F5B4AA7F91EC940181C1CE6AB19B69FB27FD508764E",
+    "buildManifestSha256":  "9926874D0AFFC53FAE3C56680F11FB22F71DA28397AF1BC24EB0C64D3E7ECEEC",
+    "mobile":  0,
+    "started":  "2026-11-25T17:09:52.1592348+03:00",
+    "port":  6230,
+    "preview":  200,
+    "entrySha256":  "b41034991ac20c25edd05745e867deb3c3b1211fcbe2785bd19fccc83f47e6b2",
+    "frozenSourceAndBuildUnchanged":  true,
+    "previewStopped":  true,
+    "finished":  "2026-11-25T17:11:34.5365487+03:00"
+}

@@ -1,0 +1,23 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  272,
+    "sourceManifestSha256":  "9BEA41E970F4D57A64F8B5D8E1B41F5E2BAA2F59ED4C84B68B239CCD4F8641D3",
+    "unit":  1,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  0,
+    "preview":  "NOT_RUN",
+    "replacement":  0,
+    "importPreview":  0,
+    "dedup":  0,
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T16:45:12.1343499+03:00",
+    "buildCount":  69,
+    "buildManifestSha256":  "D4458472EB11D8980CD98F6F7EF267BDFBA85F1F5E34F79CE90B9E29B7A1A7E3",
+    "devPort":  5900,
+    "devHttp":  200,
+    "error":  "Unit failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T16:46:28.0320417+03:00"
+}

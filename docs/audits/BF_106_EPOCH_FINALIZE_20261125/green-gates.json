@@ -1,0 +1,19 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  287,
+    "sourceManifestSha256":  "8AA645BE879AD03E0272047801D62554639B1F39A41FE8A2B40550898988D8EF",
+    "unit":  "NOT_RUN",
+    "tsc":  2,
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "epoch":  "NOT_RUN",
+    "replacement":  "NOT_RUN",
+    "journalGate":  "NOT_RUN",
+    "importPreview":  "NOT_RUN",
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T17:29:52.8088204+03:00",
+    "error":  "TypeScript failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T17:30:09.7251535+03:00"
+}

@@ -150,3 +150,14 @@
   .progress-backup-card { flex-direction: column; align-items: stretch; gap: 13px; }
   .progress-backup-actions { flex-basis: auto; }
 }
+
+/* BF-106 comparison is read-only and fits narrow mobile viewports. */
+.progress-import-preview { margin: 12px 0; min-width: 0; }
+.progress-import-preview table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 11px; color: #e6f4fc; }
+.progress-import-preview th, .progress-import-preview td { padding: 7px 4px; border-bottom: 1px solid #365165; overflow-wrap: anywhere; }
+.progress-import-preview th:first-child { width: 46%; text-align: left; }
+.progress-import-preview td, .progress-import-preview th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.progress-import-preview thead th { color: #a4f0da; font-weight: 800; }
+.progress-import-warnings { margin: 10px 0; padding-left: 19px; color: #ffd6ab; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.progress-import-cancel { min-height: 44px; max-width: 100%; margin-top: 8px; padding: 9px 13px; border: 1px solid #4d7081; border-radius: 8px; background: #111f2b; color: #e6f4fc; font-size: 11px; cursor: pointer; }
+.progress-import-cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

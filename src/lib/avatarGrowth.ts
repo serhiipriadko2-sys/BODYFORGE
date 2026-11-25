@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { Muscle } from './game';
+import { applyBoundedAvatarGrowth } from './avatarGrowthBudget';
 
 interface RestBone {
   bone: THREE.Bone;
@@ -27,6 +28,9 @@ const protectedNames = new Set(['head', 'wristl', 'wristr', 'footl', 'footr']);
  * Three.js skinning reads matrixWorld without decomposing it back into TRS.
  */
 export function applyAvatarGrowth(root: THREE.Object3D, muscles: Partial<Record<Muscle, number>>, breath = 0): void {
+  // The compact athlete has an exact, independently budgeted hierarchy.
+  // Retain the previous compatibility path for older and fallback rigs.
+  if (applyBoundedAvatarGrowth(root, muscles, breath)) return;
   let rest = restRigs.get(root);
   if (!rest) {
     root.updateWorldMatrix(true, true);

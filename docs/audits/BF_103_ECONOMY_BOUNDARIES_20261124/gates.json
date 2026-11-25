@@ -1,0 +1,46 @@
+{
+  "source_count": 239,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": false,
+  "owned": {
+    "src/lib/game.ts": "dfde50705323b8f75f1cf5a58dea93a12e128d7d095837e7f453b557ac6dc336",
+    "src/lib/progression.ts": "2b422880060e17361df058804d7014eb7eb718fc7f58118ae17b125a8cf83edb",
+    "src/lib/economyBoundaries.test.ts": "595a90df2ab594626b5fee04f0813845fab4947a6bc848d08d70ba16a2facdf2"
+  },
+  "full-unit": 1,
+  "avatar-timeout-retry": 0,
+  "tsc": 0,
+  "build": 0,
+  "bundle": 0,
+  "preview": {
+    "origin": "http://127.0.0.1:63873",
+    "entry": "index-CSjqLcF8.js",
+    "sha256": "96d4bbcc722f9b807de897204136f6d7de0c6daa7901c44ab9b0d41aa8825e59",
+    "exact_bytes": true
+  },
+  "tower-final": 14,
+  "preview_stopped": true,
+  "dev": {
+    "origin": "http://127.0.0.1:64013"
+  },
+  "multitab": 0,
+  "dedup": 0,
+  "dev_stopped": true,
+  "frozen_final_match": true,
+  "owned_match": true,
+  "live_changed": [
+    "qa/avatar-quality-e2e.mjs",
+    "qa/forge-home-xp-faq-e2e.mjs",
+    "qa/owned-chrome.mjs",
+    "qa/owned-chrome.test.mjs",
+    "qa/tower20-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarFace.test.ts",
+    "src/lib/avatarFace.ts",
+    "src/lib/avatarFaceProfile.json"
+  ],
+  "live_new": [
+    "src/lib/avatarBrows.test.ts",
+    "src/lib/avatarBrows.ts"
+  ]
+}

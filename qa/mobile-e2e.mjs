@@ -254,8 +254,13 @@ try{
   })()`);
   await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='invalid'",
     'invalid local JSON detected', 10000);
-  check(!!(await js("document.querySelector('.progress-backup-file-checker [role=status]')?.textContent.includes('не является корректным JSON')")),
-    'broken backup cannot be presented as verified');
+  // Validate the rejected-file contract, not the old inspector's error wording.
+  const rejectedBackup=await read("(()=>{const panel=document.querySelector('.progress-backup-file-checker'),notice=panel?.querySelector('[data-inspection-result]');return {state:panel?.dataset.inspectionState,result:notice?.dataset.inspectionResult,message:notice?.textContent?.trim(),hasPreview:!!panel?.querySelector('[data-import-preview]'),primary:localStorage.getItem('bodyforge:pilot:v1')}})()");
+  check(rejectedBackup.state==='invalid' && rejectedBackup.result==='invalid' &&
+    !!rejectedBackup.message && !rejectedBackup.hasPreview,
+    'broken backup is rejected with no verified comparison');
+  check(rejectedBackup.primary===beforeBackup,
+    'rejecting malformed backup preserves exact wallet and reward history');
   await js(`(async()=>{
     const payload=JSON.parse(await window.__bfExportSample.blob.text());
     payload.complete=false;

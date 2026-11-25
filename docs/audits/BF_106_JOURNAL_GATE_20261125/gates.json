@@ -1,0 +1,22 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  278,
+    "sourceManifestSha256":  "53A23A8205240A4DF533C73BCF77798015E7C53DDCB530D19FF16B2E14E75E2A",
+    "tsc":  0,
+    "journalGate":  0,
+    "recovery":  0,
+    "journal":  16,
+    "unit":  "NOT_RUN",
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "preview":  "NOT_RUN",
+    "tower":  "NOT_RUN",
+    "mobile":  "NOT_RUN",
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T16:57:50.2839555+03:00",
+    "devPort":  6210,
+    "error":  "Journal regression",
+    "devStopped":  true,
+    "previewStopped":  true,
+    "finished":  "2026-11-25T17:00:25.6132875+03:00"
+}

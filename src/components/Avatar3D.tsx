@@ -16,9 +16,14 @@ import { AvatarIdleClock, createAvatarIdle, sampleAvatarIdle, type AvatarIdleRig
 import { ActiveFrameLoop } from '../lib/frameLoop';
 import { createAvatarPhysique } from '../lib/avatarPhysique';
 import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial, isAvatarTextile, tintAvatarTextile } from '../lib/avatarFabric';
-import { installAvatarScanDetail } from '../lib/avatarSkinLighting';
+import { installAvatarScanDetail, installAvatarSkinLighting } from '../lib/avatarSkinLighting';
+import { installDermalRegions } from '../lib/avatarDermalRegions';
+import { installAvatarLipResponse } from '../lib/avatarLipResponse';
+import { acceptsSkinAtlas, avatarSkinAtlases } from '../lib/avatarSkinAtlas';
 import { installAvatarTrainers } from '../lib/avatarTrainers';
 import { createAvatarGarmentSeams, type AvatarGarmentSeams } from '../lib/avatarGarmentSeams';
+import { applyAvatarGarmentFit } from '../lib/avatarGarmentFit';
+import { repairAvatarSleeve } from '../lib/avatarSleeveRepair';
 import { applyAvatarHairMap, createAvatarHairMaterial } from '../lib/avatarHairMaterial';
 import { maskAthleteOcclusion } from '../lib/avatarOcclusion';
 import { createAvatarStudio, createMeasuredAvatarStudio } from '../lib/avatarStudio';
@@ -26,6 +31,10 @@ import { avatarRimColor, avatarShadowsEnabled, configureAvatarKey } from '../lib
 import { applyAvatarDetailMap, type AvatarDetailMap } from '../lib/avatarDetailMaps';
 import { installAvatarOcularDetail, ownAvatarOcularImages } from '../lib/avatarOcular';
 import { applyAvatarFaceForm, tintAvatarFace, type AvatarFaceForm } from '../lib/avatarFace';
+import { installAvatarBrows } from '../lib/avatarBrows';
+import { createAvatarLashes } from '../lib/avatarLashes';
+import { createLayeredGroomMaterial, isLayeredAvatarGroom } from '../lib/avatarStrandGroom';
+import { installScalpDensity, setScalpDensityLook } from '../lib/avatarScalpDensity';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 import { avatarPixelRatio, GRAPHICS_CHANGE_EVENT } from '../lib/mobileGraphics';
@@ -53,13 +62,17 @@ interface ImportedFigure {
   lipSurfaces: THREE.SkinnedMesh[];
   eyes: THREE.SkinnedMesh | undefined;
   face?: AvatarFaceForm;
+  regionalDermal: boolean;
+  garmentFit: number;
+  sleeveRepair: number;
+  lashes?: THREE.SkinnedMesh;
   garments: THREE.SkinnedMesh[];
   materials: AvatarMaterials;
   hair: THREE.MeshStandardMaterial;
   buzzHair: THREE.MeshStandardMaterial;
   hairStyles: Record<HairStyle, THREE.Object3D>;
   groomAnchor: THREE.Group;
-  strandGroom?: { crop: THREE.Mesh; swept: THREE.Mesh; material: THREE.MeshPhysicalMaterial };
+  strandGroom?: { crop: THREE.Mesh; swept: THREE.Mesh; material: THREE.MeshPhysicalMaterial; layered: boolean };
   sculpt?: ReturnType<typeof createAvatarPhysique>;
   seams?: AvatarGarmentSeams;
   idle?: AvatarIdleRig;
@@ -438,8 +451,15 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
       // clothing and materials are ready; procedural human remains the fallback.
       const glbStartedAt = performance.now();
-      const loadStrandGroom = (imported: ImportedFigure, onFallback: () => void) => {
-        new GLTFLoader().load('/assets/bodyforge-strand-groom.glb', ({ scene: groom }) => {
+      const loadStrandGroom = (imported: ImportedFigure, onFallback: () => void, layered = true) => {
+        const isCurrent = () => !disposed && currentRuntime.current === imported.root;
+        const recover = () => {
+          if (!isCurrent()) return;
+          if (layered) loadStrandGroom(imported, onFallback, false);
+          else onFallback();
+        };
+        const url = layered ? '/assets/bodyforge-strand-groom-v2.glb' : '/assets/bodyforge-strand-groom.glb';
+        new GLTFLoader().load(url, ({ scene: groom }) => {
           if (disposed || currentRuntime.current !== imported.root) {
             disposeThreeTree(groom);
             return;
@@ -448,13 +468,15 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           const swept = groom.getObjectByName('BODYFORGE_Groom_swept');
           const valid = (mesh: THREE.Object3D | undefined): mesh is THREE.Mesh =>
             mesh instanceof THREE.Mesh && mesh.geometry.hasAttribute('color') && mesh.geometry.hasAttribute('normal');
-          if (!valid(crop) || !valid(swept)) {
+          if (!valid(crop) || !valid(swept) || (layered &&
+              (groom.children.length !== 2 || !isLayeredAvatarGroom(crop) || !isLayeredAvatarGroom(swept)))) {
             disposeThreeTree(groom);
-            onFallback();
+            recover();
             return;
           }
-          const material = new THREE.MeshPhysicalMaterial({ name: 'BODYFORGE strand hair',
-            vertexColors: true, side: THREE.DoubleSide, roughness: .48, specularIntensity: .45 });
+          const material = layered ? createLayeredGroomMaterial() :
+            new THREE.MeshPhysicalMaterial({ name: 'BODYFORGE strand hair',
+              vertexColors: true, side: THREE.DoubleSide, roughness: .48, specularIntensity: .45 });
           const oldMaterials = new Set<THREE.Material>();
           for (const mesh of [crop, swept]) {
             for (const old of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) oldMaterials.add(old);
@@ -463,11 +485,12 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           }
           oldMaterials.forEach(old => old.dispose());
           imported.groomAnchor.add(groom);
-          imported.strandGroom = { crop, swept, material };
+          imported.strandGroom = { crop, swept, material, layered };
           styleAvatarHair(imported, figureSettingsRef.current.look ?? DEFAULT_AVATAR_LOOK);
           element.dataset.groomGeometry = 'strands';
+          element.dataset.groomRevision = layered ? 'layered-v2' : 'v1';
           redraw();
-        }, undefined, onFallback);
+        }, undefined, recover);
       };
       const loadFigure = ([url, ...fallback]: readonly string[]) => new GLTFLoader().load(
         url,
@@ -494,13 +517,22 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             setDetailMaps(0);
             setHairMaps(0);
             delete element.dataset.groomGeometry;
+            delete element.dataset.groomRevision;
             delete element.dataset.ocularDetail;
             delete element.dataset.scanDetail;
+            delete element.dataset.normalSurface;
+            delete element.dataset.skinSurface;
+            element.dataset.dermalRegions = imported.regionalDermal ? 'regional-v3' : 'base';
+            delete element.dataset.lipResponse;
             element.dataset.fabricMaps = '0';
             delete element.dataset.trainerDetail;
             element.dataset.garmentSeams = String(imported.seams?.loopCount ?? 0);
+            element.dataset.garmentFit = String(imported.garmentFit);
+            element.dataset.sleeveRepair = String(imported.sleeveRepair);
             element.dataset.garmentPatches = String(imported.seams?.patchTriangles ?? 0);
             element.dataset.avatarFace = imported.face ? 'sculpted' : 'base';
+            delete element.dataset.browDetail;
+            element.dataset.lashDetail = imported.lashes ? 'skinned-fibres' : 'base';
             element.dataset.idleRig = imported.idle ? 'fitted' : 'static';
             syncMotion();
             if (preferred) {
@@ -543,10 +575,16 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
               else loadCardMaps();
             }
             if (imported.garments.length > 0) {
-              const baseSkin = imported.realistic ? '/assets/athlete-skin-detail.jpg' : '/assets/athlete-skin.jpg';
-              const loadSkin = (file: string) => new THREE.TextureLoader().load(file, (texture) => {
+              const loadSkin = ([file, ...fallback]: readonly string[]) => {
+                if (!file || disposed || currentRuntime.current !== imported.root) return;
+                new THREE.TextureLoader().load(file, (texture) => {
                 if (disposed || currentRuntime.current !== imported.root) {
                   texture.dispose();
+                  return;
+                }
+                if (!acceptsSkinAtlas(file, texture.image)) {
+                  texture.dispose();
+                  loadSkin(fallback);
                   return;
                 }
                 // glTF UVs use the opposite vertical origin to TextureLoader.
@@ -556,36 +594,56 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                 imported.materials.body.map = texture;
                 if (imported.realistic) {
                   imported.materials.lips.map = texture;
-                  imported.materials.lips.roughness = .40;
+                  imported.materials.lips.roughness = imported.materials.lips.roughnessMap ? 1 : imported.regionalDermal ? .58 : .40;
                   imported.materials.lips.needsUpdate = true;
                 }
                 imported.materials.body.needsUpdate = true;
                 styleImportedFigure(imported, figureSettingsRef.current);
                 setSkinMapReady(true);
+                element.dataset.skinSurface = file.split('/').at(-1);
                 redraw();
-              }, undefined, () => {
-                if (disposed || currentRuntime.current !== imported.root) return;
-                if (file === '/assets/athlete-skin-dermal.jpg') loadSkin('/assets/athlete-skin-portrait.jpg');
-                else if (file !== baseSkin) loadSkin(baseSkin);
-              });
-              loadSkin(preferred ? '/assets/athlete-skin-dermal.jpg' : baseSkin);
+                }, undefined, () => loadSkin(fallback));
+              };
+              loadSkin(avatarSkinAtlases(preferred && imported.regionalDermal, imported.realistic));
               if (imported.realistic) {
                 const isCurrent = () => !disposed && currentRuntime.current === imported.root;
                 const loadDetailMap = (kind: AvatarDetailMap, file: string) => {
                   if (!isCurrent()) return;
+                  const bakedNormal = kind === 'normal' && file === 'athlete-face-relief-normal.png';
+                  const recover = () => {
+                    if (bakedNormal && isCurrent()) loadDetailMap('normal', 'athlete-normal.png');
+                  };
                   new THREE.TextureLoader().load('/assets/' + file, (texture) => {
                     if (!isCurrent()) {
                       texture.dispose();
                       return;
                     }
+                    const image = texture.image as { width?: number; height?: number } | undefined;
+                    if (bakedNormal && (image?.width !== 1024 || image.height !== 1024)) {
+                      texture.dispose();
+                      recover();
+                      return;
+                    }
                     applyAvatarDetailMap(imported.materials, kind, texture);
+                    if (kind === 'normal') element.dataset.normalSurface = bakedNormal ? 'sculpt-bake-v1' : 'base';
                     if (kind === 'eyes') element.dataset.ocularDetail = 'atlas';
                     setDetailMaps(count => count + 1);
                     redraw();
-                  }, undefined, () => { /* The base material stays usable. */ });
+                  }, undefined, recover);
                 };
-                loadDetailMap('normal', 'athlete-normal.png');
+                loadDetailMap('normal', preferred && imported.face ? 'athlete-face-relief-normal.png' : 'athlete-normal.png');
                 loadDetailMap('orm', 'athlete-orm.png');
+                if (imported.regionalDermal) {
+                  new THREE.TextureLoader().load('/assets/athlete-lip-response.png', texture => {
+                    if (!isCurrent() || !installAvatarLipResponse(imported.lipSurfaces, imported.materials.lips, texture)) {
+                      texture.dispose();
+                      return;
+                    }
+                    styleImportedFigure(imported, figureSettingsRef.current);
+                    element.dataset.lipResponse = 'microgrooves-v1';
+                    redraw();
+                  }, undefined, () => { /* Keep natural matte lips on map failure. */ });
+                }
                 if (preferred) {
                   new THREE.TextureLoader().load('/assets/athlete-scan-pores.png', texture => {
                     if (!isCurrent()) {
@@ -612,6 +670,18 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                       redraw();
                     }, undefined, () => { /* Keep the valid remaining textile maps. */ });
                   }
+                }
+                const brows = imported.garments.find(garment => garment.name === 'BODYFORGE_Brows');
+                const facialBody = imported.surfaces.find(surface => surface.name === 'BODYFORGE_Body');
+                if (preferred && imported.face && brows && facialBody) {
+                  new GLTFLoader().load('/assets/bodyforge-brows-v2.glb', ({ scene: donor }) => {
+                    if (!isCurrent() || !installAvatarBrows(facialBody, brows, donor)) {
+                      disposeThreeTree(donor);
+                      return;
+                    }
+                    element.dataset.browDetail = 'fitted-strands';
+                    redraw();
+                  }, undefined, () => { /* Keep the original rigged brows. */ });
                 }
                 const shoes = imported.garments.find(garment => garment.name === 'BODYFORGE_Shoes');
                 if (preferred && shoes) {
@@ -894,14 +964,24 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   groomAnchor.matrix.copy(head.matrixWorld).invert().multiply(source.matrixWorld);
   head.add(groomAnchor);
   const face = preferred ? applyAvatarFaceForm(source) : undefined;
+  const regionalDermal = Boolean(face && installDermalRegions(surfaces));
+  if (regionalDermal) {
+    materials.body.userData.BODYFORGE_regionalDermal = true;
+    installScalpDensity(surfaces, materials.body);
+    installAvatarSkinLighting(materials.body);
+  }
+  const lashBody = surfaces.find(surface => surface.name === 'BODYFORGE_Body');
+  const lashes = face && lashBody ? createAvatarLashes(lashBody) : undefined;
   const seams = preferred ? createAvatarGarmentSeams(garments) : undefined;
+  const garmentFit = seams ? applyAvatarGarmentFit(garments) : 0;
+  const sleeveRepair = garmentFit ? repairAvatarSleeve(garments) : 0;
   const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams)) : undefined;
   const idle = preferred && seams ? createAvatarIdle(source) : undefined;
 
   const imported: ImportedFigure = {
     root, surfaces, nailSurfaces, lipSurfaces, garments, materials, hair, buzzHair, hairStyles, realistic, groomed, groomAnchor, sculpt, seams, idle, idleBreath: 0,
     eyes: eyeMeshes.length === 1 ? eyeMeshes[0] : undefined,
-    face,
+    face, lashes, regionalDermal, garmentFit, sleeveRepair,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
   };
   styleImportedFigure(imported, settings);
@@ -921,6 +1001,7 @@ function styleAvatarHair(imported: ImportedFigure, look: AvatarLook) {
     material.color.set(color).lerp(new THREE.Color('#6f6156'), .13);
     crop.visible = selected === 'crop';
     swept.visible = selected === 'swept';
+    setScalpDensityLook(imported.materials.body, material.color, imported.strandGroom.layered && selected !== 'buzz');
   }
 }
 

@@ -1,0 +1,97 @@
+﻿[
+    {
+        "path":  "scripts/bake-avatar-face-relief.py",
+        "sha256":  "ea23b8c74e652624746e8d8136fd8308f54cdd8098ca598bee8e21714768b5ea",
+        "bytes":  11937
+    },
+    {
+        "path":  "public/assets/athlete-face-relief-normal.png",
+        "sha256":  "1740a2f83974d90745684454302d65951ebbaeeca8cb275f5e528a139251c830",
+        "bytes":  231443
+    },
+    {
+        "path":  "public/assets/athlete-face-relief-source.md",
+        "sha256":  "364c12908e002018bbfa7eb9685973d98e2d0e8cc26f5a1a6166024fcd544d7f",
+        "bytes":  1959
+    },
+    {
+        "path":  "src/lib/avatarBakedNormal.test.ts",
+        "sha256":  "e61c63df90985d19d215e9bdb4364812ad752f4240efa25143290149b474bd5c",
+        "bytes":  1744
+    },
+    {
+        "path":  "src/lib/avatarFaceBake.test.ts",
+        "sha256":  "69588689a6ed82c2a98ccae6585243683f41ddf278713cc23cbb34bd5f8aa5af",
+        "bytes":  3623
+    },
+    {
+        "path":  "src/lib/avatarDetailMaps.ts",
+        "sha256":  "981fd74758cb17faa57d541b4aebc86d9799dff06ff4a72cf76ad4ebd7790ec4",
+        "bytes":  1258
+    },
+    {
+        "path":  "src/components/Avatar3D.tsx",
+        "sha256":  "97768c0e03f97502a10f6307994e3645e1dceff1ebd3974bd6e44ba002627729",
+        "bytes":  59109
+    },
+    {
+        "path":  "qa/avatar-quality-e2e.mjs",
+        "sha256":  "720afd688322b6d61f5f5b2a0a019a328653032baa446bc469d1b5c55715aae1",
+        "bytes":  92021
+    },
+    {
+        "path":  ".bodyforge-qa/face-bake-20261125/face-normal-compact.json",
+        "sha256":  "2493aaa3ff6c534961b3f280e6096c2526542318a52530aeda260892bc63308f",
+        "bytes":  641
+    },
+    {
+        "path":  ".bodyforge-qa/face-bake-20261125/face-relief-compact-review.blend",
+        "sha256":  "ecef00ae7114134ab523335fb35b5ee3587e6864ee9211429da9aa56795468ce",
+        "bytes":  24078110
+    },
+    {
+        "path":  "public/assets/athlete-normal.png",
+        "sha256":  "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c",
+        "bytes":  425857
+    },
+    {
+        "path":  "public/assets/bodyforge-athlete-efficient.glb",
+        "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+        "bytes":  4639184
+    },
+    {
+        "path":  "src/lib/avatarFaceProfile.json",
+        "sha256":  "e51dc7b5631443400da7e04022aa9bf696b27a99ebec200c531e87390dc243f9",
+        "bytes":  2052
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/comparison-front.png",
+        "sha256":  "c9a6c62a26ba46c8623179dd1394647774544769a037d6d7efe17107e3ca684f",
+        "bytes":  135413
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/comparison-turned.png",
+        "sha256":  "3902497f4583d9ae4e90d9a837a0e544d7fe3875ce88e1a1e2c2275cc481d149",
+        "bytes":  119066
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/face-bake-baked-front.png",
+        "sha256":  "83b85f9ba9ce909dc5e4b6e10b519c5afc69308ee16c999b31327a7869e8e471",
+        "bytes":  562837
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/face-bake-baked-turned.png",
+        "sha256":  "b9aa4c92af21b9534261bcc316b5fca87498ac683f192e782b775b348cb800ed",
+        "bytes":  576652
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/face-bake-fallback-front.png",
+        "sha256":  "deb11ca55ec0df02b31e3b3d72d7f835dc26eb780d30b46fc77dac7e864e8474",
+        "bytes":  562808
+    },
+    {
+        "path":  "docs/audits/BF_AVATAR_FACE_BAKE_20261125/compact/face-bake-fallback-turned.png",
+        "sha256":  "f78149990f052cdb65ddcb717d25cf6407c7d6ea24451c17e1996284a712f280",
+        "bytes":  576769
+    }
+]

@@ -1,0 +1,11 @@
+﻿{
+    "scope":  "same frozen product, corrected external QA harness",
+    "sourceManifestSha256":  "E7D419C142209B0D5897BE100FC6239409B3C9272788AD5DAD232F105A9CA625",
+    "qaSha256":  "8CE311347CF7CBAF25B334DF460F093E7CA32557DBCB5EF34A9107FBCC7D77CC",
+    "receipt":  0,
+    "started":  "2026-11-24T22:26:28.5845689+03:00",
+    "port":  5600,
+    "sourceUnchanged":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-24T22:26:39.9362216+03:00"
+}

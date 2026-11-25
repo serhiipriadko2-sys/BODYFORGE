@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { StorageStatus } from '../hooks/useProfileStorage';
-import type { Profile } from '../lib/progression';
+import { PROFILE_REPLACEMENT_MARKER_KEY, profileReplacementPending, type Profile } from '../lib/progression';
+import ReplacementRecoveryPanel from './ReplacementRecoveryPanel';
 import type { ProfileWriteIssue } from '../lib/profileLock';
 import type { CompletedWorkoutResult, JournalEntry } from '../lib/workoutJournal';
 import { createProgressExport } from '../lib/progressExport';
@@ -44,6 +45,23 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
   onOpenCurrent, onRetry, onReload, onRecover, onQuarantine }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [quarantineSnapshot, setQuarantineSnapshot] = useState<JournalEntry[] | null>(null);
+  const [replacementSeen, setReplacementSeen] = useState(() => {
+    try { return profileReplacementPending(); } catch { return false; }
+  });
+  useEffect(() => {
+    const inspect = () => {
+      try { if (profileReplacementPending()) setReplacementSeen(true); } catch { /* Existing unavailable screen handles unreadable storage. */ }
+    };
+    const changed = (event: StorageEvent) => {
+      if (event.key === PROFILE_REPLACEMENT_MARKER_KEY || event.key === null) inspect();
+    };
+    inspect();
+    window.addEventListener('storage', changed);
+    return () => window.removeEventListener('storage', changed);
+  }, []);
+  if (replacementSeen) return <ReplacementRecoveryPanel
+    disabled={isSaving || pendingResult !== null || journalEntries.length > 0}
+    onResolved={onReload} onExportSession={() => { void exportProgress(profile, pendingResult); }}/>;
   const title = status === 'checking' ? 'ПРОВЕРЯЕМ СОХРАНЕНИЕ' : status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
     : status === 'recovery-required' ? 'ПРОГРЕСС НУЖНО ВОССТАНОВИТЬ' : 'НЕ УДАЛОСЬ СОХРАНИТЬ';
   const ambiguousRewards = status === 'recovery-required' && profile.creditedWorkoutIds === null;

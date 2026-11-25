@@ -1,0 +1,131 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "finalHead": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "status": "TESTED_LOCAL",
+  "sameProductBuildAsR0": true,
+  "sourceDrift": [],
+  "commands": {
+    "owned-chrome": 0,
+    "unit": 0,
+    "build": 0,
+    "bundle": 0,
+    "forge": 0,
+    "privacy": 0,
+    "journal": 0
+  },
+  "readbackChecks": {
+    "diff": 0,
+    "cached-diff": 0,
+    "canon": 0
+  },
+  "journal": {
+    "assertions": 161,
+    "crashes": 3,
+    "queueOnly": false,
+    "observations": {
+      "identityRecovery": {
+        "originals": 4,
+        "distinct": true,
+        "walletUnchanged": true,
+        "reload": true,
+        "mirrorReplay": true
+      },
+      "queue": {
+        "xp": 185,
+        "coins": 65,
+        "workouts": 1,
+        "sessionId": "e620ffed-da89-4462-8b5f-8765420f6c51"
+      },
+      "prelock-reload": {
+        "sessionId": "f8bda41b-bf1b-4e44-b581-2bfc1e74b81c",
+        "profileId": "qa-player-journal",
+        "floor": 1,
+        "holderSurvived": true
+      },
+      "prelock-close": {
+        "sessionId": "1073a7cd-42aa-465f-b89a-5ab8b48d3b27",
+        "profileId": "qa-player-journal",
+        "floor": 1,
+        "holderSurvived": true
+      },
+      "prelock-crash": {
+        "sessionId": "20a71d4d-ba6b-43b2-8ee4-4ab2ff23bb34",
+        "profileId": "qa-player-journal",
+        "floor": 1,
+        "holderSurvived": true
+      },
+      "beforePrimary": {
+        "sessionId": "430a3071-03c8-48db-9c54-20dd0159c6aa",
+        "repetitions": 20
+      }
+    }
+  },
+  "queueContractPassed": true,
+  "failure": null,
+  "before": {
+    "bytes": 58595,
+    "sha256": "918d1a64773c5b3c4b9d8aa9fe8eae4e8cdca8f5440ddaab48d4de2ab2c6aa5c"
+  },
+  "after": {
+    "bytes": 59032,
+    "sha256": "48aa98b6c64ea37b62cb11f14ebd75b16217d8868a518bfe8609a069e0e04067"
+  },
+  "runArtifacts": {
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/owned-chrome.log": {
+      "bytes": 1505,
+      "sha256": "972bf1671a387332a1f74554ea09911813c8113c862487dbbbb0d9298ca9fbde"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/unit.log": {
+      "bytes": 529,
+      "sha256": "b42c9bef40153dd0eff2bd8d792c5b44500221a44cdbe05263d294e943b98ef1"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/build.log": {
+      "bytes": 2180,
+      "sha256": "351333f3c0d19d09a467a625816fd26315ababcaa7251e2641c53bc237449289"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/bundle.log": {
+      "bytes": 366,
+      "sha256": "324e899122cbf0202f17b004e1d8894fed8fb3f287d975edcc6c974c9b223561"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/forge.log": {
+      "bytes": 6886,
+      "sha256": "eab9ae5ec7fd7810bb0b29ef4d1014f831a0f5f0ec393f852e2447df3f8e1417"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/privacy.log": {
+      "bytes": 848,
+      "sha256": "05b418e19a96bd78ab4ac703c883103d04c73ac36165a2a5bada7135679ce1fd"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/journal.log": {
+      "bytes": 11704,
+      "sha256": "e71fb16bb0fdd080c6c076874b38ac5b4b8ff18d0d30622de9f9323f4d3827a6"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/stable-dev.log": {
+      "bytes": 31473,
+      "sha256": "d77a2af3719ed7ba90eee383a25832a74549ea1c3a3ce4a5f3d59205073e7f46"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/preview.log": {
+      "bytes": 40,
+      "sha256": "d4f2ce08172d90aaa3136127584ef1072d8df4be882abb98a3e1228e5e5353e0"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/gates.json": {
+      "bytes": 2126,
+      "sha256": "a12e1e63f2b53a3797ffe114c678ac0f392b3d85b883a1cba2d87ce23feb6379"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/source-manifest.json": {
+      "bytes": 34974,
+      "sha256": "d404e6da238069abdd151c6cb6616a5f49fb7d93ecc8830cf8563e260883fc6d"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r7/build-manifest.json": {
+      "bytes": 9413,
+      "sha256": "0e3fb248f41f2965f0a1ff55e3277bce4b6dfffc60c026f50613dee650ecc7f6"
+    }
+  },
+  "report": {
+    "bytes": 3021,
+    "sha256": "70c37ad266324b297eff1c773192cbd73ddbf891b14c24733511665eb2273fbb"
+  },
+  "gatesArtifact": {
+    "bytes": 2126,
+    "sha256": "a12e1e63f2b53a3797ffe114c678ac0f392b3d85b883a1cba2d87ce23feb6379"
+  }
+}

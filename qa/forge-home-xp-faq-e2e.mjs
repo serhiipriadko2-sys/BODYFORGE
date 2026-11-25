@@ -2,43 +2,21 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { requirePreviewOrigin, waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5230';
-if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
-  throw new Error('Only isolated localhost preview origins are allowed');
-}
-const chromium = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-home-xp-faq-'));
+const chromium = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const profilePrefix = 'bf-home-xp-faq-';
 const output = process.env.BODYFORGE_QA_ARTIFACT_DIR ||
   path.resolve('docs/audits/BF_FORGE_HOME_XP_FAQ_20261110');
-fs.mkdirSync(output, { recursive: true });
-const browser = spawn(chromium, [
-  '--headless=new', '--no-first-run', '--no-default-browser-check',
-  '--remote-allow-origins=*', '--remote-debugging-address=127.0.0.1',
-  '--remote-debugging-port=0', '--user-data-dir=' + profile,
-  '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
-  'about:blank',
-], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-let ws;
+let ws, browserIdentity, profile, browser, appReady = false;
 let seq = 0;
 const callbacks = new Map();
 let browserErrors = [];
 function assert(value, label) {
   if (!value) throw Error('FAIL ' + label);
   console.log('PASS ' + label);
-}
-async function endpoint() {
-  for (let i = 0; i < 90; i++) {
-    try {
-      const port = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
-      const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json();
-      const target = tabs.find((tab) => tab.type === 'page');
-      if (target) return target.webSocketDebuggerUrl;
-    } catch {}
-    await sleep(200);
-  }
-  throw Error('Isolated Chrome CDP endpoint did not become available');
 }
 function cdp(method, params = {}) {
   return new Promise((resolve, reject) => {
@@ -89,10 +67,24 @@ async function state() {
   return JSON.parse(await js('JSON.stringify((()=>{const visible=s=>{const e=document.querySelector(s);return !!e&&e.getClientRects().length>0};const r=s=>{const e=document.querySelector(s);if(!e)return null;const b=e.getBoundingClientRect();return {top:b.top,bottom:b.bottom,width:b.width}};return {screen:document.querySelector(".app-shell")?.dataset.screen,width:innerWidth,scroll:document.documentElement.scrollWidth,home:visible(".dashboard-player"),xp:visible(".dashboard-player .pulse-xp-card"),forgeGuide:visible(".lower-grid .tips-card"),guide:visible("#settings .tips-card"),camera:visible("#challenge"),daily:visible("#daily-plan"),quests:visible("#quests"),steps:visible("#step-log"),settings:visible("#settings"),backup:visible("#progress-backup"),homeCard:r(".dashboard-player"),steel:r(".character-card"),navWidths:[...document.querySelectorAll(".mobile-nav button")].map(e=>e.getBoundingClientRect().width)};})())'));
 }
 try {
-  ws = new WebSocket(await endpoint());
+  const build = await requirePreviewOrigin(origin, process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256);
+  console.log('QA_BUILD', JSON.stringify({ origin, ...build }));
+  fs.mkdirSync(output, { recursive: true });
+  profile = fs.mkdtempSync(path.join(os.tmpdir(), profilePrefix));
+  browser = spawn(chromium, [
+    '--headless=new', '--no-first-run', '--no-default-browser-check',
+    '--remote-allow-origins=*', '--remote-debugging-address=127.0.0.1',
+    '--remote-debugging-port=0', '--user-data-dir=' + profile,
+    '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
+    'about:blank',
+  ], { stdio: 'ignore' });
+  browserIdentity = await waitForOwnedBrowser(profile, browser);
+  const target = await newOwnedPage(browserIdentity);
+  ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
-    ws.addEventListener('open', resolve, { once: true });
-    ws.addEventListener('error', reject, { once: true });
+    const timer = setTimeout(() => reject(Error('Owned CDP connection timeout')), 3000);
+    ws.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+    ws.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned CDP connection failed')); }, { once: true });
   });
   ws.addEventListener('message', (event) => {
     const m = JSON.parse(event.data.toString());
@@ -108,7 +100,21 @@ try {
   await cdp('Page.enable');
   await cdp('Runtime.enable');
   await viewport(360);
-  await cdp('Page.navigate', { url: origin });
+  const navigation = await cdp('Page.navigate', { url: origin });
+  if (navigation.errorText) throw Error('Preview navigation failed: ' + navigation.errorText);
+  await until('location.origin===' + JSON.stringify(origin) + ' && document.readyState==="complete"',
+    'verified preview document loaded');
+  const loaded = await js(`(async () => {
+    const entry = ${JSON.stringify(build.entry)};
+    if (!document.querySelector('script[src="' + entry + '"]')) return null;
+    const response = await fetch(entry, { redirect: 'error', signal: AbortSignal.timeout(3000) });
+    if (!response.ok) return null;
+    const digest = await crypto.subtle.digest('SHA-256', await response.arrayBuffer());
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  })()`);
+  if (loaded !== build.sha256) throw Error('Browser did not receive the measured entry');
+  appReady = true;
+  assert(loaded === build.sha256, 'browser entry matches preflight SHA-256');
   await until('!!document.querySelector(".mobile-nav")', 'navigation ready');
   assert(await js('!!document.querySelector("#onboarding")'), 'fresh temporary profile offers fighter creation');
   await click('.build-options button:nth-child(2)');
@@ -292,18 +298,55 @@ try {
   assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===claimedRaw, 'tab switch never rewrites or duplicates reward');
   assert(await js('document.querySelector("#daily-plan") === null'),
     'daily-plan remains absent after mission shortcut navigation');
+  // Populate only the disposable profile. The hidden five workouts have no known dates.
+  const limitedRaw = await js(`(()=>{
+    const key='bodyforge:pilot:v1',profile=JSON.parse(localStorage.getItem(key));
+    const today=new Date(),stamp=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12).toISOString();
+    profile.workouts=Array.from({length:60},(_,index)=>({id:'present-'+index,finishedAt:stamp,durationMs:65000,repetitions:20,xp:120}));
+    profile.creditedWorkoutIds=[...profile.workouts.map(workout=>workout.id),
+      ...Array.from({length:5},(_,index)=>'hidden-'+index)];
+    profile.totals={workouts:65,repetitions:1300,bestDurationMs:65000};
+    const raw=JSON.stringify(profile);
+    localStorage.setItem(key,raw);
+    return raw;
+  })()`);
+  await cdp('Page.reload', { ignoreCache: true });
+  await until('!!document.querySelector(".app-shell[data-fighter-created=true] .mobile-nav")', 'limited history profile hydrated');
+  await click('.mobile-nav button:nth-child(2)');
+  await until('!!document.querySelector(".pulse-trend-card[data-history-limited=true][aria-label]:not([hidden])")', 'limited activity visible');
+  for (const days of [7, 30]) {
+    await js(`(()=>{const select=document.querySelector('#pulse-activity-range');
+      select.value='${days}';select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+    await until('document.querySelector("[data-activity-period]")?.dataset.activityPeriod==="' + days + '"', 'date range ' + days);
+    assert(await js(`(()=>{
+      const root=document.querySelector('.pulse-trend-card');
+      return root.querySelectorAll('.pulse-linechart circle').length===1 &&
+        !root.querySelector('.pulse-linechart path') &&
+        root.querySelector('[data-period-reps]')?.textContent.trim()==='≥1200' &&
+        root.querySelector('[data-active-days]')?.textContent.trim()==='≥1/${days}' &&
+        root.querySelector('[data-pulse-delta]')?.dataset.pulseDelta==='unavailable';
+    })()`),'truncated history plots only observed dates and marks partial totals for '+days+' days');
+    await click('.pulse-date-strip .pulse-date-button:first-child');
+    await until('document.querySelector(".pulse-day-values")?.textContent.includes("Нет данных за день")', 'unknown day detail');
+    assert(await js('!document.querySelector(".pulse-day-values [data-selected-sessions]")'),
+      'unknown date carries no zero workout count for '+days+' days');
+  }
+  assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===limitedRaw,
+    'partial history inspection preserves the whole wallet, ledger and profile');
+  await js('document.querySelector(".pulse-trend-card").scrollIntoView({block:"start",behavior:"instant"})');
+  await snapshot('pulse-incomplete-history-390.png');
   assert(browserErrors.length === 0, 'no uncaught exceptions while switching screens');
   console.log('BODYFORGE_FORGE_XP_FAQ_E2E_PASS');
 } catch (error) {
-  console.error('BODYFORGE_FORGE_XP_FAQ_E2E_FAIL', error?.stack || String(error));
+  console.error(appReady ? 'BODYFORGE_FORGE_XP_FAQ_E2E_FAIL' : 'QA_INFRA_BLOCKED', error?.stack || String(error));
   console.error('BROWSER_EXCEPTIONS', JSON.stringify(browserErrors.slice(-4)));
-  process.exitCode = 1;
+  process.exitCode = appReady ? 1 : 14;
 } finally {
-  if (ws?.readyState === WebSocket.OPEN) {
-    try { await cdp('Browser.close'); } catch {}
-  }
   ws?.close();
-  browser.kill();
-  await sleep(300);
-  try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
+  try {
+    if (browser) await cleanupOwnedChrome(profile, profilePrefix, browser, browserIdentity);
+  } catch (error) {
+    console.error('QA_INFRA_BLOCKED cleanup', String(error));
+    if (!process.exitCode) process.exitCode = 14;
+  }
 }

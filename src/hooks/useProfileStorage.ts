@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProfileState, saveProfile, recoverProfile, STORAGE_KEY, type Profile, type ProfileLoadResult } from '../lib/progression';
+import { loadProfileState, saveProfile, recoverProfile, STORAGE_KEY,
+  PROFILE_REPLACEMENT_MARKER_KEY, profileReplacementPending, type Profile, type ProfileLoadResult } from '../lib/progression';
 import { withProfileWriteLock, type ProfileWriteIssue } from '../lib/profileLock';
+import { PROFILE_EPOCH_KEY, readProfileEpoch } from '../lib/profileEpoch';
 import { prepareWorkoutSession, readResultJournal, readQuarantinedResults, sameWorkoutResult,
   type CompletedWorkoutResult, type JournalEntry, type JournalOutcome, type WorkoutSession } from '../lib/workoutJournal';
 import { replayDurableWorkouts, quarantineDurableWorkouts } from '../lib/durableWorkout';
@@ -11,11 +13,20 @@ import { createCompletionPersistence, type CompletionPersistence, type Completio
 
 export type StorageStatus = 'ready' | 'checking' | 'recovery-required' | 'unavailable' | 'conflict' | 'pending-result';
 const uiStatus = (state: ProfileLoadResult): StorageStatus => state.status === 'empty' ? 'ready' : state.status;
+function observedEpoch(): string | null | undefined {
+  try { return readProfileEpoch(); } catch { return undefined; }
+}
 
 /** All production profile mutations share a cooperative browser lock. Queued
  * snapshots are cancelled when superseded; errors never imply durability. */
 export function useProfileStorage() {
-  const [initial] = useState(loadProfileState);
+  const [{ state: initial, epoch: initialEpoch }] = useState(() => {
+    const before = observedEpoch();
+    const state = loadProfileState();
+    const after = observedEpoch();
+    return { state: before === after && after !== undefined ? state :
+      { ...state, status: 'unavailable' as const }, epoch: before === after ? after : undefined };
+  });
   const [initialJournal] = useState(readResultJournal);
   const [profile, setProfile] = useState<Profile>(initial.profile);
   const [status, setStatus] = useState<StorageStatus>(() => initial.status === 'ready' || initial.status === 'empty'
@@ -38,6 +49,12 @@ export function useProfileStorage() {
   const canContinue = useCallback(() => mounted.current && pageActive.current && !document.hidden, []);
   const [reconcileToken, requestReconcile] = useState(0);
   const revision = useRef(initial.revision);
+  // Wallet bytes alone do not identify an imported generation (ABA).
+  const epochRevision = useRef(initialEpoch);
+  const epochIssue = useCallback((): 'conflict' | 'unavailable' | null => {
+    const current = observedEpoch();
+    return current === undefined ? 'unavailable' : current !== epochRevision.current ? 'conflict' : null;
+  }, []);
   // Viewing a legacy/empty profile must not rewrite or seed storage.
   const saved = useRef<Profile>(initial.profile);
   const pending = useRef<AbortController | null>(null);
@@ -82,6 +99,8 @@ export function useProfileStorage() {
 
   const save = useCallback((next: Profile, retry = false) => runWrite(() => {
     setWriteIssue(null);
+    const lineageIssue = epochIssue();
+    if (lineageIssue) { setStatus(lineageIssue); return; }
     if (retry) {
       const current = loadProfileState();
       if (current.status === 'recovery-required' || current.status === 'unavailable') {
@@ -100,7 +119,7 @@ export function useProfileStorage() {
       setStatus(result.status);
       if (result.status === 'recovery-required') setBackupAvailable(loadProfileState().backupAvailable);
     }
-  }), [runWrite]);
+  }), [runWrite, epochIssue]);
 
   useEffect(() => {
     if (status === 'ready' && saved.current !== profile) {
@@ -113,15 +132,19 @@ export function useProfileStorage() {
     mounted.current = true;
     pageActive.current = true;
     const inspect = () => {
+      let issue: StorageStatus = 'unavailable';
       try {
-        if (localStorage.getItem(STORAGE_KEY) !== revision.current) {
-          cancelPending();
-          setStatus('conflict');
+        if (!profileReplacementPending()) {
+          const lineageIssue = epochIssue();
+          if (!lineageIssue && localStorage.getItem(STORAGE_KEY) === revision.current) return;
+          issue = lineageIssue ?? 'conflict';
         }
-      } catch { cancelPending(); setStatus('unavailable'); }
+      } catch { /* Keep storage unavailable on unreadable data. */ }
+      cancelPending();
+      setStatus(issue);
     };
     const changed = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY || event.key === null) inspect();
+      if (event.key === STORAGE_KEY || event.key === PROFILE_REPLACEMENT_MARKER_KEY || event.key === PROFILE_EPOCH_KEY || event.key === null) inspect();
     };
     const returned = () => {
       if (!document.hidden) {
@@ -151,15 +174,19 @@ export function useProfileStorage() {
       window.removeEventListener('pageshow', shown);
       document.removeEventListener('visibilitychange', returned);
     };
-  }, [cancelPending]);
+  }, [cancelPending, epochIssue]);
 
   const accept = useCallback((state: ProfileLoadResult) => {
     setWriteIssue(null);
     setBackupAvailable(state.backupAvailable);
-    setStatus(uiStatus(state));
+    const epoch = observedEpoch();
+    setStatus(epoch === undefined ? 'unavailable' : uiStatus(state));
     // A recovery view acknowledges the observed raw revision without treating
     // it as writable. Keep RAM untouched when storage could not be read.
-    if (state.status !== 'unavailable') revision.current = state.revision;
+    if (state.status !== 'unavailable' && epoch !== undefined) {
+      revision.current = state.revision;
+      epochRevision.current = epoch;
+    }
     if (state.status === 'ready' || state.status === 'empty' ||
         (state.status === 'recovery-required' && state.profile.creditedWorkoutIds === null)) {
       saved.current = state.profile;
@@ -213,6 +240,10 @@ export function useProfileStorage() {
       }
       if (!canContinue() || flight.generation !== generation.current) return;
       const queued = runWrite(async (context) => {
+        // An already finished result still owns its independent durable stage.
+        // Without a result, a stale tab must explicitly reload before replay.
+        const lineageIssue = epochIssue();
+        if (lineageIssue && !volatileResult.current) { setStatus(lineageIssue); return; }
         const foreground = { signal: context.signal, isCurrent: () => context.isCurrent() && canContinue() };
         if (!foreground.isCurrent()) return;
         const outcome = await replayDurableWorkouts(volatileResult.current, foreground);
@@ -222,7 +253,7 @@ export function useProfileStorage() {
       await queued;
     })().finally(() => { if (replayFlight.current === flight) replayFlight.current = null; });
     return flight.promise;
-  }, [applyJournal, runWrite, canContinue]);
+  }, [applyJournal, runWrite, canContinue, epochIssue]);
   useEffect(() => {
     let active = true;
     const token = generation.current;
@@ -239,8 +270,9 @@ export function useProfileStorage() {
           const checked = readResultJournal();
           const current = loadProfileState();
           if (checked.status === 'ready' && checked.entries.length === 0) {
-            if (current.revision !== revision.current) {
-              setStatus('conflict');
+            const lineageIssue = epochIssue();
+            if (lineageIssue || current.revision !== revision.current) {
+              setStatus(lineageIssue ?? 'conflict');
               return;
             }
             if (current.status === 'ready' || current.status === 'empty') {
@@ -257,12 +289,13 @@ export function useProfileStorage() {
       if (active && token === generation.current) void replay();
     })();
     return () => { active = false; };
-  }, [reconcileToken, replay]);
+  }, [reconcileToken, replay, epochIssue]);
 
   const beginWorkout = useCallback(async (mode: WorkoutMode, exerciseId: ExerciseId = 'squat'): Promise<WorkoutSession | null> => {
     if (volatileResult.current) { setStatus('unavailable'); return null; }
     const response = await runWrite(async (context) => {
-      if (loadProfileState().revision !== revision.current) { setStatus('conflict'); return null; }
+      const lineageIssue = epochIssue();
+      if (lineageIssue || loadProfileState().revision !== revision.current) { setStatus(lineageIssue ?? 'conflict'); return null; }
       const reconciled = await replayDurableWorkouts(null, context);
       if (!context.isCurrent()) return null;
       applyJournal(reconciled);
@@ -275,7 +308,7 @@ export function useProfileStorage() {
       return result.session;
     });
     return response.status === 'completed' ? response.value ?? null : null;
-  }, [accept, applyJournal, runWrite]);
+  }, [accept, applyJournal, runWrite, epochIssue]);
   const completeWorkout = useCallback((result: CompletedWorkoutResult) => {
     if (lastResolvedCompletion.current && sameWorkoutResult(lastResolvedCompletion.current, result)) return Promise.resolve();
     const existing = completionOperation.current;
@@ -327,6 +360,8 @@ export function useProfileStorage() {
   const recover = useCallback(async (source: 'backup' | 'empty') => {
     if (!await stageBeforeRecovery()) return;
     return runWrite(async (context) => {
+      const lineageIssue = epochIssue();
+      if (lineageIssue) { setStatus(lineageIssue); return; }
       const state = recoverProfile(source);
       accept(state);
       if (state.status === 'ready' || state.status === 'empty') {
@@ -334,7 +369,7 @@ export function useProfileStorage() {
         if (context.isCurrent()) applyJournal(outcome);
       }
     });
-  }, [accept, applyJournal, runWrite, stageBeforeRecovery]);
+  }, [accept, applyJournal, runWrite, stageBeforeRecovery, epochIssue]);
   const retry = useCallback(() => {
     const journal = readResultJournal();
     return !hydrated.current || volatileResult.current || journal.status === 'unavailable' || journal.entries.length ? replay() : save(profile, true);

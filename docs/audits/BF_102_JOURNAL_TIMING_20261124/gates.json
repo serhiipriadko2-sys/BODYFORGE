@@ -1,0 +1,21 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  237,
+    "sourceManifestSha256":  "B64409C1067B21E426462689AA7D14236FEFB779EDE267F5972C52D477FF5AF3",
+    "copy":  "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf102-journal-timing",
+    "unit":  1,
+    "tsc":  "NOT_RUN",
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "preview":  "NOT_RUN",
+    "journal":  16,
+    "dedup":  0,
+    "multitab":  0,
+    "started":  "2026-11-24T21:43:23.1825656+03:00",
+    "devPort":  5300,
+    "devHttp":  200,
+    "error":  "Unit failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-24T21:47:31.9044525+03:00"
+}

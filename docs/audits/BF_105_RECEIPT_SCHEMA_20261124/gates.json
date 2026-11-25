@@ -1,0 +1,22 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  246,
+    "sourceManifestSha256":  "DB211BACC9AD5470F3C2C97B8FD4814F95E1836609180E658693C4C3310E318A",
+    "copy":  "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf105-receipt-preview",
+    "unit":  0,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  0,
+    "preview":  200,
+    "forge":  1,
+    "privacy":  0,
+    "started":  "2026-11-24T22:11:05.9814723+03:00",
+    "buildCount":  62,
+    "buildManifestSha256":  "65BC4F7A888D9EB6591C0973D99D740D81471AD786755B7D7DB13065D947338D",
+    "entry":  "assets/index-CRz7mIAQ.js",
+    "entrySha256":  "c34f565d81398c42f73544b5f8e0293c53dcc82ea99d09682e9a14bdb8dba5ed",
+    "previewPort":  5400,
+    "error":  "Forge failed",
+    "previewStopped":  true,
+    "finished":  "2026-11-24T22:13:41.2428465+03:00"
+}

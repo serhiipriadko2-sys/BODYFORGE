@@ -58,7 +58,10 @@ describe('facial planes on the actual rig', () => {
         if (delta > .00005) changed++;
         max = Math.max(max, delta);
       }
-      expect(changed).toBe(2071);
+      expect(profile.zones).toHaveLength(13);
+      // Blender counts 3604 in its import; the packed runtime has two
+      // extra vertices just above the 0.05 mm displacement threshold.
+      expect(changed).toBe(3606);
       // Blender and packed WebGL positions differ by a few micrometres.
       expect(Math.abs(max - .003876)).toBeLessThan(.000005);
       expect(applyAvatarFaceForm(source)).toBeUndefined();

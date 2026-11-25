@@ -1,0 +1,142 @@
+import { describe, expect, it, vi, afterEach } from 'vitest';
+import { freshGame } from './game';
+import { addCompletedWorkout, getProfileTotals, type Profile } from './progression';
+import { legacySourceFromPreview, previewReceiptMigration, receiptFromJournal, rewardGrantId } from './receiptCompatibility';
+
+const at = '2026-11-24T10:00:00.000Z';
+const time = new Date(at);
+const splits = Array.from({ length: 20 }, (_, i) => (i + 1) * 1000);
+function paid(count = 65): Profile {
+  let p: Profile = { profileId: 'qa', xp: 100, coins: 400, workouts: [], creditedWorkoutIds: [],
+    game: { ...freshGame(), created: true, ownedOutfits: ['base', 'ember'], outfit: 'ember',
+      muscles: { arms: 1, core: 2, legs: 3, back: 4 }, claimedLoginDays: ['2026-11-24'],
+      lastLoginDay: '2026-11-24' } };
+  for (let i = 0; i < count; i++) {
+    p = addCompletedWorkout(p, 32000, time, i % 2
+      ? { sessionId: 'id-' + i, exerciseId: 'plank', holdSeconds: 30 }
+      : { sessionId: 'id-' + i, mode: i === 0 ? 'tower' : 'training', splitsMs: splits });
+  }
+  return p;
+}
+afterEach(() => vi.unstubAllGlobals());
+
+describe('BF-105 read-only receipt compatibility', () => {
+  it('preserves paid balance, total history, items, ghost, day and complete identity ledger', () => {
+    const p = paid();
+    const raw = JSON.stringify(p, null, 2);
+    const result = previewReceiptMigration(raw);
+    expect(result.status).toBe('preview-ready');
+    if (result.status !== 'preview-ready') throw Error(result.reason);
+    expect(result.profile).toEqual(p);
+    expect(result.profile.workouts).toHaveLength(60);
+    expect(result.receipts).toHaveLength(60);
+    expect(getProfileTotals(result.profile)).toEqual(getProfileTotals(p));
+    expect(result.profile.creditedWorkoutIds).toHaveLength(65);
+    expect(result.storedCreditedWorkoutIds).toEqual(p.creditedWorkoutIds);
+    expect(result.receipts.find(r => r.exerciseId === 'plank')).toMatchObject({ target: 30, completedUnits: 30, unit: 'seconds' });
+    expect(result.receipts.find(r => r.exerciseId === 'squat')).toMatchObject({ target: 20, completedUnits: 20, unit: 'reps' });
+    expect(result.grants).toEqual([]);
+    expect(result.grantsComplete).toBe(false);
+    expect(result.activationAuthorized).toBe(false);
+    expect(legacySourceFromPreview(result)).toBe(raw);
+    expect(previewReceiptMigration(legacySourceFromPreview(result))).toEqual(result);
+  });
+
+  it('keeps untrimmed old history as receipts, without claiming a historical grant ledger', () => {
+    const p = paid(1);
+    const rows = Array.from({ length: 70 }, (_, i) => ({ ...p.workouts[0], id: 'old-' + i }));
+    const raw = JSON.stringify({ xp: 9000, coins: 100, workouts: rows });
+    const result = previewReceiptMigration(raw);
+    expect(result.status).toBe('preview-ready');
+    if (result.status !== 'preview-ready') throw Error(result.reason);
+    expect(result.receipts).toHaveLength(70);
+    expect(result.profile.workouts).toHaveLength(60);
+    expect(result.ledgerEvidence).toBe('legacy-unproven');
+    expect(result.storedCreditedWorkoutIds).toBeNull();
+    expect(result.grants).toEqual([]);
+    expect(result.receipts[0]).toMatchObject({ startedAt: null, activeMs: null, validatorVersion: null,
+      rewardPolicyVersion: null, provenance: 'legacy-v1', completionReason: 'recorded-legacy', floor: null });
+    expect(legacySourceFromPreview(result)).toBe(raw);
+  });
+
+  it('uses the journal validator and distinguishes an uncredited completion from a historical record', () => {
+    const input = { schemaVersion: 1, profileId: 'qa', sessionId: 'hold', mode: 'training', floor: null,
+      exerciseId: 'plank', repetitions: 0, holdSeconds: 30, durationMs: 30000, finishedAt: at };
+    expect(receiptFromJournal(input)).toMatchObject({ schemaVersion: 1, provenance: 'journal-v1',
+      completedUnits: 30, recordedXp: null, rewardPolicyVersion: null });
+    expect(receiptFromJournal({ ...input, durationMs: 29999 })).toBeNull();
+    expect(receiptFromJournal({ ...input, sessionId: '\uD800' })).toBeNull();
+    expect(receiptFromJournal({ ...input, schemaVersion: 2 })).toBeNull();
+  });
+
+  it('does not touch storage, even when its APIs would throw', () => {
+    const storage = { getItem: vi.fn(() => { throw Error('forbidden'); }),
+      setItem: vi.fn(() => { throw Error('forbidden'); }), removeItem: vi.fn() };
+    vi.stubGlobal('localStorage', storage);
+    const result = previewReceiptMigration(JSON.stringify(paid(2)));
+    expect(result.status).toBe('preview-ready');
+    for (const fn of Object.values(storage)) expect(fn).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['bad-json', '{'],
+    ['bad-root', 'null'],
+    ['negative-wallet', JSON.stringify({ ...paid(1), coins: -1 })],
+    ['unknown-version', JSON.stringify({ ...paid(1), schemaVersion: 99 })],
+    ['null-ledger', JSON.stringify({ ...paid(1), creditedWorkoutIds: null })],
+    ['missing-ledger', JSON.stringify({ ...paid(1), creditedWorkoutIds: undefined })],
+    ['duplicate-ledger', JSON.stringify({ ...paid(1), creditedWorkoutIds: ['id-0', 'id-0'] })],
+    ['missing-paid-id', JSON.stringify({ ...paid(1), creditedWorkoutIds: ['unrelated'] })],
+    ['duplicate-history', JSON.stringify({ ...paid(1), workouts: [...paid(1).workouts, ...paid(1).workouts] })],
+    ['invalid-units', JSON.stringify({ ...paid(1), workouts: [{ ...paid(1).workouts[0], repetitions: 19 }] })],
+    ['lost-ghost', JSON.stringify({ ...paid(1), game: { ...paid(1).game, bestGhost: { durationMs: 1, splitsMs: [] } } })],
+    ['invalid-totals', JSON.stringify({ ...paid(1), totals: { ...paid(1).totals, workouts: 0 } })],
+    ['missing-old-ledger-entries', JSON.stringify({ ...paid(65), creditedWorkoutIds: paid(65).workouts.map(w => w.id) })],
+  ])('fails closed on %s', (_, raw) => {
+    const result = previewReceiptMigration(raw);
+    expect(result.status).not.toBe('preview-ready');
+    expect(result.activationAuthorized).toBe(false);
+  });
+
+  it('keeps legacy opaque identifiers distinct, including Unicode and separators', () => {
+    const p = paid(1);
+    const ids = ['a:b', 'a|b', 'a\uD800', 'a\uFFFD', 'a\uDFFF', 'a/b', 'a%2Fb', 'a💪'];
+    const raw = JSON.stringify({ xp: 1000, coins: 42, workouts: ids.map(id => ({ ...p.workouts[0], id })) });
+    const result = previewReceiptMigration(raw);
+    if (result.status !== 'preview-ready') throw Error(result.reason);
+    expect(new Set(result.receipts.map(r => r.id)).size).toBe(ids.length);
+    expect(result.receipts.map(r => r.sessionId)).toEqual(ids);
+    expect(new Set(ids.flatMap(id => ['workout-base', 'tower', 'quest', 'login'].map(kind =>
+      rewardGrantId('qa', kind as 'workout-base' | 'tower' | 'quest' | 'login', id)))).size).toBe(ids.length * 4);
+    expect(rewardGrantId('a:b', 'tower', 'c')).not.toBe(rewardGrantId('a', 'tower', 'b:c'));
+  });
+
+  it('bounds hostile JSON depth and object keys without changing opaque ID values', () => {
+    const deep = '{"xp":0,"coins":0,"workouts":[],"extra":' + '['.repeat(40) + '0' + ']'.repeat(40) + '}';
+    const polluted = '{"xp":0,"coins":0,"workouts":[],"__proto__":{"polluted":true}}';
+    const excessive = '{"xp":0,"coins":0,"workouts":[],"extra":[' + '0,'.repeat(250000) + '0]}';
+    for (const raw of [deep, polluted, excessive]) {
+      expect(previewReceiptMigration(raw)).toMatchObject({ status: 'invalid', reason: 'source-complexity', activationAuthorized: false });
+    }
+    const p = paid(1);
+    const raw = JSON.stringify({ xp: 120, coins: 35, workouts: [{ ...p.workouts[0], id: '__proto__' }] });
+    const result = previewReceiptMigration(raw);
+    if (result.status !== 'preview-ready') throw Error(result.reason);
+    expect(result.receipts[0].sessionId).toBe('__proto__');
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
+
+  it('deterministic property sweep: 72 histories preserve totals and never invent grants', () => {
+    for (let size = 0; size < 72; size++) {
+      const p = paid(size);
+      const raw = JSON.stringify(p);
+      const result = previewReceiptMigration(raw);
+      if (result.status !== 'preview-ready') throw Error(size + ': ' + result.reason);
+      expect(result.profile).toEqual(p);
+      expect(result.receipts.length).toBe(Math.min(60, size));
+      expect(result.grants).toEqual([]);
+      expect(legacySourceFromPreview(result)).toBe(raw);
+      expect(previewReceiptMigration(raw)).toEqual(result);
+    }
+  });
+});

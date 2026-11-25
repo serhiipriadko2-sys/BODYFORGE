@@ -1,0 +1,57 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-25T17:34:49.870094+03:00",
+  "owned": [
+    {
+      "path": "src/hooks/useProfileStorage.ts",
+      "bytes": 20105,
+      "sha256": "4de6ccf0795dc1b9451a619c0c63809ef3e000f07c8a479902c2c2766735e910"
+    },
+    {
+      "path": "src/lib/profileReplacement.ts",
+      "bytes": 18454,
+      "sha256": "e0f1c325c7fad55fb66f6092c5e91769fddec55d2158ee9ddecdf2b523f3f1a5"
+    },
+    {
+      "path": "src/lib/profileReplacement.test.ts",
+      "bytes": 16892,
+      "sha256": "cff453bb160144253c9280bcc3a06ede1360cf2e89559f7e474ad78933eac701"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.ts",
+      "bytes": 6651,
+      "sha256": "39bcb20fe75bd7a389484a1a9e08c4db125a4acb6d0f4f70a1a6d230d8bf715f"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.test.ts",
+      "bytes": 8601,
+      "sha256": "d6fa0e7b2451454d17d04bc99ff1fd896e6a2854b4188c07fdaa429a24f7b630"
+    },
+    {
+      "path": "qa/profile-replacement-e2e.mjs",
+      "bytes": 26512,
+      "sha256": "a75221bd9c36d8095b3b079702fb7ecf310f5695dd5e4258ec87886726985f31"
+    },
+    {
+      "path": "qa/journal-gate-e2e.mjs",
+      "bytes": 15666,
+      "sha256": "40ef6edf4690d8f50952d34abe4338d6c0742b33fd1ab07197cf3beab5f3cdcc"
+    }
+  ],
+  "sourceCount": 287,
+  "buildCount": 69,
+  "sourceManifestSha256": "3EB5A68C2DE51819953105F646E7B8CB3B8A669388BC84DE8C45B2E8F372CFD7",
+  "buildManifestSha256": "8B68CC6E159331D681808325CC1704601954F6C01B9AAB160BFF818EE9692B20",
+  "externalQASha256": "A75221BD9C36D8095B3B079702FB7ECF310F5695DD5E4258EC87886726985F31",
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs"
+  ],
+  "liveNewPaths": [],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": {
+    "qa/profile-replacement-e2e.mjs": 0,
+    "qa/journal-gate-e2e.mjs": 0
+  }
+}

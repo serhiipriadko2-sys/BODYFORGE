@@ -79,7 +79,7 @@ export function applyAvatarFaceForm(source: THREE.Group): AvatarFaceForm | undef
   const brows = source.getObjectByName('BODYFORGE_Brows');
   if (!isCompatible(body, profile.bodyVertices) || !isCompatible(brows, profile.browVertices) ||
       body.userData.BODYFORGE_groom !== 'v2' || body.skeleton !== brows.skeleton ||
-      body.geometry.userData.facialProfile === profile.id) return;
+      body.geometry.userData.facialProfile !== undefined) return;
   const pigment = sculpt(body.geometry, true);
   sculpt(brows.geometry, false);
   body.geometry.userData.facialProfile = profile.id;

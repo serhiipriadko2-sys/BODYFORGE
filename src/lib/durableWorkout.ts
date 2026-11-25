@@ -1,4 +1,5 @@
 import { loadProfileState, type ProfileLoadResult } from './progression';
+import { readProfileEpoch, sessionMatchesEpoch } from './profileEpoch';
 import { readDurableJournal, stageDurableResults, markDurableResults } from './durableJournal';
 import { readResultJournal, reconcileWorkoutResults, quarantineWorkoutResults, resultJournalEntry,
   resultQuarantineKey, type CompletedWorkoutResult, type JournalEntry, type JournalOutcome } from './workoutJournal';
@@ -68,7 +69,8 @@ export async function replayDurableWorkouts(pending: CompletedWorkoutResult | nu
       }
       const result = decoded(entry.raw);
       // Foreign settled history is kept for export, never attached to a reset fighter.
-      if (entry.state === 'settled' && (!result || loadProfileState().profile.profileId !== result.profileId || credited(loadProfileState(), result))) continue;
+      if (entry.state === 'settled' && (!result || loadProfileState().profile.profileId !== result.profileId || credited(loadProfileState(), result) ||
+          !sessionMatchesEpoch(result.sessionId, readProfileEpoch()))) continue;
       const existing = localStorage.getItem(entry.key);
       if (existing !== null && existing !== entry.raw) return failed('invalid');
       if (existing === null) localStorage.setItem(entry.key, entry.raw);
@@ -102,7 +104,8 @@ export async function quarantineDurableWorkouts(expected: readonly JournalEntry[
   if (local.status !== 'ready') return failed();
   if (local.entries.length !== expected.length || local.entries.some((entry) => !expected.some((e) => e.key === entry.key && e.raw === entry.raw))) return failed('conflict');
   if (local.entries.some(({ result }) => result && state.profile.profileId === result.profileId &&
-      (credited(state, result) || result.mode !== 'tower' || state.profile.game.highestClearedFloor + 1 === result.floor))) return failed('conflict');
+      (credited(state, result) || (sessionMatchesEpoch(result.sessionId, readProfileEpoch()) &&
+        (result.mode !== 'tower' || state.profile.game.highestClearedFloor + 1 === result.floor))))) return failed('conflict');
   const staged = await stageDurableResults(expected, state.revision, context.signal);
   if (!context.isCurrent() || staged.status !== 'saved') return failed();
   const marked = await markDurableResults(expected, 'quarantined', context.signal);

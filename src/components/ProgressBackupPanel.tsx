@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Profile } from '../lib/progression';
 import type { CompletedWorkoutResult } from '../lib/workoutJournal';
 import { prepareProgressBackup, requestProgressBackupDownload, type PreparedProgressBackup } from '../lib/progressBackup';
-import { inspectProgressBackupFile, type BackupInspection } from '../lib/progressBackupInspector';
+import { previewProgressImportFile, type ProgressImportPreview } from '../lib/progressImportPreview';
 import './progressBackup.css';
 
 interface Props {
@@ -18,7 +18,8 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   const [status, setStatus] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
   const [prepared, setPrepared] = useState<PreparedProgressBackup | null>(null);
   const [message, setMessage] = useState('');
-  const [inspection, setInspection] = useState<BackupInspection | null>(null);
+  const [preview, setPreview] = useState<ProgressImportPreview | null>(null);
+  const inspection = preview?.inspection;
   const [inspecting, setInspecting] = useState(false);
   const generation = useRef(0);
   const inspectionGeneration = useRef(0);
@@ -26,6 +27,9 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   // A new profile revision invalidates any snapshot prepared from old data.
   useEffect(() => {
     generation.current++;
+    inspectionGeneration.current++;
+    setPreview(null);
+    setInspecting(false);
     setPrepared(null);
     setStatus('idle');
     setMessage('');
@@ -38,7 +42,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
     setPrepared(null);
     setStatus('idle');
     setInspecting(false);
-    setInspection(null);
+    setPreview(null);
   }, [disabled]);
 
   useEffect(() => {
@@ -47,6 +51,9 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
       // React profile object. Never offer a now-stale backup as current data.
       if (event.key !== null && !event.key.startsWith('bodyforge:')) return;
       generation.current++;
+      inspectionGeneration.current++;
+      setPreview(null);
+      setInspecting(false);
       setPrepared(null);
       setStatus('idle');
       setMessage('Данные изменились в другой вкладке. Подготовь новую копию.');
@@ -95,11 +102,17 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   async function inspectFile(file: File) {
     if (disabled) return;
     const request = ++inspectionGeneration.current;
-    setInspection(null);
+    setPreview(null);
     setInspecting(true);
-    const result = await inspectProgressBackupFile(file);
+    const result = await previewProgressImportFile(file, profile);
     if (request !== inspectionGeneration.current) return;
-    setInspection(result);
+    setPreview(result);
+    setInspecting(false);
+  }
+
+  function cancelPreview() {
+    inspectionGeneration.current++;
+    setPreview(null);
     setInspecting(false);
   }
 
@@ -110,7 +123,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
         <span className="section-index">ЗАЩИТА ПРОГРЕССА · ЛОКАЛЬНО</span>
         <h3>СОХРАНИ СВОЕГО БОЙЦА</h3>
         <p>Тренировки, XP, покупки, внешность и настройки хранятся в браузере. Перед очисткой данных или сменой телефона сохрани копию в JSON.</p>
-        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Автоматического импорта пока нет — копия предназначена для хранения и технического восстановления.</small>
+        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Можно проверить копию и сравнить прогресс; замена сохранения пока недоступна.</small>
         <details className="progress-install-help">
           <summary>КАК УСТАНОВИТЬ BODYFORGE НА ТЕЛЕФОН</summary>
           <p><strong>Android / Chrome:</strong> меню браузера → «Установить приложение» или «Добавить на главный экран».</p>
@@ -137,6 +150,34 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
               Записей тренировок: {inspection.workouts}; журнал: {inspection.journalRecords};
               долговременное хранилище: {inspection.durableRecords}; карантин: {inspection.quarantineRecords}.</small>
           )}
+          {preview?.incoming && (
+            <div className="progress-import-preview" data-import-preview={preview.state}>
+              <p role="status">{preview.state === 'blocked'
+                ? 'Копия требует дополнительного разбора. Замена недоступна.'
+                : 'Предварительный просмотр готов. Текущий прогресс не изменён.'}</p>
+              <table aria-label="Сравнение текущего прогресса и резервной копии">
+                <thead><tr><th scope="col">Показатель</th><th scope="col">Сейчас</th><th scope="col">В копии</th></tr></thead>
+                <tbody>
+                  {([
+                    ['XP', 'xp'], ['Монеты', 'coins'], ['Всего тренировок', 'workouts'],
+                    ['Записей в истории', 'availableWorkouts'], ['Повторения', 'repetitions'],
+                    ['Планка, сек.', 'holdSeconds'], ['Этаж Башни', 'towerFloor'], ['Костюмы', 'ownedOutfits'],
+                  ] as const).map(([label, field]) => (
+                    <tr key={field}><th scope="row">{label}</th><td>{preview.current[field].toLocaleString('ru-RU')}</td>
+                      <td>{preview.incoming![field].toLocaleString('ru-RU')}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              <small>Совпадение бойца: {preview.identity === 'same' ? 'по локальному ID'
+                : preview.identity === 'different' ? 'другой ID' : 'не установлено'}.
+                Записанных квитанций выплат: {preview.recordedGrants}.</small>
+            </div>
+          )}
+          {preview && preview.warnings.length > 0 && (
+            <ul className="progress-import-warnings" data-import-warnings>{preview.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>
+          )}
+          {(inspecting || preview) && <button type="button" className="progress-import-cancel"
+            data-action="cancel-import-preview" onClick={cancelPreview}>ОТМЕНИТЬ ПРОСМОТР</button>}
           <small>Это проверка структуры файла, не доказательство подлинности наград и не импорт.
             Не удаляй данные браузера без проверенной полной копии и плана восстановления.</small>
         </details>

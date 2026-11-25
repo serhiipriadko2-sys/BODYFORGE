@@ -1,0 +1,27 @@
+# BF-106 - journal/recovery coordination gate
+
+Status: IMPLEMENTED / TESTED_LOCAL for cooperating durable stage/mark versus recovery snapshot and rollback. Full forward replacement/finalization is NOT enabled.
+HEAD 7caa598c873c92887ac2ae3071b13f433225312e; observed 2026-11-25T17:12:13.430955+03:00.
+Production scope: new durableJournalGate, shared writer wrapper in durableJournal, exclusive recovery barrier in profileReplacementRecovery. Fixed lock order PROFILE -> JOURNAL; independent stage takes JOURNAL only and releases it before waiting for PROFILE. Shared access lasts through strict IDB commit plus independent read-back. Cancellation/unsupported locking fails closed. Mutable input payloads are copied before queueing. No wallet, schema, targets, reward amounts, or existing records are changed by the patch.
+Five regression cases demonstrated the missing boundary before implementation (5 failed / 9 passed); targeted green is 42/42. Native two-tab Chrome QA: 27 assertions with actual Web Locks and IndexedDB. Writer preserves exact payload, remains independent of busy profile lock, queues behind exclusive snapshot, aborts without late write, settlement waits, and a debugger pause between strict commit/read-back does not release the shared gate. Existing row blocks recovery without deletion. Real profile replay pays 120 XP/35 coins once and repeated replay leaves exact wallet bytes unchanged.
+First full journal run: 127 assertions and 3 renderer crashes then FAIL on immediate quarantine-notice visibility. Dedicated diagnosis preserved all raw source/exports and observed immediate=false then eventual=true in four cases (~339 ms). The notice was moved behind lazy Suspense by the prior UI work. Added bounded wait for the actual notice after app shell and after reload; original data/reward assertions and timeouts preserved. Product code was not altered for this QA issue. Failed run and diagnostics retained.
+First mobile pass stopped at an outdated exact Russian message assertion, while inspection state was invalid and the file was rejected. Replaced message matching with explicit invalid state, no verified comparison, nonempty status and exact wallet/reward-history preservation. Final corrected harness ran externally against the identical hashed production build; its SHA is separately recorded. No product change for this QA mismatch. Original failed logs remain.
+Final acceptance on 278 frozen source inputs: 769/769 unit tests in 79 files; TypeScript/build/bundle exit 0; native gate 27; UI rollback 64 with 3 real renderer crashes; full journal 161 with 3 real renderer crashes; tower 26; mobile 88 PASS lines and zero reported browser errors; privacy 12. All final acceptance exit codes zero; earlier failed attempts remain in evidence. Synthetic camera fixtures do not prove real-human accuracy or physical power-loss durability.
+Build contains 67 files. Exact preview HTML and entry matched HTTP 200. Entry assets/index-wsWyqslt.js SHA-256 b41034991ac20c25edd05745e867deb3c3b1211fcbe2785bd19fccc83f47e6b2, 387660 bytes; separate camera chunk 154276 bytes. Existing large-chunk warning remains. QA servers stopped; owned-browser cleanup verified by logs.
+Current live drift vs tested snapshot plus the verified external mobile harness: 4 changed known paths, 3 new paths; exact names in final-readback.json. Own final files all match. diff=0, cached=0, canon=0. Do not transfer full frozen PASS to unrelated newer source.
+No owner profile used in tests. No owner storage read/write, APK, Firebase deployment, dependency changes, Git stage/commit/push. Cooperating application versions only; old tabs/manual DB writes bypass this protocol. The gate does not decide how a forward import should handle a workout prepared before import; that policy and persistent finalization gate remain required.
+Rollback: compare current owned hashes; restore exact durableJournal.ts.before, profileReplacementRecovery.ts.before, profileReplacementRecovery.test.ts.before, journal-e2e.mjs.before and mobile-e2e.mjs.before; remove only the new durableJournalGate.ts/test and journal-gate-e2e.mjs if unchanged. Never reset or clean parallel work.
+Commands and full evidence: run-gates.ps1, final-run/run-gates.ps1 and run-mobile-retry.ps1; red/green logs; diagnostic-quarantine; final source/build manifests.
+
+Owned paths | bytes | SHA-256
+src/lib/durableJournal.ts | 10538 | 082ab2cb783507a0273ddd244afbd1662d6b7bb7408adfe8eb0250b7ba50861f
+src/lib/durableJournalGate.ts | 1912 | 9387363d7a6db62d32457d9b3b697af8078702674ba3bd6760a8ac1ccbc6c1ac
+src/lib/durableJournalGate.test.ts | 2579 | 7ccfc0caf61f51e1ef9940df504613e0a8c4f2decd36356c607f28c869ab801e
+src/lib/profileReplacementRecovery.ts | 6360 | 3d26d56e006e877ca5d997c1670b2f8651cee0064e1c8cd1582453685fa05adb
+src/lib/profileReplacementRecovery.test.ts | 8099 | c37e1bdfa47e94b3417349f141399fba889d824d88bbd7bad2c8c10044adefae
+qa/journal-gate-e2e.mjs | 15611 | 952fe5acf7845ecfc1056b1d11944644d2cb1201f415b17a70df8b1d93ee92c4
+qa/journal-e2e.mjs | 59367 | e544f7fb3504a07ee4f480d836aaa51bbcd11723ef352f082d25ac3b2b2992f4
+qa/mobile-e2e.mjs | 39593 | d8bad97f3aef80286c619587f16e3714189a50166b390d71668ae3de804f5dc7
+
+Next: late-workout policy and verified finalization of an explicitly chosen replacement before exposing forward import.
+Sources: https://www.w3.org/TR/web-locks/ ; https://www.w3.org/TR/IndexedDB-3/ ; https://react.dev/reference/react/lazy

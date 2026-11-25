@@ -4,6 +4,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { describe, expect, it } from 'vitest';
 import { MUSCLE_LOBES, addMuscleLobe, type MuscleLobe } from './avatarMuscleAnatomy';
 import { disposeThreeTree } from './threeResources';
+import { createAvatarGarmentSeams } from './avatarGarmentSeams';
+import { applyAvatarGarmentFit } from './avatarGarmentFit';
+import { repairAvatarSleeve } from './avatarSleeveRepair';
+import { createAvatarPhysique } from './avatarPhysique';
 
 const lobes = Object.values(MUSCLE_LOBES).flat();
 const evaluate = (zones: readonly MuscleLobe[], x: number, y: number, z: number, weight = 1) => {
@@ -14,9 +18,9 @@ const evaluate = (zones: readonly MuscleLobe[], x: number, y: number, z: number,
 };
 
 describe('fitted muscle envelopes', () => {
-  it('has 23 named mirrored envelopes, smooth support, and exact analytic derivatives', () => {
-    expect(lobes).toHaveLength(23);
-    expect(new Set(lobes.map(l => l.name)).size).toBe(23);
+  it('has 28 named mirrored envelopes, smooth support, and exact analytic derivatives', () => {
+    expect(lobes).toHaveLength(28);
+    expect(new Set(lobes.map(l => l.name)).size).toBe(28);
     const h = 1e-6;
     for (const zone of lobes) {
       const [x,y,z] = zone.center, [rx,ry,rz] = zone.radius;
@@ -40,6 +44,68 @@ describe('fitted muscle envelopes', () => {
     }
   });
 
+  it('grows the chest progressively on the real skin, shirt and peripheral chest emblem',async()=>{
+    const bytes=Uint8Array.from(readFileSync('public/assets/bodyforge-athlete-efficient.glb'));
+    const {scene}=await new GLTFLoader().parseAsync(bytes.buffer,'');
+    try{
+      for(const name of ['BODYFORGE_Body','BODYFORGE_Shirt','BODYFORGE_ChestMark']){
+        const mesh=scene.getObjectByName(name) as THREE.SkinnedMesh;
+        const p=mesh.geometry.getAttribute('position');
+        const points=Array.from({length:p.count},(_,i)=>[p.getX(i),p.getY(i),p.getZ(i)] as const)
+          .filter(([x,y,z])=>Math.abs(x)>.05&&Math.abs(x)<.19&&y>1.30&&y<1.40&&z>.10);
+        expect(points.length,name).toBeGreaterThan(2);
+        let prior=0;
+        for(let level=1;level<=5;level++){
+          const peak=Math.max(...points.map(([x,y,z])=>evaluate(MUSCLE_LOBES.core,x,y,z,level/5).displacement[2]));
+          expect(peak,name).toBeGreaterThan(prior+.0001);
+          prior=peak;
+        }
+        // The emblem is near the clavicle, not at the muscle belly.
+        expect(prior,name).toBeGreaterThan(name==='BODYFORGE_ChestMark'?.005:.015);
+        console.info('CHEST_GROWTH',JSON.stringify({name,samples:points.length,peakMm:prior*1000}));
+      }
+    }finally{disposeThreeTree(scene);}
+  });
+  it('keeps the chest emblem close to the fitted shirt at all six torso levels',async()=>{
+    const bytes=Uint8Array.from(readFileSync('public/assets/bodyforge-athlete-efficient.glb'));
+    const {scene}=await new GLTFLoader().parseAsync(bytes.buffer,'');
+    try{
+      const shirt=scene.getObjectByName('BODYFORGE_Shirt') as THREE.SkinnedMesh;
+      const shorts=scene.getObjectByName('BODYFORGE_Shorts') as THREE.SkinnedMesh;
+      const mark=scene.getObjectByName('BODYFORGE_ChestMark') as THREE.SkinnedMesh;
+      const garments=[shirt,shorts];
+      expect(createAvatarGarmentSeams(garments)?.loopCount).toBe(7);
+      expect(applyAvatarGarmentFit(garments)).toBe(4466);
+      expect(repairAvatarSleeve(garments)).toBe(14);
+      const sculpt=createAvatarPhysique(scene,true);
+      const cloth=shirt.geometry.getAttribute('position'), index=shirt.geometry.index!;
+      const logo=mark.geometry.getAttribute('position');
+      const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3();
+      const p=new THREE.Vector3(), hit=new THREE.Vector3(), ray=new THREE.Ray();
+      let minGap=Infinity,maxGap=-Infinity;
+      for(let level=0;level<=5;level++){
+        sculpt({core:level,arms:5,back:5,legs:5});
+        for(let i=0;i<logo.count;i++){
+          p.fromBufferAttribute(logo,i);
+          ray.origin.copy(p).add(new THREE.Vector3(0,0,.03));
+          ray.direction.set(0,0,-1);
+          let front=-Infinity;
+          for(let j=0;j<index.count;j+=3){
+            a.fromBufferAttribute(cloth,index.getX(j));
+            b.fromBufferAttribute(cloth,index.getX(j+1));
+            c.fromBufferAttribute(cloth,index.getX(j+2));
+            if(ray.intersectTriangle(a,b,c,false,hit))front=Math.max(front,hit.z);
+          }
+          expect(Number.isFinite(front)).toBe(true);
+          minGap=Math.min(minGap,p.z-front);maxGap=Math.max(maxGap,p.z-front);
+        }
+      }
+      console.info('CHEST_MARK_CLEARANCE',JSON.stringify({minMm:minGap*1000,maxMm:maxGap*1000}));
+      // Signed forward clearance on the authored emblem vertices only.
+      expect(minGap).toBeGreaterThan(-.0005);
+      expect(maxGap).toBeLessThan(.008);
+    }finally{disposeThreeTree(scene);}
+  });
   it('each lobe reaches the real athlete and combined growth preserves local orientation',async()=>{
     const bytes=Uint8Array.from(readFileSync('public/assets/bodyforge-athlete-efficient.glb'));
     const {scene}=await new GLTFLoader().parseAsync(bytes.buffer,'');

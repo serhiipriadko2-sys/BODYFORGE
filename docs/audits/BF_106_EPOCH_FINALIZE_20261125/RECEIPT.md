@@ -1,0 +1,24 @@
+# BF-106 - workout generation and verified replacement acceptance
+
+Status: IMPLEMENTED / TESTED_LOCAL for generation-aware acceptance of staged replacement, old-workout preservation, stale-tab fence, and rollback of interrupted generation commit. Full forward import from selected file and physical-device acceptance remain PARTIAL.
+HEAD 7caa598c873c92887ac2ae3071b13f433225312e; observed 2026-11-25T17:34:49.870094+03:00.
+Existing epoch protection prevents uncredited late results from reaching a different wallet generation. The hook now observes epoch-only changes, checks lineage inside the existing profile lock before saves, preparation, recovery and unowned replay, and requires explicit reload for a stale view. The independent immutable completion stage is preserved.
+New marker v2 includes beforeEpoch. Acceptance validates the pair/history and writes transactionId as the next epoch before marker removal, verifies both values and keeps rollback evidence on uncertainty. Restart can resume finalization or restore previous epoch and exact primary/fallback. Legacy v1 marker is rollback-only when epoch is absent. Existing profile keys and workout result originals are retained. Production recovery port observes epoch and writes it only under the existing ordered profile/exclusive journal locks.
+Tests: 65/65 focused; exercise counter retry 27/27; full Vitest 806/806 in 83 files, TypeScript exit 0. Browser: 31/31 epoch; 73/73 replacement (3 actual owned renderer crashes); 27/27 journal gate; 24/24 preview; 12/12 privacy. Real UI acceptance persists new epoch before reopening. An independently prepared pre-import workout stages exact bytes after actual acceptance, remains active/unpaid and preserves both accepted profile strings. No physical camera or real-device/power-loss claim.
+Prior failed runs retained: epoch-only UI red; TS2556 in parallel avatarScalpDensity.test.ts, fixed by parallel work and copied as only test overlay; Vitest worker unexpected exit 3221226505 in exerciseCounter.test.ts (779 passing assertions, not accepted); CDP navigation context failure after rollback, corrected read-only wait only, no retry of mutations. Same frozen product passed repeat full unit, replacement browser and build. All owned Chrome cleanup markers present; QA servers stopped.
+Frozen source 287 files; production build 69 files. Entry assets/index-C9m8sFr6.js SHA-256 1fca1637fa324563f69baeec0a1bd4f80c29a40be332ea0f91600a8c89d30ffc; 388883 bytes (21.7% below 496761 baseline), lazy camera 154276 bytes. Existing >500 kB chunk warning remains. Exact index and entry HTTP readback match. Final replacement harness is an external QA-only overlay with exact SHA-256 a75221bd9c36d8095b3b079702fb7ecf310f5695dd5e4258ec87886726985f31, not a changed build input.
+Current source comparison: 1 changed, 0 new paths vs tested snapshot plus verified QA overlay. diff=0, staged diff=0, canon=0. See final-readback.json. Do not infer acceptance of parallel edits.
+No actual owner profile read or write, APK, Firebase deploy, Git stage/commit/push. Forward file import still not exposed by ProgressBackupPanel. Narrow pilot requires quiet stores, compatible identity and auxiliary bytes, retained reward identities. Need full explicit file-to-staged replacement integration with source revalidation, consent and durable retention, and physical-device tests. Epoch protocol is cooperative, not anti-cheat or disk durability guarantee.
+Rollback code: use exact .before-epoch-commit / .before-epoch-ui-fix files after matching owned hashes; QA before-epoch-commit restores its previous script; do not revert parallel avatar or earlier epoch changes. No workspace reset.
+Commands: npm test targeted replacement/recovery/fence/epoch; vitest run --maxWorkers=1 --no-file-parallelism; tsc -b; vite build; node qa/workout-epoch-e2e.mjs; node qa/profile-replacement-e2e.mjs; node qa/journal-gate-e2e.mjs; node qa/import-preview-e2e.mjs; node qa/bundle-on-demand.mjs; node qa/privacy-server-e2e.mjs.
+
+Owned paths | bytes | SHA-256
+src/hooks/useProfileStorage.ts | 20105 | 4de6ccf0795dc1b9451a619c0c63809ef3e000f07c8a479902c2c2766735e910
+src/lib/profileReplacement.ts | 18454 | e0f1c325c7fad55fb66f6092c5e91769fddec55d2158ee9ddecdf2b523f3f1a5
+src/lib/profileReplacement.test.ts | 16892 | cff453bb160144253c9280bcc3a06ede1360cf2e89559f7e474ad78933eac701
+src/lib/profileReplacementRecovery.ts | 6651 | 39bcb20fe75bd7a389484a1a9e08c4db125a4acb6d0f4f70a1a6d230d8bf715f
+src/lib/profileReplacementRecovery.test.ts | 8601 | d6fa0e7b2451454d17d04bc99ff1fd896e6a2854b4188c07fdaa429a24f7b630
+qa/profile-replacement-e2e.mjs | 26512 | a75221bd9c36d8095b3b079702fb7ecf310f5695dd5e4258ec87886726985f31
+qa/journal-gate-e2e.mjs | 15666 | 40ef6edf4690d8f50952d34abe4338d6c0742b33fd1ab07197cf3beab5f3cdcc
+
+References: https://www.w3.org/TR/web-locks/ ; https://developer.mozilla.org/en-US/docs/Web/API/LockManager/request

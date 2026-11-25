@@ -1,15 +1,21 @@
 {
-  "id": "bodyforge-facial-planes-v1",
+  "id": "bodyforge-facial-planes-v2",
   "bodyVertices": 65895,
   "browVertices": 3078,
   "sourceSha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
   "zones": [
-    { "name": "brow-ridge", "center": [0.035, 1.703, 0.151], "radius": [0.025, 0.014, 0.031], "offset": [0.0004, 0, 0.0021], "pigment": [0.015, 0.003, -0.006] },
-    { "name": "upper-lid-fold", "center": [0.033, 1.687, 0.148], "radius": [0.018, 0.0065, 0.023], "offset": [0, 0, -0.001], "pigment": [-0.080, -0.110, -0.109] },
-    { "name": "lower-lid-volume", "center": [0.034, 1.659, 0.141], "radius": [0.022, 0.0105, 0.026], "offset": [0, 0.00025, 0.0017], "pigment": [0.022, -0.020, -0.032] },
-    { "name": "infraorbital-groove", "center": [0.032, 1.647, 0.143], "radius": [0.025, 0.010, 0.024], "offset": [0, 0, -0.0019], "pigment": [-0.048, -0.070, -0.068] },
-    { "name": "cheekbone", "center": [0.049, 1.634, 0.133], "radius": [0.025, 0.021, 0.035], "offset": [0.0011, 0.0005, 0.0038], "pigment": [0.060, -0.008, -0.028] },
-    { "name": "cheek-plane", "center": [0.051, 1.603, 0.119], "radius": [0.020, 0.023, 0.038], "offset": [0.0006, 0, -0.0017], "pigment": [-0.022, -0.068, -0.068] },
-    { "name": "jaw-plane", "center": [0.044, 1.58, 0.113], "radius": [0.0145, 0.021, 0.037], "offset": [0.00165, 0, 0.0011], "pigment": [-0.008, -0.021, -0.024] }
+    {"name":"brow-ridge","center":[0.035,1.703,0.151],"radius":[0.025,0.014,0.031],"offset":[0.0004,0,0.0021],"pigment":[0.015,0.003,-0.006]},
+    {"name":"upper-lid-fold","center":[0.033,1.687,0.148],"radius":[0.018,0.0065,0.023],"offset":[0,0,-0.001],"pigment":[-0.08,-0.11,-0.109]},
+    {"name":"lower-lid-volume","center":[0.034,1.659,0.141],"radius":[0.022,0.0105,0.026],"offset":[0,0.00025,0.0017],"pigment":[0.022,-0.02,-0.032]},
+    {"name":"infraorbital-groove","center":[0.032,1.647,0.143],"radius":[0.025,0.01,0.024],"offset":[0,0,-0.0019],"pigment":[-0.048,-0.07,-0.068]},
+    {"name":"cheekbone","center":[0.049,1.634,0.133],"radius":[0.025,0.021,0.035],"offset":[0.0011,0.0005,0.0038],"pigment":[0.06,-0.008,-0.028]},
+    {"name":"cheek-plane","center":[0.051,1.603,0.119],"radius":[0.02,0.023,0.038],"offset":[0.0006,0,-0.0017],"pigment":[-0.022,-0.068,-0.068]},
+    {"name":"jaw-plane","center":[0.044,1.58,0.113],"radius":[0.0145,0.021,0.037],"offset":[0.00165,0,0.0011],"pigment":[-0.008,-0.021,-0.024]},
+    {"name":"nasal-bridge","center":[0,1.653,0.157],"radius":[0.013,0.022,0.023],"offset":[0,0,0.0018],"pigment":[0.025,0.006,-0.006]},
+    {"name":"nasal-tip","center":[0,1.634,0.169],"radius":[0.013,0.009,0.014],"offset":[0,0,0.0013],"pigment":[0.032,-0.012,-0.02]},
+    {"name":"nasal-wing","center":[0.0155,1.631,0.158],"radius":[0.01,0.008,0.016],"offset":[0.00065,0,0.00085],"pigment":[0.021,-0.032,-0.038]},
+    {"name":"philtrum-column","center":[0.0058,1.6205,0.16],"radius":[0.0045,0.005,0.011],"offset":[0,0,0.0007],"pigment":[0.012,-0.005,-0.01]},
+    {"name":"chin-plane","center":[0,1.577,0.151],"radius":[0.029,0.01,0.025],"offset":[0,0,0.0017],"pigment":[0.008,-0.018,-0.02]},
+    {"name":"jaw-angle","center":[0.057,1.584,0.104],"radius":[0.018,0.026,0.028],"offset":[0.0014,0,0.0011],"pigment":[-0.02,-0.032,-0.032]}
   ]
 }

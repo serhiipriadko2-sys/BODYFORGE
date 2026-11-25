@@ -1,0 +1,50 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-25T16:50:11.892244+03:00",
+  "owned": [
+    {
+      "path": "src/App.tsx",
+      "bytes": 82613,
+      "sha256": "aed7c608fa02371bf5bc6aaf0620e135a94e37d38ded08ab208de903e512cc3d"
+    },
+    {
+      "path": "src/components/StorageRecovery.tsx",
+      "bytes": 12356,
+      "sha256": "e4cb38de47702017a0363f98311df1d042d0a4426705c259d093ee48286a016e"
+    },
+    {
+      "path": "src/components/ReplacementRecoveryPanel.tsx",
+      "bytes": 6497,
+      "sha256": "85b93e874360ac16c9f83a31ce5fd95d43457394f5e1b6827dc490b00f54d7d5"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.ts",
+      "bytes": 5776,
+      "sha256": "95fc22c5914fea1e353ef22c91949a12c533cc8a744f2f774c39ce66be2bd43a"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.test.ts",
+      "bytes": 6816,
+      "sha256": "9115d63c6379010d2b9ce119c173247321309e56ff0c68e0ed981c3b6bb8c562"
+    },
+    {
+      "path": "qa/profile-replacement-e2e.mjs",
+      "bytes": 21687,
+      "sha256": "a1241a154c5d8bc7b4494d89c631d5ff1cc8eb44c59656e1fbfc7a18245e660f"
+    }
+  ],
+  "sourceCount": 273,
+  "buildCount": 69,
+  "sourceManifestSha256": "5446A43FA669967B603C2666FDCC2D02086B3D678C2E249C7B5C8C54905E4C08",
+  "buildManifestSha256": "B9DD02CCCF476745350DBEAA91B179D077504D0F17C2750943E1928EA626896D",
+  "liveChangedPaths": [
+    "src/lib/avatarGrowth.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/avatarGrowthBudget.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0
+}

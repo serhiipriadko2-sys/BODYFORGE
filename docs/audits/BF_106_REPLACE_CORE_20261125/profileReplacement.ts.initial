@@ -1,0 +1,238 @@
+import { STORAGE_KEY, PROFILE_BACKUP_KEY, parseProfile } from './progression';
+import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
+import { previewProgressImportJson } from './progressImportPreview';
+import { previewReceiptMigration } from './receiptCompatibility';
+
+/**
+ * BF-106 replacement core, NOT wired to the app or its storage hook yet.
+ * Caller must acquire the existing exclusive profile lock and observe all
+ * relevant stores under it. No browser-global storage or reward APIs here.
+ * Until startup recovery and retention gates exist, use disposable QA only.
+ */
+export const PROFILE_REPLACEMENT_MARKER_KEY = STORAGE_KEY + ':replace-pending:v1';
+type Raw = string | null;
+export interface ProfilePair { readonly primary: Raw; readonly backup: Raw }
+type Auxiliary = Readonly<Record<'avatarLook' | 'appearance' | 'manualSteps' | 'dailyPlan', Raw>>;
+const AUX_KEYS = ['avatarLook', 'appearance', 'manualSteps', 'dailyPlan'] as const;
+
+/** A read-back snapshot, not proof of consent. No omitted source is assumed empty. */
+export interface ReplacementObservation {
+  readonly pair: ProfilePair;
+  readonly auxiliary: Auxiliary;
+  readonly sourcesReady: boolean;
+  readonly pendingRecords: number;
+  readonly durableRecords: number;
+  readonly quarantineRecords: number;
+}
+export interface ReplacementPlan {
+  readonly before: ProfilePair;
+  readonly after: ProfilePair;
+  readonly auxiliary: Auxiliary;
+}
+export type PlanResult = { status: 'planned'; plan: ReplacementPlan } |
+  { status: 'blocked'; reason: string };
+
+const bytes = (raw: string) => new TextEncoder().encode(raw).byteLength;
+const record = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const rawValue = (v: unknown): v is Raw => v === null || typeof v === 'string';
+const pairEqual = (a: ProfilePair, b: ProfilePair) => a.primary === b.primary && a.backup === b.backup;
+const auxiliaryEqual = (a: Auxiliary, b: Auxiliary) => AUX_KEYS.every(k => a[k] === b[k]);
+function quiet(observed: ReplacementObservation): boolean {
+  return observed.sourcesReady === true && observed.pendingRecords === 0 &&
+    observed.durableRecords === 0 && observed.quarantineRecords === 0 &&
+    AUX_KEYS.every(k => rawValue(observed.auxiliary[k]));
+}
+function blocked(reason: string): PlanResult { return { status: 'blocked', reason }; }
+
+/** Deliberately narrow pilot: profile pair only, no journal/auxiliary merge.
+ * Incoming and current sources with even settled journal records require a
+ * separate replay-safe plan. Old records are never normalized before writing. */
+export function planProfileReplacement(json: string, observed: ReplacementObservation): PlanResult {
+  if (!quiet(observed)) return blocked('current-sources-not-quiet');
+  const current = observed.pair.primary === null ? parseProfile(null) : (() => {
+    const view = previewReceiptMigration(observed.pair.primary!);
+    return view.status === 'preview-ready' ? view.profile : null;
+  })();
+  if (!current || (observed.pair.primary === null && observed.pair.backup !== null)) {
+    return blocked('current-recovery-required');
+  }
+  const preview = previewProgressImportJson(json, current);
+  if (preview.state !== 'preview-ready') return blocked('incoming-not-compatible');
+  const data = JSON.parse(json) as Record<string, unknown>;
+  if (preview.inspection.journalRecords || preview.inspection.durableRecords || preview.inspection.quarantineRecords ||
+      data.pendingResult != null || (data.pendingResults !== undefined &&
+        (!Array.isArray(data.pendingResults) || data.pendingResults.length))) return blocked('incoming-journal-not-empty');
+  const aux = data.storedAuxiliaryRaw as Auxiliary;
+  if (!auxiliaryEqual(observed.auxiliary, aux)) return blocked('auxiliary-replacement-unsupported');
+  if (observed.pair.primary !== null && preview.identity !== 'same') return blocked('identity-not-confirmed');
+  const after = { primary: data.storedProfileRaw as string, backup: data.storedBackupRaw as Raw };
+  // The runtime cannot yet preserve >60 available records on later ordinary
+  // saves. Defer those imports rather than silently promising full history.
+  const supported = (raw: Raw) => {
+    if (raw === null) return true;
+    const view = previewReceiptMigration(raw);
+    if (view.status !== 'preview-ready' || view.receipts.length > 60) return false;
+    const input = JSON.parse(raw) as Record<string, unknown>;
+    const fields = new Set(['schemaVersion','xp','coins','workouts','game','profileId','creditedWorkoutIds','totals']);
+    if (Object.keys(input).some(k => !fields.has(k))) return false;
+    if (view.ledgerEvidence !== 'stored-identities' &&
+      (view.receipts.length > 0 || (view.profile.totals?.workouts ?? 0) > 0)) return false;
+    return typeof view.profile.profileId === 'string' && view.profile.profileId.length > 0;
+  };
+  if (!supported(after.primary) || !supported(after.backup)) return blocked('history-or-identity-unsupported');
+  if (after.backup !== null && JSON.parse(after.backup).profileId !== JSON.parse(after.primary).profileId) {
+    return blocked('fallback-identity-mismatch');
+  }
+  const plan: ReplacementPlan = Object.freeze({
+    before: Object.freeze({ ...observed.pair }), after: Object.freeze(after),
+    auxiliary: Object.freeze(Object.fromEntries(AUX_KEYS.map(k => [k, aux[k]])) as Auxiliary),
+  });
+  issuedPlans.add(plan);
+  if (bytes(markerFor(plan)) > MAX_PROGRESS_BACKUP_BYTES) return blocked('rollback-record-too-large');
+  return { status: 'planned', plan };
+}
+
+const issuedPlans = new WeakSet<ReplacementPlan>();
+interface ReplacementMarker {
+  version: 1;
+  before: ProfilePair;
+  after: ProfilePair;
+  auxiliary: Auxiliary;
+}
+function markerFor(plan: ReplacementPlan): string {
+  return JSON.stringify({ version: 1, before: plan.before, after: plan.after, auxiliary: plan.auxiliary });
+}
+function pairShape(v: unknown): v is ProfilePair {
+  return record(v) && Object.keys(v).length === 2 && rawValue(v.primary) && rawValue(v.backup);
+}
+function markerFrom(raw: string): ReplacementMarker | null {
+  if (raw.length > MAX_PROGRESS_BACKUP_BYTES || bytes(raw) > MAX_PROGRESS_BACKUP_BYTES) return null;
+  try {
+    const v: unknown = JSON.parse(raw);
+    if (!record(v) || v.version !== 1 || !pairShape(v.before) || !pairShape(v.after) ||
+        typeof v.after.primary !== 'string' || !record(v.auxiliary) ||
+        !AUX_KEYS.every(k => rawValue((v.auxiliary as Record<string, unknown>)[k])) ||
+        Object.keys(v.auxiliary).length !== AUX_KEYS.length) return null;
+    const marker = { version: 1 as const, before: { primary: v.before.primary, backup: v.before.backup },
+      after: { primary: v.after.primary, backup: v.after.backup },
+      auxiliary: Object.fromEntries(AUX_KEYS.map(k => [k, (v.auxiliary as Record<string, unknown>)[k]])) as Auxiliary };
+    // Only our exact canonical serialization; reject duplicate/injected fields.
+    if (JSON.stringify(marker) !== raw) return null;
+    return marker;
+  } catch { return null; }
+}
+
+type Key = typeof STORAGE_KEY | typeof PROFILE_BACKUP_KEY | typeof PROFILE_REPLACEMENT_MARKER_KEY;
+export interface ReplacementPort {
+  /** Must be called inside the same exclusive lock for the entire operation. */
+  observe(): ReplacementObservation;
+  getMarker(): Raw;
+  set(key: Key, value: Raw): void;
+}
+export type ReplacementResult =
+  | { status: 'cancelled' | 'unchanged' | 'applied-pending-finalization' | 'rolled-back' }
+  | { status: 'blocked' | 'conflict' | 'recovery-required' | 'unavailable'; reason: string };
+
+function intermediate(m: ReplacementMarker): ProfilePair {
+  return { primary: m.before.primary, backup: m.after.backup };
+}
+function matchingPrefix(pair: ProfilePair, m: ReplacementMarker): boolean {
+  return pairEqual(pair, m.before) || pairEqual(pair, intermediate(m)) || pairEqual(pair, m.after);
+}
+function observeSafe(port: ReplacementPort, marker: ReplacementMarker, raw: string): ProfilePair | null {
+  const observed = port.observe();
+  return port.getMarker() === raw && quiet(observed) && auxiliaryEqual(observed.auxiliary, marker.auxiliary)
+    && matchingPrefix(observed.pair, marker) ? observed.pair : null;
+}
+
+/** Exact reverse-order rollback, including interrupted rollback. Never overwrite
+ * an unrelated revision, never discard the marker before original read-back. */
+function rollback(port: ReplacementPort, marker: ReplacementMarker, raw: string): ReplacementResult {
+  try {
+    let pair = observeSafe(port, marker, raw);
+    if (!pair) return { status: 'recovery-required', reason: 'rollback-conflict' };
+    if (pair.primary !== marker.before.primary) {
+      port.set(STORAGE_KEY, marker.before.primary);
+      pair = observeSafe(port, marker, raw);
+      if (!pair || pair.primary !== marker.before.primary) return { status: 'recovery-required', reason: 'rollback-primary' };
+    }
+    if (pair.backup !== marker.before.backup) port.set(PROFILE_BACKUP_KEY, marker.before.backup);
+    pair = observeSafe(port, marker, raw);
+    if (!pair || !pairEqual(pair, marker.before)) return { status: 'recovery-required', reason: 'rollback-readback' };
+    port.set(PROFILE_REPLACEMENT_MARKER_KEY, null);
+    const final = port.observe();
+    return port.getMarker() === null && quiet(final) && auxiliaryEqual(final.auxiliary, marker.auxiliary) &&
+      pairEqual(final.pair, marker.before)
+      ? { status: 'rolled-back' } : { status: 'recovery-required', reason: 'rollback-final-readback' };
+  } catch { return { status: 'recovery-required', reason: 'rollback-storage-failed' }; }
+}
+
+/** Explicit decision is mandatory; this parameter is not a UI permission
+ * boundary. It is only tested in isolation until app integration exists.
+ * Success retains the exact rollback record; normal app writes must NOT run
+ * until a future startup/finalization gate has resolved it. */
+export function executeProfileReplacement(port: ReplacementPort, plan: ReplacementPlan,
+  decision: 'replace' | 'cancel'): ReplacementResult {
+  if (decision !== 'replace') return { status: 'cancelled' };
+  if (!issuedPlans.has(plan)) return { status: 'blocked', reason: 'unissued-plan' };
+  const raw = markerFor(plan), marker = markerFrom(raw);
+  if (!marker) return { status: 'blocked', reason: 'marker-invalid' };
+  let attemptedStage = false;
+  try {
+    if (port.getMarker() !== null) return { status: 'recovery-required', reason: 'existing-marker' };
+    const current = port.observe();
+    if (!quiet(current) || !pairEqual(current.pair, marker.before) ||
+        !auxiliaryEqual(current.auxiliary, marker.auxiliary)) return { status: 'conflict', reason: 'stale-observation' };
+    if (pairEqual(marker.before, marker.after)) return { status: 'unchanged' };
+    attemptedStage = true;
+    port.set(PROFILE_REPLACEMENT_MARKER_KEY, raw);
+    let pair = observeSafe(port, marker, raw);
+    if (!pair || !pairEqual(pair, marker.before)) throw Error('stage-readback');
+    if (pair.backup !== marker.after.backup) port.set(PROFILE_BACKUP_KEY, marker.after.backup);
+    pair = observeSafe(port, marker, raw);
+    if (!pair || !pairEqual(pair, intermediate(marker))) throw Error('backup-readback');
+    if (pair.primary !== marker.after.primary) port.set(STORAGE_KEY, marker.after.primary);
+    pair = observeSafe(port, marker, raw);
+    if (!pair || !pairEqual(pair, marker.after)) throw Error('primary-readback');
+    return { status: 'applied-pending-finalization' };
+  } catch {
+    // A write may have succeeded despite the caller observing a failure.
+    // Inspect exact marker and observed pair; never assume failure = no effect.
+    if (!attemptedStage) return { status: 'unavailable', reason: 'preflight-read-failed' };
+    try {
+      const found = port.getMarker();
+      if (found === raw) return rollback(port, marker, raw);
+      const current = port.observe();
+      if (found === null && quiet(current) && pairEqual(current.pair, marker.before) &&
+          auxiliaryEqual(current.auxiliary, marker.auxiliary)) return { status: 'unavailable', reason: 'stage-not-written' };
+    } catch { /* uncertainty remains explicit */ }
+    return { status: 'recovery-required', reason: 'stage-or-state-unknown' };
+  }
+}
+
+export type ReplacementState = 'none' | 'staged' | 'applied' | 'conflict' | 'unavailable';
+export function inspectProfileReplacement(port: ReplacementPort): ReplacementState {
+  try {
+    const raw = port.getMarker();
+    if (raw === null) return 'none';
+    const marker = markerFrom(raw);
+    if (!marker) return 'conflict';
+    const pair = observeSafe(port, marker, raw);
+    if (!pair) return 'conflict';
+    return pairEqual(pair, marker.after) ? 'applied' : 'staged';
+  } catch { return 'unavailable'; }
+}
+
+/** Explicit recovery only. No startup auto-restore. Exact marker identity is
+ * required so a stale confirmation cannot roll back a subsequent transaction. */
+export function rollbackProfileReplacement(port: ReplacementPort, expectedMarker: string,
+  decision: 'rollback' | 'cancel'): ReplacementResult {
+  if (decision !== 'rollback') return { status: 'cancelled' };
+  try {
+    if (port.getMarker() !== expectedMarker) return { status: 'conflict', reason: 'marker-changed' };
+    const marker = markerFrom(expectedMarker);
+    if (!marker) return { status: 'recovery-required', reason: 'marker-invalid' };
+    return rollback(port, marker, expectedMarker);
+  } catch { return { status: 'unavailable', reason: 'marker-read-failed' }; }
+}

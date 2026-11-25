@@ -1,0 +1,172 @@
+import { describe, expect, it } from 'vitest';
+import { addCompletedWorkout, parseProfile, STORAGE_KEY, PROFILE_BACKUP_KEY } from './progression';
+import { freshGame } from './game';
+import { executeProfileReplacement, inspectProfileReplacement, planProfileReplacement,
+  PROFILE_REPLACEMENT_MARKER_KEY as MARKER, rollbackProfileReplacement,
+  type ReplacementObservation, type ReplacementPort, type ReplacementPlan } from './profileReplacement';
+
+const date = new Date('2026-11-25T12:00:00.000Z');
+const initial = parseProfile({ profileId: 'qa', xp: 400, coins: 200, creditedWorkoutIds: [], workouts: [],
+  game: { ...freshGame(), created: true, ownedOutfits: ['base', 'ember'], outfit: 'ember' } });
+const incoming = addCompletedWorkout(initial, 32000, date, { sessionId: 'tower-1', mode: 'tower' });
+const primary = JSON.stringify(initial, null, 2);
+const backup = JSON.stringify(initial) + '\n';
+const target = JSON.stringify(incoming, null, 1) + '\n';
+const targetBackup = JSON.stringify(initial, null, 4);
+const aux = { avatarLook: '{"style":"x"}', appearance: null, manualSteps: null, dailyPlan: null };
+function envelope(override: Record<string, unknown> = {}) {
+  return JSON.stringify({ exportFormat: 'bodyforge-manual-backup', exportSchemaVersion: 1,
+    exportedAt: date.toISOString(), complete: true, sourcesChangedDuringRead: false,
+    storedProfileRaw: target, storedBackupRaw: targetBackup,
+    storageReadStatus: 'ready', journalReadStatus: 'ready', quarantineReadStatus: 'ready',
+    profileQuarantineReadStatus: 'ready', durableReadStatus: 'ready',
+    auxiliaryReadStatus: { avatarLook: 'ready', appearance: 'ready', manualSteps: 'ready', dailyPlan: 'ready' },
+    storedAuxiliaryRaw: aux, pendingResultOriginals: [], quarantinedResults: [],
+    storedProfileQuarantineRaw: [], durableResults: [], ...override });
+}
+function memory() {
+  const values = new Map<string, string>([[STORAGE_KEY, primary], [PROFILE_BACKUP_KEY, backup], ['unrelated', 'keep']]);
+  let source = { auxiliary: { ...aux }, sourcesReady: true, pendingRecords: 0, durableRecords: 0, quarantineRecords: 0 };
+  const calls: [string, string | null][] = [];
+  let fail: (key: string, value: string | null, n: number) => 'before' | 'after' | 'noop' | undefined = () => undefined;
+  const port: ReplacementPort = {
+    observe: () => ({ ...source, pair: { primary: values.get(STORAGE_KEY) ?? null, backup: values.get(PROFILE_BACKUP_KEY) ?? null } }),
+    getMarker: () => values.get(MARKER) ?? null,
+    set: (key, value) => {
+      calls.push([key, value]);
+      const mode = fail(key, value, calls.length);
+      if (mode === 'before') throw Error('injected-before');
+      if (mode === 'noop') return;
+      if (value === null) values.delete(key); else values.set(key, value);
+      if (mode === 'after') throw Error('injected-after');
+    },
+  };
+  return { port, values, calls, setFail: (fn: typeof fail) => { fail = fn; },
+    setSource: (change: Partial<Omit<ReplacementObservation,'pair'>>) => { source = { ...source, ...change } as typeof source; } };
+}
+function plan(m: ReturnType<typeof memory>, json = envelope()): ReplacementPlan {
+  const result = planProfileReplacement(json, m.port.observe());
+  if (result.status !== 'planned') throw Error(result.reason);
+  return result.plan;
+}
+function original(m: ReturnType<typeof memory>) {
+  expect(m.port.observe().pair).toEqual({ primary, backup });
+  expect(m.port.getMarker()).toBeNull();
+  expect(m.values.get('unrelated')).toBe('keep');
+}
+
+describe('BF-106 isolated replacement transaction', () => {
+  it('plans without writes and cancellation makes zero storage calls', () => {
+    const m = memory(), p = plan(m);
+    expect(m.calls).toHaveLength(0);
+    expect(executeProfileReplacement(m.port,p,'cancel')).toEqual({ status: 'cancelled' });
+    expect(m.calls).toHaveLength(0);
+    original(m);
+  });
+  it('rejects invalid, incomplete, duplicate-key and unsupported backup without writes', () => {
+    const m = memory();
+    for (const json of ['{', envelope({ complete:false }), envelope({ storedProfileRaw:'{}' }),
+      envelope().replace('"complete":true','"complete":false,"complete":true'),
+      envelope({ storedProfileRaw:JSON.stringify({ ...incoming, profileId:'different' }) }),
+      envelope({ storedBackupRaw:JSON.stringify({ ...initial, profileId:'different' }) }),
+      envelope({ storedAuxiliaryRaw:{...aux, appearance:'different'} }),
+      envelope({ pendingResult: {} }),
+      envelope({ pendingResults: 'invalid' }),
+      envelope({ durableResults:[{key:STORAGE_KEY+':result:x',raw:'{}',baseProfileRaw:null,state:'settled'}] })]) {
+      expect(planProfileReplacement(json,m.port.observe()).status).toBe('blocked');
+    }
+    expect(m.calls).toHaveLength(0);
+    original(m);
+  });
+  it('rejects unknown current source, journal or quarantine even when it is only settled history', () => {
+    for (const change of [{sourcesReady:false},{pendingRecords:1},{durableRecords:1},{quarantineRecords:1}]) {
+      const m=memory();m.setSource(change);
+      expect(planProfileReplacement(envelope(),m.port.observe()).status).toBe('blocked');
+      expect(m.calls).toHaveLength(0);
+    }
+  });
+  it('blocks stale primary, fallback or auxiliary observations and cloned plans', () => {
+    for (const which of [STORAGE_KEY, PROFILE_BACKUP_KEY, 'aux']) {
+      const m=memory(),p=plan(m);
+      if(which==='aux') m.setSource({auxiliary:{...aux,appearance:'changed'}});
+      else m.values.set(which,'newer');
+      expect(executeProfileReplacement(m.port,p,'replace').status).toBe('conflict');
+      expect(m.calls).toHaveLength(0);
+    }
+    const m=memory(),p=plan(m);
+    expect(executeProfileReplacement(m.port,{...p},'replace').status).toBe('blocked');
+    expect(m.calls).toHaveLength(0);
+  });
+  it('writes marker, exact incoming backup and primary, retains old raw and supports explicit rollback', () => {
+    const m=memory(),p=plan(m);
+    expect(executeProfileReplacement(m.port,p,'replace')).toEqual({status:'applied-pending-finalization'});
+    expect(m.calls.map(c=>c[0])).toEqual([MARKER,PROFILE_BACKUP_KEY,STORAGE_KEY]);
+    expect(m.port.observe().pair).toEqual({primary:target,backup:targetBackup});
+    const marker=m.port.getMarker()!;
+    expect(JSON.parse(marker).before).toEqual({primary,backup});
+    expect(inspectProfileReplacement(m.port)).toBe('applied');
+    const count=m.calls.length;
+    expect(executeProfileReplacement(m.port,p,'replace').status).toBe('recovery-required');
+    expect(rollbackProfileReplacement(m.port,marker,'cancel').status).toBe('cancelled');
+    expect(m.calls).toHaveLength(count);
+    expect(rollbackProfileReplacement(m.port,marker,'rollback').status).toBe('rolled-back');
+    original(m);
+  });
+  it.each([1,2,3].flatMap(n=>['before','after','noop'].map(mode=>[n,mode] as const)))
+  ('fault on write %i (%s) preserves original exact pair or reports stage unavailable', (n,mode) => {
+    const m=memory(),p=plan(m);
+    m.setFail((_key,_value,i)=>i===n?mode as 'before'|'after'|'noop':undefined);
+    const result=executeProfileReplacement(m.port,p,'replace');
+    expect(result.status).toBe(n===1&&mode!=='after'?'unavailable':'rolled-back');
+    original(m);
+  });
+  it('recognizes each interruption prefix and supports restart rollback without an in-memory plan', () => {
+    const complete=memory(),p=plan(complete);
+    executeProfileReplacement(complete.port,p,'replace');
+    const marker=complete.port.getMarker()!;
+    for (const prefix of [1,2,3]) {
+      const m=memory();
+      for(const [key,value] of complete.calls.slice(0,prefix)) if(value!==null)m.values.set(key,value);
+      expect(inspectProfileReplacement(m.port)).toBe(prefix===3?'applied':'staged');
+      expect(rollbackProfileReplacement(m.port,marker,'rollback').status).toBe('rolled-back');
+      original(m);
+    }
+  });
+  it('retains marker on rollback failure and can retry reverse prefix without touching unrelated keys', () => {
+    for (const n of [4,5,6]) {
+      const m=memory(),p=plan(m);
+      executeProfileReplacement(m.port,p,'replace');
+      const marker=m.port.getMarker()!;
+      m.setFail((_k,_v,i)=>i===n?'before':undefined);
+      expect(rollbackProfileReplacement(m.port,marker,'rollback').status).toBe('recovery-required');
+      expect(m.port.getMarker()).toBe(marker);
+      m.setFail(()=>undefined);
+      expect(rollbackProfileReplacement(m.port,marker,'rollback').status).toBe('rolled-back');
+      original(m);
+    }
+  });
+  it('never rolls back through a newer revision or changed journal and never accepts malformed marker', () => {
+    for (const kind of ['primary','backup','journal','marker']) {
+      const m=memory(),p=plan(m);
+      executeProfileReplacement(m.port,p,'replace');
+      if(kind==='primary')m.values.set(STORAGE_KEY,'newer');
+      if(kind==='backup')m.values.set(PROFILE_BACKUP_KEY,'newer');
+      if(kind==='journal')m.setSource({durableRecords:1});
+      if(kind==='marker')m.values.set(MARKER,'{"version":1,"version":1}');
+      const marker=m.port.getMarker()!,count=m.calls.length;
+      expect(inspectProfileReplacement(m.port)).toBe('conflict');
+      expect(rollbackProfileReplacement(m.port,marker,'rollback').status).toBe('recovery-required');
+      expect(m.calls).toHaveLength(count);
+    }
+  });
+  it('blocks stale recovery confirmation and duplicate execution; supports exact no-op', () => {
+    const m=memory(),p=plan(m);
+    executeProfileReplacement(m.port,p,'replace');
+    const count=m.calls.length;
+    expect(rollbackProfileReplacement(m.port,'old-marker','rollback').status).toBe('conflict');
+    expect(m.calls).toHaveLength(count);
+    const n=memory(),same=plan(n,envelope({storedProfileRaw:primary,storedBackupRaw:backup}));
+    expect(executeProfileReplacement(n.port,same,'replace').status).toBe('unchanged');
+    expect(n.calls).toHaveLength(0);
+  });
+});

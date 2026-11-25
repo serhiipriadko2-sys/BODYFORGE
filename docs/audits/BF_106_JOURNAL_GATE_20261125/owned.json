@@ -1,0 +1,8 @@
+{
+  "src/lib/durableJournal.ts": "082ab2cb783507a0273ddd244afbd1662d6b7bb7408adfe8eb0250b7ba50861f",
+  "src/lib/durableJournalGate.ts": "9387363d7a6db62d32457d9b3b697af8078702674ba3bd6760a8ac1ccbc6c1ac",
+  "src/lib/durableJournalGate.test.ts": "7ccfc0caf61f51e1ef9940df504613e0a8c4f2decd36356c607f28c869ab801e",
+  "src/lib/profileReplacementRecovery.ts": "3d26d56e006e877ca5d997c1670b2f8651cee0064e1c8cd1582453685fa05adb",
+  "src/lib/profileReplacementRecovery.test.ts": "c37e1bdfa47e94b3417349f141399fba889d824d88bbd7bad2c8c10044adefae",
+  "qa/journal-gate-e2e.mjs": "952fe5acf7845ecfc1056b1d11944644d2cb1201f415b17a70df8b1d93ee92c4"
+}

@@ -1,4 +1,5 @@
 import { RESULT_JOURNAL_PREFIX } from './workoutJournal';
+import { withDurableJournalGate } from './durableJournalGate';
 
 export const DURABLE_JOURNAL_DATABASE = 'bodyforge:durable-results:v1';
 const STORE = 'results';
@@ -90,7 +91,7 @@ export async function readDurableJournal(): Promise<ReadResult> {
   });
 }
 
-async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: string | null,
+async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileRaw: string | null,
   state: 'settled' | 'quarantined' | null, signal?: AbortSignal): Promise<DurableWriteResult> {
   if (signal?.aborted) return { status: 'unavailable' };
   if (!Array.isArray(entries) || entries.some((entry) => !validInput(entry))
@@ -170,8 +171,21 @@ async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: stri
   return { status: 'saved', entries: entriesReadBack };
 }
 
+/** Snapshot mutable inputs before waiting; no IDB access without the gate. */
+async function writeEntries(entries: readonly EntryInput[], baseProfileRaw: string | null,
+  state: 'settled' | 'quarantined' | null, signal?: AbortSignal): Promise<DurableWriteResult> {
+  if (signal?.aborted) return { status: 'unavailable' };
+  if (!Array.isArray(entries) || entries.some(entry => !validInput(entry)) ||
+      (baseProfileRaw !== null && typeof baseProfileRaw !== 'string')) return { status: 'invalid' };
+  const snapshot = entries.map(({ key, raw }) => ({ key, raw }));
+  const result = await withDurableJournalGate('shared', () =>
+    writeEntriesUnlocked(snapshot, baseProfileRaw, state, signal), { signal });
+  return result.status === 'completed' ? result.value : { status: 'unavailable' };
+}
+
 /** Immutable inserts are serialized by the IDB transaction itself and may run
- * before the profile Web Lock. This operation never changes a stored payload,
+ * before the profile Web Lock, holding shared journal access through read-back.
+ * This operation never changes a stored payload,
  * revives a tombstone, or writes rewards. */
 export function stageDurableResults(entries: readonly EntryInput[], baseProfileRaw: string | null,
   signal?: AbortSignal): Promise<DurableWriteResult> {

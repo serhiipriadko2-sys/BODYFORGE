@@ -1,0 +1,168 @@
+{
+  "commands": {
+    "owned-chrome": {
+      "args": [
+        "node",
+        "--test",
+        "qa/owned-chrome.test.mjs",
+        "qa/tower-squat-fixture.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.5
+    },
+    "unit": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ],
+      "exit": 0,
+      "seconds": 30.3
+    },
+    "build": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 11.5
+    },
+    "bundle": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:bundle"
+      ],
+      "exit": 0,
+      "seconds": 0.7
+    },
+    "forge-wrong-build": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "exit": 14,
+      "seconds": 0.2
+    },
+    "forge-no-chrome": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "exit": 14,
+      "seconds": 0.2
+    },
+    "forge": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "exit": 0,
+      "seconds": 30.7
+    },
+    "forge-repeat": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "exit": 0,
+      "seconds": 28.7
+    },
+    "tower20-preview": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:tower20"
+      ],
+      "exit": 0,
+      "seconds": 17.5
+    },
+    "tower20-final": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:tower20"
+      ],
+      "exit": 0,
+      "seconds": 34.1
+    },
+    "privacy": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:privacy"
+      ],
+      "exit": 0,
+      "seconds": 0.9
+    },
+    "multitab": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:multitab"
+      ],
+      "exit": 0,
+      "seconds": 39.6
+    },
+    "dedup": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:dedup-recovery"
+      ],
+      "exit": 0,
+      "seconds": 4.3
+    }
+  },
+  "ports": {
+    "preview": {
+      "origin": "http://127.0.0.1:64809",
+      "pid": 19904
+    },
+    "stable-dev": {
+      "origin": "http://127.0.0.1:65308",
+      "pid": 7156
+    }
+  },
+  "liveSourceDrift": [],
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "preview": {
+    "entry": "/assets/index-CLryBuXu.js",
+    "bytes": 395694,
+    "sha256": "a9cc978e679b3c321f86266cee1ff171145a3ce312ab8a04415ee7f9fb967713",
+    "index": {
+      "bytes": 1188,
+      "sha256": "f02e7cd509712a33225551576ecf5864211a9e7a0e33581c6aca360b47a0e066"
+    }
+  },
+  "snapshotChanged": false,
+  "finalHead": "7caa598c873c92887ac2ae3071b13f433225312e"
+}

@@ -1,0 +1,155 @@
+{
+  "status": "TESTED_LOCAL",
+  "results": {
+    "focused": 0,
+    "unit": 0,
+    "build": 0,
+    "bundle": 0,
+    "forge": 0,
+    "privacy": 0,
+    "replacement": 0,
+    "import-preview": 0,
+    "dedup": 0
+  },
+  "counts": {
+    "focused": "145",
+    "unit": "746",
+    "build": 0,
+    "bundle": 0,
+    "forge": 76,
+    "privacy": 13,
+    "replacement": 60,
+    "import-preview": 24,
+    "dedup": 34
+  },
+  "replacement": "assertions=60 crashes=3",
+  "checks": {
+    "canon": 0,
+    "diff": 0,
+    "cachedDiff": 0,
+    "qaSyntax": 0
+  },
+  "bundle": {
+    "entryBytes": 397313,
+    "entryGzipBytes": 121212,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 99448,
+    "entryReductionPercent": 20,
+    "entryName": "index-DH2vxXaH.js",
+    "poseName": "vision_bundle-yHo5Ol3o.js"
+  },
+  "files": {
+    "src/lib/progression.ts": {
+      "before": {
+        "bytes": 18630,
+        "sha256": "666939a292869e188f9f64aad8ad4289c2a714594e1c2fa6a9e56249fa2934b1"
+      },
+      "after": {
+        "bytes": 18998,
+        "sha256": "506af091eaf3fac1c893e087926c4dd72a7b7e73345bbaa9605a3cf977353e34"
+      }
+    },
+    "src/hooks/useProfileStorage.ts": {
+      "before": {
+        "bytes": 18414,
+        "sha256": "0241e29bf77bf1c8428d1f1b46d2a841e5d0b05b0a316a64bf8d1e58b1f7c70d"
+      },
+      "after": {
+        "bytes": 18653,
+        "sha256": "1d6aaf3d448159160a4d8460b058414709293855244cec0ded6629b0efbf3c99"
+      }
+    },
+    "src/lib/profileReplacement.ts": {
+      "before": {
+        "bytes": 14300,
+        "sha256": "9535349f81f975d8b8874545b8989a7b2c5cc56b08a781f840eba11a2f76401e"
+      },
+      "after": {
+        "bytes": 14313,
+        "sha256": "8a33c40449cb5e94cd07b2f01c07c67cb725a4bcb157793e82ec77ee20aaa870"
+      }
+    },
+    "src/lib/profileReplacementFence.test.ts": {
+      "before": null,
+      "after": {
+        "bytes": 3279,
+        "sha256": "81de41bace4bdcea4422614af8b12e1234b0a8f6bdc56e51efdf08fddd412daa"
+      }
+    },
+    "qa/profile-replacement-e2e.mjs": {
+      "before": {
+        "bytes": 16823,
+        "sha256": "6e2ee1d6f6247c0c58e85a89de3ee84129e629425a1d9bdeec812aebad7fdc64"
+      },
+      "after": {
+        "bytes": 19033,
+        "sha256": "a72cde32f1e5147199f159110272067fc6080b43ba113573ef7470253612dc26"
+      }
+    }
+  },
+  "artifacts": {
+    "docs/audits/BF_106_REPLACEMENT_FENCE_20261125/RECEIPT.md": {
+      "bytes": 3240,
+      "sha256": "4e0d98f61f2a445d8ac13d769882a8595d804cb5b5309d960814052e1abb8148"
+    },
+    "docs/audits/BF_106_REPLACEMENT_FENCE_20261125/gates.json": {
+      "bytes": 3252,
+      "sha256": "b4b353cfac1453ef061c0321cf878bf0012ce25a03e6b147db40da2b102ff80e"
+    },
+    "docs/audits/BF_106_REPLACEMENT_FENCE_20261125/source-manifest.json": {
+      "bytes": 39130,
+      "sha256": "512c7709ebfd5f7bf673505ebb57ab9d3447174052635d6aa721524a4ce1c720"
+    },
+    "docs/audits/BF_106_REPLACEMENT_FENCE_20261125/build-manifest.json": {
+      "bytes": 9727,
+      "sha256": "ceea9ed55a5cb31a104a0f0b899442b44ab3ac1b591a1d2ee00250b0568652fd"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/focused.log": {
+      "bytes": 647,
+      "sha256": "dda827f08c493c63a91166d9b5b58ef2fc248e3efcdda2985e2e8f8ab2342e21"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/unit.log": {
+      "bytes": 486,
+      "sha256": "3fe44f960091df0437655c6b7c5efb8adc24f9faf9cd5e34a5e81d1eaa9239d2"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/build.log": {
+      "bytes": 2992,
+      "sha256": "7b4e8d27b4980c363dc383b0bf1c9c80fa6bc25b9044f7f48b23b06c30ce7225"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/bundle.log": {
+      "bytes": 278,
+      "sha256": "b98ded3f952664920a601c77a37821e08a9f3e6ea9201a009c9addcf288dd995"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/forge.log": {
+      "bytes": 7493,
+      "sha256": "44e36fe94428b3cf39cc75655d113c3b5c75ada868013487bb1b48271897a28b"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/privacy.log": {
+      "bytes": 848,
+      "sha256": "05b418e19a96bd78ab4ac703c883103d04c73ac36165a2a5bada7135679ce1fd"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/replacement.log": {
+      "bytes": 3195,
+      "sha256": "433cd61bd9046fa748262f67b9a113e1015aaafcd18a161d19fd22bcad51fa50"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/import-preview.log": {
+      "bytes": 1372,
+      "sha256": "aaff6d7ec3b196edb4facee60e27be57c203ef60b9a50c4de63c50689caa90bb"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/dedup.log": {
+      "bytes": 3168,
+      "sha256": "986dba87e888c7750470dd68ebda2b6e21e96c9ff72ca0355627ba092c067c72"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/preview.log": {
+      "bytes": 40,
+      "sha256": "d3c96258586f366731a6cc42f6f3983878866ba0f814256debb9c04cb43ef164"
+    },
+    ".bodyforge-qa/bf106-fence-verify-run1/stable-dev.log": {
+      "bytes": 49,
+      "sha256": "37a5c45a25b711fd44a450784459c7f62b07027a6f4e4017fa6f85aacc1604aa"
+    }
+  },
+  "rollback": "Verify final SHA-256. Restore only exact matching .before files in .bodyforge-qa/bf106-fence-patch."
+}

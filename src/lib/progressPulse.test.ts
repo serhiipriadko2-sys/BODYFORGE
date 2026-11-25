@@ -148,4 +148,36 @@ describe('pulse dashboard — derived from stored, verified sessions', () => {
       historyLimited: true, current: { sessions: 60 }, previous: { sessions: 0 },
     });
   });
+  it('marks hidden history even below 60 visible rows when lifetime counts prove missing sessions', () => {
+    const now = new Date(2026, 10, 25, 12);
+    const one = [workout('latest', now)];
+    for (const range of [7, 30] as const) {
+      expect(comparePulsePeriods(one, now, range, 4)).toMatchObject({
+        historyLimited: true, current: { sessions: 1, activeDays: 1 },
+      });
+      expect(comparePulsePeriods(one, now, range, 1).historyLimited).toBe(false);
+    }
+  });
+
+  it('labels known partial days as lower bounds and leaves unknown days absent from the plot', () => {
+    const now = new Date(2026, 10, 25, 12);
+    const render = (date: Date) => renderToStaticMarkup(createElement(ProgressPulseBoard, {
+      profile: { ...EMPTY_PROFILE, workouts: [workout('visible', date)],
+        totals: { workouts: 3, repetitions: 60, bestDurationMs: 35000 } },
+      now, activityVisible: true, actionsDisabled: false, onTraining: () => {}, onAvatar: () => {},
+    }));
+    const complete = render(now).split('class="pulse-trend-card"')[1];
+    expect(complete).toContain('data-history-limited="true"');
+    expect(complete).toContain('≥20');
+    expect(complete).toContain('нет доступных данных');
+    expect(complete).toContain('data-pulse-delta="unavailable"');
+    expect(complete).not.toContain('data-prior-sessions=');
+    expect(complete.match(/<circle\b/g)).toHaveLength(1);
+    expect(complete).not.toMatch(/<path\b[^>]*fill="url\(#pulse-chart-fill\)"/);
+    const missing = render(new Date(2026, 10, 15, 12)).split('class="pulse-trend-card"')[1];
+    expect(missing).not.toMatch(/<circle\b/);
+    expect(missing).toContain('Нет данных за день');
+    expect(missing).not.toContain('график показывает ноль');
+  });
+
 });

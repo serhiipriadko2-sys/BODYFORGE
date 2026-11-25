@@ -1,0 +1,21 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  287,
+    "sourceManifestSha256":  "3EB5A68C2DE51819953105F646E7B8CB3B8A669388BC84DE8C45B2E8F372CFD7",
+    "overlay":  "src/lib/avatarScalpDensity.test.ts",
+    "unit":  1,
+    "tsc":  0,
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "epoch":  0,
+    "replacement":  19,
+    "journalGate":  0,
+    "importPreview":  0,
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T17:31:00.9973253+03:00",
+    "devPort":  6300,
+    "error":  "Unit failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T17:32:32.9652211+03:00"
+}

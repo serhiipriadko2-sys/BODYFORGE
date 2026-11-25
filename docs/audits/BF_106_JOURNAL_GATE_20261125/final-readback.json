@@ -1,0 +1,118 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-25T17:12:13.430955+03:00",
+  "owned": [
+    {
+      "path": "src/lib/durableJournal.ts",
+      "bytes": 10538,
+      "sha256": "082ab2cb783507a0273ddd244afbd1662d6b7bb7408adfe8eb0250b7ba50861f"
+    },
+    {
+      "path": "src/lib/durableJournalGate.ts",
+      "bytes": 1912,
+      "sha256": "9387363d7a6db62d32457d9b3b697af8078702674ba3bd6760a8ac1ccbc6c1ac"
+    },
+    {
+      "path": "src/lib/durableJournalGate.test.ts",
+      "bytes": 2579,
+      "sha256": "7ccfc0caf61f51e1ef9940df504613e0a8c4f2decd36356c607f28c869ab801e"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.ts",
+      "bytes": 6360,
+      "sha256": "3d26d56e006e877ca5d997c1670b2f8651cee0064e1c8cd1582453685fa05adb"
+    },
+    {
+      "path": "src/lib/profileReplacementRecovery.test.ts",
+      "bytes": 8099,
+      "sha256": "c37e1bdfa47e94b3417349f141399fba889d824d88bbd7bad2c8c10044adefae"
+    },
+    {
+      "path": "qa/journal-gate-e2e.mjs",
+      "bytes": 15611,
+      "sha256": "952fe5acf7845ecfc1056b1d11944644d2cb1201f415b17a70df8b1d93ee92c4"
+    },
+    {
+      "path": "qa/journal-e2e.mjs",
+      "bytes": 59367,
+      "sha256": "e544f7fb3504a07ee4f480d836aaa51bbcd11723ef352f082d25ac3b2b2992f4"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 39593,
+      "sha256": "d8bad97f3aef80286c619587f16e3714189a50166b390d71668ae3de804f5dc7"
+    }
+  ],
+  "sourceCount": 278,
+  "buildCount": 67,
+  "sourceManifestSha256": "D697E27D27F6081331721F5B4AA7F91EC940181C1CE6AB19B69FB27FD508764E",
+  "buildManifestSha256": "9926874D0AFFC53FAE3C56680F11FB22F71DA28397AF1BC24EB0C64D3E7ECEEC",
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarDetailMaps.ts",
+    "src/lib/profileReplacement.test.ts"
+  ],
+  "liveNewPaths": [
+    "public/assets/athlete-face-relief-normal.png",
+    "src/lib/avatarBakedNormal.test.ts",
+    "src/lib/avatarFaceBake.test.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "syntax": [
+    {
+      "path": "qa/journal-gate-e2e.mjs",
+      "exit": 0
+    },
+    {
+      "path": "qa/journal-e2e.mjs",
+      "exit": 0
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "exit": 0
+    }
+  ],
+  "unitTests": 769,
+  "testFiles": 79,
+  "journalAssertions": 161,
+  "journalCrashes": 3,
+  "gateAssertions": 27,
+  "recoveryAssertions": 64,
+  "towerAssertions": 26,
+  "mobileAssertions": 88,
+  "mobileBrowserErrors": 0,
+  "mobileHarnessSha256": "d8bad97f3aef80286c619587f16e3714189a50166b390d71668ae3de804f5dc7",
+  "bundle": {
+    "entryBytes": 387660,
+    "entryGzipBytes": 118759,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 109101,
+    "entryReductionPercent": 22,
+    "entryName": "index-wsWyqslt.js",
+    "poseName": "vision_bundle-DKHodbyY.js"
+  },
+  "health": {
+    "observed": "2026-11-25T17:12:12.2024498+03:00",
+    "existingServers": [
+      {
+        "port": 5173,
+        "http": 200
+      },
+      {
+        "port": 5176,
+        "http": "unavailable"
+      }
+    ],
+    "formerQaPortListeners": [],
+    "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+    "qaServersStoppedFromGates": true,
+    "userProfileRead": false,
+    "apkBuilt": false,
+    "firebasePublished": false
+  }
+}

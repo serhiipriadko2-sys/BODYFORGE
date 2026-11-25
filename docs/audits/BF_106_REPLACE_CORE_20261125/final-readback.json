@@ -1,0 +1,36 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-25T16:15:14.675866+03:00",
+  "owned": [
+    {
+      "path": "src/lib/profileReplacement.ts",
+      "bytes": 14300,
+      "sha256": "9535349f81f975d8b8874545b8989a7b2c5cc56b08a781f840eba11a2f76401e"
+    },
+    {
+      "path": "src/lib/profileReplacement.test.ts",
+      "bytes": 11058,
+      "sha256": "68d2047871ddbeb33579fd4ae12fdd9cbf68517b24c82dd3a0426bbe10cc77ef"
+    },
+    {
+      "path": "qa/profile-replacement-e2e.mjs",
+      "bytes": 16823,
+      "sha256": "6e2ee1d6f6247c0c58e85a89de3ee84129e629425a1d9bdeec812aebad7fdc64"
+    }
+  ],
+  "sourceCount": 268,
+  "buildCount": 64,
+  "sourceManifestSha256": "336AC86E1C5C30015DD39A17A3E3A82A0B3D33D7454ED55A196D6B0BA3184C6E",
+  "buildManifestSha256": "82F3C8C581D8591D05294A29DE082501673B9302F0E901BAA30994B523F3A7CB",
+  "liveChangedPaths": [
+    "src/lib/progressImportPreview.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/progressImportReplacement.test.ts",
+    "src/lib/progressImportReplacement.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0
+}

@@ -1,0 +1,21 @@
+﻿{
+    "observed":  "2026-11-25T17:12:12.2024498+03:00",
+    "existingServers":  [
+                            {
+                                "port":  5173,
+                                "http":  200
+                            },
+                            {
+                                "port":  5176,
+                                "http":  "unavailable"
+                            }
+                        ],
+    "formerQaPortListeners":  [
+
+                              ],
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "qaServersStoppedFromGates":  true,
+    "userProfileRead":  false,
+    "apkBuilt":  false,
+    "firebasePublished":  false
+}

@@ -1,0 +1,139 @@
+{
+  "result": "TESTED_LOCAL",
+  "failed": {},
+  "checks": {
+    "git-diff": {
+      "exit": 0
+    },
+    "git-cached-diff": {
+      "exit": 0
+    },
+    "canon": {
+      "exit": 0
+    }
+  },
+  "ownedChanges": {
+    "qa/forge-home-xp-faq-e2e.mjs": {
+      "before": {
+        "bytes": 21035,
+        "sha256": "0d90f6bf465abd8856391cec11598571b1beaa7c29b4d0a2e31eeae93f8e94b7"
+      },
+      "after": {
+        "bytes": 22158,
+        "sha256": "001f26c17200f4b7831426803265179094390eea72c28e5db94136124415459a"
+      },
+      "backup": ".bodyforge-qa/roadmap-bf005-forge"
+    },
+    "qa/owned-chrome.mjs": {
+      "before": {
+        "bytes": 6244,
+        "sha256": "74e48a598f39c0aafe5148adf936abfe124e125ab4420ddf71e0b09ab471bcb1"
+      },
+      "after": {
+        "bytes": 7562,
+        "sha256": "3ae37d318fa7be58bf8795d6b86ea1b9bd98291379fb049e06d0bbb015515c3b"
+      },
+      "backup": ".bodyforge-qa/roadmap-bf005-forge"
+    },
+    "qa/owned-chrome.test.mjs": {
+      "before": {
+        "bytes": 1457,
+        "sha256": "e8c50ed1a87a9a60f48701f493817b62b997836c375fece720da261814403fe0"
+      },
+      "after": {
+        "bytes": 3191,
+        "sha256": "2e7f3a24d787c00e2c6486b02dc49c5811371c51c8fb0aa7bf76b32c9cbe91dd"
+      },
+      "backup": ".bodyforge-qa/roadmap-bf005-forge"
+    },
+    "qa/tower20-e2e.mjs": {
+      "before": {
+        "bytes": 22761,
+        "sha256": "9b2af080913803f4e050785784fb3f16d970908f28b30f29b7639485e75ca517"
+      },
+      "after": {
+        "bytes": 22391,
+        "sha256": "abc3439cc0f6da7d7c6b41b33964575b1194c9a015cdf724743a3f8d5ae5b87d"
+      },
+      "backup": ".bodyforge-qa/roadmap-bf005-tower"
+    }
+  },
+  "artifacts": {
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/owned-chrome.log": {
+      "bytes": 1505,
+      "sha256": "259a3b4680296e82ff8632790a867bd9f13733ce4a4263638953e16a71c84a78"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/unit.log": {
+      "bytes": 529,
+      "sha256": "6654e7846948ab5ffcbb904fe3298c1f9bc353a740e19dde77fd0844b11b80c3"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/build.log": {
+      "bytes": 2180,
+      "sha256": "a7d0cab6ee1bdf117d71d34c5eced828e61ee6f8d7be90f98190ac1422246864"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/bundle.log": {
+      "bytes": 366,
+      "sha256": "324e899122cbf0202f17b004e1d8894fed8fb3f287d975edcc6c974c9b223561"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/forge-wrong-build.log": {
+      "bytes": 475,
+      "sha256": "eee11c1fff7e642ac2a03a1006183a4110df7ed43e0be69e44a5fe8d5ac48221"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/forge-no-chrome.log": {
+      "bytes": 540,
+      "sha256": "f69cb3ae86cf53ce83af90091b7414e920dd28ed7a84e3199eae6bb6f97df8e2"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/forge.log": {
+      "bytes": 6886,
+      "sha256": "277d1c9e9e9a8f9ff1c677908674a5fda5559f3c8a4cd630dcad42f814a99a6b"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/forge-repeat.log": {
+      "bytes": 6887,
+      "sha256": "59f271f5362e038141bc1d8b20ca0dca9c07f1ee1000ecd56e1281cfde2de45c"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/tower20-preview.log": {
+      "bytes": 1899,
+      "sha256": "da4607267d317149a20e791c40b5e57f1615635cb97073708ceb45c1f19c1abe"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/tower20-final.log": {
+      "bytes": 2833,
+      "sha256": "ad8b1ddee970d4bc528bd3693719f05b324c6d6b14e543c124bbd45020c44882"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/privacy.log": {
+      "bytes": 848,
+      "sha256": "05b418e19a96bd78ab4ac703c883103d04c73ac36165a2a5bada7135679ce1fd"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/multitab.log": {
+      "bytes": 4271,
+      "sha256": "866e0bb56d3f6f90f264c4b06c4b8cfc0040c851f4e89ed2accd56c9d654cce3"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/dedup.log": {
+      "bytes": 3168,
+      "sha256": "36637afa7da8c87a2a738b2b1d86b846a90879bbaf798070e0e42df8dda82782"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/preview.log": {
+      "bytes": 40,
+      "sha256": "0f091a6ebd941c881678e5c1c6935af0ba60a037af9962e543131163ad62d101"
+    },
+    ".bodyforge-qa/roadmap-baseline-20261124-r6/stable-dev.log": {
+      "bytes": 49,
+      "sha256": "73a6efb03ba77055f9043d371b9118d28979f22613d126e9418181c7f48ad736"
+    },
+    "docs/audits/BF_R0_20261124_RUN05/build-manifest.json": {
+      "bytes": 9413,
+      "sha256": "0e3fb248f41f2965f0a1ff55e3277bce4b6dfffc60c026f50613dee650ecc7f6"
+    },
+    "docs/audits/BF_R0_20261124_RUN05/gates.json": {
+      "bytes": 3226,
+      "sha256": "73c192dbd03f55b11ccf0629eb82c27cc4816c1e432663652e1a9aa63392d80a"
+    },
+    "docs/audits/BF_R0_20261124_RUN05/RECEIPT.md": {
+      "bytes": 9158,
+      "sha256": "5db8d7c647d3cb0c7d186328fdde45a7e7b20a539b6203b37146f1c0b2d0f71e"
+    },
+    "docs/audits/BF_R0_20261124_RUN05/source-manifest.json": {
+      "bytes": 34974,
+      "sha256": "58048744920403c99490cb01ca5adafcdcc68bb4015697b027def4ef4875cc78"
+    }
+  }
+}

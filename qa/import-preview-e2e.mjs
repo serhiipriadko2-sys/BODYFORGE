@@ -1,0 +1,228 @@
+// BF-106: actual Settings file input and read-only import comparison.
+// Synthetic fixture only; no replacement operation exists.
+// Only disposable Chrome, no real camera, owner profile, Downloads or network upload.
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
+
+const origin = process.env.BODYFORGE_QA_ORIGIN;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+let profile, chrome, browser, socket, seq = 0, assertions = 0;
+const pending = new Map(), errors = [];
+function check(ok, label) {
+  if (!ok) throw Error('FAIL ' + label);
+  assertions++; console.log('PASS', label);
+}
+function rejectPending() {
+  for (const request of pending.values()) { clearTimeout(request.timer); request.reject(Error('CDP disconnected')); }
+  pending.clear();
+}
+function cdp(method, params = {}) {
+  if (socket?.readyState !== WebSocket.OPEN) return Promise.reject(Error('CDP not open'));
+  return new Promise((resolve, reject) => {
+    const id = ++seq;
+    const timer = setTimeout(() => { pending.delete(id); reject(Error('CDP timeout: ' + method)); }, 15000);
+    pending.set(id, { resolve, reject, timer });
+    try { socket.send(JSON.stringify({ id, method, params })); }
+    catch (error) { clearTimeout(timer); pending.delete(id); reject(error); }
+  });
+}
+async function ev(expression) {
+  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+  if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+  return result.result.value;
+}
+async function until(expression, label) {
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    if (await ev(expression)) return;
+    await sleep(100);
+  }
+  throw Error('TIMEOUT ' + label);
+}
+
+async function seed() {
+  const p = await import('/src/lib/progression.ts');
+  const { freshGame } = await import('/src/lib/game.ts');
+  const { withProfileWriteLock } = await import('/src/lib/profileLock.ts');
+  const date = new Date('2026-11-24T10:00:00.000Z');
+  const initial = p.parseProfile({
+    profileId: 'bf105-receipt-qa', xp: 400, coins: 200,
+    creditedWorkoutIds: ['legacy-one'],
+    workouts: [{ id: 'legacy-one', finishedAt: date.toISOString(), durationMs: 60000, repetitions: 20, xp: 100 }],
+    totals: { workouts: 1, repetitions: 20, bestDurationMs: 60000 },
+    game: { ...freshGame(), created: true, nickname: 'RECEIPT QA', ownedOutfits: ['base', 'ember'],
+      outfit: 'ember', muscles: { arms: 1, core: 2, legs: 3, back: 4 } },
+  });
+  return withProfileWriteLock(() => {
+    const first = p.saveProfile(initial, { expectedRaw: null });
+    if (first.status !== 'saved') throw Error('Initial fixture save failed: ' + first.status);
+    const tower = p.addCompletedWorkout(initial, 32000, date, {
+      sessionId: 'tower-one', mode: 'tower', splitsMs: Array.from({ length: 20 }, (_, i) => (i+1)*1000),
+    });
+    const second = p.saveProfile(tower, { expectedRaw: first.revision });
+    if (second.status !== 'saved') throw Error('Tower fixture save failed: ' + second.status);
+    const plank = p.addCompletedWorkout(tower, 31000, date, {
+      sessionId: 'plank-one', exerciseId: 'plank', holdSeconds: 30,
+    });
+    const third = p.saveProfile(plank, { expectedRaw: second.revision });
+    if (third.status !== 'saved') throw Error('Plank fixture save failed: ' + third.status);
+    return { raw: third.revision, backup: second.revision,
+      exactPrimary: localStorage.getItem(p.STORAGE_KEY) === third.revision,
+      exactBackup: localStorage.getItem(p.PROFILE_BACKUP_KEY) === second.revision };
+  });
+}
+async function makeBackup() {
+  const p = await import('/src/lib/progression.ts');
+  const { prepareProgressBackup } = await import('/src/lib/progressBackup.ts');
+  const state = p.loadProfileState();
+  if (state.status !== 'ready') throw Error('Fixture not ready');
+  const prepared = await prepareProgressBackup(state.profile, null, new Date('2026-11-25T12:00:00Z'));
+  if (!prepared.complete) throw Error('Fixture export incomplete');
+  const envelope = JSON.parse(prepared.json);
+  const next = p.addCompletedWorkout(state.profile, 38000, new Date('2026-11-25T12:01:00Z'), {
+    sessionId: 'preview-only-fourth', mode: 'training',
+  });
+  envelope.storedProfileRaw = JSON.stringify(next);
+  envelope.xp = 999999; envelope.coins = 999999; // Must ignore display mirror.
+  return { json: JSON.stringify(envelope), xp: next.xp, coins: next.coins, workouts: next.totals.workouts };
+}
+async function snapshot() {
+  const { readDurableJournal } = await import('/src/lib/durableJournal.ts');
+  const result = await readDurableJournal();
+  return JSON.stringify({
+    local: Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]),
+    durable: { status: result.status, entries: [...result.entries].sort((a,b) => a.key.localeCompare(b.key)) },
+  });
+}
+function selectFixture(payload, kind) {
+  const input = document.querySelector('[data-action=inspect-progress-file]');
+  const contents = kind === 'oversize' ? [new Uint8Array(16*1024*1024+1)] :
+    kind === 'bad-utf8' ? [new Uint8Array([0xc3,0x28])] : [payload];
+  const file = new File(contents, 'bf106-' + kind + '.json', { type: 'application/json' });
+  const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  return true;
+}
+async function choose(payload, kind = 'valid') {
+  return ev('('+selectFixture.toString()+')('+JSON.stringify(payload)+','+JSON.stringify(kind)+')');
+}
+async function cancel() {
+  check(await ev("(()=>{const b=document.querySelector('[data-action=cancel-import-preview]');if(!b)return false;b.click();return true})()"),'explicit cancel available');
+  await until("document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle' && !document.querySelector('[data-import-preview]')",'preview cleared');
+}
+
+try {
+  await requireDevOrigin(origin);
+  profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-import-preview-'));
+  chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
+    '--headless=new','--disable-webgl','--no-first-run','--no-default-browser-check',
+    '--remote-allow-origins=*','--remote-debugging-address=127.0.0.1','--remote-debugging-port=0',
+    '--user-data-dir='+profile,'about:blank',
+  ], {stdio:'ignore'});
+  browser = await waitForOwnedBrowser(profile, chrome);
+  const target = await newOwnedPage(browser);
+  socket = new WebSocket(target.webSocketDebuggerUrl);
+  socket.addEventListener('close', rejectPending);
+  socket.addEventListener('error', rejectPending);
+  socket.addEventListener('message', e => {
+    const message=JSON.parse(e.data.toString()), request=pending.get(message.id);
+    if(request) { pending.delete(message.id);clearTimeout(request.timer);message.error?request.reject(Error(JSON.stringify(message.error))):request.resolve(message.result); }
+    if(message.method==='Runtime.exceptionThrown') errors.push(message.params?.exceptionDetails?.exception?.description || message.params?.exceptionDetails?.text || 'unknown');
+    if(message.method==='Fetch.requestPaused') {
+      void cdp('Fetch.fulfillRequest',{requestId:message.params.requestId,responseCode:200,
+        responseHeaders:[{name:'Content-Type',value:'text/html; charset=utf-8'}],
+        body:Buffer.from('<!doctype html><title>BF106 disposable observer</title>').toString('base64')})
+        .catch(error=>errors.push(error.message));
+    }
+  });
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(Error('CDP connection timeout')),3000);
+    socket.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
+    socket.addEventListener('error',()=>{clearTimeout(timer);reject(Error('CDP connection failed'));},{once:true});
+  });
+  await cdp('Page.enable');await cdp('Runtime.enable');
+  await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await cdp('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  await cdp('Fetch.enable',{patterns:[{urlPattern:origin+'/?bf105-observer',resourceType:'Document',requestStage:'Request'}]});
+  await cdp('Page.navigate',{url:origin+'/?bf105-observer'});
+  await until("document.title==='BF106 disposable observer' && location.origin==="+JSON.stringify(origin),'owned observer');
+  check(await ev('localStorage.length===0'),'isolated origin has no pre-existing data');
+  const fixture = await ev('('+seed.toString()+')()');
+  check(fixture.status==='completed' && fixture.value.exactPrimary && fixture.value.exactBackup,'fixture saved through actual Web Lock and read-back');
+  const expected = fixture.value;
+  const backup = await ev('('+makeBackup.toString()+')()');
+  check(backup.xp===825 && backup.coins===335 && backup.workouts===4,'backup candidate has independent totals');
+  await cdp('Fetch.disable');
+  await cdp('Page.navigate',{url:origin+'/'});
+  await until("!!document.querySelector('.app-shell[data-fighter-created=true]') && !document.querySelector('[data-storage-status]')",'actual fighter hydrated');
+  await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
+  await until("!!document.querySelector('#progress-backup [data-action=inspect-progress-file]')",'FAQ backup panel mounted');
+  await ev("document.querySelector('.progress-backup-file-checker').open=true");
+  await sleep(300);
+  const before = await ev('('+snapshot.toString()+')()');
+  const unchanged = async label => check(await ev('('+snapshot.toString()+')()')===before,label+' exact localStorage and durable journal unchanged');
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'initial primary exact');
+  await choose(backup.json);
+  await until("document.querySelector('[data-import-preview]')?.dataset.importPreview==='preview-ready'",'comparison rendered');
+  const rows = await ev("Array.from(document.querySelectorAll('[data-import-preview] tbody tr')).map(row=>Array.from(row.querySelectorAll('td')).map(c=>Number(c.textContent.replace(/[^0-9.-]/g,''))))");
+  check(rows.length===8 && JSON.stringify(rows.slice(0,4))===JSON.stringify([[705,825],[300,335],[3,4],[3,4]]),'visible comparison uses authoritative stored source');
+  check(await ev("document.documentElement.scrollWidth===innerWidth"),'390px layout has no horizontal overflow');
+  await cdp('Emulation.setDeviceMetricsOverride',{width:320,height:844,deviceScaleFactor:1,mobile:true});
+  await sleep(250);
+  const narrow=await ev("(()=>{const t=document.querySelector('[data-import-preview] table').getBoundingClientRect();return {width:innerWidth,scroll:document.documentElement.scrollWidth,left:t.left,right:t.right}})()");
+  check(narrow.width===320&&narrow.scroll===320&&narrow.left>=0&&narrow.right<=320,'320px comparison remains inside viewport');
+  await unchanged('valid preview');
+  await cancel();
+  await unchanged('cancel');
+  await choose('{','bad-json');
+  await until("document.querySelector('[data-inspection-result]')?.dataset.inspectionResult==='invalid'",'malformed JSON rejected');
+  check(await ev("!document.querySelector('[data-import-preview]')"),'invalid JSON cannot show comparison');
+  await unchanged('invalid JSON');
+  await choose('', 'bad-utf8');
+  await until("document.querySelector('[data-inspection-result]')?.dataset.inspectionResult==='invalid'",'invalid UTF-8 rejected');
+  await unchanged('invalid UTF-8');
+  await cancel();
+  // Real file input uses the production File.size preflight.
+  await ev("window.__bf106Reads=0;window.__bf106ArrayBuffer=File.prototype.arrayBuffer;File.prototype.arrayBuffer=function(){if(this.name.startsWith('bf106-'))window.__bf106Reads++;return window.__bf106ArrayBuffer.call(this)};true");
+  await choose('', 'oversize');
+  await until("document.querySelector('[data-inspection-result]')?.dataset.inspectionResult==='invalid'",'oversized file rejected');
+  check(await ev('window.__bf106Reads===0'),'oversized file never read');
+  await unchanged('oversize');
+  await cancel();
+  // Delay only the selected File; abort the UI generation while reading.
+  await ev("File.prototype.arrayBuffer=function(){if(this.name==='bf106-delayed.json'){const file=this;return new Promise(resolve=>{window.__bf106Release=()=>resolve(window.__bf106ArrayBuffer.call(file))})}return window.__bf106ArrayBuffer.call(this)};true");
+  await choose(backup.json,'delayed');
+  await until("typeof window.__bf106Release==='function' && document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='checking'",'delayed file read pending');
+  await cancel();
+  await ev("window.__bf106Release();File.prototype.arrayBuffer=window.__bf106ArrayBuffer;true");
+  await sleep(300);
+  check(await ev("!document.querySelector('[data-import-preview]') && document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle'"),'cancelled read cannot restore stale preview');
+  await unchanged('cancelled async read');
+  await choose(backup.json);
+  await until("document.querySelector('[data-import-preview]')?.dataset.importPreview==='preview-ready'",'fresh selection works after cancel');
+  await ev("window.dispatchEvent(new StorageEvent('storage',{key:'bodyforge:pilot:v1'}));true");
+  await until("!document.querySelector('[data-import-preview]') && document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle'",'external revision invalidates preview');
+  await unchanged('revision invalidation');
+  await choose(backup.json);
+  await until("document.querySelector('[data-import-preview]')?.dataset.importPreview==='preview-ready'",'preview rebuilt');
+  await ev("window.__bf106BeforeReload=true");
+  await cdp('Page.reload',{ignoreCache:true});
+  await until("!window.__bf106BeforeReload && !!document.querySelector('.app-shell[data-fighter-created=true]') && !document.querySelector('[data-storage-status]')",'actual reload');
+  await sleep(300);
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'reload preserves exact original primary');
+  await unchanged('reload');
+  check(errors.length===0,'no uncaught browser exceptions');
+  console.log('BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions='+assertions);
+} catch(error) {
+  console.error('BODYFORGE_IMPORT_PREVIEW_E2E_FAIL',error.stack||String(error));
+  process.exitCode=18;
+} finally {
+  socket?.close();rejectPending();
+  if(profile && chrome) {
+    try { await cleanupOwnedChrome(profile,'bf-import-preview-',chrome,browser); }
+    catch(error) { console.error('QA_OWNED_CLEANUP FAIL',String(error));process.exitCode ||= 17; }
+  }
+}

@@ -36,9 +36,16 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
     }
   }, [range, activityVisible]);
   const { current: trend, previous, deltaSessions, historyLimited } =
-    comparePulsePeriods(profile.workouts, now, range);
+    comparePulsePeriods(profile.workouts, now, range,
+      Math.max(profile.totals?.workouts ?? 0, profile.creditedWorkoutIds?.length ?? 0));
   const chart = weeklySessionLine(trend.days);
+  const observedPoints = historyLimited ? chart.points.filter(point => point.sessions > 0) : chart.points;
   const selected = trend.days.find(day => day.date === selectedDate) ?? trend.days.at(-1);
+  const displayCount = (count: number) => historyLimited ? (count ? `≥${count}` : '—') : String(count);
+  const periodReps = historyLimited ? `Доступные повторы за ${range} дней: ${displayCount(trend.reps)}`
+    : `Повторы упражнений за ${range} дней: ${trend.reps}`;
+  const periodDays = historyLimited ? `Активных дней по доступным записям: ${displayCount(trend.activeDays)} из ${range}`
+    : `Активных дней: ${trend.activeDays} из ${range}`;
   const changeLabel = historyLimited
     ? 'Сравнение недоступно: видимая история ограничена'
     : trend.sessions === 0 && previous.sessions === 0
@@ -117,7 +124,8 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
         <p className="pulse-disclaimer">Индикаторы отражают игровые улучшения, а не медицинскую оценку мышц.</p>
       </article>
 
-      <article className="pulse-trend-card" aria-label="Активность тренировок" hidden={!activityVisible}>
+      <article className="pulse-trend-card" aria-label="Активность тренировок" hidden={!activityVisible}
+        data-history-limited={historyLimited}>
         <div className="pulse-card-heading pulse-trend-heading">
           <ChartNoAxesCombined size={20}/> АКТИВНОСТЬ ТРЕНИРОВОК
           <label className="pulse-range-control">
@@ -136,22 +144,22 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
         </div>
         <div className="pulse-chart-summary" data-period-sessions={trend.sessions}
           data-weekly-sessions={range === 7 ? trend.sessions : undefined}>
-          <strong>{trend.sessions}</strong>
-          <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {trend.reps} повторений{trend.holdSeconds ? ` · ${trend.holdSeconds} сек. планки` : ''}</span>
+          <strong>{displayCount(trend.sessions)}</strong>
+          <span>{trend.sessions === 1 ? 'полный подход' : 'полных подходов'} · {displayCount(trend.reps)} повторений{trend.holdSeconds ? ` · ${displayCount(trend.holdSeconds)} сек. планки` : ''}</span>
         </div>
         <div className="pulse-metric-grid" role="group"
           aria-label={`Подтверждённая активность за ${range} дней`} data-activity-period={range}>
-          <div className="pulse-metric" aria-label={`Повторы упражнений за ${range} дней: ${trend.reps}`}>
+          <div className="pulse-metric" aria-label={periodReps}>
             <Dumbbell size={18}/><span>ПОВТОРОВ ЗА {range} ДНЕЙ</span>
             <strong data-period-reps={trend.reps} data-weekly-reps={range === 7 ? trend.reps : undefined}>
-              {trend.reps}
+              {displayCount(trend.reps)}
             </strong>
-            {trend.holdSeconds > 0 && <small data-period-plank-seconds={trend.holdSeconds}>{trend.holdSeconds} сек. планки</small>}
+            {trend.holdSeconds > 0 && <small data-period-plank-seconds={trend.holdSeconds}>{displayCount(trend.holdSeconds)} сек. планки</small>}
           </div>
-          <div className="pulse-metric" aria-label={`Активных дней: ${trend.activeDays} из ${range}`}>
+          <div className="pulse-metric" aria-label={periodDays}>
             <Activity size={18}/><span>АКТИВНЫХ ДНЕЙ</span>
             <strong data-active-days={trend.activeDays} data-period-active-days={trend.activeDays}>
-              {trend.activeDays}<small>/{range}</small>
+              {displayCount(trend.activeDays)}<small>/{range}</small>
             </strong>
           </div>
           <div className="pulse-metric pulse-metric-action">
@@ -161,12 +169,14 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
           </div>
         </div>
         <div className="pulse-comparison" data-pulse-delta={historyLimited ? 'unavailable' : deltaSessions}
-          data-prior-sessions={previous.sessions} aria-label={changeLabel}>
+          data-prior-sessions={historyLimited ? undefined : previous.sessions} aria-label={changeLabel}>
           <TrendingUp size={14} aria-hidden="true"/>
           <span>{changeLabel}</span>
         </div>
         <div className="pulse-linechart" role="img" data-chart-points={chart.points.length}
-          aria-label={`Активность за ${range} дней. Всего ${trend.sessions} завершённых подходов. Выбери дату под графиком для подробностей.`}>
+          aria-label={historyLimited
+            ? `Активность за ${range} дней по доступным записям. Пропуски показывают дни без данных.`
+            : `Активность за ${range} дней. Всего ${trend.sessions} завершённых подходов. Выбери дату под графиком для подробностей.`}>
           <svg viewBox="0 0 800 215" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="pulse-chart-fill" x1="0" x2="0" y1="0" y2="1">
@@ -184,11 +194,11 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
             })}
             {chart.points.filter(p => p.tick).map(p=><line key={p.date} x1={p.x} x2={p.x} y1="26" y2="175"
               stroke="#436077" strokeDasharray="3 8" opacity=".42"/>)}
-            {chart.area && <path d={chart.area} fill="url(#pulse-chart-fill)" />}
-            {chart.path && <path d={chart.path} fill="none" stroke="#b7ff3f"
+            {!historyLimited && chart.area && <path d={chart.area} fill="url(#pulse-chart-fill)" />}
+            {!historyLimited && chart.path && <path d={chart.path} fill="none" stroke="#b7ff3f"
               strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
               filter="drop-shadow(0px 0px 5px #aaff3755)" />}
-            {chart.points.map(p=><circle key={p.date} cx={p.x} cy={p.y}
+            {observedPoints.map(p=><circle key={p.date} cx={p.x} cy={p.y}
               r={selected?.date === p.date ? 7 : range === 30 ? 3.6 : 5.5}
               stroke={selected?.date === p.date ? '#ffffff' : '#e2ff9c'}
               strokeWidth={selected?.date === p.date ? 3 : 1.8} fill="#beff43"/>)}
@@ -204,7 +214,8 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
             <button type="button" key={day.date} data-pulse-date={day.date}
               className={`pulse-date-button${selected?.date === day.date ? ' is-selected' : ''}`}
               aria-pressed={selected?.date === day.date}
-              aria-label={`${day.date.split('-').reverse().join('.')}: ${day.sessions} завершённых подходов`}
+              aria-label={`${day.date.split('-').reverse().join('.')}: ${historyLimited && day.sessions === 0
+                ? 'нет доступных данных' : `${displayCount(day.sessions)} завершённых подходов`}`}
               onClick={() => setSelectedDate(day.date)}>
               <span>{day.label}</span>
               <small>{day.date.slice(8, 10)}<span>.{day.date.slice(5, 7)}</span></small>
@@ -217,14 +228,17 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
             <strong>{selected ? selected.date.split('-').reverse().join('.') : '—'}</strong>
           </div>
           <div className="pulse-day-values">
-            <strong data-selected-sessions={selected?.sessions ?? 0}>{selected?.sessions ?? 0} подходов</strong>
-            <span>{selected?.reps ?? 0} повторений{selected?.holdSeconds ? ` · ${selected.holdSeconds} сек. планки` : ''}</span>
+            {historyLimited && !selected?.sessions ? <strong>Нет данных за день</strong> : <>
+              <strong data-selected-sessions={selected?.sessions ?? 0}>{displayCount(selected?.sessions ?? 0)} подходов</strong>
+              <span>{displayCount(selected?.reps ?? 0)} повторений{selected?.holdSeconds ? ` · ${displayCount(selected.holdSeconds)} сек. планки` : ''}</span>
+            </>}
           </div>
         </div>
-        <p className="pulse-data-note">{trend.sessions === 0
-          ? 'Записанных подходов пока нет — график показывает ноль.'
-          : 'График строится только по завершённым и сохранённым подходам.'}
-          {historyLimited ? ' · История ограничена последними 60 тренировками; сравнение периодов отключено.' : ''}
+        <p className="pulse-data-note">{historyLimited
+          ? 'История неполная. Точки и числа показывают минимум по доступным записям.'
+          : trend.sessions === 0
+            ? 'Записанных подходов пока нет — график показывает ноль.'
+            : 'График строится только по завершённым и сохранённым подходам.'}
         </p>
       </article>
     </section>

@@ -1,0 +1,136 @@
+{
+  "commands": {
+    "focused": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "test",
+        "--",
+        "src/lib/progressPulse.test.ts",
+        "src/lib/dashboardDisplay.test.ts",
+        "src/lib/workoutReceipt.test.ts",
+        "src/lib/receiptCompatibility.test.ts",
+        "src/lib/dedupRecovery.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 2.5
+    },
+    "unit": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 27.6
+    },
+    "build": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        ".bodyforge-qa/bf107-verify-run1/dist"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 7.5
+    },
+    "bundle": {
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ],
+      "cwd": "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf107-verify-run1",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    "forge": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 30.8
+    },
+    "privacy": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:privacy"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 7.2
+    },
+    "receipt-preview": {
+      "args": [
+        "node",
+        "qa/receipt-preview-e2e.mjs"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 3.2
+    },
+    "dedup": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:dedup-recovery"
+      ],
+      "cwd": "E:\\github\\BODYFORGE",
+      "exit": 0,
+      "seconds": 4.6
+    }
+  },
+  "ports": {
+    "preview": {
+      "origin": "http://127.0.0.1:53422",
+      "pid": 43200
+    },
+    "stable-dev": {
+      "origin": "http://127.0.0.1:53525",
+      "pid": 16820
+    }
+  },
+  "liveSourceDrift": null,
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "workspace": "E:\\github\\BODYFORGE",
+  "preview": {
+    "entry": "/assets/index-9qSnb8Rz.js",
+    "status": 200,
+    "bytes": 397283,
+    "sha256": "afd5234fe8e3cf7e898c7434a63a7ae71e1d414b3e3d130b260d14588374a48f",
+    "index": {
+      "bytes": 1188,
+      "sha256": "a1126a05bc31d60a3932f7fdc81e76d4aa18f75dd50237826fa5232b84e7934d"
+    }
+  },
+  "distUnchanged": true,
+  "sourceDrift": [],
+  "finalHead": "7caa598c873c92887ac2ae3071b13f433225312e"
+}

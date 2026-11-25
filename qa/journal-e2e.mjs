@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { createTowerSquatFixture } from './tower-squat-fixture.mjs';
 import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, closeOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
@@ -15,7 +16,7 @@ try { await requireDevOrigin(origin); }
 catch (error) { console.error('QA_INFRA_BLOCKED', String(error)); process.exit(14); }
 const ownedProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-journal-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
-  '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
+  '--headless=new', '--disable-webgl', // Persistence QA, not avatar rendering.
   '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
   '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
   '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + ownedProfile,
@@ -172,9 +173,11 @@ async function waitAward(sessionId) {
 }
 function isOneTower(profile, id) {
   return profile.xp === 185 && profile.coins === 65 && profile.workouts.length === 1 && profile.game.highestClearedFloor === 1
-    && profile.workouts[0].id === id && profile.creditedWorkoutIds.filter((x) => x === id).length === 1;
+    && profile.workouts[0].id === id && profile.workouts[0].repetitions === 20 && profile.creditedWorkoutIds.filter((x) => x === id).length === 1;
 }
 async function startTower() {
+  await page.cdp('Page.bringToFront');
+  await page.until("document.visibilityState==='visible'", 'owned workout page visible');
   await page.js(`(async()=>{
     const source=await(await fetch('/src/App.tsx')).text();
     const marker=source.indexOf('@mediapipe_tasks-vision.js?v=');
@@ -182,29 +185,51 @@ async function startTower() {
     const prefix=source.slice(0,marker);
     const start=Math.max(prefix.lastIndexOf(String.fromCharCode(34)),prefix.lastIndexOf(String.fromCharCode(39)))+1;
     const url=source.slice(start).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];
-    const mp=await import(url),rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];
-    const angles=[170,170,170,...Array.from({length:20},()=>rep).flat()];
+    const mp=await import(url),factory=(${createTowerSquatFixture.toString()});
     window.__poseCalls=0;window.__modelsClosed=0;window.__tracks=[];
     const native=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia=async(...args)=>{const stream=await native(...args);window.__tracks.push(...stream.getTracks());return stream};
     mp.FilesetResolver.forVisionTasks=async()=>({});
-    mp.PoseLandmarker.createFromOptions=async()=>({close(){window.__modelsClosed++},detectForVideo(video){
-      const angle=angles[Math.min(window.__poseCalls++,angles.length-1)],r=(180-angle)*Math.PI/180;
+    mp.PoseLandmarker.createFromOptions=async()=>{const fixture=factory();window.__towerFixture=fixture;return {close(){window.__modelsClosed++},detectForVideo(video,time){
+      window.__poseCalls++;const angle=fixture.sample(time),r=(180-angle)*Math.PI/180;
       const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:0}));
       p[23]={x:.5,y:.30,visibility:.98};p[25]={x:.5,y:.51,visibility:.98};
       p[27]={x:.5+.22*Math.sin(r)/(video.videoWidth/video.videoHeight),y:.51+.22*Math.cos(r),visibility:.98};
       p[11]={x:.46,y:.14,visibility:.98};p[12]={x:.54,y:.14,visibility:.98};return{landmarks:[p]};
-    }});return true;
+    }}};return true;
   })()`);
   await click('.mobile-nav button:nth-child(4)');
   await click('#tower .forge-solid-button');
-  await page.until("!!document.querySelector('.live-tag')", 'synthetic camera active');
+  await page.until("window.__poseCalls>0 && !!document.querySelector('.live-tag')", 'synthetic camera processes real observations');
 }
+// Finite independent pose fixture may stop at the twentieth credited rep before
+// its final standing dwell completes. Stored result must independently be 20.
+function validFixture(timing) {
+  return !!timing && timing.failure === null && timing.cycles >= 19 && timing.cycles <= 20 &&
+    timing.frames > 0 && timing.maxGapMs <= 850;
+}
+function assertFixture(timing, label) {
+  console.log('QA_FIXTURE_TIMING', label, JSON.stringify(timing));
+  check(validFixture(timing), label + ' finite timestamp-paced pose stream without timing failure');
+}
+async function waitCameraBoundary(expression, label) {
+  try {
+    await page.until('('+expression+') || !!window.__towerFixture?.diagnostics().failure || !!document.querySelector(".camera-error")', label, 90000);
+    const info = await page.js('({fixture:window.__towerFixture?.diagnostics(),reached:!!('+expression+'),error:document.querySelector(".camera-error")?.textContent})');
+    if (!info.reached || info.fixture?.failure || info.error) throw Error('Camera boundary not reached: '+JSON.stringify(info));
+    return info.fixture;
+  } catch (error) {
+    const diagnostic = await page.js("({poseCalls:window.__poseCalls,fixture:window.__towerFixture?.diagnostics(),modelsClosed:window.__modelsClosed,cameraError:document.querySelector('.camera-error')?.textContent,counter:document.querySelector('.counter-number')?.textContent,completion:document.querySelector('.completion-stage')?.dataset.resultPersistence,visibility:document.visibilityState})").catch(() => null);
+    console.error('QA_CAMERA_BOUNDARY_DIAGNOSTIC', label, JSON.stringify(diagnostic));
+    throw error;
+  }
+}
+
 async function armPause(kind, tab = page) {
   await tab.cdp('Debugger.enable');
   tab.paused = false; tab.on('Debugger.paused', (params) => { tab.paused = true; tab.pauseFrame = params.callFrames[0].callFrameId; });
   await tab.js(`(()=>{const get=Storage.prototype.getItem,remove=Storage.prototype.removeItem;let armed=true;
-    Storage.prototype.getItem=function(k){const raw=get.call(this,k);if(armed&&${JSON.stringify(kind)}==='journal'&&k.startsWith(${JSON.stringify(prefix)})&&raw!==null){armed=false;window.__boundary={kind:'journal',key:k,raw,poseCalls:window.__poseCalls};debugger;}return raw};
+    Storage.prototype.getItem=function(k){const raw=get.call(this,k);if(armed&&${JSON.stringify(kind)}==='journal'&&k.startsWith(${JSON.stringify(prefix)})&&raw!==null){armed=false;window.__boundary={kind:'journal',key:k,raw,poseCalls:window.__poseCalls,fixture:window.__towerFixture?.diagnostics()};debugger;}return raw};
     Storage.prototype.removeItem=function(k){if(armed&&${JSON.stringify(kind)}==='primary'&&k.startsWith(${JSON.stringify(prefix)})){armed=false;window.__boundary={kind:'primary',key:k,raw:get.call(this,k)};debugger;}return remove.call(this,k)};return true})()`);
 }
 async function crashPaused(tab = page) {
@@ -388,10 +413,11 @@ async function interruptedQueuedCompletion(kind) {
   const before=await observer.js(`({primary:localStorage.getItem(${JSON.stringify(key)}),backup:localStorage.getItem(${JSON.stringify(key+':backup')})})`);
   await observer.js(`window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(${JSON.stringify(key+':write')},async()=>{window.__holding=true;await window.__held});true`);
   await observer.until('window.__holding===true','second tab holds profile lock before '+kind);
-  await page.until("document.querySelector('.completion-stage')?.dataset.resultPersistence==='durable-pending'",'real App strictly staged 20-rep completion before '+kind,65000);
+  assertFixture(await waitCameraBoundary("document.querySelector('.completion-stage')?.dataset.resultPersistence==='durable-pending'",'real App strictly staged 20-rep completion before '+kind), 'prelock '+kind);
   const staged=(await durableEntries()).find(e=>e.state==='active');
   check(!!staged,'durable completion exists before '+kind);
   const result=JSON.parse(staged.raw);
+  check(result.repetitions===20&&result.profileId===player.profileId&&result.floor===1,kind+' freezes exactly 20 reps and the original identities');
   const current=await observer.js(`({primary:localStorage.getItem(${JSON.stringify(key)}),backup:localStorage.getItem(${JSON.stringify(key+':backup')})})`);
   check(current.primary===before.primary&&current.backup===before.backup&&staged.baseProfileRaw===before.primary,
     kind+' boundary changes neither primary nor backup and retains prepared revision');
@@ -422,14 +448,7 @@ async function queuedCompletion() {
   // Session preparation already completed. Block only its eventual finish write.
   await observer.js(`window.__holding=false;window.__held=new Promise(resolve=>window.__release=resolve);void navigator.locks.request(${JSON.stringify(key + ':write')},async()=>{window.__holding=true;await window.__held});true`);
   await observer.until('window.__holding===true', 'observer holds finish-write lock');
-  try {
-    await page.until("!!document.querySelector('.completion-stage')", '20th rep queues its journal write', 65000);
-  } catch (error) {
-    const diagnostic = await page.js("({poseCalls:window.__poseCalls,modelsClosed:window.__modelsClosed,cameraError:document.querySelector('.camera-error')?.textContent,counter:document.querySelector('.counter-number')?.textContent,completion:document.querySelector('.completion-stage')?.dataset.resultPersistence,visibility:document.visibilityState})").catch(() => null);
-    console.error('QA_CAMERA_BOUNDARY_DIAGNOSTIC', JSON.stringify(diagnostic));
-    throw error;
-  }
-  check(await page.js('window.__poseCalls>=320'), 'queued completion follows the complete synthetic 20-rep workout');
+  assertFixture(await waitCameraBoundary("!!document.querySelector('.completion-stage')", '20th rep queues its journal write'), 'queued completion');
   check(await page.js("document.querySelector('.completion-stage [role=status]')?.textContent.includes('РЕЗУЛЬТАТ')"),
     'accessible completion status announces the unconfirmed save');
   await waitFor(async()=> (await durableEntries()).some(e=>e.state==='active'), 'strict durable result before profile lock release',5000);
@@ -439,7 +458,10 @@ async function queuedCompletion() {
   check(await page.js("!document.querySelector('.completion-rewards')"),'uncredited completion never shows awarded XP');
   check(queued.profileId===player.profileId&&queued.floor===1&&queued.repetitions===20,'pre-lock record keeps original profile, session and floor');
   check((await readProfile()).xp === 0 && (await journals()).length === 0, 'held profile lock changes no rewards or local reward journal');
-  await click('#challenge .primary-button');
+  const restart = JSON.stringify('#challenge [data-action="restart-workout"]');
+  check(await page.js('document.querySelector(' + restart + ')?.disabled === true'),
+    'repeat workout is disabled while the result waits for its award');
+  await page.js('document.querySelector(' + restart + ').click()');
   check(await page.js('window.__tracks.length===1 && window.__tracks.every(t=>t.readyState===\'ended\')'),
     'starting another workout cannot launch a second stream while the result waits');
   await click('.mobile-nav button:nth-child(1)');
@@ -447,10 +469,13 @@ async function queuedCompletion() {
     'ordinary reward action explains the pending save instead of silently ignoring a click');
   await observer.js('window.__release();true');
   await waitFor(async () => { const value = await readProfile(); return value.xp !== 0 || value.coins !== 0; }, 'queued completion or competing action settles');
-  const completed = await readProfile(), sessionId = completed.workouts[0]?.id;
+  const completed = await readProfile(), sessionId = queued.sessionId;
   observations.queue = { xp: completed.xp, coins: completed.coins, workouts: completed.workouts.length, sessionId };
   check(isOneTower(completed, sessionId), 'normal UI mutation never cancels the queued journal or credits its own stale snapshot');
   await waitFor(async () => (await journals()).length === 0, 'queued result cleanup');
+  await click('.mobile-nav button:nth-child(2)');
+  await page.until('document.querySelector(' + restart + ')?.disabled === false',
+    'repeat workout becomes available after credit');
   await reload();
   check(isOneTower(await readProfile(), sessionId), 'queued finish survives reload with one stable workout identity and one reward');
 }
@@ -600,10 +625,10 @@ try {
   // A real App finish reaches journal read-back, then the renderer is killed.
   await reset(); page = await newPage();
   await armPause('journal'); await startTower();
-  await waitFor(() => page.paused, '20-rep journal boundary', 65000);
+  await waitFor(() => page.paused, '20-rep journal boundary', 90000);
   const first = await journals(), beforeAward = await readProfile();
   const boundary = await page.cdp('Debugger.evaluateOnCallFrame', { callFrameId: page.pauseFrame, expression: 'window.__boundary', returnByValue: true });
-  check(boundary.result.value.poseCalls >= 320, 'first crash follows the complete synthetic 20-rep App sequence');
+  assertFixture(boundary.result.value.fixture, 'journal-before-primary crash');
   check(first.length === 1, 'complete App result is durably journaled before profile reward');
   const firstResult = JSON.parse(first[0].raw);
   check(firstResult.profileId === player.profileId && firstResult.floor === 1 && firstResult.repetitions === 20 && !!firstResult.sessionId,
@@ -642,8 +667,7 @@ try {
   await reset(); page = await newPage();
   await page.js(`(()=>{const set=Storage.prototype.setItem;window.__journalFull=true;Storage.prototype.setItem=function(k,v){if(window.__journalFull&&k.startsWith(${JSON.stringify(prefix)}))throw new DOMException('journal full','QuotaExceededError');return set.call(this,k,v)};return true})()`);
   await startTower();
-  await page.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'", 'journal quota after 20 reps', 65000);
-  check(await page.js('window.__poseCalls>=320'), 'journal quota is exercised by a complete synthetic App workout');
+  assertFixture(await waitCameraBoundary("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'", 'journal quota after 20 reps'), 'journal quota after actual finish');
   check((await readProfile()).xp === 0 && (await journals()).length === 0, 'journal quota awards nothing and claims no durable pending result');
   const exported = await exportSession();
   check(exported.pendingResult?.repetitions === 20 && exported.pendingResult.profileId === player.profileId && exported.pendingResult.floor === 1,
@@ -707,12 +731,15 @@ try {
       await click('[data-action=confirm-quarantine]');
       await page.until("!!document.querySelector('.app-shell')", item.name + ' explicit quarantine opens current profile');
       check((await journals()).length === 0 && (await readProfile()).xp === item.profile.xp, item.name + ' quarantined result gives no reward and leaves profile intact');
+      // The notice has its own lazy boundary; app-shell alone is not readiness.
+      await page.until("!!document.querySelector('[data-quarantined-results]')", item.name + ' quarantine notice resolved');
       check(await page.js("!!document.querySelector('[data-quarantined-results]')"), item.name + ' preserved result remains visible in the working application');
       const exported = await exportSession();
       check(exported.quarantinedResults.some((entry) => {
         const saved = JSON.parse(entry.raw); return saved.sourceKey === sourceKey && saved.raw === item.raw;
       }), item.name + ' normal-profile export retains exact original bytes and source key');
       await reload();
+      await page.until("!!document.querySelector('[data-quarantined-results]')", item.name + ' quarantine notice after reload');
       check(await page.js("!!document.querySelector('.app-shell') && !!document.querySelector('[data-quarantined-results]')"), item.name + ' quarantine and usable profile survive real reload');
       await page.js(`(async()=>{const {prepareWorkoutSession}=await import('/src/lib/workoutJournal.ts');window.__prepared=await navigator.locks.request(${JSON.stringify(key + ':write')},()=>prepareWorkoutSession(localStorage.getItem(${JSON.stringify(key)}),'training'));return true})()`);
       check(await page.js("window.__prepared.status==='ready'"), item.name + ' new session preparation works without applying quarantined rewards');
@@ -732,6 +759,7 @@ try {
     JSON.stringify({ assertions, crashes, queueOnly: process.argv.includes('--queue-only'), observations }));
 } catch (error) {
   console.error('BODYFORGE_JOURNAL_FAIL', error.stack || String(error));
+  if (page && !page.paused && !page.crashed) console.log('QA_LAST_CAMERA', JSON.stringify(await page.js('({fixture:window.__towerFixture?.diagnostics(),counter:document.querySelector(".counter-number")?.textContent,visibility:document.visibilityState})').catch(() => null)));
   console.log('READBACK', JSON.stringify({ assertions, crashes, observations }));
   if (observer) console.log('STORAGE', JSON.stringify({ profile: await readProfile().catch(() => null), journals: await journals().catch(() => null) }));
   process.exitCode = 16;

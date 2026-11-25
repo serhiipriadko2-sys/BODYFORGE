@@ -1,0 +1,5 @@
+﻿{
+    "purpose":  "reproduce missing epoch-only UI invalidation",
+    "browser":  22,
+    "devStopped":  true
+}

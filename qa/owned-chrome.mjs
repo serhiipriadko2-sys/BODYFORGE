@@ -1,4 +1,5 @@
 // Shared isolation boundary for destructive browser QA.
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,10 +30,32 @@ async function get(url, options = {}) {
   if (!response.ok) throw Error('HTTP ' + response.status + ' for ' + url);
   return response;
 }
-export async function requireDevOrigin(origin) {
+function requireLoopbackOrigin(origin) {
   if (!/^http:\/\/127\.0\.0\.1:[1-9]\d{0,4}$/.test(origin) || Number(new URL(origin).port) > 65535) {
     throw Error('QA requires explicit loopback HTTP');
   }
+}
+export async function requirePreviewOrigin(origin, expectedSha256) {
+  requireLoopbackOrigin(origin);
+  if (!/^[0-9a-f]{64}$/i.test(expectedSha256 || '')) {
+    throw Error('Set BODYFORGE_QA_EXPECT_ENTRY_SHA256 to the measured production entry digest');
+  }
+  const html = await (await get(origin + '/')).text();
+  const entries = [...html.matchAll(/<script\b[^>]*\bsrc=["'](\/assets\/index-[\w-]+\.js)["']/g)];
+  if (html.includes('/@vite/client') || entries.length !== 1) {
+    throw Error('QA requires a production preview with exactly one hashed entry');
+  }
+  const entry = entries[0][1];
+  const response = await get(origin + entry);
+  if (!/^(?:text|application)\/(?:javascript|ecmascript)\b/i.test(response.headers.get('content-type') || '')) {
+    throw Error('Preview entry is not JavaScript');
+  }
+  const sha256 = createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex');
+  if (sha256 !== expectedSha256.toLowerCase()) throw Error('Production entry SHA-256 mismatch: ' + sha256);
+  return { entry, sha256 };
+}
+export async function requireDevOrigin(origin) {
+  requireLoopbackOrigin(origin);
   if (!(await (await get(origin + '/')).text()).includes('/@vite/client')) {
     throw Error('Source-module QA requires Vite dev, not production preview');
   }

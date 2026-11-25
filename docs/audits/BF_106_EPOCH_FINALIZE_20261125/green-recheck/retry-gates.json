@@ -1,0 +1,23 @@
+﻿{
+    "sourceManifestSha256":  "3EB5A68C2DE51819953105F646E7B8CB3B8A669388BC84DE8C45B2E8F372CFD7",
+    "qaSha256":  "A75221BD9C36D8095B3B079702FB7ECF310F5695DD5E4258EC87886726985F31",
+    "scope":  "unchanged frozen product; external QA navigation wait fix only",
+    "counter":  0,
+    "unit":  0,
+    "replacement":  0,
+    "build":  0,
+    "bundle":  0,
+    "privacy":  0,
+    "preview":  200,
+    "started":  "2026-11-25T17:33:09.6368022+03:00",
+    "devPort":  6400,
+    "buildCount":  69,
+    "buildManifestSha256":  "8B68CC6E159331D681808325CC1704601954F6C01B9AAB160BFF818EE9692B20",
+    "entry":  "assets/index-C9m8sFr6.js",
+    "entrySha256":  "1fca1637fa324563f69baeec0a1bd4f80c29a40be332ea0f91600a8c89d30ffc",
+    "previewPort":  6400,
+    "frozenSourceAndBuildUnchanged":  true,
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T17:34:07.8258208+03:00"
+}

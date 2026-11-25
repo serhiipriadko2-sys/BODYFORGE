@@ -1,0 +1,35 @@
+﻿{
+    "head":  "7caa598c873c92887ac2ae3071b13f433225312e",
+    "sourceCount":  273,
+    "sourceManifestSha256":  "5446A43FA669967B603C2666FDCC2D02086B3D678C2E249C7B5C8C54905E4C08",
+    "changesFromFirst":  [
+                             "src/lib/avatarChestMarkFit.ts",
+                             "src/lib/avatarPhysique.ts"
+                         ],
+    "removedFromFirst":  [
+
+                         ],
+    "unit":  0,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  0,
+    "preview":  200,
+    "replacement":  19,
+    "importPreview":  18,
+    "dedup":  14,
+    "privacy":  12,
+    "started":  "2026-11-25T16:47:46.3559855+03:00",
+    "avatar":  0,
+    "buildCount":  69,
+    "buildManifestSha256":  "B9DD02CCCF476745350DBEAA91B179D077504D0F17C2750943E1928EA626896D",
+    "devPort":  6000,
+    "devHttp":  200,
+    "entry":  "assets/index-mp0A8EyM.js",
+    "entrySha256":  "2079ce20d43b3c4132b88fa341ec4b89cce31fabf23405b5be06602cca6243d5",
+    "previewPort":  6000,
+    "frozenSourceAndBuildUnchanged":  true,
+    "error":  "Browser gate failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T16:48:44.7134332+03:00"
+}

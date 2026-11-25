@@ -10,9 +10,11 @@ export function applyAvatarDetailMap(materials: AvatarMaterials, kind: AvatarDet
   texture.flipY = false;
   texture.colorSpace = kind === 'eyes' ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   if (kind === 'normal') {
+    const previous = materials.body.normalMap;
     materials.body.normalMap = texture;
     materials.body.normalScale.set(.65, .65);
     materials.body.needsUpdate = true;
+    if (previous !== texture) previous?.dispose();
   } else if (kind === 'orm') {
     materials.body.aoMap = texture;
     materials.body.aoMapIntensity = .55;

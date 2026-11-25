@@ -1,0 +1,108 @@
+{
+  "commands": {
+    "owned-chrome": {
+      "args": [
+        "node",
+        "--test",
+        "qa/owned-chrome.test.mjs",
+        "qa/tower-squat-fixture.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.4
+    },
+    "unit": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ],
+      "exit": 0,
+      "seconds": 30.3
+    },
+    "build": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 10.8
+    },
+    "bundle": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:bundle"
+      ],
+      "exit": 0,
+      "seconds": 1.0
+    },
+    "forge": {
+      "args": [
+        "node",
+        "qa/forge-home-xp-faq-e2e.mjs"
+      ],
+      "exit": 0,
+      "seconds": 41.4
+    },
+    "privacy": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:privacy"
+      ],
+      "exit": 0,
+      "seconds": 0.9
+    },
+    "journal": {
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "qa:journal"
+      ],
+      "exit": 0,
+      "seconds": 129.5
+    }
+  },
+  "ports": {
+    "preview": {
+      "origin": "http://127.0.0.1:49288",
+      "pid": 40584
+    },
+    "stable-dev": {
+      "origin": "http://127.0.0.1:49435",
+      "pid": 41016
+    }
+  },
+  "liveSourceDrift": [],
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "preview": {
+    "entry": "/assets/index-CLryBuXu.js",
+    "bytes": 395694,
+    "sha256": "a9cc978e679b3c321f86266cee1ff171145a3ce312ab8a04415ee7f9fb967713",
+    "index": {
+      "bytes": 1188,
+      "sha256": "f02e7cd509712a33225551576ecf5864211a9e7a0e33581c6aca360b47a0e066"
+    }
+  },
+  "snapshotChanged": false,
+  "finalHead": "7caa598c873c92887ac2ae3071b13f433225312e"
+}

@@ -1,5 +1,6 @@
 import { nextTowerFloor, TOWER_FLOORS, type WorkoutMode } from './game';
 import { isExerciseId, type ExerciseId } from './trainingCatalog';
+import { readProfileEpoch, sessionIdForEpoch, sessionMatchesEpoch } from './profileEpoch';
 import { addCompletedWorkout, loadProfileState, saveProfile, STORAGE_KEY, TARGET_REPS, validWorkoutHold, type ProfileLoadResult } from './progression';
 
 export const RESULT_JOURNAL_PREFIX = `${STORAGE_KEY}:result:`;
@@ -109,7 +110,8 @@ export function quarantineWorkoutResults(expected: readonly JournalEntry[]): Jou
   for (const { result } of journal.entries) {
     if (result && state.profile.profileId === result.profileId &&
         (state.profile.creditedWorkoutIds?.includes(result.sessionId) || state.profile.workouts.some((w) => w.id === result.sessionId) ||
-          result.mode !== 'tower' || state.profile.game.highestClearedFloor + 1 === result.floor)) return { status: 'conflict', state };
+          (sessionMatchesEpoch(result.sessionId, readProfileEpoch()) &&
+            (result.mode !== 'tower' || state.profile.game.highestClearedFloor + 1 === result.floor)))) return { status: 'conflict', state };
   }
   try {
     for (const entry of journal.entries) {
@@ -153,6 +155,8 @@ export function prepareWorkoutSession(expectedRaw: string | null, mode: WorkoutM
   let state = loadProfileState();
   if (state.status === 'unavailable' || state.status === 'recovery-required') return { status: state.status, state };
   if (state.revision !== expectedRaw) return { status: 'conflict', state };
+  let epoch: string | null;
+  try { epoch = readProfileEpoch(); } catch { return { status: 'unavailable', state }; }
   if (!state.profile.game.created || !['training', 'tower', 'ghost'].includes(mode) || !isExerciseId(exerciseId) ||
       (exerciseId !== 'squat' && mode !== 'training') ||
       (mode === 'tower' && state.profile.game.highestClearedFloor >= TOWER_FLOORS.length)) return { status: 'unavailable', state };
@@ -166,7 +170,7 @@ export function prepareWorkoutSession(expectedRaw: string | null, mode: WorkoutM
     state = loadProfileState();
     if (state.status !== 'ready' || state.revision !== write.revision || !state.profile.profileId) return { status: 'unavailable', state };
   }
-  return { status: 'ready', state, session: { schemaVersion: 1, profileId: state.profile.profileId!, sessionId: newId(), mode,
+  return { status: 'ready', state, session: { schemaVersion: 1, profileId: state.profile.profileId!, sessionId: sessionIdForEpoch(newId(), epoch), mode,
     floor: mode === 'tower' ? nextTowerFloor(state.profile.game).floor : null,
     ...(exerciseId !== 'squat' ? { exerciseId } : {}) } };
 }
@@ -185,6 +189,11 @@ export function reconcileWorkoutResults(): JournalOutcome {
     const credited = current.profile.creditedWorkoutIds?.includes(r.sessionId) || current.profile.workouts.some((w) => w.id === r.sessionId);
     // Dedup BEFORE the floor check: a crash after primary acknowledgement needs cleanup only.
     if (!credited) {
+      // Late pre-import results remain exact and exportable, but cannot refill
+      // a replaced wallet. Explicit quarantine may resolve that mismatch.
+      let epoch: string | null;
+      try { epoch = readProfileEpoch(); } catch { return { status: 'unavailable', state: current }; }
+      if (!sessionMatchesEpoch(r.sessionId, epoch)) { issue = 'mismatch'; continue; }
       if (r.mode === 'tower' && current.profile.game.highestClearedFloor + 1 !== r.floor) { issue = 'mismatch'; continue; }
       const next = addCompletedWorkout(current.profile, r.durationMs, new Date(r.finishedAt), {
         sessionId: r.sessionId, mode: r.mode, splitsMs: r.splitsMs,

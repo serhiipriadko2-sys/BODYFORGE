@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { regionalDermalShaders } from './avatarDermalRegions';
+import { scalpDensityShaders, scalpDensityState } from './avatarScalpDensity';
 
 const diffuseLine = 'reflectedLight.directDiffuse += irradiance * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );';
 
@@ -35,8 +37,28 @@ export function avatarSkinShader(fragment: string, scanDetail = false): string {
 }
 
 export function installAvatarSkinLighting(material: THREE.MeshPhysicalMaterial, scanDetail = false): void {
-  material.onBeforeCompile = shader => { shader.fragmentShader = avatarSkinShader(shader.fragmentShader, scanDetail); };
-  material.customProgramCacheKey = () => scanDetail ? 'bodyforge-scan-micro-v2' : 'bodyforge-dermal-wrap-v1';
+  const regional = material.userData.BODYFORGE_regionalDermal === true;
+  const scalp = scalpDensityState(material);
+  material.onBeforeCompile = shader => {
+    shader.fragmentShader = avatarSkinShader(shader.fragmentShader, scanDetail);
+    if (regional) {
+      const patched=regionalDermalShaders(shader.vertexShader,shader.fragmentShader);
+      if(patched){
+        shader.vertexShader=patched.vertex;
+        shader.fragmentShader=patched.fragment;
+      }
+    }
+    if (scalp) {
+      const patched = scalpDensityShaders(shader.vertexShader, shader.fragmentShader);
+      if (patched) {
+        shader.vertexShader = patched.vertex;
+        shader.fragmentShader = patched.fragment;
+        shader.uniforms.bfScalpEnabled = scalp.enabled;
+        shader.uniforms.bfScalpColor = scalp.color;
+      }
+    }
+  };
+  material.customProgramCacheKey = () => (scanDetail ? 'bodyforge-scan-micro-v2' : 'bodyforge-dermal-wrap-v1') + (regional ? '-regions-v3' : '') + (scalp ? '-scalp-density-v1' : '');
 }
 
 /** Transfer ownership only for this scene's skin material. The previous

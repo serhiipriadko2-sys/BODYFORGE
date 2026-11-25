@@ -16,13 +16,21 @@ export interface MuscleLobe {
  * muscle simulations, and do not change the four gameplay groups. */
 export const MUSCLE_LOBES: Record<Muscle, readonly MuscleLobe[]> = {
   arms: [
-    {name:'deltoid',center:[.268,1.397,.018],radius:[.073,.083,.092],offset:[.019,.004,0],slope:[-.85,0]},
+    // Separate anterior, lateral and posterior heads, following the
+    // upper-arm axis rather than inflating a single shoulder sphere.
+    {name:'deltoid anterior',center:[.249,1.388,.060],radius:[.070,.087,.056],offset:[.007,0,.018],slope:[-.73,-.25]},
+    {name:'deltoid lateral',center:[.275,1.395,.009],radius:[.073,.078,.077],offset:[.019,.004,0],slope:[-.85,0]},
+    {name:'deltoid posterior',center:[.264,1.390,-.036],radius:[.065,.078,.059],offset:[.008,0,-.016],slope:[-.85,-.12]},
     {name:'biceps',center:[.318,1.310,.063],radius:[.064,.087,.074],offset:[.009,0,.024],slope:[-.90,-.30]},
     {name:'triceps',center:[.316,1.313,-.027],radius:[.065,.085,.065],offset:[.011,0,-.021],slope:[-.90,-.12]},
     {name:'brachioradialis',center:[.419,1.184,.100],radius:[.050,.060,.079],offset:[.013,0,.010],slope:[-.45,-.55]},
     {name:'forearm extensors',center:[.401,1.203,.037],radius:[.047,.062,.065],offset:[.009,0,-.008],slope:[-.60,-.80]},
   ],
   core: [
+    // Chest belongs to the existing torso driver, not a new gameplay stat.
+    {name:'pectoralis sternocostal',center:[.112,1.327,.122],radius:[.106,.071,.075],offset:[.004,0,.022],slope:[.10,-.25]},
+    {name:'pectoralis clavicular',center:[.118,1.378,.115],radius:[.100,.052,.065],offset:[.002,.001,.014],slope:[.25,-.40]},
+    {name:'serratus transition',center:[.152,1.253,.088],radius:[.058,.080,.067],offset:[.006,0,.009]},
     {name:'upper rectus',center:[.048,1.226,.136],radius:[.046,.039,.075],offset:[0,0,.014]},
     {name:'middle rectus',center:[.046,1.176,.135],radius:[.044,.039,.075],offset:[0,0,.014]},
     {name:'lower rectus',center:[.044,1.126,.132],radius:[.042,.044,.075],offset:[0,0,.012]},

@@ -75,9 +75,8 @@ async function ownChrome() {
   profile = fs.mkdtempSync(path.join(os.tmpdir(),'bf-tower20-'));
   chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',[
     '--headless=new',
-    // Final-floor QA checks camera/rewards, not GPU quality. Avoid software 3D
-    // consuming the observation budget on an already busy workstation.
-    ...(finalFloor ? ['--disable-webgl'] : ['--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']),
+    // Avatar WebGL has separate visual and lifecycle QA.
+    '--disable-webgl',
     '--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream',
     '--no-first-run','--no-default-browser-check','--remote-allow-origins=*',
     '--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank',
@@ -148,15 +147,13 @@ async function installFixture(pose) {
   // Replace only model creation in this disposable page. The real counter,
   // video frame gate, App, IndexedDB journal and rewards still execute.
   return ev("(async()=>{const mp=await import("+JSON.stringify(pose)+");"+
-    "const fixtureFactory="+(finalFloor?'('+createTowerSquatFixture.toString()+')':'null')+";"+
-    "const rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];"+
-    "const angles=[170,170,170,...Array.from({length:20},()=>rep).flat()];"+
-    "window.__bfPose={used:0,total:angles.length,closed:0,tracks:[]};"+
+    "const fixtureFactory=("+createTowerSquatFixture.toString()+");"+
+    "window.__bfPose={used:0,closed:0,tracks:[]};"+
     "const native=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);"+
     "navigator.mediaDevices.getUserMedia=async(...args)=>{const s=await native(...args);window.__bfPose.tracks.push(...s.getTracks());return s};"+
     "mp.FilesetResolver.forVisionTasks=async()=>({});"+
-    "mp.PoseLandmarker.createFromOptions=async()=>{const fixture=fixtureFactory?.()??null;window.__bfPose.fixture=fixture;return {close(){window.__bfPose.closed++},detectForVideo(video,time){"+
-    "const i=window.__bfPose.used++,angle=fixture?fixture.sample(time):angles[Math.min(i,angles.length-1)],r=(180-angle)*Math.PI/180;"+
+    "mp.PoseLandmarker.createFromOptions=async()=>{const fixture=fixtureFactory();window.__bfPose.fixture=fixture;return {close(){window.__bfPose.closed++},detectForVideo(video,time){"+
+    "window.__bfPose.used++;const angle=fixture.sample(time),r=(180-angle)*Math.PI/180;"+
     "const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:0}));"+
     "p[23]={x:.5,y:.30,visibility:.98};p[25]={x:.5,y:.51,visibility:.98};"+
     "p[27]={x:.5+.22*Math.sin(r)/(video.videoWidth/video.videoHeight),y:.51+.22*Math.cos(r),visibility:.98};"+
@@ -170,11 +167,10 @@ async function awaitCompletion(label) {
     console.error('TRACKING',JSON.stringify(await obj("({used:window.__bfPose?.used,progress:document.querySelector('.counter-number')?.textContent,phase:document.querySelector('.completion-stage')?.dataset.resultPersistence,error:document.querySelector('.camera-error')?.textContent,fixture:window.__bfPose?.fixture?.diagnostics()})")));
     throw error;
   }
-  if(finalFloor) {
-    const timing=await obj('window.__bfPose.fixture?.diagnostics()');
-    console.log('QA_FIXTURE_TIMING',JSON.stringify(timing));
-    if(timing?.failure)throw infra('Pose fixture timing invalid: '+timing.failure);
-  }
+  const timing=await obj('window.__bfPose.fixture.diagnostics()');
+  console.log('QA_FIXTURE_TIMING',JSON.stringify(timing));
+  if(timing.failure)throw infra('Pose fixture timing invalid: '+timing.failure);
+  assert(timing.cycles >= 19 && timing.cycles <= 20, 'credit follows the finite timestamp-paced pose sequence');
 }
 async function closeOwned() {
   ws?.close();
@@ -262,6 +258,12 @@ try {
   assert(saved.game.highestClearedFloor===(finalFloor?5:1),'one tower floor unlocked');
   assert(saved.workouts.length===1&&saved.workouts[0].repetitions===20,'single workout credited');
   assert(saved.creditedWorkoutIds?.length===1&&saved.creditedWorkoutIds[0]===saved.workouts[0].id,'exactly one reward identity persisted');
+  const receipt=saved.workouts[0].receipt;
+  assert(receipt?.schemaVersion===1 && receipt.workoutId===saved.workouts[0].id &&
+    receipt.goal?.unit==='repetitions' && receipt.goal.target===20 &&
+    JSON.stringify(receipt.grants?.map(g=>[g.rewardId,g.xpDelta,g.coinDelta]))===JSON.stringify([
+      ['workout-base:'+receipt.workoutId,120,35],['tower-first-clear:'+receipt.workoutId,65,30],
+    ]),'persisted receipt records the exact two distinct tower awards');
   assert(saved.game.bestGhost?.splitsMs?.length===20,'ghost records twenty split times');
   assert(await ev("document.querySelector('.completion-stage [role=status]')?.textContent")==='\u0032\u0030 \u0417\u0410\u0421\u0427\u0418\u0422\u0410\u041d\u041d\u042b\u0425 \u041f\u041e\u0412\u0422\u041e\u0420\u0415\u041d\u0418\u0419','completion confirms saved result');
   assert(await ev("document.querySelector('#challenge .challenge-type')?.textContent?.trim()")==='\u0411\u0410\u0428\u041d\u042f \u00b7 \u042d\u0422\u0410\u0416 '+(finalFloor?5:1),'completed heading retains original floor');
@@ -290,6 +292,10 @@ try {
     const next=await readProfile();
     assert(next.xp===305&&next.coins===100&&next.game.highestClearedFloor===5,'ordinary workout pays base reward only');
     assert(next.workouts.length===2&&next.workouts[0].mode==='training'&&next.creditedWorkoutIds?.length===2,'exactly two workouts and two reward identities');
+    const trainingGrants=next.workouts[0].receipt?.grants;
+    assert(trainingGrants?.length===1 && trainingGrants[0].sourceType==='workout-base' &&
+      trainingGrants[0].xpDelta===120 && trainingGrants[0].coinDelta===35,
+    'ordinary retry records only the award it actually paid');
   }
   await click('.mobile-nav button:nth-child(4)');
   if(finalFloor)assert(await ev("document.querySelector('#tower .forge-solid-button')?.disabled===true"),'completed tower cannot start another floor');

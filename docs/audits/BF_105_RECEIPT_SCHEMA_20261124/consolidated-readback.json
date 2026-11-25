@@ -1,0 +1,50 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-24T22:28:14.150136+03:00",
+  "owned": [
+    {
+      "path": "src/lib/receiptCompatibility.ts",
+      "bytes": 12062,
+      "sha256": "5312e5013f21eebea0ac5544858fc822aa4bb4ace650d7bf9c13249d4a04c471"
+    },
+    {
+      "path": "src/lib/receiptCompatibility.test.ts",
+      "bytes": 10770,
+      "sha256": "1585e9aff81ed6ecb4f4ce349c4cf8a743124cbcbbe7ae4167a0da31b271f85f"
+    },
+    {
+      "path": "qa/receipt-preview-e2e.mjs",
+      "bytes": 12016,
+      "sha256": "8ce311347cf7cbaf25b334df460f093e7ca32557dbcb5ef34a9107fbcc7d77cc"
+    }
+  ],
+  "dependencies": {
+    "src/lib/workoutReceipt.ts": "0a4d55bc930aad4d0229b78ba351807838fc1beefb7d230e41a49b5d87b25a7f",
+    "src/lib/progression.ts": "666939a292869e188f9f64aad8ad4289c2a714594e1c2fa6a9e56249fa2934b1"
+  },
+  "frozenSourceCount": 249,
+  "frozenBuildCount": 62,
+  "sourceManifestSha256": "E7D419C142209B0D5897BE100FC6239409B3C9272788AD5DAD232F105A9CA625",
+  "buildManifestSha256": "B295ABE98E4E5963AD9CE414B5E2E7E75542A0C174833F2A9755F4EB13DD2B1A",
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs",
+    "qa/tower20-e2e.mjs",
+    "src/App.tsx",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarSkinLighting.ts"
+  ],
+  "liveNewPaths": [
+    "public/assets/athlete-lip-response.png",
+    "public/assets/bodyforge-strand-groom-v2.glb",
+    "qa/camera-lifecycle-e2e.mjs",
+    "src/lib/avatarDermalRegions.test.ts",
+    "src/lib/avatarDermalRegions.ts",
+    "src/lib/avatarLipResponse.ts",
+    "src/lib/avatarStrandGroom.test.ts",
+    "src/lib/avatarStrandGroom.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0
+}

@@ -1,0 +1,10 @@
+{
+  "source_count": 247,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "owned": {
+    "src/App.tsx": "8294cb3f9ff41da92ac85655b469536240b8b2737fdb0d798e571bc60c34f9c9",
+    "qa/camera-lifecycle-e2e.mjs": "1be957777bf4b822b92d5a7ef664861fbbe1fd5b50ccc059e584b11ac38e9ac4"
+  },
+  "tsc": 134
+}

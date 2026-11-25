@@ -1,0 +1,41 @@
+{
+  "head": "7caa598c873c92887ac2ae3071b13f433225312e",
+  "observed": "2026-11-25T15:59:25.573657+03:00",
+  "owned": [
+    {
+      "path": "src/lib/progressImportPreview.ts",
+      "bytes": 8977,
+      "sha256": "83feec5c52f3f30b0a6e3d1b2fb9829ccad6efc378e4ea8d1d96f3e4ac4dbbf2"
+    },
+    {
+      "path": "src/lib/progressImportPreview.test.ts",
+      "bytes": 8153,
+      "sha256": "2a2897140e12f58f579d264e7e1c5a41f7439a4884f360d93c52a33b569bdade"
+    },
+    {
+      "path": "src/components/ProgressBackupPanel.tsx",
+      "bytes": 11574,
+      "sha256": "40d8fc15cb08a0672cc44187efaecf2813a8cb8f92b38eb66be8e928f29c3b83"
+    },
+    {
+      "path": "src/components/progressBackup.css",
+      "bytes": 4876,
+      "sha256": "b6ab3ea86a2938f1271aad02609ddd98546194eda4f8f41013a7d1cd3f8bf38e"
+    },
+    {
+      "path": "qa/import-preview-e2e.mjs",
+      "bytes": 14849,
+      "sha256": "352f20b0af60ed8a615d5681b166e6fd1de8b5263c12922026928c6960d1a8b1"
+    }
+  ],
+  "sourceCount": 263,
+  "buildCount": 64,
+  "sourceManifestSha256": "A0833A2ACB9CE4ED42AEA81DFB8729F52B3C7AF91C8A15BF7554D075000D1857",
+  "buildManifestSha256": "65B5CA077A54692CCE85479807A8E2D20E355A27E124E7D289FE2354412863C9",
+  "liveChangedPaths": [],
+  "liveNewPaths": [],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0
+}
