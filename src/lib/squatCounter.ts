@@ -14,6 +14,8 @@ export interface CounterSnapshot {
   angle: number | null;
   counted: boolean;
   calibrated: boolean;
+  /** Advisory remaining calibration time from accepted observations only. */
+  calibrationRemainingMs?: number | null;
   /** The measured angle when the player last stood straight. */
   standingAngle: number | null;
   /** A depth target based on the standing angle, never shallower than 128 degrees. */
@@ -35,6 +37,9 @@ const STAND_HOLD_MS = 85;
 const MIN_BOTTOM_TO_STAND_MS = 210;
 const MIN_REP_MS = 550;
 const LOST_POSE_MS = 900;
+// Match the existing partial-motion continuity policy in exerciseCounter.
+// This is a conservative software gate, not a human-calibrated threshold.
+const PARTIAL_MOTION_GAP_MS = 400;
 
 export class SquatCounter {
   private phase: CounterPhase = 'calibrate';
@@ -48,6 +53,7 @@ export class SquatCounter {
   private lowestAngle: number | null = null;
   private lastRepAt = Number.NEGATIVE_INFINITY;
   private lastVisibleAt: number | null = null;
+  private lastObservationAt = Number.NEGATIVE_INFINITY;
   private trackedSide: KneeSide | null = null;
 
   private resetPoseTracking(): void {
@@ -68,6 +74,7 @@ export class SquatCounter {
     this.count = 0;
     this.lastRepAt = Number.NEGATIVE_INFINITY;
     this.lastVisibleAt = null;
+    this.lastObservationAt = Number.NEGATIVE_INFINITY;
   }
 
   /** Switching lenses changes the projected knee angle. Recalibrate posture
@@ -91,12 +98,24 @@ export class SquatCounter {
   }
 
   update(rawAngle: number | null, now: number, side: KneeSide | null = null): CounterSnapshot {
-    if (this.lastVisibleAt !== null && now - this.lastVisibleAt > LOST_POSE_MS) {
+    // A replayed or invalid timestamp cannot advance any phase or hold.
+    if (!Number.isFinite(now) || now < 0 || now <= this.lastObservationAt) {
+      return this.snapshot('find-body', false);
+    }
+    this.lastObservationAt = now;
+
+    const gapLimit = this.phase === 'descending' || this.phase === 'bottom'
+      ? PARTIAL_MOTION_GAP_MS : LOST_POSE_MS;
+    if (this.lastVisibleAt !== null && now - this.lastVisibleAt > gapLimit) {
       this.resetPoseTracking();
       this.lastVisibleAt = null;
     }
 
     if (rawAngle === null || !Number.isFinite(rawAngle) || rawAngle < 45 || rawAngle > 180) {
+      // Brief landmark loss may retain the same leg and partial cycle,
+      // but cannot be evidence of a continuous standing/return hold.
+      this.standSince = null;
+      if (this.phase === 'calibrate') this.candidateStandingAngle = null;
       return this.snapshot('find-body', false);
     }
 
@@ -195,6 +214,8 @@ export class SquatCounter {
       feedback,
       counted,
       calibrated: this.phase !== 'calibrate',
+      calibrationRemainingMs: this.phase === 'calibrate' && this.standSince !== null && feedback !== 'find-body'
+        ? Math.max(0, CALIBRATION_MS - (this.lastObservationAt - this.standSince)) : null,
       standingAngle: this.standingAngle === null ? null : Math.round(this.standingAngle),
       depthTarget: this.depthThreshold() === null ? null : Math.round(this.depthThreshold()!),
       returnTarget: this.returnThreshold() === null ? null : Math.round(this.returnThreshold()!),
@@ -238,8 +259,9 @@ function kneeCandidates(landmarks: PosePoint[], frameAspectRatio: number): KneeC
     const b = landmarks[knee];
     const c = landmarks[ankle];
     if (!a || !b || !c) continue;
-    const confidence = Math.min(...[a, b, c].map((p) => p.visibility ?? 1));
-    if (!Number.isFinite(confidence) || confidence < 0.42 || confidence > 1) continue;
+    const scores = [a, b, c].map((p) => p.visibility ?? 1);
+    if (!scores.every(score => Number.isFinite(score) && score >= 0.42 && score <= 1)) continue;
+    const confidence = Math.min(...scores);
     if (![a, b, c].every((p) => Number.isFinite(p.x) && Number.isFinite(p.y) &&
         p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1 &&
         Number.isFinite(p.presence ?? 1) && (p.presence ?? 1) >= 0.4 && (p.presence ?? 1) <= 1)) continue;

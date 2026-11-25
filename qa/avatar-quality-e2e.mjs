@@ -122,6 +122,7 @@ async function newTab() {
     const scanPrograms = new WeakSet(), textilePrograms = new WeakSet(), skinPrograms = new WeakSet();
     window.__trainerDraws = new WeakMap();
     window.__browDraws = new WeakMap();
+    window.__directionalBrowDraws = new WeakMap();
     window.__lashDraws = new WeakMap();
     window.__regionalSkinDraws = new WeakMap(); window.__lipResponseDraws = new WeakMap();
     const regionalSkinPrograms = new WeakSet(), lipResponsePrograms = new WeakSet();
@@ -136,6 +137,9 @@ async function newTab() {
     window.__scanDraws = new WeakSet(); window.__textileDraws = new WeakSet();
     window.__matteDraws = new WeakMap(); const mattePrograms = new WeakSet();
     window.__sleeveDraws = new WeakMap();
+    window.__hipDraws = new WeakMap();
+    const wardrobeQaEnabled = ${Boolean(process.env.BODYFORGE_QA_WARDROBE)};
+    window.__wardrobeQa = new WeakMap();
     for (const type of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
       if (!type) continue;
       for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced']) {
@@ -203,6 +207,19 @@ async function newTab() {
           if (program && layeredPrograms.has(program) && name.startsWith('drawElements') && args[1]===35562) {
             window.__layeredGroomDraws.set(this.canvas,(window.__layeredGroomDraws.get(this.canvas)||0)+1);
           }
+          if (wardrobeQaEnabled && program && name.startsWith('drawElements')) {
+            const counts = window.__wardrobeQa.get(this.canvas) || {bare:0,clothed:0,nipples:0,shirt:0,shorts:0};
+            if(regionalSkinPrograms.has(program)) {
+              if(args[1]===275868)counts.bare++;
+              if(args[1]===235050)counts.clothed++;
+              if(args[1]===1872)counts.nipples++;
+            }
+            if(mattePrograms.has(program)) {
+              if(args[1]===24966)counts.shirt++;
+              if(args[1]===8547)counts.shorts++;
+            }
+            window.__wardrobeQa.set(this.canvas,counts);
+          }
           if (program && regionalSkinPrograms.has(program)) window.__regionalSkinDraws.set(this.canvas,(window.__regionalSkinDraws.get(this.canvas)||0)+1);
           if (program && lipResponsePrograms.has(program)) window.__lipResponseDraws.set(this.canvas,(window.__lipResponseDraws.get(this.canvas)||0)+1);
           if (program && ocularPrograms.has(program)) window.__ocularDraws.add(this.canvas);
@@ -212,12 +229,14 @@ async function newTab() {
           if (program && mattePrograms.has(program)) {
             window.__matteDraws.set(this.canvas,(window.__matteDraws.get(this.canvas)||0)+1);
             if(name.startsWith('drawElements') && args[1]===24966) window.__sleeveDraws.set(this.canvas,(window.__sleeveDraws.get(this.canvas)||0)+1);
+            if(name.startsWith('drawElements') && args[1]===8547) window.__hipDraws.set(this.canvas,(window.__hipDraws.get(this.canvas)||0)+1);
           }
           if (program && skinPrograms.has(program) && name.startsWith('drawElements') && args[1] === 15912) {
             window.__lashDraws.set(this.canvas,(window.__lashDraws.get(this.canvas)||0)+1);
           }
-          if (program && skinPrograms.has(program) && name.startsWith('drawElements') && args[1] === 7560) {
+          if (program && skinPrograms.has(program) && name.startsWith('drawElements') && [7560,16800].includes(args[1])) {
             window.__browDraws.set(this.canvas,(window.__browDraws.get(this.canvas)||0)+1);
+            if(args[1]===16800) window.__directionalBrowDraws.set(this.canvas,(window.__directionalBrowDraws.get(this.canvas)||0)+1);
           }
           if (program && skinPrograms.has(program) && name.startsWith('drawElements') && [7320,3048,2136,648,432].includes(args[1])) {
             const counts = window.__trainerDraws.get(this.canvas) || new Set();
@@ -243,7 +262,8 @@ async function newTab() {
 async function app(tab, reload = false) {
   const loads = tab.loads;
   if (reload) await tab.cdp('Page.reload', { ignoreCache: true });
-  else await tab.cdp('Page.navigate', { url: origin + '/' });
+  else await tab.cdp('Page.navigate', { url: origin + '/' + (['filmic','neutral'].includes(process.env.BODYFORGE_QA_LOOK_DEV) ? '?avatarLookDev='+process.env.BODYFORGE_QA_LOOK_DEV : process.env.BODYFORGE_QA_BODY_DERMAL==='base' ? '?avatarBodyDermal=base' :
+    process.env.BODYFORGE_QA_SCAN_REVIEW==='on' ? '?avatarScanReview=1'+(['on','fallback'].includes(process.env.BODYFORGE_QA_SCAN_COLOR)?'&avatarScanColor=1':'') : '') });
   await waitFor(async () => tab.loads > loads, 'fresh application document loaded');
   await tab.until('!!document.querySelector(".app-shell")&&!!' + query('button[aria-label="Внешний вид"]'), 'actual application and appearance control');
   await tab.until('document.documentElement.dataset.bfPalette!==undefined', 'appearance applied to document');
@@ -257,12 +277,18 @@ try {
   await tab.until('!!document.querySelector(".dashboard-player")','synthetic fighter created');
   await tab.until('JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')||"null")?.game?.created===true','fighter creation acknowledged in storage');
   let gameBefore=await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')');
-  if(process.env.BODYFORGE_QA_GROOM_V2==='max'||process.env.BODYFORGE_QA_DERMAL_V3==='max'||process.env.BODYFORGE_QA_TAILOR||process.env.BODYFORGE_QA_SLEEVE==='max'||process.env.BODYFORGE_QA_FACE_BAKE||process.env.BODYFORGE_QA_SCALP_DENSITY==='max'||process.env.BODYFORGE_QA_PERIORAL){
+  if(process.env.BODYFORGE_QA_GROOM_V2==='max'||process.env.BODYFORGE_QA_DERMAL_V3==='max'||process.env.BODYFORGE_QA_TAILOR||process.env.BODYFORGE_QA_SLEEVE==='max'||process.env.BODYFORGE_QA_HIPS==='max'||process.env.BODYFORGE_QA_WARDROBE==='max'||process.env.BODYFORGE_QA_BODY_DERMAL||process.env.BODYFORGE_QA_FACE_BAKE||process.env.BODYFORGE_QA_SCALP_DENSITY==='max'||process.env.BODYFORGE_QA_PERIORAL||(process.env.BODYFORGE_QA_BROWS_V3&&process.env.BODYFORGE_QA_BROWS_V3!=='neutral')){
     const maximum=JSON.parse(gameBefore);
-    maximum.game.muscles={arms:5,core:5,legs:5,back:5};
+    maximum.game.muscles=process.env.BODYFORGE_QA_HIPS==='max'?{arms:0,core:0,legs:5,back:0}:{arms:5,core:5,legs:5,back:5};
     gameBefore=JSON.stringify(maximum);
     await tab.js('localStorage.setItem('+JSON.stringify(gameKey)+','+JSON.stringify(gameBefore)+');true');
     await app(tab,true);
+  }
+  if(process.env.BODYFORGE_QA_SCAN_COLOR==='fallback'){
+    await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-skin-scan-review.jpg*']});
+  }
+  if(process.env.BODYFORGE_QA_BROWS_V3==='fallback'){
+    await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-brows-v3.glb*']});
   }
   if(process.env.BODYFORGE_QA_PERIORAL==='fallback'){
     await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-skin-perioral.jpg*']});
@@ -293,10 +319,99 @@ try {
   await tab.until('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','local skin albedo applied');
   await tab.until('window.__dermalDraws.has(document.querySelector(".studio-preview canvas"))', 'linked dermal shader actually draws skin');
   const skinFile = await tab.js('document.querySelector(".studio-preview canvas")?.dataset.skinSurface');
-  check(['athlete-skin-perioral.jpg','athlete-skin-dermal.jpg'].includes(skinFile) &&
+  check((process.env.BODYFORGE_QA_SCAN_COLOR==='on'?['athlete-skin-scan-review.jpg']:['athlete-skin-perioral.jpg','athlete-skin-dermal.jpg']).includes(skinFile) &&
     await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/"+skinFile+"'))"),
     'selected detailed Blender pigment atlas actually requested');
-  if(process.env.BODYFORGE_QA_PERIORAL){
+  if(process.env.BODYFORGE_QA_SLEEVE||process.env.BODYFORGE_QA_TAILOR||process.env.BODYFORGE_QA_GARMENTS_ONLY==='1'){
+    await tab.until('document.querySelector(".studio-preview canvas")?.dataset.shirtState==="off"','removable wardrobe ready');
+    await tab.click('button[data-shirt="off"]');
+    await tab.until('document.querySelector(".studio-preview canvas")?.dataset.shirtState==="on"','explicitly dress for clothing QA');
+  }
+  if(process.env.BODYFORGE_QA_WARDROBE){
+    const mode=process.env.BODYFORGE_QA_WARDROBE;
+    const canvas='document.querySelector(".studio-preview canvas")';
+    const stats='window.__wardrobeQa.get('+canvas+')';
+    const lookKey='bodyforge:avatar-look:v1';
+    const revision=process.env.BODYFORGE_QA_LOOK_DEV||'base';
+    await tab.until(canvas+'?.dataset.shirtState==="off"&&'+canvas+'?.dataset.lookDev==='+JSON.stringify(revision)+'&&'+canvas+'?.dataset.fabricMaps==="2"&&'+canvas+'?.dataset.sleeveRepair==="14"&&'+canvas+'?.dataset.skinSurface==="athlete-skin-perioral.jpg"&&'+canvas+'?.dataset.normalSurface==="sculpt-bake-v1"&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+canvas+'?.dataset.groomRevision==="layered-v2"&&'+stats+'?.bare>0&&'+stats+'?.nipples>0&&'+stats+'?.shorts>0','actual restored skin and shorts drawn with full materials',35000);
+    check(await tab.js('document.querySelector(\'button[data-shirt="off"]\')?.getAttribute("aria-pressed")==="false"'),'shirt is off by default');
+    await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+    if(await tab.js('document.querySelector("[data-avatar-motion]")?.getAttribute("aria-pressed")==="true"'))await tab.click('[data-avatar-motion]');
+    await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
+    await tab.click('[data-avatar-view="torso"]');
+    await tab.until(canvas+'?.dataset.avatarView==="torso"&&'+canvas+'?.dataset.renderLoop==="on-demand"','static torso camera');
+    const redraw=async(visible)=>{
+      const before=await tab.js(stats);
+      await tab.js('window.dispatchEvent(new Event("bodyforge:graphics-change"));true');
+      const region=visible?'clothed':'bare';
+      await tab.until(stats+'?.'+region+'>'+before[region]+'&&'+stats+'?.shorts>'+before.shorts,'actual selected skin range and shorts redraw');
+      const after=await tab.js(stats);
+      check(visible?after.shirt>before.shirt&&after.bare===before.bare&&after.nipples===before.nipples:after.nipples>before.nipples&&after.shirt===before.shirt&&after.clothed===before.clothed,'actual GPU shirt/skin visibility is exclusive');
+    };
+    const shot=async name=>{await tab.js('window.scrollTo(0,0);true');await sleep(250);await tab.screenshot('wardrobe-'+mode+'-'+name);};
+    await redraw(false);await shot('bare-front');
+    await tab.click('button[data-shirt="off"]');
+    await tab.until(canvas+'?.dataset.shirtState==="on"&&'+stats+'?.shirt>0&&'+stats+'?.clothed>0','actual repaired shirt and covered-skin range drawn');
+    await redraw(true);await shot('shirt-front');
+    await tab.click('button[data-shirt="on"]');
+    await tab.until(canvas+'?.dataset.shirtState==="off"','shirt removed');
+    await redraw(false);
+    for(let i=0;i<11;i++)await tab.click('.armory-yaw-controls button:last-child');
+    await tab.until('Math.abs(Number('+canvas+'?.dataset.avatarYaw))>2.8','rear torso view');
+    await redraw(false);await shot('bare-rear');
+    await tab.click('button[data-shirt="off"]');
+    await tab.until(canvas+'?.dataset.shirtState==="on"','shirt on at rear');
+    await redraw(true);await shot('shirt-rear');
+    check(await tab.js('JSON.parse(localStorage.getItem('+JSON.stringify(lookKey)+')).shirt===true'),'shirt choice persisted separately');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'cosmetic changes preserve exact game bytes');
+    await app(tab,true);await tab.click('.mobile-nav button:nth-child(3)');
+    await tab.until(canvas+'?.dataset.shirtState==="on"&&'+stats+'?.shirt>0&&'+stats+'?.clothed>0','saved shirt choice survives reload and really draws',35000);
+    await tab.click('button[data-shirt="on"]');
+    await tab.until(canvas+'?.dataset.shirtState==="off"&&'+stats+'?.bare>0&&'+stats+'?.nipples>0','removable torso restored after reload');
+    check(await tab.js('JSON.parse(localStorage.getItem('+JSON.stringify(lookKey)+')).shirt===false'),'removed shirt choice saved');
+    check(await tab.js('Object.values(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles).every(v=>v==='+ (mode==='max'?5:0)+')'),'all intended muscle levels retained');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'reload preserves exact synthetic game bytes');
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_WARDROBE_PASS',JSON.stringify({mode,revision,assertions,...observations}));
+  } else if(process.env.BODYFORGE_QA_BROWS_V3){
+    const mode=process.env.BODYFORGE_QA_BROWS_V3;
+    const fallback=mode==='fallback';
+    const canvas='document.querySelector(".studio-preview canvas")';
+    const revision=fallback?'fitted-v2':'directional-v3';
+    const draws='(window.__browDraws.get('+canvas+')||0)';
+    const directional='(window.__directionalBrowDraws.get('+canvas+')||0)';
+    const expectedSkin=process.env.BODYFORGE_QA_SCAN_COLOR==='on'?'athlete-skin-scan-review.jpg':'athlete-skin-perioral.jpg';
+    await tab.until(canvas+'?.dataset.browRevision==='+JSON.stringify(revision)+'&&'+canvas+'?.dataset.skinSurface==='+JSON.stringify(expectedSkin)+'&&'+canvas+'?.dataset.normalSurface==="sculpt-bake-v1"&&'+canvas+'?.dataset.groomRevision==="layered-v2"&&'+canvas+'?.dataset.lipResponse==="microgrooves-v1"&&'+canvas+'?.dataset.ocularDetail==="fitted-pbr"&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+canvas+'?.dataset.scanDetail==="scan-microrelief"&&'+draws+'>0','selected brow revision and actual skinned draw with complete facial materials',35000);
+    if(process.env.BODYFORGE_QA_FACE_CONTOUR==='1')check(await tab.js(canvas+'?.dataset.faceContour==="lower-face-contour-v3"'),'new face contour installed on the real rig');
+    if(process.env.BODYFORGE_QA_SCAN_REVIEW)check(await tab.js(canvas+(process.env.BODYFORGE_QA_SCAN_REVIEW==='on'?'?.dataset.scanTransfer==="scan-depth-review-v1"':'?.dataset.scanTransfer===undefined')),'expected opt-in scan review mode on actual athlete');
+    if(process.env.BODYFORGE_QA_SCAN_COLOR==='fallback')check(tab.failedUrls.some(url=>url?.includes('athlete-skin-scan-review.jpg')),'photographic atlas request blocked, original atlas selected');
+    if(process.env.BODYFORGE_QA_SCAN_COLOR==='off')check(!await tab.js("performance.getEntriesByType('resource').some(e=>e.name.includes('athlete-skin-scan-review.jpg'))"),'no photographic atlas request in geometry-only mode');
+    if(fallback){
+      check(tab.failedUrls.some(url=>url?.endsWith('/bodyforge-brows-v3.glb')),'new brow request actually blocked');
+      check(await tab.js(directional+'===0'),'reserve geometry without directional draw');
+    } else check(await tab.js(directional+'>0'),'actual directional skinned geometry drawn');
+    await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+    await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
+    await tab.click('[data-avatar-view="portrait"]');
+    await tab.until(canvas+'?.dataset.avatarView==="portrait"&&'+canvas+'?.dataset.renderLoop==="on-demand"','static matched portrait');
+    await tab.js('window.scrollTo(0,0);true');await sleep(400);
+    await tab.screenshot('brows-'+mode+'-front');
+    const previous=await tab.js(draws);
+    for(let i=0;i<3;i++)await tab.click('.armory-yaw-controls button:last-child');
+    await tab.until(draws+'>'+previous,'actual eyebrow geometry redraw');
+    await tab.js('window.scrollTo(0,0);true');await sleep(300);
+    await tab.screenshot('brows-'+mode+'-turned');
+    if(!fallback){
+      await tab.click('[data-hair="silver"]');
+      await tab.until('document.querySelector(".studio-preview [data-look-hair]")?.dataset.lookHair==="silver"','silver dye selected');
+      await tab.js('window.scrollTo(0,0);true');await sleep(300);
+      await tab.screenshot('brows-'+mode+'-silver');
+    }
+    check(await tab.js('Object.values(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles).every(v=>v==='+ (mode==='neutral'?0:5)+')'),'intended muscle levels retained');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'exact synthetic game bytes retained');
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_BROWS_V3_PASS',JSON.stringify({mode,assertions,...observations}));
+  } else if(process.env.BODYFORGE_QA_PERIORAL){
     const mode=process.env.BODYFORGE_QA_PERIORAL;
     const canvas='document.querySelector(".studio-preview canvas")';
     const expected=mode==='fallback'?'athlete-skin-dermal.jpg':'athlete-skin-perioral.jpg';
@@ -401,6 +516,49 @@ try {
     observations.renderScale=await tab.js(canvas+'?.dataset.renderScale');
     observations.yaw=await tab.js(canvas+'?.dataset.avatarYaw');
     console.log('ATHLETE_FACE_BAKE_PASS',JSON.stringify({mode,assertions,...observations}));
+  } else if(process.env.BODYFORGE_QA_BODY_DERMAL){
+    const mode=process.env.BODYFORGE_QA_BODY_DERMAL;
+    const canvas='document.querySelector(".studio-preview canvas")';
+    const draws='(window.__regionalSkinDraws.get('+canvas+')||0)';
+    const revision=mode==='base'?'base':'body-regions-v1';
+    await tab.until(canvas+'?.dataset.bodyDermal==='+JSON.stringify(revision)+'&&'+draws+'>0&&'+canvas+'?.dataset.scanDetail==="scan-microrelief"&&'+canvas+'?.dataset.normalSurface==="sculpt-bake-v1"&&'+canvas+'?.dataset.skinSurface==="athlete-skin-perioral.jpg"&&'+canvas+'?.dataset.studioIbl==="measured-hdr"','selected regional body material and linked shader draws',35000);
+    await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+    await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
+    for(const view of ['torso','legs']){
+      const before=await tab.js(draws);
+      await tab.click('[data-avatar-view="'+view+'"]');
+      await tab.until(canvas+'?.dataset.avatarView==='+JSON.stringify(view)+'&&'+draws+'>'+before,'actual skin redraw '+view);
+      await tab.js('window.scrollTo(0,0);true');await sleep(350);
+      await tab.screenshot('body-dermal-'+mode+'-'+view);
+    }
+    const before=await tab.js(draws);
+    for(let i=0;i<3;i++)await tab.click('.armory-yaw-controls button:last-child');
+    await tab.until(draws+'>'+before,'actual skin redraw turned');
+    await tab.js('window.scrollTo(0,0);true');await sleep(350);
+    await tab.screenshot('body-dermal-'+mode+'-turned');
+    check(await tab.js('Object.values(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles).every(v=>v===5)'),'all groups retain max growth');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'exact synthetic save retained');
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_BODY_DERMAL_PASS',JSON.stringify({mode,assertions,...observations}));
+  } else if(process.env.BODYFORGE_QA_HIPS){
+    const mode=process.env.BODYFORGE_QA_HIPS;
+    const canvas='document.querySelector(".studio-preview canvas")';
+    const draws='(window.__hipDraws.get('+canvas+')||0)';
+    await tab.until(canvas+'?.dataset.garmentFit==="4466"&&'+canvas+'?.dataset.garmentSeams==="7"&&'+canvas+'?.dataset.fabricMaps==="2"&&'+draws+'>0','fitted shorts indexed matte draw',35000);
+    await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
+    await tab.click('[data-avatar-view="legs"]');
+    await tab.until(canvas+'?.dataset.avatarView==="legs"','legs camera');
+    await tab.js('window.scrollTo(0,0);true');await sleep(300);
+    await tab.screenshot('hips-'+mode+'-front');
+    const before=await tab.js(draws);
+    for(let i=0;i<11;i++)await tab.click('.armory-yaw-controls button:last-child');
+    await tab.until('Math.abs(Number('+canvas+'?.dataset.avatarYaw))>2.8&&'+draws+'>'+before,'rear view and actual shorts redraw');
+    await tab.js('window.scrollTo(0,0);true');await sleep(300);
+    await tab.screenshot('hips-'+mode+'-rear');
+    check(await tab.js('JSON.stringify(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles)==='+JSON.stringify(JSON.stringify({arms:0,core:0,legs:mode==='max'?5:0,back:0}))), 'only leg group has intended level');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'exact synthetic save retained');
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_HIPS_PASS',JSON.stringify({mode,assertions,...observations}));
   } else if(process.env.BODYFORGE_QA_SLEEVE){
     const mode=process.env.BODYFORGE_QA_SLEEVE;
     const canvas='document.querySelector(".studio-preview canvas")';
@@ -563,7 +721,7 @@ try {
     await tab.screenshot('face-level5');
     check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===maxRaw,'face does not mutate maximum-growth fixture');
     const failures=tab.failedUrls.length;
-    await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-brows-v2.glb*']});
+    await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-brows-v3.glb*','*bodyforge-brows-v2.glb*']});
     await app(tab,true);await tab.click('.mobile-nav button:nth-child(3)');
     await tab.until(ready,'face remains usable with missing optional brow donor',35000);
     await waitFor(()=>tab.failedUrls.slice(failures).some(url=>url?.endsWith('/bodyforge-brows-v2.glb')),'brow donor actually blocked');
@@ -1184,7 +1342,20 @@ try {
   check(tab.errors.length===0,'no uncaught browser errors');
   console.log('ATHLETE_QUALITY_PASS',JSON.stringify({assertions,...observations}));
   }
-} catch(error){console.error('ATHLETE_QUALITY_FAIL',error.stack||String(error));process.exitCode=18;}
+} catch(error){
+  console.error('ATHLETE_QUALITY_FAIL',error.stack||String(error));
+  process.exitCode=18;
+  // Preserve the failure result. Diagnose only the disposable test browser,
+  // never read the owner's profile or dump storage contents.
+  for (const client of clients) {
+    try {
+      const state=await client.js('({ready:document.readyState,shell:!!document.querySelector(".app-shell"),screen:document.querySelector(".app-shell")?.dataset.screen,recovery:!!document.querySelector(".storage-recovery"),appearance:!!document.querySelector(".appearance-trigger"),onboarding:!!document.querySelector("#onboarding"),studio:!!document.querySelector(".studio-preview"),avatar:document.querySelector(".studio-preview [data-avatar-source]")?.dataset.avatarSource,canvas:{...document.querySelector(".studio-preview canvas")?.dataset}})');
+      const failed=client.failedUrls.filter(u=>typeof u==='string'&&u.startsWith(origin+'/')).map(u=>new URL(u).pathname).slice(-15);
+      console.error('ATHLETE_FAILURE_STATE',JSON.stringify({state,failed,errors:client.errors.slice(-5)}));
+      await client.screenshot('failure-'+client.target.id.slice(0,8));
+    } catch(diagnosticError) { console.error('ATHLETE_FAILURE_DIAGNOSTIC',String(diagnosticError)); }
+  }
+}
 finally {
   for (const client of clients) client.socket.close();
   // On elevated Windows launch, Chrome can transfer to a non-elevated child.

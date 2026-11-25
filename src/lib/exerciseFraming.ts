@@ -1,4 +1,4 @@
-import { measureExercise, MIN_JACK_SHOULDER_WIDTH, MIN_JACK_TORSO_HEIGHT } from './exerciseCounter';
+import { measureExercise, MIN_JACK_SHOULDER_WIDTH, MIN_JACK_TORSO_HEIGHT, nearExerciseFrameEdge } from './exerciseCounter';
 import type { PoseGuidance } from './poseGuidance';
 import type { PosePoint } from './squatCounter';
 import { exerciseGuide, type ExerciseId } from './trainingCatalog';
@@ -89,10 +89,7 @@ export function assessExerciseFraming(
   }
 
   const relevant = RELEVANT[id].filter((index) => visible(points[index]));
-  if (relevant.some((index) => {
-    const p = points[index];
-    return p.x < .035 || p.x > .965 || p.y < .035 || p.y > .965;
-  })) {
+  if (relevant.some(index => nearExerciseFrameEdge(points[index]))) {
     return hint('too-close', 'СУСТАВЫ У КРАЯ КАДРА',
       'Отодвинь телефон или включи отображение всего кадра, чтобы руки и ноги не обрезались.');
   }
@@ -101,7 +98,8 @@ export function assessExerciseFraming(
   if (!reading) {
     return hint('angle-unavailable',
       id === 'pushup' || id === 'crunch' || id === 'leg-raise' ? 'ПОВЕРНИ ТЕЛЕФОН СБОКУ' : 'НЕ ОПРЕДЕЛЯЕТСЯ ДВИЖЕНИЕ',
-      guide.placement[1]);
+      id === 'pushup' ? 'Телефон сбоку у пола. В кадре плечо, локоть, кисть ниже плеча, таз и стопа одной стороны.'
+        : guide.placement[1]);
   }
   if (id === 'plank' && !reading.ready) {
     return hint('angle-unavailable', 'ВЫРОВНЯЙ ПОЛОЖЕНИЕ КОРПУСА',

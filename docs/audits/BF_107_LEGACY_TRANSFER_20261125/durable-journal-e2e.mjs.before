@@ -1,0 +1,248 @@
+// Actual IndexedDB, disposable Chrome profile. No App, camera, owner data or network writes.
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
+const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
+await requireDevOrigin(origin);
+const ownedProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-durable-journal-'));
+const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
+  '--headless=new', '--disable-webgl', '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
+  '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + ownedProfile, 'about:blank',
+], { stdio: 'ignore' });
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let socket, sequence = 0, assertions = 0, browser;
+const requests = new Map();
+function check(value, label) { if (!value) throw Error('FAIL ' + label); assertions++; console.log('PASS', label); }
+function cdp(method, params = {}) {
+  return new Promise((resolve, reject) => {
+    const id = ++sequence, timer = setTimeout(() => { requests.delete(id); reject(Error(method + ' timeout')); }, 20000);
+    requests.set(id, { timer, resolve, reject }); socket.send(JSON.stringify({ id, method, params }));
+  });
+}
+async function js(expression) {
+  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+  if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+  return result.result.value;
+}
+async function test(expression, label) { check(await js(expression), label); }
+try {
+  browser = await waitForOwnedBrowser(ownedProfile, chrome);
+  const target = await newOwnedPage(browser);
+  socket = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }); });
+  socket.addEventListener('message', (event) => {
+    const message = JSON.parse(event.data.toString()), request = requests.get(message.id);
+    if (request) { clearTimeout(request.timer); requests.delete(message.id); message.error ? request.reject(Error(JSON.stringify(message.error))) : request.resolve(message.result); }
+    if (message.method === 'Fetch.requestPaused') void cdp('Fetch.fulfillRequest', { requestId: message.params.requestId, responseCode: 200,
+      responseHeaders: [{ name: 'Content-Type', value: 'text/html' }], body: Buffer.from('<!doctype html><title>Disposable actual IndexedDB QA</title>').toString('base64') });
+  });
+  await cdp('Runtime.enable'); await cdp('Page.enable');
+  await cdp('Fetch.enable', { patterns: [{ urlPattern: origin + '/?durable-qa', resourceType: 'Document', requestStage: 'Request' }] });
+  await cdp('Page.navigate', { url: origin + '/?durable-qa' });
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    try { if (await js("location.href.endsWith('/?durable-qa')&&document.title==='Disposable actual IndexedDB QA'")) break; } catch { /* navigation */ }
+    await sleep(100);
+  }
+  if (Date.now() >= deadline) throw Error('Disposable test document did not load');
+  await js(`(async()=>{
+    window.mod=await import('/src/lib/durableJournal.ts');window.dbName='bodyforge:durable-results:v1';
+    window.entry={key:'bodyforge:pilot:v1:result:durable-test',raw:'{opaque damaged JSON'};
+    window.extra={key:'bodyforge:pilot:v1:result:extra',raw:'future envelope'};
+    window.openNative=(version=1,upgrade)=>new Promise((resolve,reject)=>{const r=indexedDB.open(dbName,version);r.onupgradeneeded=()=>upgrade?.(r.result);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+    window.resetDB=()=>new Promise((resolve,reject)=>{const r=indexedDB.deleteDatabase(dbName);r.onsuccess=()=>resolve(true);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(Error('Leaked DB handle'))});
+    window.directPut=async(value)=>{const db=await openNative();try{await new Promise((resolve,reject)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});tx.objectStore('results').put(value);tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(tx.error)})}finally{db.close()}};
+    window.directRows=async()=>{const db=await openNative();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('results','readonly'),r=tx.objectStore('results').getAll();let rows;r.onsuccess=()=>rows=r.result;tx.oncomplete=()=>resolve(rows);tx.onerror=tx.onabort=()=>reject(tx.error)})}finally{db.close()}};
+    await resetDB();return true;
+  })()`);
+  await test("(async()=>{const r=await mod.readDurableJournal();return r.status==='ready'&&r.entries.length===0})()", 'fresh real IndexedDB initializes a readable empty store');
+  await js(`window.nativeTransaction=IDBDatabase.prototype.transaction;window.txEvents=[];IDBDatabase.prototype.transaction=function(...args){const tx=nativeTransaction.apply(this,args);txEvents.push(tx.mode+':'+tx.durability);tx.addEventListener('complete',()=>txEvents.push(tx.mode+':complete'));return tx};true`);
+  await test("(async()=>{const r=await mod.stageDurableResults([entry],'baseline-A');return r.status==='saved'})()", 'opaque result acknowledged after a strict real transaction');
+  await test("txEvents.indexOf('readwrite:strict')>=0&&txEvents.indexOf('readonly:default')>txEvents.indexOf('readwrite:complete')", 'separate readback follows strict transaction complete');
+  await js('IDBDatabase.prototype.transaction=nativeTransaction;true');
+  await test("(async()=>{const r=await mod.readDurableJournal();return r.entries[0].raw===entry.raw&&r.entries[0].baseProfileRaw==='baseline-A'&&r.entries[0].state==='active'})()", 'opaque damaged original and initial profile baseline are preserved');
+  await test("(async()=>{const r=await mod.stageDurableResults([entry,entry],'baseline-B');return r.status==='saved'&&(await mod.readDurableJournal()).entries.length===1&&(await mod.readDurableJournal()).entries[0].baseProfileRaw==='baseline-A'})()", 'idempotent duplicate keeps the first baseline and one row');
+  await test("(async()=>{const put=IDBObjectStore.prototype.put;let puts=0;IDBObjectStore.prototype.put=function(...args){puts++;return put.apply(this,args)};try{const r=await mod.stageDurableResults([entry],'other');return r.status==='saved'&&r.entries[0].state==='active'&&r.entries[0].baseProfileRaw==='baseline-A'&&puts===1}finally{IDBObjectStore.prototype.put=put}})()", 'active duplicate still issues one strict put');
+  await test("(async()=>{const r=await mod.stageDurableResults([{...entry,raw:'different'}],null);return r.status==='invalid'&&(await mod.readDurableJournal()).entries[0].raw===entry.raw})()", 'same key cannot replace immutable raw bytes');
+  await test("(async()=>{const r=await mod.stageDurableResults([extra,{...entry,raw:'different'}],null);return r.status==='invalid'&&(await mod.readDurableJournal()).entries.length===1})()", 'conflicting batch aborts atomically before creating another row');
+  await test("(async()=>{const r=await mod.stageDurableResults([extra,{...extra,raw:'different'}],null);return r.status==='invalid'&&(await mod.readDurableJournal()).entries.length===1})()", 'conflicting duplicate inside a batch writes nothing');
+  await test("(async()=>{return(await mod.stageDurableResults([{key:'wrong-prefix',raw:'x'}],null)).status==='invalid'&&(await mod.stageDurableResults([extra],17)).status==='invalid'})()", 'invalid key and baseline types fail closed');
+  await test("(async()=>{return(await mod.markDurableResults([entry],'settled')).status==='saved'&&(await mod.readDurableJournal()).entries[0].state==='settled'})()", 'settlement retains the durable record');
+  await test("(async()=>{return(await mod.stageDurableResults([entry],'changed')).status==='saved'&&(await mod.readDurableJournal()).entries[0].state==='settled'})()", 'staging never reactivates settled rows');
+  await test("(async()=>{return(await mod.markDurableResults([entry],'quarantined')).status==='saved'&&(await mod.readDurableJournal()).entries[0].state==='quarantined'})()", 'quarantine is durable and retains original bytes');
+  await test("(async()=>{return(await mod.stageDurableResults([entry],null)).status==='saved'&&(await mod.readDurableJournal()).entries[0].state==='quarantined'})()", 'staging never reactivates quarantine');
+  // Terminal rows are immutable evidence. Retries must not rewrite the whole
+  // baseline snapshot, even though strict completion and readback still apply.
+  await test("(async()=>{const original=await directRows(),put=IDBObjectStore.prototype.put;let puts=0;IDBObjectStore.prototype.put=function(...args){puts++;return put.apply(this,args)};try{const stage=await mod.stageDurableResults([entry],'ignored new baseline'),mark=await mod.markDurableResults([entry],'quarantined');return stage.status==='saved'&&mark.status==='saved'&&stage.entries[0].state==='quarantined'&&mark.entries[0].baseProfileRaw==='baseline-A'&&puts===0&&JSON.stringify(await directRows())===JSON.stringify(original)}finally{IDBObjectStore.prototype.put=put}})()", 'terminal duplicate stage and mark acknowledge without rewriting original');
+
+  await test("(async()=>{return(await mod.markDurableResults([entry],'settled')).status==='invalid'&&(await mod.readDurableJournal()).entries[0].state==='quarantined'})()", 'terminal quarantine cannot be silently settled');
+  await test("(async()=>{return(await mod.markDurableResults([extra],'settled')).status==='invalid'&&(await mod.markDurableResults([{...entry,raw:'different'}],'quarantined')).status==='invalid'})()", 'mark requires an existing exact raw match');
+  await test("(async()=>{const c=new AbortController();c.abort();return(await mod.stageDurableResults([extra],null,c.signal)).status==='unavailable'&&(await mod.readDurableJournal()).entries.length===1})()", 'already aborted write does not change storage');
+  await test(`(async()=>{const put=IDBObjectStore.prototype.put,c=new AbortController();IDBObjectStore.prototype.put=function(...args){const r=put.apply(this,args);c.abort();return r};let result;try{result=await mod.stageDurableResults([extra],null,c.signal)}finally{IDBObjectStore.prototype.put=put}return result.status==='unavailable'&&(await mod.readDurableJournal()).entries.length===1})()`, 'abort during a real put rolls the whole write back');
+  await test(`(async()=>{const put=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(...args){const r=put.apply(this,args);r.addEventListener('success',()=>this.transaction.abort());return r};let result;try{result=await mod.stageDurableResults([extra],null)}finally{IDBObjectStore.prototype.put=put}return result.status==='unavailable'&&(await mod.readDurableJournal()).entries.length===1})()`, 'request success followed by abort never becomes a saved receipt');
+  await test(`(async()=>{const original=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(...args){const tx=original.apply(this,args);if(tx.mode==='readwrite')Object.defineProperty(tx,'durability',{value:'default'});return tx};let result;try{result=await mod.stageDurableResults([extra],null)}finally{IDBDatabase.prototype.transaction=original}return result.status==='unavailable'&&(await mod.readDurableJournal()).entries.length===1})()`, 'engines ignoring strict durability cannot acknowledge a durable write');
+  await test(`(async()=>{const original=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(...args){if(args[1]==='readwrite')throw new DOMException('unsupported','NotSupportedError');return original.apply(this,args)};let result;try{result=await mod.stageDurableResults([extra],null)}finally{IDBDatabase.prototype.transaction=original}return result.status==='unavailable'})()`, 'unsupported strict transaction fails without a fallback write');
+  await test(`(async()=>{await directPut({schemaVersion:2,key:extra.key,raw:'future bytes',baseProfileRaw:null,state:'active'});const r=await mod.readDurableJournal(),rows=await directRows();return r.status==='unavailable'&&rows.some(x=>x.schemaVersion===2&&x.raw==='future bytes')})()`, 'unknown row version remains untouched and blocks trusted reads');
+  await test(`(async()=>{await resetDB();const db=await openNative(2,d=>d.createObjectStore('results',{keyPath:'key'}));db.close();return(await mod.readDurableJournal()).status==='unavailable'})()`, 'future database version is preserved without downgrading');
+  await test(`(async()=>{await resetDB();const db=await openNative(1,d=>d.createObjectStore('results',{keyPath:'other'}));db.close();return(await mod.readDurableJournal()).status==='unavailable'})()`, 'unexpected object-store key schema fails closed');
+  await js("(async()=>{await resetDB();await mod.readDurableJournal();return true})()");
+  await test(`(async()=>{const held=await openNative();let unblocked;const deleted=new Promise((resolve,reject)=>{const r=indexedDB.deleteDatabase(dbName);r.onsuccess=resolve;r.onerror=()=>reject(r.error);r.onblocked=()=>unblocked=true});while(!unblocked)await new Promise(r=>setTimeout(r,10));const start=performance.now(),read=await mod.readDurableJournal(),elapsed=performance.now()-start;held.close();await deleted;await new Promise(r=>setTimeout(r,100));const next=await mod.readDurableJournal();return read.status==='unavailable'&&elapsed>=4500&&elapsed<7000&&next.status==='ready'&&next.entries.length===0})()`, 'blocked opening times out, closes late handles and permits clean recovery');
+  await test(`(async()=>{const held=await openNative();let blocked=false;const deleted=new Promise(resolve=>{const r=indexedDB.deleteDatabase(dbName);r.onsuccess=resolve;r.onblocked=()=>blocked=true});while(!blocked)await new Promise(r=>setTimeout(r,10));const c=new AbortController();setTimeout(()=>c.abort(),50);const start=performance.now(),result=await mod.stageDurableResults([extra],null,c.signal),elapsed=performance.now()-start;held.close();await deleted;await new Promise(r=>setTimeout(r,100));const rows=await mod.readDurableJournal();return result.status==='unavailable'&&elapsed<1000&&rows.status==='ready'&&rows.entries.length===0})()`, 'cancelled blocked open never performs a delayed hidden write');
+
+  // 256 retained terminal originals plus one newly completed result. Measure
+  // logical IDB puts, not disk bytes or browser-engine compression.
+  const scaling = await js("(async()=>{const rows=Array.from({length:256},(_,i)=>({key:'bodyforge:pilot:v1:result:scale-'+String(i).padStart(4,'0'),raw:JSON.stringify({test:i})})),base='old checkpoint '+ 'history-'.repeat(4096),active={key:'bodyforge:pilot:v1:result:scale-active',raw:'new result'};const staged=await mod.stageDurableResults(rows,base);if(staged.status!=='saved')throw Error('fixture stage');const settled=await mod.markDurableResults(rows,'settled');if(settled.status!=='saved')throw Error('fixture settle');const added=await mod.stageDurableResults([active],'active baseline');if(added.status!=='saved')throw Error('fixture active');const before=await directRows(),put=IDBObjectStore.prototype.put;let puts=0;const putKeys=[];IDBObjectStore.prototype.put=function(...args){puts++;putKeys.push(args[0].key);return put.apply(this,args)};try{const marked=await mod.markDurableResults([...rows,active],'settled'),after=await directRows(),expected=before.map(r=>r.key===active.key?{...r,state:'settled'}:r);return {puts,putKeys,ack:marked.status,ackCount:marked.entries?.length,allSettled:marked.entries?.every(r=>r.state==='settled'),exact:JSON.stringify(after)===JSON.stringify(expected)}}finally{IDBObjectStore.prototype.put=put}})()");
+  console.log('TERMINAL_SCALING',JSON.stringify(scaling));
+  check(scaling.ack==='saved'&&scaling.ackCount===257&&scaling.allSettled&&scaling.exact&&scaling.puts===1&&scaling.putKeys[0]==='bodyforge:pilot:v1:result:scale-active','256 historical terminal rows plus one new settlement require exactly one put and complete receipt');
+  await test("(async()=>{const before=await directRows(),put=IDBObjectStore.prototype.put;let puts=0;IDBObjectStore.prototype.put=function(...args){puts++;return put.apply(this,args)};try{const entries=before.map(({key,raw})=>({key,raw}));const r=await mod.markDurableResults(entries,'settled');return r.status==='saved'&&r.entries.length===257&&puts===0&&JSON.stringify(await directRows())===JSON.stringify(before)}finally{IDBObjectStore.prototype.put=put}})()", 'second full reconciliation makes zero puts and still acknowledges every original');
+  await test("(async()=>{const before=await directRows(),put=IDBObjectStore.prototype.put;let puts=0;IDBObjectStore.prototype.put=function(...args){puts++;return put.apply(this,args)};try{const entries=before.map(({key,raw})=>({key,raw}));entries[entries.length-1].raw+='changed';const r=await mod.markDurableResults(entries,'settled');return r.status==='invalid'&&puts===0&&JSON.stringify(await directRows())===JSON.stringify(before)}finally{IDBObjectStore.prototype.put=put}})()", 'mixed batch conflict never rewrites any terminal originals');
+  await test("(async()=>{const before=await directRows(),entry=before[0],put=IDBObjectStore.prototype.put,transaction=IDBDatabase.prototype.transaction;let puts=0,reads=0,completed=false,strict=false;IDBObjectStore.prototype.put=function(...args){puts++;return put.apply(this,args)};IDBDatabase.prototype.transaction=function(...args){const tx=transaction.apply(this,args);if(tx.mode==='readwrite'){strict=tx.durability==='strict';tx.addEventListener('complete',()=>completed=true)}else if(completed){reads++;}return tx};try{const r=await mod.markDurableResults([entry],'settled');return r.status==='saved'&&strict&&completed&&reads>0&&puts===0&&r.entries[0].baseProfileRaw===entry.baseProfileRaw}finally{IDBObjectStore.prototype.put=put;IDBDatabase.prototype.transaction=transaction}})()", 'no-op terminal acknowledgement still uses strict completion and a fresh readonly transaction');
+
+  // Candidate compact records live only in this disposable QA database.
+  // No conversion of the production v1 object store or owner history.
+  const checkpointSample=await js("(async()=>{const codec=await import('/src/lib/journalCheckpointBatch.ts'),before=await directRows(),source=(await mod.readDurableJournal()).entries.slice(0,32),packed=await codec.packCheckpointBatch(source);if(packed.status!=='packed')throw Error('checkpoint pack '+packed.status);const name='bodyforge:checkpoint-pack-qa';const open=()=>new Promise((resolve,reject)=>{const r=indexedDB.open(name,1);r.onupgradeneeded=()=>r.result.createObjectStore('batches');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const read=async()=>{const db=await open();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('batches','readonly'),r=tx.objectStore('batches').get('fixture');let value;r.onsuccess=()=>value=r.result;tx.oncomplete=()=>resolve(value);tx.onabort=tx.onerror=()=>reject(tx.error)})}finally{db.close()}};const db=await open();try{await new Promise((resolve,reject)=>{const tx=db.transaction('batches','readwrite',{durability:'strict'});if(tx.durability!=='strict'){tx.abort();reject(Error('strict unavailable'));return}tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(tx.error);tx.objectStore('batches').add(packed.batch,'fixture')})}finally{db.close()}const stored=await read(),restored=await codec.unpackCheckpointBatch(stored);const rollback=await open();try{await new Promise((resolve,reject)=>{const tx=rollback.transaction('batches','readwrite',{durability:'strict'});tx.onabort=resolve;tx.oncomplete=()=>reject(Error('abort fixture committed'));const r=tx.objectStore('batches').put({...stored,digest:'0'.repeat(64)},'fixture');r.onsuccess=()=>tx.abort()})}finally{rollback.close()}const retained=await read();const originalUntouched=JSON.stringify(before)===JSON.stringify(await directRows());return {rows:source.length,originalBytes:packed.originalBytes,packedBytes:packed.packedBytes,uniqueCheckpoints:packed.uniqueCheckpoints,exact:JSON.stringify(restored)===JSON.stringify(source),binary:stored.checkpointData instanceof ArrayBuffer,abortedOriginal:retained.digest===stored.digest&&JSON.stringify(await codec.unpackCheckpointBatch(retained))===JSON.stringify(source),originalUntouched}})()");
+  console.log('CHECKPOINT_PACK_SAMPLE',JSON.stringify(checkpointSample));
+  check(checkpointSample.rows===32&&checkpointSample.uniqueCheckpoints===1&&checkpointSample.packedBytes<checkpointSample.originalBytes&&checkpointSample.exact&&checkpointSample.binary,'compact checkpoint batch survives a strict native IndexedDB transaction and fresh readback');
+  check(checkpointSample.abortedOriginal&&checkpointSample.originalUntouched,'aborted compact prototype write retains verified batch and leaves live v1 journal untouched');
+
+  // Actual atomic conversion in a separate candidate database, never v1.
+  const mixed=await js(`(async()=>{
+    const m=await import('/src/lib/journalMixedStorage.ts');
+    const liveBefore=JSON.stringify(await directRows());
+    const prefix='bodyforge:pilot:v1:result:qa-mixed-';
+    const source=Array.from({length:6},(_,i)=>({schemaVersion:1,key:prefix+i,raw:'opaque-'+i,
+      baseProfileRaw:i===2?null:'checkpoint-'.repeat(4096),state:i===4?'active':i===5?'quarantined':'settled'}));
+    const selected=source.slice(0,3).map(r=>r.key);
+    const open=()=>new Promise((resolve,reject)=>{
+      const r=indexedDB.open(m.CANDIDATE_JOURNAL_DB,m.CANDIDATE_JOURNAL_VERSION);
+      r.onupgradeneeded=()=>r.result.createObjectStore(m.CANDIDATE_STORE,{keyPath:'key'});
+      r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(Error('candidate blocked'));
+    });
+    let db=await open();
+    const physical=()=>new Promise((resolve,reject)=>{
+      const tx=db.transaction(m.CANDIDATE_STORE,'readonly'),r=tx.objectStore(m.CANDIDATE_STORE).getAll();
+      tx.oncomplete=()=>resolve(r.result);tx.onabort=()=>reject(tx.error);
+    });
+    const write=(fn)=>new Promise((resolve,reject)=>{
+      const tx=db.transaction(m.CANDIDATE_STORE,'readwrite',{durability:'strict'});
+      tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);fn(tx.objectStore(m.CANDIDATE_STORE));
+    });
+    const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+    const initial=source.map(({schemaVersion,...r})=>({key:r.key,raw:r.raw,baseProfileRaw:r.baseProfileRaw,state:r.state}));
+    const exact=async()=>{const r=await m.readCandidateJournal(db);return r.status==='ready'&&same(r.entries,initial)};
+    const snapshot=async()=>{const r=await physical();return JSON.stringify(r.map(x=>x.schemaVersion===2?{...x,batch:{...x.batch,checkpointData:Array.from(new Uint8Array(x.batch.checkpointData))}}:x))};
+    const results={};
+    try{
+      await write(store=>source.forEach(row=>store.add(row)));
+      const before=await snapshot();
+      results.legacy=await exact();
+      results.cancel=(await m.compactCandidateJournal(db,selected,AbortSignal.abort())).status==='cancelled'&&before===await snapshot();
+      results.activeGuard=(await m.compactCandidateJournal(db,[source[4].key])).status==='conflict'&&
+        (await m.compactCandidateJournal(db,[source[5].key])).status==='conflict'&&before===await snapshot();
+      const oldAdd=IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add=function(...args){
+        const req=oldAdd.apply(this,args);
+        if(this.transaction.db.name===m.CANDIDATE_JOURNAL_DB)
+          req.addEventListener('success',()=>this.transaction.abort(),{once:true});
+        return req;
+      };
+      let aborted;
+      try{aborted=await m.compactCandidateJournal(db,selected)}finally{IDBObjectStore.prototype.add=oldAdd}
+      results.abort=aborted.status==='unavailable'&&before===await snapshot()&&await exact();
+      const oldTransaction=IDBDatabase.prototype.transaction;
+      let raced=false;
+      IDBDatabase.prototype.transaction=function(...args){
+        if(this.name===m.CANDIDATE_JOURNAL_DB&&args[1]==='readwrite'&&!raced){
+          raced=true;
+          const competing=oldTransaction.call(this,m.CANDIDATE_STORE,'readwrite',{durability:'strict'});
+          competing.objectStore(m.CANDIDATE_STORE).put({...source[4],raw:'other-writer'});
+        }
+        return oldTransaction.apply(this,args);
+      };
+      let conflict;
+      try{conflict=await m.compactCandidateJournal(db,selected)}finally{IDBDatabase.prototype.transaction=oldTransaction}
+      const changed=await physical();
+      results.race=raced&&conflict.status==='conflict'&&changed.length===source.length&&
+        changed.every(r=>r.schemaVersion===1)&&changed.find(r=>r.key===source[4].key)?.raw==='other-writer'&&
+        changed.filter(r=>r.key!==source[4].key).every(r=>same(r,source.find(x=>x.key===r.key)));
+      await write(store=>store.put(source[4]));
+      let reads=0;
+      IDBDatabase.prototype.transaction=function(...args){
+        if(this.name===m.CANDIDATE_JOURNAL_DB&&args[1]==='readonly'&&++reads===2)throw Error('QA readback unavailable');
+        return oldTransaction.apply(this,args);
+      };
+      let uncertain;
+      try{uncertain=await m.compactCandidateJournal(db,selected)}finally{IDBDatabase.prototype.transaction=oldTransaction}
+      const committed=await physical(),packed=committed.find(r=>r.schemaVersion===2);
+      results.unverified=uncertain.status==='unverified'&&!!packed&&committed.length===4&&await exact();
+      const compressed=await snapshot();
+      let mutationCount=0;
+      const oldDelete=IDBObjectStore.prototype.delete;
+      IDBObjectStore.prototype.add=function(...args){if(this.transaction.db.name===m.CANDIDATE_JOURNAL_DB)mutationCount++;return oldAdd.apply(this,args)};
+      IDBObjectStore.prototype.delete=function(...args){if(this.transaction.db.name===m.CANDIDATE_JOURNAL_DB)mutationCount++;return oldDelete.apply(this,args)};
+      let retry,overlap;
+      try{
+        retry=await m.compactCandidateJournal(db,[...selected].reverse());
+        overlap=await m.compactCandidateJournal(db,[selected[0],source[3].key]);
+      }finally{IDBObjectStore.prototype.add=oldAdd;IDBObjectStore.prototype.delete=oldDelete}
+      results.retry=retry.status==='unchanged'&&retry.batchKey===packed?.key&&overlap.status==='conflict'&&mutationCount===0&&compressed===await snapshot();
+      db.close();db=await open();
+      results.reopen=await exact()&&compressed===await snapshot();
+      const corrupt=structuredClone(packed);
+      new Uint8Array(corrupt.batch.checkpointData)[0]^=1;
+      await write(store=>store.put(corrupt));
+      const damaged=await snapshot();
+      const bad=await m.readCandidateJournal(db),blocked=await m.restoreCandidateJournalBatch(db,packed.key);
+      results.corrupt=bad.status==='invalid'&&bad.entries.length===0&&blocked.status==='invalid'&&damaged===await snapshot();
+      await write(store=>store.put(packed));
+      IDBObjectStore.prototype.add=function(...args){
+        const req=oldAdd.apply(this,args);
+        if(this.transaction.db.name===m.CANDIDATE_JOURNAL_DB&&args[0]?.key===selected[0])
+          req.addEventListener('success',()=>this.transaction.abort(),{once:true});
+        return req;
+      };
+      let undoAborted;
+      try{undoAborted=await m.restoreCandidateJournalBatch(db,packed.key)}finally{IDBObjectStore.prototype.add=oldAdd}
+      results.rollbackAbort=undoAborted.status==='unavailable'&&compressed===await snapshot()&&await exact();
+      const undo=await m.restoreCandidateJournalBatch(db,packed.key);
+      const restored=await physical();
+      results.rollback=undo.status==='saved'&&undo.count===3&&restored.length===source.length&&
+        restored.every(r=>r.schemaVersion===1)&&await exact();
+      results.rollbackRetry=(await m.restoreCandidateJournalBatch(db,packed.key)).status==='conflict'&&await exact();
+      const complete=await m.compactCandidateJournal(db,selected);
+      results.verified=complete.status==='saved'&&complete.count===3&&await exact();
+      results.liveUntouched=liveBefore===JSON.stringify(await directRows());
+      return results;
+    }finally{db.close()}
+  })()`);
+  console.log('MIXED_STORAGE_SAMPLE',JSON.stringify(mixed));
+  for(const [flag,label] of [
+    ['legacy','candidate reads all exact legacy records'],
+    ['cancel','cancelled conversion leaves every physical row unchanged'],
+    ['activeGuard','active and quarantine records cannot be packed'],
+    ['abort','abort after compact add rolls back all original deletes'],
+    ['race','concurrent change to an unrelated row invalidates entire conversion'],
+    ['unverified','post-commit readback failure is unverified, not a false saved result'],
+    ['retry','repeat compaction is idempotent and overlap conflicts without writes'],
+    ['reopen','mixed records survive database close and reopen with exact logical view'],
+    ['corrupt','damaged batch blocks all reads and restoration without partial result'],
+    ['rollbackAbort','abort during inverse conversion retains complete packed record'],
+    ['rollback','inverse conversion restores every original legacy record'],
+    ['rollbackRetry','missing rollback target is a conflict, not false success'],
+    ['verified','successful compact conversion requires complete fresh readback'],
+    ['liveUntouched','candidate migration never changes the existing v1 journal'],
+  ])check(mixed[flag]===true,label);
+  await js("(async()=>{await resetDB();await mod.readDurableJournal();return true})()");
+  await test(`(async()=>{const result=await mod.stageDurableResults([entry],null);const db=await openNative(2);db.close();return result.status==='saved'})()`, 'module releases every handle so a later version upgrade is unblocked');
+  console.log('BODYFORGE_DURABLE_JOURNAL_PASS', JSON.stringify({ assertions, actualIndexedDB: true, strictReadwrite: true }));
+} catch (error) {
+  console.error('BODYFORGE_DURABLE_JOURNAL_FAIL', error.stack || String(error)); process.exitCode = 22;
+} finally {
+  socket?.close();
+  for (const request of requests.values()) { clearTimeout(request.timer); request.reject(Error('Owned QA stopped')); }
+  requests.clear();
+  try { await cleanupOwnedChrome(ownedProfile, 'bf-durable-journal-', chrome, browser); }
+  catch (error) { console.error('QA_OWNED_CLEANUP FAIL', String(error)); process.exitCode ||= 23; }
+}

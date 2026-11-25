@@ -1,0 +1,37 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 319,
+  "same_snapshot": true,
+  "first_tsc_exit": 134,
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "knees": 0,
+    "jack": 0,
+    "full-unit": 0
+  },
+  "owned": {
+    "src/lib/exerciseCounter.ts": "26e2c8f748f04046538fedd6edb21bc32fb73a52a628c251e1daaa84b9281beb",
+    "src/lib/trainingCatalog.ts": "9a824bbfdb538427c16629c6b577cbf2628664093f7f761790f42a8a273f3449",
+    "src/lib/kneesReplay.test.ts": "40664a41311ccd532801ce52da692a8536225081e8e12d292a26b147ae5ee35c",
+    "qa/knees-replay-e2e.mjs": "ed4da9bb7709374d82d536a271f3ff21131cee56f26b603b381725598421bf6d"
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:51467",
+    "entry": "index-jd61XR9V.js",
+    "sha256": "c763c2c3d368f1ea7ad439a94ce2185499a035d2698e2e19c79aabdc2e25c4c7",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "src/lib/avatarMuscleAnatomy.test.ts",
+    "src/lib/avatarMuscleAnatomy.ts"
+  ],
+  "live_new": [
+    "src/lib/avatarHipAnatomy.test.ts"
+  ],
+  "owned_match": true,
+  "finished": "2026-11-25T19:45:05.501179+03:00"
+}

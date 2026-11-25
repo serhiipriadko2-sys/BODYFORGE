@@ -126,6 +126,14 @@ describe('local-only BODYFORGE backup inspection', () => {
     });
   });
 
+  it('rejects multibyte JSON over the byte limit even when its character count fits', () => {
+    const json = JSON.stringify(good({ storedAuxiliaryRaw: {
+      avatarLook: 'я'.repeat(MAX_PROGRESS_BACKUP_BYTES / 2), appearance: null, manualSteps: null, dailyPlan: null,
+    } }));
+    expect(json.length).toBeLessThan(MAX_PROGRESS_BACKUP_BYTES);
+    expect(inspectProgressBackupJson(json).state).toBe('invalid');
+  });
+
   it('limits file size before reading, handles empty file and blocked file reads', async () => {
     const text = vi.fn(async () => JSON.stringify(good()));
     expect((await inspectProgressBackupFile({ size: MAX_PROGRESS_BACKUP_BYTES + 1, text })).state).toBe('invalid');

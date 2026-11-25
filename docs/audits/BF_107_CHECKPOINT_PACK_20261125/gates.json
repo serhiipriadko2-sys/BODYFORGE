@@ -1,0 +1,17 @@
+﻿{
+    "head":  "664ab80c89b244bab1014ec5c652d11c6a490470",
+    "sourceCount":  324,
+    "sourceManifestSha256":  "E86C13B45FBC321827DA608C2C65DB37DC11F5AF1B08C17BDE3A9F355001E677",
+    "unit":  1,
+    "tsc":  0,
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "journal":  "NOT_RUN",
+    "mobile":  "NOT_RUN",
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T19:49:07.6276283+03:00",
+    "error":  "Unit failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T19:50:28.2814193+03:00"
+}

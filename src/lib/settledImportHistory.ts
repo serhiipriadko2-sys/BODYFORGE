@@ -55,15 +55,17 @@ export function coversPaidHistory(raw: string | null, history?: SettledImportHis
   const view = raw && inspectImportProfile(raw);
   if (!view || view.profile.profileId !== history.profileId || !view.storedCreditedWorkoutIds) return false;
   const paid = new Set(view.storedCreditedWorkoutIds);
-  const visible = new Map(view.profile.workouts.map(w => [w.id, w]));
+  const available = new Map(view.receipts.map(w => [w.sessionId, w]));
   for (const [id, result] of history.sessions) {
     if (!paid.has(id)) return false;
-    const workout = visible.get(id);
+    const workout = available.get(id);
     if (!workout) continue;
-    if (workout.durationMs !== result.durationMs || workout.repetitions !== result.repetitions ||
+    if (workout.durationMs !== result.durationMs ||
+        (workout.unit === 'reps' ? workout.completedUnits : 0) !== result.repetitions ||
         Date.parse(workout.finishedAt) !== Date.parse(result.finishedAt) ||
-        (workout.exerciseId ?? 'squat') !== (result.exerciseId ?? 'squat') ||
-        (workout.mode !== undefined && workout.mode !== result.mode) || workout.holdSeconds !== result.holdSeconds ||
+        workout.exerciseId !== (result.exerciseId ?? 'squat') ||
+        (workout.mode !== null && workout.mode !== result.mode) ||
+        (workout.unit === 'seconds' ? workout.completedUnits : undefined) !== result.holdSeconds ||
         JSON.stringify(workout.splitsMs) !== JSON.stringify(result.splitsMs)) return false;
   }
   return true;

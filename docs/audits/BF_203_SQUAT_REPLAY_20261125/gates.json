@@ -1,0 +1,32 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 301,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "owned": {
+    "src/lib/squatCounter.ts": "d54e841e62f84fbdb55d8ee1620d813a26b438c3cc4b60a4dd04d8346e3e5ebd",
+    "src/lib/squatReplay.test.ts": "2728661468a5ee4138228f2834dbde5689489e207964e81b85f918b298a9ddb3"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "frame-gate": 0,
+    "tower-final": 0,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:63302",
+    "entry": "index-pAl9lXlT.js",
+    "sha256": "01447c55ed50eb8b5e0e99f334e16c1c47e6d819762941a78012f8ee78ba3fe4",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [],
+  "live_new": [
+    "src/lib/avatarScanTransferField.json"
+  ],
+  "owned_match": true,
+  "finished": "2026-11-25T19:04:09.196320+03:00"
+}

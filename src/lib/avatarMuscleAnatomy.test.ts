@@ -18,9 +18,9 @@ const evaluate = (zones: readonly MuscleLobe[], x: number, y: number, z: number,
 };
 
 describe('fitted muscle envelopes', () => {
-  it('has 28 named mirrored envelopes, smooth support, and exact analytic derivatives', () => {
-    expect(lobes).toHaveLength(28);
-    expect(new Set(lobes.map(l => l.name)).size).toBe(28);
+  it('has 31 named mirrored envelopes, smooth support, and exact analytic derivatives', () => {
+    expect(lobes).toHaveLength(31);
+    expect(new Set(lobes.map(l => l.name)).size).toBe(31);
     const h = 1e-6;
     for (const zone of lobes) {
       const [x,y,z] = zone.center, [rx,ry,rz] = zone.radius;

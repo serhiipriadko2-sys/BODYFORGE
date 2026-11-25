@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BODY_DERMAL_REVISION, sampleBodyDermal } from './avatarBodyDermal';
 
 export const DERMAL_ATTRIBUTE = 'bfDermalRegion';
 
@@ -25,17 +26,19 @@ export function sampleDermalRegion(x: number, y: number, z: number): readonly [n
 
 /** One immutable three-byte attribute per vertex. All skin primitives get
  * the same contract; the growth pipeline never rewrites it. */
-export function installDermalRegions(surfaces: readonly THREE.SkinnedMesh[]): boolean {
+export function installDermalRegions(surfaces: readonly THREE.SkinnedMesh[], bodyDetail = true): boolean {
   if (!surfaces.some(s=>s.name==='BODYFORGE_Body'&&s.geometry.getAttribute('position')?.count===65895&&
     s.userData.BODYFORGE_groom==='v2')) return false;
   if (!surfaces.every(s=>s.geometry.getAttribute('position')?.itemSize===3)) return false;
   for(const surface of surfaces){
     const p=surface.geometry.getAttribute('position'), data=new Uint8Array(p.count*3);
     for(let i=0;i<p.count;i++){
-      const values=sampleDermalRegion(p.getX(i),p.getY(i),p.getZ(i));
+      const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+      const values=bodyDetail && y<1.53 ? sampleBodyDermal(x,y,z) : sampleDermalRegion(x,y,z);
       for(let k=0;k<3;k++)data[i*3+k]=Math.round(values[k]*255);
     }
     surface.geometry.setAttribute(DERMAL_ATTRIBUTE,new THREE.Uint8BufferAttribute(data,3,true));
+    surface.geometry.userData.bodyDermalRevision = bodyDetail ? BODY_DERMAL_REVISION : 'base';
   }
   return true;
 }

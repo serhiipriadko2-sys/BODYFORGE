@@ -1,0 +1,34 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 311,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "9c68edf823fe44ad6bc4e917147e3e76f316b99026ae91319c29526af6dadf69",
+    "src/lib/lungeReplay.test.ts": "4932f64e6326be58e34c19d85e2e2583e5c484cf742ae7a0952a0ba9869cd077",
+    "qa/lunge-replay-e2e.mjs": "ec9ccc91cce3f4783e6dc0606c42af72f175a54c80df7f9c315844aadc54786c"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "lunge": 16,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:64771",
+    "entry": "index-6uxEMi1m.js",
+    "sha256": "f7b8b40693dfbf51369d7a56040ef7640f3adc145d9877fc8648e734fe11a415",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/lunge-replay-e2e.mjs"
+  ],
+  "live_new": [],
+  "owned_match": false,
+  "finished": "2026-11-25T19:15:14.487125+03:00"
+}

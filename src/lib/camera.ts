@@ -52,8 +52,33 @@ export function cameraSelectionFeedback(
  * once; a newly connected stream starts its own video clock. */
 export class VideoFrameGate {
   private lastTime: number | null = null;
+  private lastInferenceAt: number | null = null;
 
-  reset(): void { this.lastTime = null; }
+  /** A stopped workout owns no model or video clock. */
+  reset(): void {
+    this.resetSource();
+    this.lastInferenceAt = null;
+  }
+
+  /** A new stream can start at zero; the existing pose model still requires
+   * monotonic inference timestamps when switching lenses mid-workout. */
+  resetSource(): void { this.lastTime = null; }
+
+  /** Recalibration invalidates the current image, not the source clock. */
+  discard(currentTime: number): void { this.accept(currentTime); }
+
+  acceptObservation(currentTime: number, now: number, width: number, height: number): boolean {
+    if (!Number.isFinite(now) || now < 0) return false;
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0 ||
+        !Number.isFinite(width / height) || width / height <= 0) {
+      this.discard(currentTime);
+      return false;
+    }
+    if (this.lastInferenceAt !== null && now - this.lastInferenceAt < 90) return false;
+    if (!this.accept(currentTime)) return false;
+    this.lastInferenceAt = now;
+    return true;
+  }
 
   accept(currentTime: number): boolean {
     if (!Number.isFinite(currentTime) || currentTime < 0 ||

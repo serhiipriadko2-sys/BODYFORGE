@@ -1,0 +1,26 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 19062,
+    "sha256": "47e1d273fc55658c9a57477206b626dee3374d741540d34e5c40110a5fc16f48"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8335,
+    "sha256": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8504,
+    "sha256": "ea61e9a7f26c9fab1cd7985da957dac16c842b7641b462a0b80e8d223b4dcbdb"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/crunch-replay-e2e.mjs": {
+    "bytes": 14089,
+    "sha256": "784a5a35b0651d2a6a71b3b1dedc238fe0de976e4d38ac70be6db1f1b9838bcb"
+  }
+}

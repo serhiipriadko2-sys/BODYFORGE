@@ -1,0 +1,23 @@
+﻿{
+    "head":  "664ab80c89b244bab1014ec5c652d11c6a490470",
+    "sourceCount":  295,
+    "sourceManifestSha256":  "2098AE5CFB4CA4AC3162D53F1A690DB43FC8A066B32D93E321F4107FC2544899",
+    "unit":  0,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  0,
+    "forge":  0,
+    "mobile":  12,
+    "privacy":  0,
+    "started":  "2026-11-25T18:46:30.1099298+03:00",
+    "buildCount":  72,
+    "buildManifestSha256":  "173EE5A785A0F641462D35F4533B39B238C9F01A75CD2D5691C416212D12ACEF",
+    "entry":  "assets/index-AnS-iAfD.js",
+    "entrySha256":  "7ab6276752ef440234c1e07a39e30d998a41c98c986a731c1ecb4cdfcc8c5abf",
+    "previewPort":  6500,
+    "preview":  200,
+    "frozenSourceAndBuildUnchanged":  true,
+    "error":  "Acceptance gate failed",
+    "previewStopped":  true,
+    "finished":  "2026-11-25T18:48:40.1697364+03:00"
+}

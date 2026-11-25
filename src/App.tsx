@@ -40,7 +40,7 @@ import {
   getLevelProgress, getRank, TARGET_REPS, XP_REWARD,
 } from './lib/progression';
 import type { CompletedWorkoutResult, WorkoutSession } from './lib/workoutJournal';
-import { SquatCounter, StableKneeTracker, type CounterFeedback, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
+import { SquatCounter, StableKneeTracker, type CounterSnapshot, type PosePoint } from './lib/squatCounter';
 import {
   cameraDeviceOptions, cameraOrientation, cameraZoomCapabilities, exerciseCameraConstraints,
   verifyCameraSelection, cameraSelectionFeedback,
@@ -51,6 +51,7 @@ import {
 import { PoseGuidanceTracker, type PoseGuidance } from './lib/poseGuidance';
 import { ExerciseFramingTracker } from './lib/exerciseFraming';
 import { WorkoutWakeLock } from './lib/workoutWakeLock';
+import { deriveWorkoutHud, deriveCompletionHud } from './lib/workoutHud';
 
 // Train-only panels stay out of the first mobile download.
 const CameraControls = lazy(() => import('./components/CameraControls'));
@@ -63,27 +64,8 @@ const WASM_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/was
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
 const FIRST_SNAPSHOT: CounterSnapshot = {
   count: 0, phase: 'calibrate', feedback: 'stand', angle: null,
-  counted: false, calibrated: false, standingAngle: null, depthTarget: null,
+  counted: false, calibrated: false, calibrationRemainingMs: null, standingAngle: null, depthTarget: null,
   returnTarget: null, lowestAngle: null,
-};
-
-const FEEDBACK: Record<CounterFeedback, string> = {
-  'find-body': 'Не вижу колено: отойди дальше или повернись боком',
-  stand: 'Встань прямо и постой неподвижно для калибровки',
-  'go-down': 'Стойка найдена. Приседай до цели по углу',
-  lower: 'Продолжай сгибать колени — нужен угол ниже цели',
-  rise: 'Глубина достигнута! Теперь выпрями ноги',
-  great: 'Присед засчитан! Следующий удар!',
-};
-
-const MOTION_HUD_CUES: Record<Exclude<ExerciseId, 'squat'>, { movement: string; focus: string }> = {
-  lunge: { movement: 'СОГНИ КОЛЕНО И ВЫПРЯМИ ОБЕ НОГИ', focus: 'ОБЕ НОГИ В КАДРЕ' },
-  pushup: { movement: 'СОГНИ И ВЫПРЯМИ РУКИ', focus: 'РУКИ, ТАЗ И СТОПЫ' },
-  'jumping-jack': { movement: 'РУКИ ВВЕРХ / НОГИ ВРОЗЬ', focus: 'ОБЕ РУКИ И СТОПЫ' },
-  'high-knees': { movement: 'ПОДНИМАЙ КОЛЕНИ ПО ОЧЕРЕДИ', focus: 'ОБА КОЛЕНА В КАДРЕ' },
-  crunch: { movement: 'ПРИПОДНИМИ И ОПУСТИ ПЛЕЧИ', focus: 'ПЛЕЧО, ТАЗ И КОЛЕНИ' },
-  'leg-raise': { movement: 'ПОДНИМИ И ОПУСТИ ПРЯМЫЕ НОГИ', focus: 'ТАЗ, КОЛЕНИ И СТОПЫ' },
-  plank: { movement: 'ДЕРЖИ КОРПУС РОВНО 30 СЕКУНД', focus: 'ПЛЕЧО, ТАЗ И СТОПЫ' },
 };
 
 function cameraErrorMessage(error: unknown): string {
@@ -272,7 +254,6 @@ function App() {
   const startedAtRef = useRef<number | null>(null);
   const aliveRef = useRef(false);
   const requestIdRef = useRef(0);
-  const lastInferenceAtRef = useRef(0);
   const videoFramesRef = useRef(new VideoFrameGate());
   const captureRequestedRef = useRef(false);
   const frameWatchdogRef = useRef(new CameraFrameWatchdog());
@@ -285,10 +266,10 @@ function App() {
 
   const invalidateObservation = useCallback(() => {
     setFrameStalled(false);
-    videoFramesRef.current.reset();
+    // Lens metadata, mute and resize do not constitute a new video image.
+    videoFramesRef.current.discard(videoRef.current?.currentTime ?? Number.NaN);
     frameWatchdogRef.current.reset();
     stallReportedRef.current = false;
-    lastInferenceAtRef.current = 0;
     kneeTrackerRef.current.reset();
     const resetPose = poseGuidanceRef.current.reset();
     setPoseGuidance(activeExerciseRef.current === 'squat'
@@ -405,7 +386,7 @@ function App() {
       // stop() does not emit ended; also reject a silently ended track.
       if (track.readyState !== 'live') throw new DOMException('Video track ended', 'NotReadableError');
       setVideoOrientation(cameraOrientation(video.videoWidth, video.videoHeight));
-      videoFramesRef.current.reset();
+      videoFramesRef.current.resetSource();
       {
         // Track settings are optional device metadata. A privacy-restricted
         // browser must not lose an otherwise working workout if this throws.
@@ -554,7 +535,6 @@ function App() {
     setTrackingSide(null);
     setPoseFound(false);
     startedAtRef.current = null;
-    lastInferenceAtRef.current = 0;
     setSnapshot(FIRST_SNAPSHOT);
     setElapsedMs(0);
     setLastResultMs(null);
@@ -662,9 +642,9 @@ function App() {
           interruptCapture('Камера отключилась во время испытания. Проверь её и начни заново.');
           return;
         }
+        const width = liveVideo.videoWidth, height = liveVideo.videoHeight;
         if (!liveTrack.muted && liveVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
-            time - lastInferenceAtRef.current >= 90 && videoFramesRef.current.accept(liveVideo.currentTime)) {
-          lastInferenceAtRef.current = time;
+            videoFramesRef.current.acceptObservation(liveVideo.currentTime, time, width, height)) {
           frameWatchdogRef.current.observe(true, time);
           if (stallReportedRef.current) {
             setFrameStalled(false);
@@ -678,7 +658,7 @@ function App() {
             const points = result.landmarks[0] as PosePoint[] | undefined;
             drawSkeleton(canvasRef.current, liveVideo, points, mirroredRef.current);
             const currentId = activeExerciseRef.current;
-            const ratio = liveVideo.videoWidth / liveVideo.videoHeight;
+            const ratio = width / height;
             let next: CounterSnapshot;
             if (currentId === 'squat') {
               const measured = kneeTrackerRef.current.update(points ?? [], ratio);
@@ -903,6 +883,8 @@ function App() {
   const selectedExercise = mode === 'idle' || mode === 'error' ? previewExercise : activeExercise;
   const exercise = exerciseGuide(selectedExercise);
   const diagnostic = exerciseMetric(selectedExercise);
+  const hud = deriveWorkoutHud(selectedExercise, snapshot, poseGuidance, poseFound, frameStalled, trackingSide);
+  const saveHud = deriveCompletionHud(completionPhase, selectedExercise);
 
   function navigate(id: string) {
     if ((mode === 'active' || mode === 'loading') && id !== 'challenge') return;
@@ -1086,47 +1068,27 @@ function App() {
                 {mode === 'complete' ? (
                   <div className="completion-stage" data-result-persistence={completionPhase}>
                     <div className="completion-medal"><Trophy size={42} /></div>
-                    <strong>{completionPhase === 'credited' ? 'ЗАКАЛКА ЗАВЕРШЕНА!' : 'УПРАЖНЕНИЕ ЗАВЕРШЕНО'}</strong>
-                    <span role="status">{completionPhase === 'saving-result' ? 'СОХРАНЯЕМ РЕЗУЛЬТАТ… НЕ ЗАКРЫВАЙ СТРАНИЦУ'
-                      : completionPhase === 'durable-pending' ? 'РЕЗУЛЬТАТ СОХРАНЁН. ОЖИДАЕМ НАЧИСЛЕНИЯ НАГРАДЫ'
-                      : completionPhase === 'quarantined' ? 'РЕЗУЛЬТАТ ОТЛОЖЕН. НАГРАДА НЕ НАЧИСЛЕНА'
-                      : exercise.unit === 'seconds' ? '30 СЕКУНД УДЕРЖАНИЯ' : '20 ЗАСЧИТАННЫХ ПОВТОРЕНИЙ'}</span>
-                    {completionPhase === 'credited' && <div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div>}
+                    <strong>{saveHud.title}</strong>
+                    <span role="status">{saveHud.status}</span>
+                    {saveHud.showReward && <div className="completion-rewards"><div><Zap size={18} /> +{XP_REWARD} XP</div><div><Coins size={18} /> +{COIN_REWARD}</div></div>}
                   </div>
                 ) : (
                   <div className="counter-center"><CounterCircle count={snapshot.count} active={mode === 'active'} target={exercise.target} label={exercise.unit === 'seconds' ? 'СЕКУНД' : 'ПОВТОРЕНИЙ'} /></div>
                 )}
                 {mode === 'active' && (
-                  <div className={`pose-hud${snapshot.angle === null ? ' pose-hud-lost' : ''}`} aria-label="Диагностика распознавания упражнения">
-                    <span className="pose-hud-step">
-                      {selectedExercise !== 'squat'
-                        ? snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' : snapshot.phase === 'ready' ? 'ГОТОВ К ДВИЖЕНИЮ' :
-                            selectedExercise === 'plank' ? 'УДЕРЖИВАЙ ПЛАНКУ' : snapshot.phase === 'descending' ? 'ДВИЖЕНИЕ' : 'ВЕРНИСЬ В НАЧАЛО'
-                        : snapshot.phase === 'calibrate' ? 'КАЛИБРОВКА' :
-                            snapshot.phase === 'ready' ? 'ГОТОВ К ПРИСЕДУ' : snapshot.phase === 'descending' ? 'ОПУСКАЙСЯ' : 'ВЫПРЯМИСЬ'}
-                    </span>
-                    <div className="pose-hud-angle"><span>{diagnostic.name}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}${diagnostic.unit}`}</strong></div>
-                    <div className="pose-hud-target">
-                      {snapshot.angle === null ? 'ПОПРАВЬ КАДР' :
-                        selectedExercise !== 'squat' ? MOTION_HUD_CUES[selectedExercise].movement :
-                        snapshot.depthTarget === null ? 'ВСТАНЬ ПРЯМО' :
-                        snapshot.phase === 'bottom' ? `ВСТАТЬ ≥ ${snapshot.returnTarget}°` :
-                          `ПРИСЕСТЬ ≤ ${snapshot.depthTarget}°`}
+                  <div className={'pose-hud' + (!hud.showMetric ? ' pose-hud-lost' : '')} data-workout-hud={hud.state} aria-label="Диагностика распознавания движения">
+                    <span className="pose-hud-step">{hud.title}</span>
+                    <div className="pose-hud-angle"><span>{diagnostic.name}</span><strong>{hud.showMetric ? String(snapshot.angle) + diagnostic.unit : '—'}</strong></div>
+                    <div className="pose-hud-target">{hud.target}
+                      {hud.calibrationRemainingMs !== null && <span className="pose-hud-countdown" data-calibration-remaining-ms={hud.calibrationRemainingMs}>{(Math.ceil(hud.calibrationRemainingMs / 100) / 10).toFixed(1).replace('.', ',')} с</span>}
                     </div>
-                    <div className="pose-hud-side">
-                      {snapshot.angle === null
-                        ? poseFound ? poseGuidance.title : 'ЧЕЛОВЕК НЕ НАЙДЕН'
-                        : selectedExercise !== 'squat' && selectedExercise !== 'lunge'
-                          ? MOTION_HUD_CUES[selectedExercise].focus
-                          : trackingSide === 'left' ? 'ЛЕВАЯ НОГА'
-                          : trackingSide === 'right' ? 'ПРАВАЯ НОГА' : 'ОБЕ НОГИ'}
-                    </div>
+                    <div className="pose-hud-side">{hud.focus}</div>
                   </div>
                 )}
-                {mode === 'active' && (frameStalled || poseGuidance.warning) && (
-                  <div className="pose-camera-coach" role="status" aria-live="polite" data-guidance={frameStalled ? 'camera-stalled' : poseGuidance.kind}>
-                    <strong>{frameStalled ? 'КАДР КАМЕРЫ ЗАВИС' : poseGuidance.title}</strong>
-                    <span>{frameStalled ? 'Новые изображения не поступают. Дождись восстановления потока или останови испытание. Это не ошибка твоей позы.' : poseGuidance.instruction}</span>
+                {mode === 'active' && hud.coach && (
+                  <div className="pose-camera-coach" role="status" aria-live="polite" data-guidance={hud.coach.kind}>
+                    <strong>{hud.coach.title}</strong>
+                    <span>{hud.coach.instruction}</span>
                   </div>
                 )}
                 {mode === 'active' && <div className="camera-corner-tag"><span className="record-dot" /> {frameStalled ? 'ПОТОК ПРИОСТАНОВЛЕН' : 'ЗАХВАТ ДВИЖЕНИЯ / LIVE'}</div>}
@@ -1150,10 +1112,12 @@ function App() {
                   </div>
                 </div>
               )}
+              {mode === 'loading' && <button className="secondary-button workout-stop" data-workout-stop="true" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
+              {mode === 'active' && <button className="secondary-button workout-stop" data-workout-stop="true" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
               <div className="live-feedback" aria-live="polite">
-                {mode === 'active' ? <><span className={snapshot.angle === null ? 'feedback-dot warning' : 'feedback-dot'} /><span>{poseGuidance.warning && snapshot.angle === null ? poseGuidance.instruction : selectedExercise === 'squat' ? FEEDBACK[snapshot.feedback] : snapshot.feedback === 'great' ? 'Засчитано!' : snapshot.feedback === 'find-body' ? exercise.placement[1] : snapshot.phase === 'calibrate' ? exercise.placement[2] : snapshot.phase === 'ready' ? exercise.coaching : snapshot.phase === 'bottom' ? selectedExercise === 'plank' ? 'Держи корпус ровно' : 'Вернись в исходную позу' : 'Продолжай движение'}</span><strong>{snapshot.angle === null ? '—' : `${snapshot.angle}${diagnostic.unit}`}</strong></>
-                  : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись загрузки.</span></>
-                    : mode === 'complete' ? <><Check size={17} className="feedback-success" /><span>{isSaving ? 'Цель достигнута. Дождись сохранения результата.' : 'Всё засчитано. Герой стал сильнее!'}</span></>
+                {mode === 'active' ? <><span className={!hud.showMetric ? 'feedback-dot warning' : 'feedback-dot'} /><span>{hud.instruction}</span><strong aria-hidden="true">{hud.showMetric ? String(snapshot.angle) + diagnostic.unit : '—'}</strong></>
+                  : mode === 'loading' ? <><div className="feedback-dot warning" /><span>Разреши доступ к камере и дождись запуска.</span></>
+                    : mode === 'complete' ? <>{saveHud.showReward ? <Check size={17} className="feedback-success" /> : <Clock3 size={17} />}<span>{saveHud.feedback}</span></>
                       : <><Smartphone size={17} /><span>{exercise.placement[1]}</span></>}
               </div>
               {mode === 'active' && videoOrientation === 'landscape' && <div className="portrait-notice"><Info size={16} /><span>{showFullFrame ? 'Камера отдаёт широкий поток без обрезки. ' + exercise.placement[1] : 'Широкий поток показан по центру; включи «Показать весь кадр», чтобы видеть края.'}</span></div>}
@@ -1176,8 +1140,6 @@ function App() {
               {mode === 'idle' && (canStartCameraExercise(previewExercise)
                 ? <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>
                 : <button className="primary-button" onClick={() => setPreviewExercise('squat')}><CameraOff size={20} /> ВЕРНУТЬСЯ К ПРИСЕДАНИЯМ <ArrowRight size={20} /></button>)}
-              {mode === 'loading' && <button className="secondary-button" onClick={cancel}><X size={18} /> ОТМЕНИТЬ ЗАПУСК</button>}
-              {mode === 'active' && <button className="secondary-button" onClick={cancel}><CameraOff size={18} /> ЗАВЕРШИТЬ БЕЗ НАГРАДЫ</button>}
               {mode === 'error' && (profile.game.created
                 ? cameraModuleUnavailable
                   ? <button className="primary-button" onClick={() => window.location.reload()}><RotateCcw size={19} /> ОБНОВИТЬ ПРИЛОЖЕНИЕ <ArrowRight size={19} /></button>

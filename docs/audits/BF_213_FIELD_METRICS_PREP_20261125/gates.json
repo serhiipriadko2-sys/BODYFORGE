@@ -1,0 +1,20 @@
+{
+  "checks": {
+    "syntax_metrics": 0,
+    "syntax_tests": 0,
+    "syntax_spike": 0,
+    "unit": 0,
+    "git_diff": 0,
+    "git_cached": 0,
+    "canon": 0,
+    "production_import_scan": 0,
+    "vitest_scope_scan": 0
+  },
+  "files": {
+    "qa/field-study-metrics.mjs": "b915023abdfd97102a18abff436fd23cb2e1c4f6dacb3d2358d80a42f817f293",
+    "qa/field-study-metrics.test.mjs": "c96ba677561ea5bcc0d7e15d74e301b3b9c1584468a416700bcb503520b52f71"
+  },
+  "data": "synthetic only; no field sessions",
+  "test_count": 16,
+  "exhaustive_oracle_cases": 2240
+}

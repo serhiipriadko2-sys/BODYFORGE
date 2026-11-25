@@ -3,11 +3,21 @@ import type { CompletedWorkoutResult } from './workoutJournal';
 import { createProgressExport } from './progressExport';
 import { readDurableJournal } from './durableJournal';
 import { readProfileQuarantine } from './profileQuarantineExport';
+import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
+
+export type BackupCapacity = 'within-limit' | 'near-limit' | 'oversize';
+export function classifyBackupBytes(bytes: number): BackupCapacity {
+  return bytes > MAX_PROGRESS_BACKUP_BYTES ? 'oversize'
+    : bytes >= MAX_PROGRESS_BACKUP_BYTES * 0.75 ? 'near-limit' : 'within-limit';
+}
 
 export interface PreparedProgressBackup {
   readonly json: string;
   readonly filename: string;
+  /** Source-read completeness is separate from local inspection capacity. */
   readonly complete: boolean;
+  readonly byteLength: number;
+  readonly capacity: BackupCapacity;
   readonly sourcesChangedDuringRead?: boolean;
 }
 
@@ -40,24 +50,33 @@ export async function prepareProgressBackup(
     profileQuarantineReadStatus: profileQuarantine.status,
     durableResults: durable.entries,
     durableReadStatus: durable.status,
-  }, null, 2);
+  });
+  // Compact JSON retains every field and exact embedded raw string; it avoids
+  // unnecessary indentation in a potentially large local evidence file.
+  const byteLength = new Blob([json]).size;
+  const capacity = classifyBackupBytes(byteLength);
   const stamp = now.toISOString().replace(/[:.]/g, '-');
-  return { json, filename: `bodyforge-backup-${stamp}.json`, complete, sourcesChangedDuringRead };
+  const prefix = capacity === 'oversize' ? 'bodyforge-backup-evidence-' : 'bodyforge-backup-';
+  return { json, filename: prefix + stamp + '.json', complete, byteLength, capacity, sourcesChangedDuringRead };
 }
 
 /** Must be invoked synchronously from a real user click. The file is private:
  * never fetch(), share(), upload() or copy it to the clipboard implicitly.
  */
 export function requestProgressBackupDownload(
-  prepared: PreparedProgressBackup,
+  prepared: Pick<PreparedProgressBackup, 'json' | 'filename' | 'complete'>,
 ): void {
-  const blob = new Blob([prepared.json], { type: 'application/json;charset=utf-8' });
+  requestLocalBackupDownload(new Blob([prepared.json], { type: 'application/json;charset=utf-8' }), prepared.filename);
+}
+
+/** Same second-click download path for the optional verified gzip wrapper. */
+export function requestLocalBackupDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   let clicked = false;
   try {
     link.href = url;
-    link.download = prepared.filename;
+    link.download = filename;
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();

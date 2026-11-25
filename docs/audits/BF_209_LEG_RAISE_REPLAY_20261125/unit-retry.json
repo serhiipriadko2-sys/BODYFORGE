@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "E:\\github\\BODYFORGE\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism"
+  ],
+  "exit": 0,
+  "same_snapshot": true,
+  "frozen_final_match": true,
+  "owned_match": true,
+  "log_sha256": "22d9630fe17c7d64eaa9378d25b1d55074f62b64a449252f502458bde69cddcf"
+}

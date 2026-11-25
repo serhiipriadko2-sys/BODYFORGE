@@ -1,6 +1,7 @@
 import { getProfileTotals, type Profile } from './progression';
 import { inspectProgressBackupJson, MAX_PROGRESS_BACKUP_BYTES, type BackupInspection } from './progressBackupInspector';
 import { previewReceiptMigration, type ReceiptMigrationPreview } from './receiptCompatibility';
+import { BackupArchiveError, decodeBackupBytes } from './backupArchive';
 
 /** BF-106: local comparison only. No persistence or grant authority. */
 export interface ImportProfileSummary {
@@ -130,7 +131,7 @@ function compare(json: string, current: ImportProfileSummary, currentId?: string
 /** Reject oversize before reading, and invalid UTF-8 instead of replacing bytes. */
 export async function previewProgressImportFile(
   file: Pick<File, 'size' | 'arrayBuffer'>, currentProfile: Profile,
-  onComparable?: (validatedJson: string) => void,
+  onComparable?: (validatedJson: string) => void, signal?: AbortSignal,
 ): Promise<ProgressImportPreview> {
   const current = summary(currentProfile);
   const currentId = currentProfile.profileId;
@@ -138,15 +139,22 @@ export async function previewProgressImportFile(
   if (!Number.isSafeInteger(size) || size < 1) return invalid(current, 'Выбран пустой или недоступный файл.');
   if (size > MAX_PROGRESS_BACKUP_BYTES) return invalid(current, 'Файл больше 16 МБ. Чтение не начато.');
   try {
+    if (signal?.aborted) return invalid(current, 'Проверка отменена.');
     const bytes = await file.arrayBuffer();
     if (bytes.byteLength !== size || bytes.byteLength > MAX_PROGRESS_BACKUP_BYTES) {
       return invalid(current, 'Размер прочитанного файла не совпадает с выбранным.');
     }
-    const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    const json = await decodeBackupBytes(bytes, signal);
+    if (signal?.aborted) return invalid(current, 'Проверка отменена.');
     const preview = compare(json, current, currentId);
     if (preview.state === 'preview-ready') onComparable?.(json);
     return preview;
-  } catch {
-    return invalid(current, 'Не удалось прочитать файл как корректный UTF-8 JSON.');
+  } catch (error) {
+    if (error instanceof BackupArchiveError) {
+      if (error.code === 'limit') return invalid(current, 'Распакованный JSON больше 16 МиБ. Проверка остановлена.');
+      if (error.code === 'unsupported') return invalid(current, 'Этот браузер не умеет распаковывать GZIP. Выбери исходный JSON.');
+      if (error.code === 'cancelled') return invalid(current, 'Проверка отменена.');
+    }
+    return invalid(current, 'Не удалось прочитать корректный UTF-8 JSON или GZIP-архив.');
   }
 }

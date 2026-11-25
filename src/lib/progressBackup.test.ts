@@ -5,7 +5,8 @@ import { APPEARANCE_KEY } from './appearance';
 import { MANUAL_STEPS_KEY } from './stepsLog';
 import { DAILY_PLAN_KEY } from './dailyPlan';
 import { readDurableJournal } from './durableJournal';
-import { prepareProgressBackup, requestProgressBackupDownload } from './progressBackup';
+import { classifyBackupBytes, prepareProgressBackup, requestProgressBackupDownload } from './progressBackup';
+import { inspectProgressBackupJson, MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
 
 vi.mock('./durableJournal', () => ({ readDurableJournal: vi.fn() }));
 
@@ -63,6 +64,41 @@ describe('manual BODYFORGE backup without changing game state', () => {
       },
     });
     expect([...values]).toEqual(before);
+    expect(setItem).not.toHaveBeenCalled();
+    expect(removeItem).not.toHaveBeenCalled();
+  });
+
+  it('counts exact UTF-8 bytes, compacts only the envelope and keeps opaque Unicode originals', async () => {
+    const raw = '{"name":"Боец 😀", "future":true}';
+    values.set(AVATAR_LOOK_KEY, raw);
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    expect(prepared.byteLength).toBe(new TextEncoder().encode(prepared.json).length);
+    expect(prepared.capacity).toBe('within-limit');
+    expect(prepared.json).not.toContain('\\n  ');
+    expect(JSON.parse(prepared.json).storedAuxiliaryRaw.avatarLook).toBe(raw);
+    expect(inspectProgressBackupJson(prepared.json).state).toBe('readable');
+  });
+
+  it('classifies the soft warning and hard file limit independently of source completeness', () => {
+    const limit = MAX_PROGRESS_BACKUP_BYTES;
+    expect(classifyBackupBytes(limit * 0.75 - 1)).toBe('within-limit');
+    expect(classifyBackupBytes(limit * 0.75)).toBe('near-limit');
+    expect(classifyBackupBytes(limit)).toBe('near-limit');
+    expect(classifyBackupBytes(limit + 1)).toBe('oversize');
+  });
+
+  it('keeps oversized raw evidence downloadable without suggesting the built-in reader can inspect it', async () => {
+    const raw = 'я'.repeat(MAX_PROGRESS_BACKUP_BYTES / 2);
+    vi.mocked(readDurableJournal).mockResolvedValue({ status: 'ready', entries: [
+      { key: STORAGE_KEY + ':result:large', raw: '{}', baseProfileRaw: raw, state: 'settled' },
+    ] });
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    expect(prepared.complete).toBe(true);
+    expect(prepared.capacity).toBe('oversize');
+    expect(prepared.byteLength).toBeGreaterThan(MAX_PROGRESS_BACKUP_BYTES);
+    expect(prepared.filename).toContain('bodyforge-backup-evidence-');
+    expect(JSON.parse(prepared.json).durableResults[0].baseProfileRaw === raw).toBe(true);
+    expect(inspectProgressBackupJson(prepared.json).state).toBe('invalid');
     expect(setItem).not.toHaveBeenCalled();
     expect(removeItem).not.toHaveBeenCalled();
   });

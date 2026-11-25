@@ -1,0 +1,66 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { packCheckpointBatch } from './journalCheckpointBatch';
+import { compactCandidateJournal, decodeMixedJournal, restoreCandidateJournalBatch, readCandidateJournal,
+  PACKED_KEY_PREFIX, MAX_MIXED_RECORDS } from './journalMixedStorage';
+import type { DurableJournalEntry } from './durableJournal';
+
+const key=(n:number)=>'bodyforge:pilot:v1:result:mixed-'+n;
+const baseline='\ufeffБоец 😀\r\n\ud800'+'profile-history '.repeat(2000);
+const row=(n:number,state:DurableJournalEntry['state']='settled',baseProfileRaw:string|null=baseline)=>
+  ({key:key(n),schemaVersion:1,raw:'opaque original '+n,baseProfileRaw,state});
+const logical=({schemaVersion:_,...rest}:ReturnType<typeof row>)=>rest;
+async function batch(rows=[row(1),row(2),row(3,'settled',null)]){
+  const result=await packCheckpointBatch(rows.map(logical));
+  if(result.status!=='packed')throw Error(result.status);
+  return {key:PACKED_KEY_PREFIX+result.batch.digest,schemaVersion:2,batch:result.batch};
+}
+afterEach(()=>vi.unstubAllGlobals());
+describe('BF-107 candidate dual-format logical view',()=>{
+  it('reads exact legacy and compact originals in stable order, including active and quarantine',async()=>{
+    const plain=[row(4,'active'),row(5,'quarantined')],packed=await batch();
+    expect(await decodeMixedJournal([plain[1],packed,plain[0]])).toEqual({
+      status:'ready',entries:[row(1),row(2),row(3,'settled',null),...plain].map(logical)});
+  });
+  it('fails closed on duplicate logical keys even when the duplicate is byte-identical',async()=>{
+    const packed=await batch();
+    for(const entries of [[packed,row(1)],[packed,packed],[row(4),row(4)],[packed,await batch([row(2),row(6)])]]){
+      expect(await decodeMixedJournal(entries)).toEqual({status:'invalid',entries:[]});
+    }
+  });
+  it('does not silently project unknown versions or extra legacy fields',async()=>{
+    for(const unknown of [{...row(1),schemaVersion:7},{...row(1),extra:true},{...row(1),state:'unknown'},{...row(1),baseProfileRaw:42}]){
+      expect(await decodeMixedJournal([row(2),unknown])).toEqual({status:'invalid',entries:[]});
+    }
+  });
+  it('checks physical batch key, digest and binary data before returning originals',async()=>{
+    const packed=await batch();
+    const damaged=structuredClone(packed);
+    new Uint8Array(damaged.batch.checkpointData)[damaged.batch.checkpointData.byteLength-8]^=1;
+    for(const item of [damaged,{...packed,key:PACKED_KEY_PREFIX+'0'.repeat(64)},{...packed,batch:{...packed.batch,logicalBytes:0}}]){
+      expect(await decodeMixedJournal([row(4),item])).toEqual({status:'invalid',entries:[]});
+    }
+  });
+  it('bounds physical rows and aggregate expanded data without treating overflow as empty',async()=>{
+    expect(await decodeMixedJournal(Array.from({length:MAX_MIXED_RECORDS+1},(_,i)=>row(i,'settled',null))))
+      .toEqual({status:'too-large',entries:[]});
+    expect(await decodeMixedJournal([row(1,'settled','x'.repeat(16*1024*1024))]))
+      .toEqual({status:'too-large',entries:[]});
+  });
+  it('snapshots mutable input before awaiting decompression and honors cancellation',async()=>{
+    const packed=await batch(),input=[packed,row(4)];
+    const pending=decodeMixedJournal(input);
+    packed.batch.digest='0'.repeat(64);
+    input[1]=row(9);
+    expect(await pending).toEqual({status:'ready',entries:[row(1),row(2),row(3,'settled',null),row(4)].map(logical)});
+    const c=new AbortController();c.abort();
+    expect(await decodeMixedJournal([],c.signal)).toEqual({status:'cancelled',entries:[]});
+  });
+  it('rejects old database identity before requesting any transaction',async()=>{
+    const transaction=vi.fn(()=>{throw Error('unexpected transaction');});
+    const db={name:'bodyforge:durable-results:v1',version:1,transaction} as unknown as IDBDatabase;
+    expect(await compactCandidateJournal(db,[key(1)])).toEqual({status:'unavailable'});
+    expect(await restoreCandidateJournalBatch(db,PACKED_KEY_PREFIX+'0'.repeat(64))).toEqual({status:'unavailable'});
+    expect(await readCandidateJournal(db)).toEqual({status:'unavailable',entries:[]});
+    expect(transaction).not.toHaveBeenCalled();
+  });
+});

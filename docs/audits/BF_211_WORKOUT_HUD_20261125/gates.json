@@ -1,0 +1,48 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "snapshot": ".bodyforge-qa\\bf211-workout-hud-v2",
+  "source_count": 338,
+  "owned": {
+    "src/App.tsx": "e050140c6d2630b461b67904021ec0d3b19cb9141b48c241e70c0d281001c95c",
+    "src/lib/squatCounter.ts": "5bf166210e230003166df59a6ecedb1e58b70af8754d7be0cf1d5677fdce03e4",
+    "src/lib/exerciseCounter.ts": "93710e78e06445f70ca3a1fbb1eab8b2dc6c1768e0158c347cf04da425b12b14",
+    "src/trainingExperience.css": "5b0f82b6b4827b23dc31b0315ae17fcfbb8d211f1b2bff32d146d6464480a21e",
+    "src/lib/workoutHud.ts": "95bf17d35eeb244f774508fb83eb65d3d1b6fb55093f97d71ccb199ed8192ed1",
+    "src/lib/workoutHud.test.ts": "914c2c5eaeea8b26967d135fbaf5d0678d5e2a860737f9eb6577c8df078465e3",
+    "src/lib/calibrationHudReplay.test.ts": "80ed8dae7f9b0a802ec6f1a80abce6bedcea2ce8a41ba848203e49934b584d7e",
+    "qa/workout-hud-e2e.mjs": "875dd576d20f3a8f1b887a422efea8d3c74241457f3a469885316003c9d1e7b5"
+  },
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "commands": {
+    "syntax": 0,
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "workout-hud": 0,
+    "plank": 0,
+    "pushup": 0,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:56575",
+    "entry": "/assets/index-DSZpZmWW.js",
+    "sha256": "af84a2f561844d3c0d4a01e425901d289ba42de08a5d5355fd351038ac56678b",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/durable-journal-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/journalMixedStorage.test.ts",
+    "src/lib/journalMixedStorage.ts"
+  ],
+  "live_new": [
+    "qa/pose-worker-spike.mjs",
+    "src/lib/avatarLookDev.test.ts",
+    "src/lib/avatarLookDev.ts"
+  ],
+  "owned_match": true,
+  "finished": "2026-11-25T20:33:02.471715"
+}

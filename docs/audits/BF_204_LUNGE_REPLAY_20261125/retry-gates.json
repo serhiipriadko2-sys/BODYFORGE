@@ -1,0 +1,16 @@
+{
+  "initial_full_unit": 0,
+  "owned": {
+    "src/lib/exerciseCounter.ts": "9c68edf823fe44ad6bc4e917147e3e76f316b99026ae91319c29526af6dadf69",
+    "src/lib/lungeReplay.test.ts": "4932f64e6326be58e34c19d85e2e2583e5c484cf742ae7a0952a0ba9869cd077",
+    "qa/lunge-replay-e2e.mjs": "0d729960c2d20b43270fda8402bb9c5aeae9d3131f32f84f40ed70acdac7aca1"
+  },
+  "entry": "index-6uxEMi1m.js",
+  "sha256": "f7b8b40693dfbf51369d7a56040ef7640f3adc145d9877fc8648e734fe11a415",
+  "origin": "http://127.0.0.1:65068",
+  "same_build": true,
+  "lunge": 0,
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "owned_match": true
+}

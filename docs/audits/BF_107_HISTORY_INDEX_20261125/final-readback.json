@@ -1,0 +1,195 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T18:51:42.115038+03:00",
+  "owned": [
+    {
+      "path": "src/lib/activityHistory.ts",
+      "bytes": 6496,
+      "sha256": "d0ded94810f5ff40e0df2e573580709770c7f543a15d79148f6953648e6ec2d8"
+    },
+    {
+      "path": "src/lib/activityHistory.test.ts",
+      "bytes": 5598,
+      "sha256": "039ff632f4db51bcc5cae7a430a3d532249a705bb16a64aba18493d4d324f2a0"
+    },
+    {
+      "path": "src/lib/progressPulse.ts",
+      "bytes": 4187,
+      "sha256": "ca7b38ff227080011c97d5094e20c2ba0d79fa69e6f5b4c2da31e8b704529b04"
+    },
+    {
+      "path": "src/components/ProgressPulseBoard.tsx",
+      "bytes": 17674,
+      "sha256": "05458c68e1b83725aae0b18d481547298e57615e2a02cd6cbab31efe93e6889b"
+    },
+    {
+      "path": "qa/forge-home-xp-faq-e2e.mjs",
+      "bytes": 29517,
+      "sha256": "efdb1cf0cf9755fefe1348fcf0a598f5f4d96f4682f26b1886d4601bd31c6e7c"
+    }
+  ],
+  "sourceCount": 295,
+  "buildCount": 72,
+  "sourceManifestSha256": "2098AE5CFB4CA4AC3162D53F1A690DB43FC8A066B32D93E321F4107FC2544899",
+  "buildManifestSha256": "173EE5A785A0F641462D35F4533B39B238C9F01A75CD2D5691C416212D12ACEF",
+  "liveChangedPaths": [],
+  "liveNewPaths": [],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "forge.log": 82,
+    "mobile-retry.log": 88,
+    "privacy.log": 13
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148193,
+      "sha256": "2c0b95c2524437cf8b61bfe670f2590fbf59c7bfb72e8e75242fadd739206361"
+    },
+    {
+      "path": "browser/camera-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 82788,
+      "sha256": "af9f919f447fe4575bca064454bfcc15987ad5c3f3a48ede0e41ee8293f82e57"
+    },
+    {
+      "path": "browser/camera-activity-30days-360.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 13212,
+      "sha256": "d8d79230b52ff05156cffa8560c441ea0194427bee0f209c1f345829d46c98fa"
+    },
+    {
+      "path": "browser/forge-avatar-only-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 202633,
+      "sha256": "528889aa84af254c729ef13e79d0237f879323226b3366ba9d7cc1a0357de8d6"
+    },
+    {
+      "path": "browser/forge-missions-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 97430,
+      "sha256": "b0994226bdd86ee00fcba6cbfe5ab4f3d6d738be061675fad2a634da1db63ab1"
+    },
+    {
+      "path": "browser/home-320-fighter-xp.png",
+      "width": 320,
+      "height": 800,
+      "bytes": 175839,
+      "sha256": "31b407074486b939e214b07ed64974bb811e919999ee881cbcbd77596b28c9a0"
+    },
+    {
+      "path": "browser/home-360-fighter-xp.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 194707,
+      "sha256": "94a084d6778c8b9b47fa1447731c146dd5077c47064e8dffa4bdc944b56f18e5"
+    },
+    {
+      "path": "browser/pulse-full-history-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 151588,
+      "sha256": "925eff1391e1c1e311e03105667aba9561e9fb4acd7c86a49cb84db5a0a09025"
+    },
+    {
+      "path": "browser/pulse-incomplete-history-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 144492,
+      "sha256": "a7884706edc21985476374802661fe22c78b23498d82c1e74f551a37c4be5c42"
+    },
+    {
+      "path": "browser/settings-390-camera-preparation-visible.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 120526,
+      "sha256": "601f8f8a674b28cc169d01a628462349505824726b45245f8dc1ecb7371eaeaf"
+    },
+    {
+      "path": "browser/settings-390-faq-overview.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 83394,
+      "sha256": "5951b3cf191018bbbe2940f934d02bd1661e2fa2993321e43fd6348c9048af47"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89728,
+      "sha256": "172cade8553af457c7a01dd4c40543784ac8e53d85dc2f88b34c9fec81dceeed"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 130086,
+      "sha256": "c4dee1328348cd4b0a12ff43960001dd7ae9355d40aefd0c884d0dfe046f87b3"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202410,
+      "sha256": "3a418dea998094087843eb382a0548ba9be73f75a0767f0548dd9662a36223df"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190251,
+      "sha256": "e3e64356e26e4f2b505cdc951b923ee0094d5dc176df5c2f457aea39da254d9e"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195699,
+      "sha256": "3e8dc98b54d04e49973a75d2b019e7c676a23af4ed78179726ba654ab84a3723"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219410,
+      "sha256": "c2835fe612c7fc642ee74927c8e53838f9870a6f893ee942735b54dba196517b"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93894,
+      "sha256": "9465b746677e5cd33a938e3facd41bc21ba4a1388383a1fa93a887500d10ae2c"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93676,
+      "sha256": "e6d2980cd6de1c24fae3eb5bd69e126f84cb7303a72b0cc41522941bd57ee33c"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148193,
+      "sha256": "2c0b95c2524437cf8b61bfe670f2590fbf59c7bfb72e8e75242fadd739206361"
+    },
+    {
+      "path": "browser-retry/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 91537,
+      "sha256": "c913b83dd5278ff512622e4dc47b7ddd3410946be791c65116579c5ac78d314f"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 315,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "f1ec8009f7ab417a578656857f249cb334c804ad3e9e76cdba08bd98911653a5",
+    "src/lib/exerciseFraming.ts": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701",
+    "src/lib/trainingCatalog.ts": "76db461541f48a532e3b96c9eb1fabf761fbf9e12b05e4d21db6d5c9c1979d68",
+    "src/lib/pushupReplay.test.ts": "18df0e258e300fbf69159eef6745eb2acbe55ce57e9daa1169a7211969e56dae",
+    "qa/pushup-replay-e2e.mjs": "7e19d5c30fdeabad0b11a132be69ec51ec60775919d1d99cbe7d8f5133cfb907"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "pushup": 0,
+    "lunge": 0,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:65531",
+    "entry": "index-f2L6m6dk.js",
+    "sha256": "bee19f023e6b596d26fb645ac09ce48bbbbdb7a8879a1d501fdad9d1ce05dc7b",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/import-preview-e2e.mjs",
+    "qa/mobile-e2e.mjs",
+    "src/components/ProgressBackupPanel.tsx",
+    "src/components/progressBackup.css",
+    "src/lib/backupArchive.ts"
+  ],
+  "live_new": [],
+  "owned_match": true,
+  "finished": "2026-11-25T19:26:19.840139+03:00"
+}

@@ -1,0 +1,24 @@
+# BF-107 - bounded checkpoint batch codec and read-only preview
+
+Status: IMPLEMENTED / TESTED_LOCAL for compact representation and Settings preview; PROTOTYPE_NATIVE_IDB for isolated physical layout. No production journal migration enabled.
+HEAD 664ab80c89b244bab1014ec5c652d11c6a490470; observed 2026-11-25T19:54:08.659623+03:00.
+Decision: represent a bounded batch of settled public v1 journal rows as immutable key/raw/nullable checkpoint references plus one pool of distinct exact strings. Use native gzip if smaller, otherwise UTF-8 JSON pool; source and inflated pool bounded. Max 64 rows and 2 MiB logical serialized source. Reject unexpected fields, duplicates, non-terminal rows, missing or unused references, corrupt compressed content and mismatched SHA-256. Validate the complete round-trip before reporting a packed candidate. SHA-256 protects consistency, not authenticity or reward authority. Existing 16 MiB import gate unchanged; a smaller decoded bound can be provided by the new codec.
+UI: explicit bounded sample calculation only from an already prepared complete backup. No new database read/write, network or permission request by the estimator. Stale prepared backup invalidates the estimate. Sizes are logical JSON metadata plus binary payload, not browser storage quota or disk usage. No extrapolation to other journals. Active and quarantined originals excluded. No schema/version change or migration of existing v1 database. Older readers must never receive packed rows as v1 originals.
+Focused Vitest 43/43. Initial typecheck found a settled type narrowing issue, fixed by using an explicitly typed logical projection after state guards. QA patch initially stopped on a duplicate anchor before touching source, repaired with last-occurrence guard. First frozen full Vitest passed 1027 assertions in 97 files but exit 1 because two fork workers could not spawn/terminate (UNKNOWN); build not run. Same source snapshot retried with --pool=threads and maxWorkers=1, 1034/1034 in 99 files, exit 0. TSC, Vite build and bundle gate exit 0.
+Native journal browser 34 PASS lines. Separate disposable IndexedDB stores the candidate binary using strict transaction and fresh readback. All 32 originals round-trip exactly. Aborted candidate overwrite retains prior valid batch and leaves v1 fixture untouched. Logical sample 1052471 -> 3016 bytes; one distinct repeated checkpoint. UI browser sample 4 rows, 78293 -> 708 logical bytes; exact wallet and journal unchanged; stale estimate invalidated.
+Production mobile 124 PASS lines; privacy 13 (12 private paths plus app HTTP). Preview 200, exact index and entry digest. All owned servers stopped. Frozen inputs 324, build files 73, entry assets/index-yAr6ND2_.js SHA-256 0c683fef518b446ca1769c07b11222d6c9c810311f8686d9f6ddca655dc52ec4; 10 PNG headers and hashes checked. Existing chunk >500 kB warning remains; no independent visual review claimed.
+Live parity: 0 changed and 0 new paths against frozen source; all owned file hashes match. Paths in final-readback.json. Parallel edits outside this snapshot not covered.
+Next gate: implement and verify an explicit atomic dual-format read/write migration and reversible recovery before activating compact storage. Do not replace existing durable originals simply because a sample compresses well. Actual browser disk usage, eviction, power loss, installed Android WebView and physical-device acceptance remain unverified. No owner history read or changed in QA; no APK, Firebase deployment, git commit or push.
+Rollback: only restore hash-matching owned prior versions from *.before and *.before-qa; remove only unchanged new journalCheckpointBatch.ts/test.ts. Preserve concurrent avatar and exercise work.
+Commands: focused Vitest; initial tsc -b; frozen tsc -b; full Vitest forks (failed infrastructure), same snapshot full Vitest --pool=threads --maxWorkers=1 --no-file-parallelism; vite build; qa/bundle-on-demand.mjs; qa/durable-journal-e2e.mjs; qa/mobile-e2e.mjs; qa/privacy-server-e2e.mjs; verify_canon.py.
+
+Owned paths | bytes | SHA-256
+src/lib/journalCheckpointBatch.ts | 11253 | 1f887f75b0d0fdd3b43e896a6828009aae3b7bd3f188d825e824b33a8598dd44
+src/lib/journalCheckpointBatch.test.ts | 5851 | e1187de3f68d5208596653058a38a6b8a93fbb22395a17f359897ace7ddb17a5
+src/lib/backupArchive.ts | 5714 | f1f6b0fffa81dab33cfb208327208d4ad6c2703b0d09c52162b545ad63aa1fd9
+src/components/ProgressBackupPanel.tsx | 27447 | a4bb83109667f151a0f05d48cbb3e30f508eabd8060bd4fedbed976888aee217
+src/components/progressBackup.css | 5513 | 13c853fc3e563793f6d3a478f06db0dce64b334ab8ae5bb0c6f7c479f6572762
+qa/durable-journal-e2e.mjs | 21954 | 6a6eb254bb56d1627485111476635c041ff0dbdf094c7775f5802579fac6461c
+qa/mobile-e2e.mjs | 55872 | dce2c8a9c0b0ad95c69e75a86eea7d0fc53f01d256fb96013040e6863375fff7
+
+Reference: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API ; https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getAll

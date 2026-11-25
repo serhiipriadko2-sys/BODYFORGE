@@ -1,0 +1,20 @@
+﻿{
+    "head":  "664ab80c89b244bab1014ec5c652d11c6a490470",
+    "sourceCount":  345,
+    "sourceManifestSha256":  "D6526AC8785C18703335671B41B02A7C26479B4D0EADD2E83F7C46781937CBB1",
+    "unit":  0,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  1,
+    "journal":  0,
+    "mobile":  "NOT_RUN",
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-25T20:48:07.9354271+03:00",
+    "devPort":  7800,
+    "buildCount":  73,
+    "buildManifestSha256":  "CFA016675A6F6F61BA2BB3FE536C1D86900491928C5442CA2664EA714C88E689",
+    "error":  "Bundle failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T20:49:37.7701028+03:00"
+}

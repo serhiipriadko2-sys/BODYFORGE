@@ -1,0 +1,113 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { freshGame } from './game';
+import { addCompletedWorkout, loadProfile, loadProfileState, saveProfile,
+  recoverProfile, STORAGE_KEY, PROFILE_BACKUP_KEY, type Profile, type Workout } from './progression';
+import { prepareWorkoutSession } from './workoutJournal';
+import { indexActivityHistory } from './activityHistory';
+
+const date = new Date('2026-11-25T10:00:00Z');
+function fixture(count: number) {
+  let profile: Profile={profileId:'history-fighter',xp:0,coins:0,workouts:[],creditedWorkoutIds:[],
+    game:{...freshGame(),created:true}};
+  const history: Workout[]=[];
+  for(let i=0;i<count;i++){
+    profile=addCompletedWorkout(profile,32000,new Date(date.getTime()+i*60000),{sessionId:'paid-'+i});
+    history.unshift(profile.workouts[0]);
+  }
+  return {profile,history,raw:JSON.stringify({...profile,workouts:history})};
+}
+function storage(entries: [string,string][]) {
+  const values=new Map(entries);
+  const setItem=vi.fn((k:string,v:string)=>{values.set(k,v);});
+  vi.stubGlobal('window',{});
+  vi.stubGlobal('localStorage',{getItem:(k:string)=>values.get(k)??null,setItem});
+  return {values,setItem};
+}
+afterEach(()=>vi.unstubAllGlobals());
+
+describe('BF-107 retained stored history',()=>{
+  it('preserves every uncapped legacy record during a normal wallet update and repeated save',()=>{
+    const f=fixture(65), {values}=storage([[STORAGE_KEY,f.raw]]);
+    const loaded=loadProfileState();
+    expect(loaded.profile.workouts).toHaveLength(60);
+    const changed={...loaded.profile,coins:loaded.profile.coins+10};
+    const write=saveProfile(changed,{expectedRaw:f.raw});
+    expect(write.status).toBe('saved');
+    const primary=values.get(STORAGE_KEY)!;
+    expect(JSON.parse(primary).workouts).toEqual(f.history);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(f.raw);
+    expect(loadProfile().workouts).toHaveLength(60);
+    expect(indexActivityHistory(primary,loadProfile(),{status:'ready',entries:[]}))
+      .toMatchObject({complete:true,restoredCount:5,expectedCount:65});
+    expect(saveProfile(loadProfile(),{expectedRaw:primary})).toEqual({status:'saved',revision:primary});
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(f.raw);
+  });
+  it('retains the 61st row instead of evicting the oldest saved original at cap crossing',()=>{
+    const f=fixture(60), {values}=storage([[STORAGE_KEY,f.raw]]);
+    const next=addCompletedWorkout(loadProfile(),33000,date,{sessionId:'paid-60'});
+    expect(saveProfile(next,{expectedRaw:f.raw}).status).toBe('saved');
+    const raw=values.get(STORAGE_KEY)!;
+    expect(JSON.parse(raw).workouts).toEqual([next.workouts[0],...f.history]);
+    expect(loadProfile().workouts).toHaveLength(60);
+    expect(loadProfile().totals?.workouts).toBe(61);
+    expect(addCompletedWorkout(loadProfile(),33000,date,{sessionId:'paid-0'}).xp).toBe(next.xp);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(f.raw);
+  });
+  it('preserves an identity-less uncapped legacy save during identity adoption',()=>{
+    const f=fixture(65);
+    const original={xp:f.profile.xp,coins:f.profile.coins,game:f.profile.game,workouts:f.history};
+    const raw=JSON.stringify(original),{values}=storage([[STORAGE_KEY,raw]]);
+    const prepared=prepareWorkoutSession(raw,'training');
+    expect(prepared.status).toBe('ready');
+    const saved=JSON.parse(values.get(STORAGE_KEY)!);
+    expect(saved.workouts).toEqual(f.history);
+    expect(saved.creditedWorkoutIds).toHaveLength(65);
+    expect(saved.xp).toBe(original.xp);
+    expect(saved.coins).toBe(original.coins);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(raw);
+  });
+  it('restores the exact uncapped backup, not its last-60 display projection',()=>{
+    const f=fixture(65),{values}=storage([[STORAGE_KEY,'{broken'],[PROFILE_BACKUP_KEY,f.raw]]);
+    expect(recoverProfile('backup').status).toBe('ready');
+    expect(values.get(STORAGE_KEY)).toBe(f.raw);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(f.raw);
+    expect(values.get(STORAGE_KEY+':quarantine:0')).toBe('{broken');
+    expect(loadProfile().workouts).toHaveLength(60);
+  });
+  it('retains the full supplied history on the first save of a compatible uncapped profile',()=>{
+    const f=fixture(65), {values}=storage([]);
+    expect(saveProfile({...f.profile,workouts:f.history}).status).toBe('saved');
+    expect(JSON.parse(values.get(STORAGE_KEY)!).workouts).toEqual(f.history);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(values.get(STORAGE_KEY));
+  });
+  it('rejects conflicting original details or missing paid identities before any write',()=>{
+    const f=fixture(65), {values,setItem}=storage([[STORAGE_KEY,f.raw]]);
+    const loaded=loadProfile();
+    for(const next of [
+      {...loaded,workouts:loaded.workouts.map((w,i)=>i===0?{...w,durationMs:99999}:w)},
+      {...loaded,creditedWorkoutIds:loaded.creditedWorkoutIds!.filter(id=>id!=='paid-0')},
+      {...loaded,profileId:'other-fighter'},
+    ]){
+      expect(saveProfile(next,{expectedRaw:f.raw}).status).toBe('recovery-required');
+      expect(values.get(STORAGE_KEY)).toBe(f.raw);
+      expect(setItem).not.toHaveBeenCalled();
+    }
+  });
+  it('does not drop malformed or duplicated older originals in a retention operation',()=>{
+    const f=fixture(65);
+    for(const last of [{...f.history[64],finishedAt:'broken'},f.history[0]]){
+      const raw=JSON.stringify({...f.profile,workouts:[...f.history.slice(0,64),last]});
+      const {values,setItem}=storage([[STORAGE_KEY,raw]]);
+      expect(saveProfile(loadProfile(),{expectedRaw:raw}).status).toBe('recovery-required');
+      expect(values.get(STORAGE_KEY)).toBe(raw);
+      expect(setItem).not.toHaveBeenCalled();
+    }
+  });
+  it('keeps exact prior history when primary write runs out of quota',()=>{
+    const f=fixture(65),{values,setItem}=storage([[STORAGE_KEY,f.raw]]);
+    setItem.mockImplementation((k,v)=>{if(k===STORAGE_KEY)throw Error('quota');values.set(k,v);});
+    expect(saveProfile({...loadProfile(),coins:9},{expectedRaw:f.raw}).status).toBe('unavailable');
+    expect(values.get(STORAGE_KEY)).toBe(f.raw);
+    expect(values.get(PROFILE_BACKUP_KEY)).toBe(f.raw);
+  });
+});

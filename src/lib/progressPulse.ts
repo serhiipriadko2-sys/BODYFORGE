@@ -2,6 +2,7 @@ import { localDay } from './game';
 import type { Workout } from './progression';
 import { isExerciseId } from './trainingCatalog';
 
+export type ActivityRecord = Pick<Workout, 'id' | 'finishedAt' | 'repetitions' | 'exerciseId' | 'holdSeconds'>;
 export type PulseRange = 7 | 30;
 export type PulseDay = { date: string; label: string; sessions: number; reps: number; holdSeconds?: number };
 export type PulseTrend = { days: PulseDay[]; sessions: number; reps: number; holdSeconds: number; activeDays: number; peak: number };
@@ -20,7 +21,7 @@ const EMPTY: PulseTrend = { days: [], sessions: 0, reps: 0, holdSeconds: 0, acti
  * Rendering never writes to the game profile or creates reward entries.
  */
 export function activityPulse(
-  workouts: readonly Workout[], now: Date, range: PulseRange = 7,
+  workouts: readonly ActivityRecord[], now: Date, range: PulseRange = 7,
 ): PulseTrend {
   if (!Number.isFinite(now.getTime()) || (range !== 7 && range !== 30)) return { ...EMPTY, days: [] };
   const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short' });
@@ -68,9 +69,11 @@ export function weeklyPulse(workouts: readonly Workout[], now: Date): PulseTrend
  * be missing, but does not tell us on which dates.
  */
 export function comparePulsePeriods(
-  workouts: readonly Workout[], now: Date, range: PulseRange, recordedWorkoutCount = workouts.length,
+  workouts: readonly ActivityRecord[], now: Date, range: PulseRange, recordedWorkoutCount = workouts.length,
+  coverage?: 'complete' | 'partial',
 ): PulseComparison {
-  const historyLimited = workouts.length >= 60 || recordedWorkoutCount > workouts.length;
+  const historyLimited = coverage === 'partial' || recordedWorkoutCount > workouts.length ||
+    (coverage !== 'complete' && workouts.length >= 60);
   const current = activityPulse(workouts, now, range);
   if (!current.days.length) return {
     current, previous: { ...EMPTY, days: [] }, deltaSessions: 0,

@@ -1,0 +1,129 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T20:37:26.992050+03:00",
+  "owned": [
+    {
+      "path": "src/lib/journalMixedStorage.ts",
+      "bytes": 20595,
+      "sha256": "9e3f8abaf7bdf0f5cbcb2804218f172f34af764c57afc73be7f5f3b66dd783ab"
+    },
+    {
+      "path": "src/lib/journalMixedStorage.test.ts",
+      "bytes": 5960,
+      "sha256": "039e5ad7f8e2aebc7db43756edac694d980a3ffd2b71ab2798102cc254d0f530"
+    },
+    {
+      "path": "qa/durable-journal-e2e.mjs",
+      "bytes": 38610,
+      "sha256": "c273763be83bb339a062604ab7f23c2398456723b5c7db13a2e0144a18c279dd"
+    }
+  ],
+  "sourceCount": 341,
+  "buildCount": 73,
+  "sourceManifestSha256": "dcb34ffd9a6caa2a1293b5b1cb34bc4c684e6e2077b955bbebd9dcaa58f7e07c",
+  "buildManifestSha256": "f33abc0eedc4afcb666a2c8597239e92a4e72439efdb23d2c047b9dbb6edadca",
+  "liveChangedPaths": [
+    "qa/pose-worker-spike.mjs",
+    "src/components/Avatar.tsx",
+    "src/components/Avatar3D.tsx",
+    "src/components/ForgeWorld.tsx",
+    "src/lib/avatarLook.ts",
+    "src/lib/avatarOcclusion.ts",
+    "src/lib/avatarSurfaceFit.ts"
+  ],
+  "liveNewPaths": [
+    "qa/field-study-metrics.mjs",
+    "qa/field-study-metrics.test.mjs"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 57,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "transferSample": {
+    "identity": true,
+    "lock": true,
+    "abort": true,
+    "copy": true,
+    "retry": true,
+    "conflict": true,
+    "stale": true,
+    "unverified": true,
+    "invalid": true
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89608,
+      "sha256": "ec758db73886fdfd7571945d6217e12020c6d56adf2e6ae7b2d0ba8077c18fff"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202429,
+      "sha256": "b114107eb2f0aa7d9e7bffc82ff634d7cc5a2d12b63cf53e78302cf3bc257f7c"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190298,
+      "sha256": "3c4f73f6b6ce9597ed90be9a6fe16734880052e6b831c596fd37901a6ec53fbc"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 179709,
+      "sha256": "e515e7119b9750acbe66cfdf3cd1e56958226483cde419f60fd00efd346a49d9"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 204743,
+      "sha256": "01ccfd8c64ac844a93e4a2162de596fbd5c4cbd824726ae326b5012a081811ae"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 95384,
+      "sha256": "6f6183ec0104822c3ef832820bdd8e63f87259a761f6613cf7f85cd35e4171aa"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93745,
+      "sha256": "19fb8f61af8910d8d814709f5ddd733b5c7fe8c1d6ef632e97a57b24706c57d2"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148238,
+      "sha256": "f31d09865559d9e643ed4236195127ba887cdc17ff58869ce0426715536f2e04"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 91544,
+      "sha256": "83dcd40d4028653bc86e4cace0fba6f657e902efaa837c0abee7c42e9853496d"
+    }
+  ]
+}

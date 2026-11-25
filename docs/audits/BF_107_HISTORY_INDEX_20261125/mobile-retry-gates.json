@@ -1,0 +1,11 @@
+﻿{
+    "sourceManifestSha256":  "2098AE5CFB4CA4AC3162D53F1A690DB43FC8A066B32D93E321F4107FC2544899",
+    "buildManifestSha256":  "173EE5A785A0F641462D35F4533B39B238C9F01A75CD2D5691C416212D12ACEF",
+    "mobile":  0,
+    "started":  "2026-11-25T18:49:09.1678620+03:00",
+    "reason":  "CDP screenshot capture failure after passed file-inspection assertions",
+    "port":  6600,
+    "unchanged":  true,
+    "previewStopped":  true,
+    "finished":  "2026-11-25T18:51:02.6237653+03:00"
+}

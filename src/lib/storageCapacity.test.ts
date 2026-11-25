@@ -1,0 +1,66 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { LOCAL_STORAGE_WARNING_BYTES, measureLocalStorage, readStorageCapacity, MIB, STORAGE_OBSERVATION_TIMEOUT_MS } from './storageCapacity';
+
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+function reader(entries: [string, string][]) {
+  return { length: entries.length, key: (i: number) => entries[i]?.[0] ?? null,
+    getItem: (key: string) => entries.find(row => row[0] === key)?.[1] ?? null,
+    setItem: vi.fn(), clear: vi.fn(), removeItem: vi.fn() };
+}
+describe('BF-107 local storage observations', () => {
+  it('counts observed key and value UTF-16 units, including non-app keys, without exposing contents', () => {
+    const store = reader([['a', 'я'], ['b', '😀'], ['other-key', '123']]);
+    expect(measureLocalStorage(store)).toEqual({ state: 'observed', estimatedBytes: 34, warning: false });
+    expect(store.setItem).not.toHaveBeenCalled();
+    expect(store.removeItem).not.toHaveBeenCalled();
+    expect(store.clear).not.toHaveBeenCalled();
+  });
+  it('marks the advisory threshold exactly, not a quota or a write authorization', () => {
+    const n = LOCAL_STORAGE_WARNING_BYTES / 2 - 1;
+    expect(measureLocalStorage(reader([['k', 'x'.repeat(n - 1)]]))).toMatchObject({ warning: false });
+    expect(measureLocalStorage(reader([['k', 'x'.repeat(n)]]))).toMatchObject({ warning: true });
+  });
+  it('never treats denied, disappearing or repeated keys as an empty store', () => {
+    expect(measureLocalStorage({ length: 1, key: () => null, getItem: () => '' })).toEqual({ state: 'unknown' });
+    expect(measureLocalStorage({ length: 1, key: () => 'a', getItem: () => null })).toEqual({ state: 'unknown' });
+    expect(measureLocalStorage({ length: 2, key: () => 'a', getItem: () => '' })).toEqual({ state: 'unknown' });
+    expect(measureLocalStorage({ length: 1, key: () => { throw Error('blocked'); }, getItem: () => '' })).toEqual({ state: 'unknown' });
+  });
+  it('reads origin estimates and persistence status independently without requesting permission', async () => {
+    const store = reader([['a', 'b']]), persist = vi.fn();
+    vi.stubGlobal('localStorage', store);
+    vi.stubGlobal('navigator', { storage: { estimate: vi.fn(async () => ({ usage: 8 * MIB, quota: 20 * MIB })),
+      persisted: vi.fn(async () => false), persist } });
+    expect(await readStorageCapacity()).toEqual({ local: { state: 'observed', estimatedBytes: 4, warning: false },
+      origin: { usage: 8 * MIB, quota: 20 * MIB }, persistent: false });
+    expect(persist).not.toHaveBeenCalled();
+    expect(store.setItem).not.toHaveBeenCalled();
+  });
+  it('bounds a stalled read, retains the other observation and ignores late completion', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('localStorage', reader([['k', 'v']]));
+    let finish!: (value: StorageEstimate) => void;
+    vi.stubGlobal('navigator', { storage: {
+      estimate: () => new Promise<StorageEstimate>(resolve => { finish = resolve; }),
+      persisted: async () => true,
+    } });
+    const pending = readStorageCapacity();
+    await vi.advanceTimersByTimeAsync(STORAGE_OBSERVATION_TIMEOUT_MS);
+    const value = await pending;
+    expect(value).toEqual({ local: { state: 'observed', estimatedBytes: 4, warning: false },
+      origin: null, persistent: true });
+    finish({ usage: MIB, quota: 10 * MIB });
+    await Promise.resolve();
+    expect(value.origin).toBeNull();
+  });
+  it('preserves known measurements if other APIs deny access or return invalid numbers', async () => {
+    vi.stubGlobal('localStorage', reader([]));
+    vi.stubGlobal('navigator', { storage: { estimate: async () => ({ usage: NaN, quota: 0 }),
+      persisted: async () => { throw Error('denied'); } } });
+    expect(await readStorageCapacity()).toEqual({ local: { state: 'observed', estimatedBytes: 0, warning: false },
+      origin: null, persistent: null });
+    vi.stubGlobal('localStorage', undefined);
+    vi.stubGlobal('navigator', undefined);
+    expect(await readStorageCapacity()).toEqual({ local: { state: 'unknown' }, origin: null, persistent: null });
+  });
+});

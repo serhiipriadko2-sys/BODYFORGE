@@ -335,6 +335,53 @@ try {
     'partial history inspection preserves the whole wallet, ledger and profile');
   await js('document.querySelector(".pulse-trend-card").scrollIntoView({block:"start",behavior:"instant"})');
   await snapshot('pulse-incomplete-history-390.png');
+  // BF-107: all five older paid results actually exist in IndexedDB.
+  // Seed only this disposable browser, under the application's lock order.
+  const fullFixture = await js("(async()=>{const key='bodyforge:pilot:v1';const lock=await navigator.locks.request(key+':write',()=>navigator.locks.request(key+':durable-write',{mode:'exclusive'},async()=>{const profile=JSON.parse(localStorage.getItem(key));profile.profileId='bf107-history-qa';const now=new Date();const day=n=>new Date(now.getFullYear(),now.getMonth(),now.getDate()-n,12).toISOString();const rows=[...Array.from({length:5},(_,i)=>({id:'hidden-'+i,date:day(i===0?8:3)})),{id:'present-0',date:profile.workouts[0].finishedAt}].map(({id,date})=>({schemaVersion:1,key:key+':result:'+encodeURIComponent(id),raw:JSON.stringify({schemaVersion:1,profileId:profile.profileId,sessionId:id,mode:'training',floor:null,durationMs:65000,finishedAt:date,repetitions:20}),baseProfileRaw:null,state:'settled'}));const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});try{await new Promise((resolve,reject)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});if(tx.durability!=='strict'){tx.abort();reject(Error('strict unavailable'));return}const store=tx.objectStore('results');const r=store.count();r.onsuccess=()=>{if(r.result!==0){tx.abort();return}for(const row of rows)store.add(row)};tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(Error('fixture journal transaction failed'))});const raw=JSON.stringify(profile);localStorage.setItem(key,raw);const keys=Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]);return {raw,keys,rows}}finally{db.close()}}));return lock})()");
+  assert(fullFixture.rows.length===6,'real IndexedDB fixture includes five older paid records plus one duplicate visible ID');
+  await cdp('Page.reload', {ignoreCache:true});
+  await until('!!document.querySelector(".app-shell[data-fighter-created=true] .mobile-nav") && !document.querySelector("[data-storage-status]")','full paid history hydrated');
+  await click('.mobile-nav button:nth-child(2)');
+  await until("(()=>{const d=document.querySelector('.pulse-trend-card:not([hidden])')?.dataset;return d?.historyIndex==='ready'&&d.historyLimited==='false'&&d.historyKnown==='65'&&d.historyRestored==='5'})()",'actual archive projection complete');
+  for(const [range,sessions,reps,days] of [[7,64,1280,2],[30,65,1300,3]]){
+    await js("(()=>{const el=document.querySelector('#pulse-activity-range');el.value='"+range+"';el.dispatchEvent(new Event('change',{bubbles:true}))})()");
+    await until("document.querySelector('[data-activity-period]')?.dataset.activityPeriod==='"+range+"'",'complete history range '+range);
+    assert(await js("(()=>{const root=document.querySelector('.pulse-trend-card');return root.dataset.historyLimited==='false'&&root.querySelector('[data-period-sessions]').dataset.periodSessions==='"+sessions+"'&&root.querySelector('[data-period-reps]').textContent.trim()==='"+reps+"'&&root.querySelector('[data-active-days]').textContent.trim()==='"+days+"/"+range+"'&&root.querySelectorAll('.pulse-linechart circle').length==="+range+"&&root.querySelector('[data-pulse-delta]').dataset.pulseDelta==='"+(range===7?63:65)+"'})()"),'restored dates and exact comparison for '+range+' days');
+  }
+  await js('document.querySelector(".pulse-trend-card").scrollIntoView({block:"start",behavior:"instant"})');
+  await snapshot('pulse-full-history-390.png');
+  const afterHistory=await js("(async()=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});try{const rows=await new Promise((resolve,reject)=>{const tx=db.transaction('results','readonly');const r=tx.objectStore('results').getAll();tx.oncomplete=()=>resolve(r.result);tx.onerror=tx.onabort=()=>reject(Error('journal readback failed'))});return {keys:Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]),rows}}finally{db.close()}})()");
+  assert(JSON.stringify(afterHistory.keys)===JSON.stringify(fullFixture.keys),'view and reload preserve all original localStorage bytes');
+  const normalizedRows=rows=>rows.map(r=>[r.key,r.raw,r.baseProfileRaw,r.state,r.schemaVersion]).sort((a,b)=>a[0].localeCompare(b[0]));
+  assert(JSON.stringify(normalizedRows(afterHistory.rows))===JSON.stringify(normalizedRows(fullFixture.rows)),'full history view leaves every IndexedDB original unchanged');
+  // Uncapped v1 originals must survive the actual normal UI save, restart and fallback restore.
+  const legacyFixture = await js("(async()=>{const key='bodyforge:pilot:v1';return navigator.locks.request(key+':write',()=>{const profile=JSON.parse(localStorage.getItem(key));const older="+JSON.stringify(fullFixture.rows.slice(0,5).map(r=>JSON.parse(r.raw)))+";profile.workouts.push(...older.map(r=>({id:r.sessionId,finishedAt:r.finishedAt,durationMs:r.durationMs,repetitions:r.repetitions,xp:120,mode:r.mode})));profile.game.lastLoginDay=null;profile.game.claimedLoginDays=[];const raw=JSON.stringify(profile);localStorage.setItem(key,raw);return {raw,rows:profile.workouts,coins:profile.coins,xp:profile.xp}})})()");
+  assert(legacyFixture.rows.length===65,'uncapped v1 source retains all 65 original workout rows');
+  await cdp('Page.reload',{ignoreCache:true});
+  await until('!!document.querySelector(".app-shell[data-fighter-created=true] .mobile-nav") && !document.querySelector("[data-storage-status]")','uncapped profile loaded');
+  await click('.mobile-nav button:nth-child(1)');
+  await until('!!document.querySelector("#quests .quest-button:not([disabled])")','normal login reward available after fixture reload');
+  const beforeLegacyWrite = await js('localStorage.getItem("bodyforge:pilot:v1")');
+  assert(JSON.parse(beforeLegacyWrite).workouts.length===65,'app boot does not trim uncapped original');
+  await click('#quests .quest-button');
+  await until('JSON.parse(localStorage.getItem("bodyforge:pilot:v1")).coins==='+(legacyFixture.coins+10),'ordinary UI wallet save acknowledged');
+  const afterLegacyWrite=await js('({primary:localStorage.getItem("bodyforge:pilot:v1"),backup:localStorage.getItem("bodyforge:pilot:v1:backup")})');
+  assert(JSON.stringify(JSON.parse(afterLegacyWrite.primary).workouts)===JSON.stringify(legacyFixture.rows),'ordinary UI wallet save retains all exact workout values and ordering');
+  assert(afterLegacyWrite.backup===beforeLegacyWrite && JSON.parse(afterLegacyWrite.primary).xp===legacyFixture.xp,'fallback retains exact pre-save source and no workout XP is issued');
+  await cdp('Page.reload',{ignoreCache:true});
+  await until('!!document.querySelector(".app-shell[data-fighter-created=true] .mobile-nav") && !document.querySelector("[data-storage-status]")','saved uncapped profile reopened');
+  assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===afterLegacyWrite.primary,'real reload preserves complete acknowledged primary');
+  await js("(async()=>navigator.locks.request('bodyforge:pilot:v1:write',()=>{localStorage.setItem('bodyforge:pilot:v1','{bf107-broken');return true}))()");
+  await cdp('Page.reload',{ignoreCache:true});
+  await until('document.querySelector("[data-action=restore-backup]")?.disabled===false','explicit recovery offers intact uncapped fallback');
+  await click('[data-action=restore-backup]');
+  await until('!!document.querySelector(".app-shell[data-fighter-created=true] .mobile-nav") && !document.querySelector("[data-storage-status]")','explicit fallback restore reopens app');
+  assert(await js('localStorage.getItem("bodyforge:pilot:v1")')===afterLegacyWrite.backup,'explicit restore preserves the exact 65-row fallback bytes');
+  assert(await js('localStorage.getItem("bodyforge:pilot:v1:quarantine:0")')==='{bf107-broken','damaged original retained during uncapped restore');
+  await click('.mobile-nav button:nth-child(2)');
+  await until("(()=>{const d=document.querySelector('.pulse-trend-card:not([hidden])')?.dataset;return d?.historyIndex==='ready'&&d.historyLimited==='false'&&d.historyKnown==='65'})()",'recovered full history remains visible');
+  await js('document.querySelector(".pulse-trend-card").scrollIntoView({block:"start",behavior:"instant"})');
+  await snapshot('pulse-retained-restore-390.png');
   assert(browserErrors.length === 0, 'no uncaught exceptions while switching screens');
   console.log('BODYFORGE_FORGE_XP_FAQ_E2E_PASS');
 } catch (error) {

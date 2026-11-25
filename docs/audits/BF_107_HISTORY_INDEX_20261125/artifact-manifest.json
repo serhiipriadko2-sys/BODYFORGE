@@ -1,0 +1,262 @@
+[
+  {
+    "path": "activityHistory.test.ts.before-hold-fixture",
+    "bytes": 5584,
+    "sha256": "f6c2ff44fb665a0109b3fed8ac59ccf347eff6ec4925ce32a65681555ebf115c"
+  },
+  {
+    "path": "browser/bf-qa-mobile-setup.png",
+    "bytes": 148193,
+    "sha256": "2c0b95c2524437cf8b61bfe670f2590fbf59c7bfb72e8e75242fadd739206361"
+  },
+  {
+    "path": "browser/camera-390.png",
+    "bytes": 82788,
+    "sha256": "af9f919f447fe4575bca064454bfcc15987ad5c3f3a48ede0e41ee8293f82e57"
+  },
+  {
+    "path": "browser/camera-activity-30days-360.png",
+    "bytes": 13212,
+    "sha256": "d8d79230b52ff05156cffa8560c441ea0194427bee0f209c1f345829d46c98fa"
+  },
+  {
+    "path": "browser/forge-avatar-only-390.png",
+    "bytes": 202633,
+    "sha256": "528889aa84af254c729ef13e79d0237f879323226b3366ba9d7cc1a0357de8d6"
+  },
+  {
+    "path": "browser/forge-missions-390.png",
+    "bytes": 97430,
+    "sha256": "b0994226bdd86ee00fcba6cbfe5ab4f3d6d738be061675fad2a634da1db63ab1"
+  },
+  {
+    "path": "browser/home-320-fighter-xp.png",
+    "bytes": 175839,
+    "sha256": "31b407074486b939e214b07ed64974bb811e919999ee881cbcbd77596b28c9a0"
+  },
+  {
+    "path": "browser/home-360-fighter-xp.png",
+    "bytes": 194707,
+    "sha256": "94a084d6778c8b9b47fa1447731c146dd5077c47064e8dffa4bdc944b56f18e5"
+  },
+  {
+    "path": "browser/pulse-full-history-390.png",
+    "bytes": 151588,
+    "sha256": "925eff1391e1c1e311e03105667aba9561e9fb4acd7c86a49cb84db5a0a09025"
+  },
+  {
+    "path": "browser/pulse-incomplete-history-390.png",
+    "bytes": 144492,
+    "sha256": "a7884706edc21985476374802661fe22c78b23498d82c1e74f551a37c4be5c42"
+  },
+  {
+    "path": "browser/settings-390-camera-preparation-visible.png",
+    "bytes": 120526,
+    "sha256": "601f8f8a674b28cc169d01a628462349505824726b45245f8dc1ecb7371eaeaf"
+  },
+  {
+    "path": "browser/settings-390-faq-overview.png",
+    "bytes": 83394,
+    "sha256": "5951b3cf191018bbbe2940f934d02bd1661e2fa2993321e43fd6348c9048af47"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-360-premium.png",
+    "bytes": 89728,
+    "sha256": "172cade8553af457c7a01dd4c40543784ac8e53d85dc2f88b34c9fec81dceeed"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-backup-json-inspection.png",
+    "bytes": 130086,
+    "sha256": "c4dee1328348cd4b0a12ff43960001dd7ae9355d40aefd0c884d0dfe046f87b3"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-forge-upgraded.png",
+    "bytes": 202410,
+    "sha256": "3a418dea998094087843eb382a0548ba9be73f75a0767f0548dd9662a36223df"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-forge.png",
+    "bytes": 190251,
+    "sha256": "e3e64356e26e4f2b505cdc951b923ee0094d5dc176df5c2f457aea39da254d9e"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-home-360-premium.png",
+    "bytes": 195699,
+    "sha256": "3e8dc98b54d04e49973a75d2b019e7c676a23af4ed78179726ba654ab84a3723"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-home-premium.png",
+    "bytes": 219410,
+    "sha256": "c2835fe612c7fc642ee74927c8e53838f9870a6f893ee942735b54dba196517b"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-lenses.png",
+    "bytes": 93894,
+    "sha256": "9465b746677e5cd33a938e3facd41bc21ba4a1388383a1fa93a887500d10ae2c"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-performance-panel.png",
+    "bytes": 93676,
+    "sha256": "e6d2980cd6de1c24fae3eb5bd69e126f84cb7303a72b0cc41522941bd57ee33c"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-setup.png",
+    "bytes": 148193,
+    "sha256": "2c0b95c2524437cf8b61bfe670f2590fbf59c7bfb72e8e75242fadd739206361"
+  },
+  {
+    "path": "browser-retry/bf-qa-mobile-tower.png",
+    "bytes": 91537,
+    "sha256": "c913b83dd5278ff512622e4dc47b7ddd3410946be791c65116579c5ac78d314f"
+  },
+  {
+    "path": "build-manifest.json",
+    "bytes": 12939,
+    "sha256": "173ee5a785a0f641462d35f4533b39b238c9f01a75cd2d5691c416212d12acef"
+  },
+  {
+    "path": "build.log",
+    "bytes": 2824,
+    "sha256": "36cca44298c716e32fa41adf5e0624c1dafd5936a5fae89a72b215748f76eeba"
+  },
+  {
+    "path": "bundle.log",
+    "bytes": 285,
+    "sha256": "a4cf352abb5b8b5b72be61af63903b380e060399ee99daae7e83112920e3295d"
+  },
+  {
+    "path": "final-readback.json",
+    "bytes": 5943,
+    "sha256": "35a645591ae1c1bcea929bfd68962fe8faccd21847771e8a6c815d37fa7b3d41"
+  },
+  {
+    "path": "finalize.py",
+    "bytes": 9902,
+    "sha256": "8f5dae8f884f139a4471ef321f4c1cd96deaabc7d0ca6ff12dae8d0e6a3c9d40"
+  },
+  {
+    "path": "forge-home-xp-faq-e2e.mjs.before",
+    "bytes": 24937,
+    "sha256": "e9a217b21c0fdf28191bf9b5611f6e82b748a38111e5ecf7ca8e0f65ef9a78f1"
+  },
+  {
+    "path": "forge.log",
+    "bytes": 8137,
+    "sha256": "b77c6e7fc9c7fb3bbcb9f291e86cf264daebe0df6c5a16dc5d1aea6399d83857"
+  },
+  {
+    "path": "freeze.py",
+    "bytes": 2158,
+    "sha256": "a15d25f9865edbaebcf3f290d4ab92c46e3db3e868e1b9fae351337c45bbe7fb"
+  },
+  {
+    "path": "gates.json",
+    "bytes": 845,
+    "sha256": "b66d360a2d77f82b8ef5b31647ab3fa19aeceb30e29ca91f721a4ea2c891c6d3"
+  },
+  {
+    "path": "head.txt",
+    "bytes": 42,
+    "sha256": "3b26cb5db3606dc6aabe752b22e563f5baa65d996248695e41c77dd00210d5cc"
+  },
+  {
+    "path": "mobile-retry-gates.json",
+    "bytes": 496,
+    "sha256": "9407c19b184535abaccfa243f8ca280b4da215284c37d07156af662b55776981"
+  },
+  {
+    "path": "mobile-retry.log",
+    "bytes": 8186,
+    "sha256": "7e6db6a4b986119ff409e03170d84b03258f26a895518a4299ecbcd23604071c"
+  },
+  {
+    "path": "mobile.log",
+    "bytes": 7903,
+    "sha256": "5a2088cc2afb5ee8428a74ae5f06e7b0fda79d7943123e4e8a344272c05f5a16"
+  },
+  {
+    "path": "patch-test-browser.py",
+    "bytes": 5693,
+    "sha256": "82a3c4cc81887a5c4db6ecabe367f6f2c421def91baca60a6495373e3be809d2"
+  },
+  {
+    "path": "patch.py",
+    "bytes": 4790,
+    "sha256": "afbdbc42c960f18da94977494e79a2a6cb97795dc2d4d8d6a70bdbc951d80a99"
+  },
+  {
+    "path": "preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "preview.log",
+    "bytes": 39,
+    "sha256": "f3ff6a3fba60a2ad2e8be38eb50f137ba680edc3012cc9f6f3d4efdd389cc704"
+  },
+  {
+    "path": "privacy.log",
+    "bytes": 777,
+    "sha256": "63ce23dcbb1ede906f06793262b1fed2438b26d83689f21c029ca9ba667faea3"
+  },
+  {
+    "path": "progressPulse.ts.before",
+    "bytes": 3965,
+    "sha256": "8f68b7b4f7d9c385c1d92ce1fcc088212b3f7ed06b058113ed8dd25b67dce61d"
+  },
+  {
+    "path": "ProgressPulseBoard.tsx.before",
+    "bytes": 15594,
+    "sha256": "50863efd9d27fff3bfcd3abba94198dbf16dc4cca7509526db2eee203a58d882"
+  },
+  {
+    "path": "RECEIPT.md",
+    "bytes": 4103,
+    "sha256": "3a3d0186ebdeba9346cb1a8d7715e26570b0b8775d616c2304414f13289ecb81"
+  },
+  {
+    "path": "retry-preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "retry-preview.log",
+    "bytes": 77,
+    "sha256": "04804e78e0fcbf118132c206c78f7199efa6014cb4c9b7f7d211c3e6e2aaeafb"
+  },
+  {
+    "path": "source.json",
+    "bytes": 46851,
+    "sha256": "2098ae5cfb4ca4ac3162d53f1a690db43fc8a066b32d93e321f4107fc2544899"
+  },
+  {
+    "path": "targeted-exit.txt",
+    "bytes": 3,
+    "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+  },
+  {
+    "path": "targeted-fixed-exit.txt",
+    "bytes": 3,
+    "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+  },
+  {
+    "path": "targeted-fixed.log",
+    "bytes": 1016,
+    "sha256": "02b7258a9f3ce0a26d10750738e4d3d15d53d45a57f86285f24f028cfd35edb9"
+  },
+  {
+    "path": "targeted.log",
+    "bytes": 2340,
+    "sha256": "d4fb9fcc6863a358dbfe81c7ce450d9ff073215a661d0c83e12a1ae40ef6c077"
+  },
+  {
+    "path": "tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "unit.log",
+    "bytes": 11401,
+    "sha256": "1bc5d3cf4d4a15632b20db8b20e6a25418fa31038aa825f3ac899d9e5a5b9845"
+  }
+]

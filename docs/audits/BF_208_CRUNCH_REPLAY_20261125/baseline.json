@@ -1,0 +1,26 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 17869,
+    "sha256": "26e2c8f748f04046538fedd6edb21bc32fb73a52a628c251e1daaa84b9281beb"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8335,
+    "sha256": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8328,
+    "sha256": "9a824bbfdb538427c16629c6b577cbf2628664093f7f761790f42a8a273f3449"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/knees-replay-e2e.mjs": {
+    "bytes": 13677,
+    "sha256": "ed4da9bb7709374d82d536a271f3ff21131cee56f26b603b381725598421bf6d"
+  }
+}

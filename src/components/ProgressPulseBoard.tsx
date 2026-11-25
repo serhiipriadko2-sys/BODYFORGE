@@ -6,6 +6,7 @@ import {
 import type { Profile } from '../lib/progression';
 import { fighterSkillMeters, fighterUpgradeFraction, weeklySessionLine } from '../lib/dashboardDisplay';
 import { comparePulsePeriods, type PulseRange } from '../lib/progressPulse';
+import { readActivityHistory, visibleActivityHistory, type ActivityHistoryIndex } from '../lib/activityHistory';
 
 const RINGS = [76, 56, 36] as const;
 const RING_COLORS = ['#baff38', '#29c9ff', '#d27aff'];
@@ -18,6 +19,30 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
   const [range, setRange] = useState<PulseRange>(7);
   const [selectedDate, setSelectedDate] = useState('');
   const dateStrip = useRef<HTMLDivElement>(null);
+  const [history, setHistory] = useState<{ profile: Profile; value: ActivityHistoryIndex } | null>(null);
+  useEffect(() => {
+    if (!activityVisible || actionsDisabled) { setHistory(null); return; }
+    let controller: AbortController | undefined;
+    const refresh = () => {
+      controller?.abort(); setHistory(null);
+      const request = new AbortController();
+      controller = request;
+      void readActivityHistory(profile, request.signal).then(value => {
+        if (!request.signal.aborted) setHistory({ profile, value });
+      }, () => {
+        if (!request.signal.aborted) setHistory({ profile, value: visibleActivityHistory(profile, true) });
+      });
+    };
+    const visible = () => { if (!document.hidden) refresh(); };
+    refresh();
+    window.addEventListener('focus', visible);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      controller?.abort();
+      window.removeEventListener('focus', visible);
+      document.removeEventListener('visibilitychange', visible);
+    };
+  }, [profile, activityVisible, actionsDisabled]);
   useEffect(() => {
     // A hidden card has no measurable width. Restore the selected day on Camera entry
     // or a range change without moving the page or losing the previous selection.
@@ -35,9 +60,10 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
       }
     }
   }, [range, activityVisible]);
+  const indexed = activityVisible && !actionsDisabled && history?.profile === profile ? history.value : null;
+  const coverage = indexed ?? visibleActivityHistory(profile);
   const { current: trend, previous, deltaSessions, historyLimited } =
-    comparePulsePeriods(profile.workouts, now, range,
-      Math.max(profile.totals?.workouts ?? 0, profile.creditedWorkoutIds?.length ?? 0));
+    comparePulsePeriods(coverage.records, now, range, coverage.expectedCount, coverage.complete ? 'complete' : 'partial');
   const chart = weeklySessionLine(trend.days);
   const observedPoints = historyLimited ? chart.points.filter(point => point.sessions > 0) : chart.points;
   const selected = trend.days.find(day => day.date === selectedDate) ?? trend.days.at(-1);
@@ -125,7 +151,8 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
       </article>
 
       <article className="pulse-trend-card" aria-label="Активность тренировок" hidden={!activityVisible}
-        data-history-limited={historyLimited}>
+        data-history-limited={historyLimited} data-history-index={indexed ? "ready" : "visible"}
+        data-history-known={coverage.records.length} data-history-expected={coverage.expectedCount} data-history-restored={coverage.restoredCount}>
         <div className="pulse-card-heading pulse-trend-heading">
           <ChartNoAxesCombined size={20}/> АКТИВНОСТЬ ТРЕНИРОВОК
           <label className="pulse-range-control">
@@ -234,6 +261,11 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
             </>}
           </div>
         </div>
+        {indexed && <p className="pulse-data-note" data-history-coverage>
+          {historyLimited ? 'Известны ' + coverage.records.length + ' из как минимум ' + coverage.expectedCount + ' тренировок.'
+            : 'Доступна история всех ' + coverage.records.length + ' сохранённых тренировок.'}
+          {coverage.restoredCount > 0 && ' Восстановлено из сохранённых записей: ' + coverage.restoredCount + '.'}
+        </p>}
         <p className="pulse-data-note">{historyLimited
           ? 'История неполная. Точки и числа показывают минимум по доступным записям.'
           : trend.sessions === 0

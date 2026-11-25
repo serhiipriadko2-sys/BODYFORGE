@@ -1,0 +1,128 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T20:17:48.329409+03:00",
+  "owned": [
+    {
+      "path": "src/lib/journalMixedStorage.ts",
+      "bytes": 16043,
+      "sha256": "84a954296938e8e93c9b5be7f84ede0fa1a3f6df7ac621ab54d6f87afe06ec7a"
+    },
+    {
+      "path": "src/lib/journalMixedStorage.test.ts",
+      "bytes": 4197,
+      "sha256": "9f336fc9248d8b602fd39f0a13745335259420cd2ccee3ecfdedf0bbdb3f6989"
+    },
+    {
+      "path": "qa/durable-journal-e2e.mjs",
+      "bytes": 30491,
+      "sha256": "375f35f3ab3e07772b7fe045804462034fec1c11431d475b31b428b63b64f1de"
+    }
+  ],
+  "sourceCount": 330,
+  "buildCount": 73,
+  "sourceManifestSha256": "59df4c0a2c474822fb3d4292bca8decd780717829944e530a493d9e6b39195ea",
+  "buildManifestSha256": "0269e4b965e80473381f02420cc1fa02bdeb17cfc4098d0038b9a6e8a520f119",
+  "liveChangedPaths": [
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarDermalRegions.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/avatarBodyDermal.ts"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 48,
+    "mobile.log": 124,
+    "privacy-server-e2e.mjs": 13
+  },
+  "migrationSample": {
+    "legacy": true,
+    "cancel": true,
+    "activeGuard": true,
+    "abort": true,
+    "race": true,
+    "unverified": true,
+    "retry": true,
+    "reopen": true,
+    "corrupt": true,
+    "rollbackAbort": true,
+    "rollback": true,
+    "rollbackRetry": true,
+    "verified": true,
+    "liveUntouched": true
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89681,
+      "sha256": "0743492e67b54818ee9829b1dbd49eee2651b78916014768f8948fdb00035e78"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202274,
+      "sha256": "97f7d3280582f2303ae3d4fe0ab4aef589603278520451dac70ab1a6d8dadc40"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190242,
+      "sha256": "505ee874f9b3f153d46e039f3e49c5d3f22d65bd60363eaf4c10834e5fb56027"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195697,
+      "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219422,
+      "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 95103,
+      "sha256": "c3d60d4e9499de6d83a520fe97f6d4d2cbef1ebe81a5bfa617d811d875b108df"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93771,
+      "sha256": "eb3d668537fa043c4a69d77747fd00c40c72e1bec2adc8cd346f208e4c9a953d"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148182,
+      "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 90750,
+      "sha256": "61129fd0b0cfcc0fe9844e43ce4be78b041a01b645fab5d9439b5e9bd302d0e3"
+    }
+  ]
+}

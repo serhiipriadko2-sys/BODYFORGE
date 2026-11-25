@@ -180,18 +180,36 @@ try{
   // second direct click; inspect only this disposable browser's fake export.
   await until("!!document.querySelector('#progress-backup [data-action=prepare-progress]:not(:disabled)')", 'backup panel ready', 12000);
   const beforeBackup = await js("localStorage.getItem('bodyforge:pilot:v1')");
+  // Capacity observation is explicit and read-only. Pad only this disposable origin.
+  const capacityBytes = await js("(()=>{localStorage.setItem('bf-qa-capacity-pad','x'.repeat(1600*1024));window.__bfCapacityBefore=Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]);window.__bfPersistCalls=0;Object.defineProperty(navigator.storage,'persist',{configurable:true,value:async()=>{window.__bfPersistCalls++;return false}});return window.__bfCapacityBefore.reduce((n,[k,v])=>n+2*(k.length+v.length),0)})()");
+  await js("document.querySelector('.progress-storage-capacity').open=true;true");
+  await click('[data-action=measure-storage-capacity]');
+  await until("document.querySelector('[data-storage-capacity]')?.dataset.storageCapacity==='observed'", 'storage observation complete', 10000);
+  check(await js("document.querySelector('[data-capacity-warning]')?.dataset.capacityWarning==='advisory'&&Number(document.querySelector('[data-local-storage-bytes]')?.dataset.localStorageBytes)==="+capacityBytes),
+    'storage panel measures observed string size and displays advisory warning');
+  check(await js("JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]))===JSON.stringify(window.__bfCapacityBefore)&&window.__bfPersistCalls===0"),
+    'capacity check performs no local mutation or persistence request');
+  await js("(()=>{localStorage.removeItem('bf-qa-capacity-pad');delete window.__bfCapacityBefore;window.dispatchEvent(new StorageEvent('storage',{key:'bf-qa-capacity-pad',newValue:null}));return true})()");
+  await until("document.querySelector('[data-storage-capacity]')?.dataset.storageCapacity==='idle'", 'capacity invalidated after external change');
+  await click('[data-action=measure-storage-capacity]');
+  await until("document.querySelector('[data-capacity-warning]')?.dataset.capacityWarning==='none'", 'new low-usage observation');
+  check(await js("localStorage.getItem('bf-qa-capacity-pad')===null&&window.__bfPersistCalls===0"),'refresh reports new observation without claiming quota');
+  await js("document.querySelector('.progress-storage-capacity').open=false;true");
+
   await js(`(()=>{
     const actualUrl = URL.createObjectURL.bind(URL);
     const actualClick = HTMLAnchorElement.prototype.click;
     window.__bfExportBlobs = new Map();
     URL.createObjectURL = (blob) => {
       const uri = actualUrl(blob);
-      if (blob.type.includes('application/json')) window.__bfExportBlobs.set(uri, blob);
+      if (blob.type.includes('application/json') || blob.type==='application/gzip') window.__bfExportBlobs.set(uri, blob);
       return uri;
     };
     HTMLAnchorElement.prototype.click = function() {
       if (this.download.startsWith('bodyforge-backup-')) {
-        window.__bfExportSample = { filename: this.download, blob: window.__bfExportBlobs.get(this.href) };
+        const sample={filename:this.download,blob:window.__bfExportBlobs.get(this.href)};
+        if(this.download.endsWith('.gz'))window.__bfArchiveSample=sample;
+        else window.__bfExportSample=sample;
         return;
       }
       return actualClick.call(this);
@@ -212,6 +230,8 @@ try{
     'changed settings invalidate a prepared download');
   await click('#progress-backup [data-action=prepare-progress]');
   await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'", 'refreshed backup assembled', 12000);
+  check(await js("document.querySelector('[data-backup-capacity]')?.dataset.backupCapacity==='within-limit'&&Number(document.querySelector('[data-backup-bytes]')?.dataset.backupBytes)>0"),
+    'prepared file exposes its measured byte size and capacity classification');
   await click('#progress-backup [data-action=download-progress]');
   const saved = JSON.parse(await js(`(async()=>{
     const sample = window.__bfExportSample;
@@ -244,6 +264,34 @@ try{
     'downloaded backup inspection succeeds', 10000);
   check(!!(await js("document.querySelector('.progress-backup-file-checker [role=status]')?.textContent.includes('Структура резервной копии BODYFORGE проверена')")),
     'manual selected-file inspection confirms structure without claiming a restore');
+  // GZIP is an optional exact wrapper around the same v1 backup.
+  await click('[data-action=prepare-progress]');
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'",'gzip source prepared',12000);
+  const archiveSourceBytes = await js("Number(document.querySelector('[data-backup-bytes]').dataset.backupBytes)");
+  await click('[data-action=prepare-progress-archive]');
+  await until("document.querySelector('[data-archive-stage]')?.dataset.archiveStage==='ready'",'gzip round trip verified',20000);
+  const archiveBytes = await js("Number(document.querySelector('[data-archive-bytes]').dataset.archiveBytes)");
+  check(archiveBytes>0&&archiveBytes<archiveSourceBytes,'gzip is smaller than the prepared JSON');
+  await click('[data-action=download-progress-archive]');
+  const archiveSample = await js("(async()=>{const s=window.__bfArchiveSample;const text=await new Response(s.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();const p=JSON.parse(text);return {name:s.filename,bytes:s.blob.size,sourceBytes:new Blob([text]).size,primary:p.storedProfileRaw,version:p.exportSchemaVersion,complete:p.complete}})()");
+  check(archiveSample.name.endsWith('.json.gz')&&archiveSample.bytes===archiveBytes&&archiveSample.sourceBytes===archiveSourceBytes&&archiveSample.primary===beforeBackup&&archiveSample.version===1&&archiveSample.complete,'actual GZIP download preserves exact profile evidence');
+  console.log('GZIP_SAMPLE',JSON.stringify({sourceBytes:archiveSourceBytes,archiveBytes}));
+  await js("(()=>{const input=document.querySelector('[data-action=inspect-progress-file]'),dt=new DataTransfer();dt.items.add(new File([window.__bfArchiveSample.blob],'backup.json.gz',{type:'application/gzip'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+  await until("document.querySelector('[data-import-preview]')?.dataset.importPreview==='preview-ready'",'selected gzip preview ready',10000);
+  check(await js("document.querySelector('.progress-backup-file-checker').dataset.inspectionState==='readable'"),'selected gzip uses the existing strict comparison');
+  await js("(async()=>{const data=new Uint8Array(await window.__bfArchiveSample.blob.arrayBuffer());data[data.length-8]^=1;const input=document.querySelector('[data-action=inspect-progress-file]'),dt=new DataTransfer();dt.items.add(new File([data],'corrupt.json.gz',{type:'application/gzip'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='invalid'",'corrupt gzip rejected',10000);
+  check(await js("!document.querySelector('[data-import-preview]')&&localStorage.getItem('bodyforge:pilot:v1')!==null"),'corrupt archive exposes no comparison');
+  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===beforeBackup,'gzip export and inspection never rewrite the wallet');
+  // A stale prepared archive must be invalidated just like the JSON.
+  await click('[data-action=prepare-progress]');
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'",'stale test source ready',12000);
+  await click('[data-action=prepare-progress-archive]');
+  await until("document.querySelector('[data-archive-stage]')?.dataset.archiveStage==='ready'",'stale test archive ready',20000);
+  await js("window.dispatchEvent(new StorageEvent('storage',{key:'bodyforge:avatar-look:v1'}));true");
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='idle'&&!document.querySelector('[data-action=download-progress-archive]')",'archive invalidated by another tab');
+  check(await js("!document.querySelector('[data-action=download-progress-archive]')"),'stale gzip is not offered for download');
+
   await js(`(()=>{
     const input=document.querySelector('[data-action=inspect-progress-file]');
     const transfer=new DataTransfer();
@@ -278,6 +326,53 @@ try{
     'cross-tab race is never presented as a complete backup');
   check((await js("localStorage.getItem('bodyforge:pilot:v1')"))===beforeBackup,
     'inspecting downloaded, broken or stale backup never rewrites wallet and rewards');
+
+  // Read-only preview on a synthetic settled history in this disposable profile.
+  const checkpointSeed=await js("(async()=>{const k='bodyforge:pilot:v1';return navigator.locks.request(k+':write',()=>navigator.locks.request(k+':durable-write',{mode:'exclusive'},async()=>{const db=await new Promise((res,rej)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});try{const rows=Array.from({length:4},(_,i)=>({schemaVersion:1,key:k+':result:qa-checkpoint-'+i,raw:JSON.stringify({opaqueTest:i}),baseProfileRaw:'checkpoint history '.repeat(1024),state:'settled'}));await new Promise((res,rej)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});for(const row of rows)tx.objectStore('results').add(row);tx.oncomplete=res;tx.onabort=tx.onerror=()=>rej(Error('checkpoint fixture failed'))});return rows.length}finally{db.close()}}))})()");
+  check(checkpointSeed===4,'disposable journal includes four exact repeated checkpoint snapshots');
+  await js("(async()=>{window.__bfCheckpointBefore=await new Promise((resolve,reject)=>{const open=indexedDB.open('bodyforge:durable-results:v1',1);open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=db.transaction('results','readonly'),r=tx.objectStore('results').getAll();tx.oncomplete=()=>{db.close();resolve(JSON.stringify(r.result))};tx.onabort=tx.onerror=()=>{db.close();reject(tx.error)}}});return true})()");
+  await click('[data-action=prepare-progress]');
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'",'checkpoint source prepared',12000);
+  await js("document.querySelector('[data-checkpoint-preview]').open=true;true");
+  await click('[data-action=estimate-journal-checkpoints]');
+  await until("document.querySelector('[data-checkpoint-preview]')?.dataset.checkpointPreview==='ready'",'checkpoint preview measured',20000);
+  const measured=await js("(()=>{const size=document.querySelector('[data-checkpoint-original]');return {sample:Number(document.querySelector('[data-checkpoint-sample]').dataset.checkpointSample),original:Number(size.dataset.checkpointOriginal),packed:Number(size.dataset.checkpointPacked)}})()");
+  check(measured.sample===4&&measured.packed<measured.original,'UI reports bounded actual checkpoint sample savings');
+  console.log('CHECKPOINT_UI_SAMPLE',JSON.stringify(measured));
+  check(await js("(async()=>{const rows=await new Promise((resolve,reject)=>{const open=indexedDB.open('bodyforge:durable-results:v1',1);open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=db.transaction('results','readonly'),r=tx.objectStore('results').getAll();tx.oncomplete=()=>{db.close();resolve(JSON.stringify(r.result))};tx.onabort=tx.onerror=()=>{db.close();reject(tx.error)}}});return rows===window.__bfCheckpointBefore})()")&&await js("localStorage.getItem('bodyforge:pilot:v1')")===beforeBackup,'checkpoint estimate preserves exact journal and wallet');
+  await js("window.dispatchEvent(new StorageEvent('storage',{key:'bodyforge:avatar-look:v1'}));true");
+  await until("document.querySelector('#progress-backup')?.dataset.backupStage==='idle'&&!document.querySelector('[data-checkpoint-preview]')",'stale checkpoint preview invalidated');
+  check(await js("!document.querySelector('[data-checkpoint-preview]')"),'stale checkpoint estimate not presented as current');
+  await js("(async()=>{const k='bodyforge:pilot:v1';return navigator.locks.request(k+':write',()=>navigator.locks.request(k+':durable-write',{mode:'exclusive'},async()=>{const db=await new Promise((res,rej)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});try{await new Promise((res,rej)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});for(let i=0;i<4;i++)tx.objectStore('results').delete(k+':result:qa-checkpoint-'+i);tx.oncomplete=res;tx.onabort=tx.onerror=()=>rej(Error('checkpoint fixture cleanup failed'))});delete window.__bfCheckpointBefore;return true}finally{db.close()}}))})()");
+  // Oversized opaque IndexedDB evidence; only the disposable QA origin is seeded.
+  const largeFixture = await js("(async()=>{const k='bodyforge:pilot:v1';return navigator.locks.request(k+':write',()=>navigator.locks.request(k+':durable-write',{mode:'exclusive'},async()=>{const db=await new Promise((res,rej)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});try{const row={schemaVersion:1,key:k+':result:qa-large-evidence',raw:'{}',baseProfileRaw:'я'.repeat(8*1024*1024),state:'quarantined'};await new Promise((res,rej)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});tx.objectStore('results').add(row);tx.oncomplete=res;tx.onabort=tx.onerror=()=>rej(Error('large fixture failed'))});return row.baseProfileRaw.length}finally{db.close()}}))})()");
+  check(largeFixture===8*1024*1024,'disposable journal contains oversized multibyte evidence');
+  await click('[data-action=prepare-progress]');
+  await until("document.querySelector('[data-backup-capacity]')?.dataset.backupCapacity==='oversize'",'oversize prepared warning',20000);
+  check(await js("Number(document.querySelector('[data-backup-bytes]')?.dataset.backupBytes)>16*1024*1024&&document.querySelector('[data-action=download-progress]')?.textContent.includes('ДЛЯ РАЗБОРА')&&document.querySelector('[data-backup-status]')?.textContent.includes('Не очищай')"),
+    'oversize evidence download is not presented as an inspectable backup');
+  await click('[data-action=prepare-progress-archive]');
+  await until("document.querySelector('[data-archive-stage]')?.dataset.archiveStage==='ready'",'oversized gzip evidence prepared',30000);
+  check(await js("document.querySelector('[data-action=download-progress-archive]').textContent.includes('ДЛЯ РАЗБОРА')&&Number(document.querySelector('[data-archive-bytes]').dataset.archiveBytes)<16*1024*1024"),'small gzip still warns about oversized inflated JSON');
+  await click('[data-action=download-progress-archive]');
+  const gzipEvidence=await js("(async()=>{const s=window.__bfArchiveSample,text=await new Response(s.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text(),p=JSON.parse(text),row=p.durableResults.find(x=>x.key==='bodyforge:pilot:v1:result:qa-large-evidence');return {bytes:s.blob.size,sourceBytes:new Blob([text]).size,exact:row?.baseProfileRaw==='я'.repeat(8*1024*1024)&&p.storedProfileRaw!==null}})()");
+  check(gzipEvidence.exact&&gzipEvidence.sourceBytes>16*1024*1024&&gzipEvidence.bytes<gzipEvidence.sourceBytes,'oversize gzip preserves original journal evidence');
+  console.log('GZIP_LARGE_SAMPLE',JSON.stringify(gzipEvidence));
+  await js("(()=>{const input=document.querySelector('[data-action=inspect-progress-file]'),dt=new DataTransfer();dt.items.add(new File([window.__bfArchiveSample.blob],'large.json.gz',{type:'application/gzip'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='invalid'",'inflated gzip over limit rejected',20000);
+  check(await js("document.querySelector('[data-inspection-result]').textContent.includes('Распакованный JSON')&&!document.querySelector('[data-import-preview]')"),'gzip cannot bypass the decoded size limit');
+  await click('[data-action=prepare-progress]');
+  await until("document.querySelector('[data-backup-capacity]')?.dataset.backupCapacity==='oversize'",'plain evidence remains available',20000);
+
+  await click('[data-action=download-progress]');
+  const largeExport = await js("(async()=>{const sample=window.__bfExportSample,value=JSON.parse(await sample.blob.text());const row=value.durableResults.find(r=>r.key==='bodyforge:pilot:v1:result:qa-large-evidence');return {name:sample.filename,size:sample.blob.size,rawPreserved:row?.raw==='{}'&&row?.baseProfileRaw==='я'.repeat(8*1024*1024),profile:value.storedProfileRaw}})()");
+  check(largeExport.name.startsWith('bodyforge-backup-evidence-')&&largeExport.size>16*1024*1024&&largeExport.rawPreserved&&largeExport.profile===beforeBackup,
+    'large export retains exact original evidence and unchanged wallet');
+  await js("(()=>{const input=document.querySelector('[data-action=inspect-progress-file]'),transfer=new DataTransfer();transfer.items.add(new File([window.__bfExportSample.blob],'large-evidence.json',{type:'application/json'}));input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+  await until("document.querySelector('.progress-backup-file-checker')?.dataset.inspectionState==='invalid'",'oversize import preflight rejected',10000);
+  check(await js("!document.querySelector('[data-import-preview]')&&document.querySelector('[data-inspection-result]')?.textContent.includes('16 МБ')"),'actual selected oversize file is refused before import');
+  await js("(async()=>{const k='bodyforge:pilot:v1';return navigator.locks.request(k+':write',()=>navigator.locks.request(k+':durable-write',{mode:'exclusive'},async()=>{const db=await new Promise((res,rej)=>{const r=indexedDB.open('bodyforge:durable-results:v1',1);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});try{await new Promise((res,rej)=>{const tx=db.transaction('results','readwrite',{durability:'strict'});tx.objectStore('results').delete(k+':result:qa-large-evidence');tx.oncomplete=res;tx.onabort=tx.onerror=()=>rej(Error('fixture cleanup failed'))});window.__bfExportBlobs.clear();delete window.__bfExportSample;delete window.__bfArchiveSample;return true}finally{db.close()}}))})()");
+  check(await js("localStorage.getItem('bodyforge:pilot:v1')")===beforeBackup,'large backup and rejected import never rewrite the wallet');
   await cdp('Emulation.setDeviceMetricsOverride',{width:320,height:740,deviceScaleFactor:1,mobile:true});
   await sleep(300);
   const narrowBackup=await read("(()=>{const card=document.querySelector('#progress-backup');card.scrollIntoView({block:'start',behavior:'instant'});const box=card.querySelector('[data-action=inspect-progress-file]').getBoundingClientRect();return {width:innerWidth,scroll:document.documentElement.scrollWidth,inputRight:box.right,inputLeft:box.left}})()");

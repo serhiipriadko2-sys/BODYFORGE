@@ -42,6 +42,8 @@ export interface AvatarLook {
   hairStyle?: HairStyle;
   trim: TrimTone;
   visor: boolean;
+  /** Optional v1 cosmetic flag. Old saves are shirtless until explicitly dressed. */
+  shirt?: boolean;
 }
 export const DEFAULT_AVATAR_LOOK: Readonly<AvatarLook> = Object.freeze({
   version: 1, skin: 'sand', hair: 'ink', trim: 'glacier', visor: false, hairStyle: 'crop',
@@ -59,10 +61,11 @@ export function parseAvatarLook(raw: string | null): AvatarLook | null {
     if (v.version !== 1 || !includesId(SKIN_TONES, v.skin) ||
         !includesId(HAIR_TONES, v.hair) || !includesId(TRIM_TONES, v.trim) ||
         (v.hairStyle !== undefined && !includesId(HAIR_STYLES, v.hairStyle)) ||
-        typeof v.visor !== 'boolean') return null;
+        typeof v.visor !== 'boolean' || (v.shirt !== undefined && typeof v.shirt !== 'boolean')) return null;
     return { version: 1, skin: v.skin as SkinTone, hair: v.hair as HairTone,
       trim: v.trim as TrimTone, visor: v.visor,
-      ...(v.hairStyle === undefined ? {} : { hairStyle: v.hairStyle as HairStyle }), };
+      ...(v.hairStyle === undefined ? {} : { hairStyle: v.hairStyle as HairStyle }),
+      ...(v.shirt === undefined ? {} : { shirt: v.shirt as boolean }), };
   } catch { return null; }
 }
 export type LookRead = { status: 'ready' | 'invalid' | 'unavailable'; look: AvatarLook };
@@ -79,12 +82,15 @@ export function readAvatarLook(store?: Pick<Storage, 'getItem'>): LookRead {
 export function saveAvatarLook(look: AvatarLook, store?: Pick<Storage, 'getItem' | 'setItem'>): boolean {
   const raw = JSON.stringify(look);
   const valid = parseAvatarLook(raw);
-  if (!valid || JSON.stringify(valid) !== raw) return false;
+  if (!valid || Object.keys(valid).length !== Object.keys(look).length ||
+      !Object.keys(look).every(key => Object.hasOwn(valid, key) && Object.is(look[key as keyof AvatarLook], valid[key as keyof AvatarLook]))) return false;
+  // Persist canonical field order regardless of the order of UI actions.
+  const canonical = JSON.stringify(valid);
   try {
     const storage = store ?? (typeof window === 'undefined' ? undefined : window.localStorage);
     if (!storage) return false;
-    storage.setItem(AVATAR_LOOK_KEY, raw);
-    return storage.getItem(AVATAR_LOOK_KEY) === raw;
+    storage.setItem(AVATAR_LOOK_KEY, canonical);
+    return storage.getItem(AVATAR_LOOK_KEY) === canonical;
   } catch { return false; }
 }
 /** Every material receives a validated, finite six-digit color. */

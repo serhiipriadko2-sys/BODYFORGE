@@ -1,0 +1,9 @@
+{
+  "entry": "index-AnS-iAfD.js",
+  "sha256": "7ab6276752ef440234c1e07a39e30d998a41c98c986a731c1ecb4cdfcc8c5abf",
+  "origin": "http://127.0.0.1:61944",
+  "qa_sha256": "2c4ab558135b1054b35c8e2d6379e416c6053458e2122a500ef3a7e31d85bb98",
+  "app_sha256": "aed7c608fa02371bf5bc6aaf0620e135a94e37d38ded08ab208de903e512cc3d",
+  "exit": 16,
+  "preview_stopped": true
+}

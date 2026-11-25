@@ -1,0 +1,11 @@
+{
+  "src/lib/backupArchive.ts": "da43b805f52f4506045fdae15e78be24f42753272f1aad0845f9485a3db48489",
+  "src/lib/backupArchive.test.ts": "9ffde048b410d228c5b6bfbb26df0cd31b369cb004b019917b2db3541dd7f8ee",
+  "src/lib/progressImportPreview.ts": "cc85af6b931d5ba6093d537ced81e9ab77201e021088a8620e2f3185abf1a051",
+  "src/lib/progressImportPreview.test.ts": "e018e757cfe2e89630a4e0144ab41193baee328a1f4e37a22a54fe9aeaa61c57",
+  "src/lib/progressBackup.ts": "d4098f57f38ab3ca1206eed32532cd8098dda67b5bab9dc6a337359b72a4367b",
+  "src/components/ProgressBackupPanel.tsx": "63b0d4e7bba2b463b7938cfc3c0ada32705c3c3355a4567332ee8a154623f3d1",
+  "src/components/progressBackup.css": "0c7a1b487e9bcc30a8a01e0e8800411b46afb3c5447ee8e1c22c52de0c324f84",
+  "qa/mobile-e2e.mjs": "c6588ef16d7852fc3631d7d13bdf011ff5d5e4182c9df3f1d796f4baa449bcc6",
+  "qa/import-preview-e2e.mjs": "fe83e87ed9c6d0527dbfce7451a3d535b67503ea1d0b567ced5808a2b964ec2e"
+}

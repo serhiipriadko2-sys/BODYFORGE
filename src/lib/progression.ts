@@ -302,6 +302,97 @@ function writeVerified(key: string, raw: string): boolean {
   return localStorage.getItem(key) === raw;
 }
 
+/** Opaque recovery evidence; never merged into a current wallet. */
+function preserveProfileOriginal(raw: string): boolean {
+  for (let index = 0; index < 1000; index += 1) {
+    const key = QUARANTINE_PREFIX + index;
+    const existing = localStorage.getItem(key);
+    if (existing === raw) return true;
+    if (existing === null) return writeVerified(key, raw);
+  }
+  return false;
+}
+
+function hasDetailedHistory(raw: string | null): raw is string {
+  if (raw === null) return false;
+  try {
+    const value: unknown = JSON.parse(raw);
+    return validProfileRoot(value) && value.workouts.length >= 60;
+  } catch { return false; }
+}
+
+
+/** JSON structural equality: stored object field order is not a workout fact. */
+function sameStoredValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) &&
+    a.length === b.length && a.every((value, i) => sameStoredValue(value, b[i]));
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  const left = a as Record<string, unknown>, right = b as Record<string, unknown>;
+  return Object.keys(left).length === Object.keys(right).length &&
+    Object.keys(left).every(key => Object.prototype.hasOwnProperty.call(right, key) &&
+      sameStoredValue(left[key], right[key]));
+}
+
+/** File replacement must not erase or rewrite any available original record.
+ * Callers validate both full profile strings before using this predicate. */
+export function preservesStoredWorkoutHistory(beforeRaw: string, afterRaw: string): boolean {
+  try {
+    const before: unknown = JSON.parse(beforeRaw), after: unknown = JSON.parse(afterRaw);
+    if (!validProfileRoot(before) || !validProfileRoot(after)) return false;
+    const next = new Map(after.workouts.map(row => [row.id, row]));
+    const seen = new Set<string>();
+    return next.size === after.workouts.length && before.workouts.every(row => {
+      if (!row || !validWorkoutId(row.id) || seen.has(row.id)) return false;
+      seen.add(row.id);
+      return next.has(row.id) && sameStoredValue(row, next.get(row.id));
+    });
+  } catch { return false; }
+}
+
+/** Last 60 is a view limit, not a license to delete detailed originals.
+ * When a write would cross the cap, keep the same v1 stored shape with an
+ * uncapped array. The existing quota/read-back checks remain the hard boundary.
+ * Never invent an old date, reissue a grant or adopt another fighter's rows. */
+function prepareStoredProfile(profile: Profile, raw: string | null): { next: string; retained: boolean } | null {
+  const normalized = parseProfile(profile);
+  const prior: unknown = raw === null ? null : JSON.parse(raw);
+  if (raw !== null && !validProfileRoot(prior)) return null;
+  const priorRows = validProfileRoot(prior) ? prior.workouts : [];
+  const recentIds = new Set(normalized.workouts.map(row => row.id));
+  const retentionNeeded = profile.workouts.length > 60 || priorRows.length > 60 ||
+    ((priorRows.length === 60 || normalized.workouts.length === 60) &&
+      priorRows.some(row => !row || !recentIds.has(row.id)));
+  if (!retentionNeeded) return { next: JSON.stringify(normalized), retained: false };
+  if (validProfileRoot(prior) && 'profileId' in prior && prior.profileId !== undefined &&
+      prior.profileId !== normalized.profileId) return null;
+
+  const originals = new Map<string, { original: Workout; normalized: Workout }>();
+  // Prior rows own their original metadata; the proposed view may have
+  // normalized optional fields but cannot change facts under an existing ID.
+  for (const source of [priorRows, profile.workouts]) {
+    const seen = new Set<string>();
+    for (const row of source) {
+      const parsed = parseProfile({ xp: 0, coins: 0, workouts: [row] }).workouts[0];
+      if (!parsed || !validWorkoutId(parsed.id) || seen.has(parsed.id)) return null;
+      seen.add(parsed.id);
+      const known = originals.get(parsed.id);
+      if (known && !sameStoredValue(known.normalized, parsed)) return null;
+      if (!known) originals.set(parsed.id, { original: row, normalized: parsed });
+    }
+  }
+
+  // Keep recent order identical to the intended display and the remaining
+  // supplied/prior order stable. Preserve original objects, including receipts.
+  const ordered = new Set([...normalized.workouts.map(row => row.id),
+    ...profile.workouts.map(row => row.id), ...priorRows.map(row => row.id)]);
+  const workouts = Array.from(ordered, id => originals.get(id)!.original);
+  const retained = { ...normalized, workouts };
+  // A missing identity, lowered total or changed visible order must block.
+  // Do not let the compatibility reader silently rebuild an authorization.
+  if (!sameStoredValue(parseProfile(retained), normalized)) return null;
+  return { next: JSON.stringify(retained), retained: true };
+}
 /** Acknowledges only this write's verified revision. Another tab may change the
  * primary immediately afterwards; its revision must never be adopted as ours. */
 export function saveProfile(profile: Profile, options: { expectedRaw?: string | null } = {}): ProfileWriteResult {
@@ -316,15 +407,30 @@ export function saveProfile(profile: Profile, options: { expectedRaw?: string | 
     // Recheck on every save, including the initial React effect and other tabs' changes.
     if (raw !== null && !previous) return { status: 'recovery-required' };
     if (raw === null && localStorage.getItem(PROFILE_BACKUP_KEY) !== null) return { status: 'recovery-required' };
-    const next = JSON.stringify(parseProfile(profile));
+    const prepared = prepareStoredProfile(profile, raw);
+    if (!prepared) return { status: 'recovery-required' };
+    const { next, retained } = prepared;
     // React StrictMode/reload must not replace yesterday's fallback with an
     // identical current snapshot. Seed a backup only when it is missing/invalid.
-    if (previous && JSON.stringify(previous) === next && decodeStoredProfile(localStorage.getItem(PROFILE_BACKUP_KEY))) {
+    const unchanged = previous && (retained && raw !== null
+      ? sameStoredValue(JSON.parse(raw), JSON.parse(next))
+      : JSON.stringify(previous) === next);
+    if (unchanged && decodeStoredProfile(localStorage.getItem(PROFILE_BACKUP_KEY))) {
       if (readUsablePrimary() !== raw) return { status: 'conflict' };
+      if (retained && raw !== null) return { status: 'saved', revision: raw };
       return raw === next || writeVerified(STORAGE_KEY, next)
         ? { status: 'saved', revision: next } : { status: 'unavailable' };
     }
-    const backup = previous ? JSON.stringify(previous) : next;
+    const backup = previous ? (retained && raw !== null ? raw : JSON.stringify(previous)) : next;
+    const oldBackup = localStorage.getItem(PROFILE_BACKUP_KEY);
+    // An older fallback may be the last surviving copy of dates/receipts.
+    // Preserve its exact bytes separately rather than adopting stale balances.
+    if (hasDetailedHistory(oldBackup) && oldBackup !== backup &&
+        !preservesStoredWorkoutHistory(oldBackup, backup) &&
+        !preservesStoredWorkoutHistory(oldBackup, next) &&
+        !preserveProfileOriginal(oldBackup)) return { status: 'unavailable' };
+    if (readUsablePrimary() !== raw || localStorage.getItem(PROFILE_BACKUP_KEY) !== oldBackup)
+      return { status: 'conflict' };
     // Preserve a validated fallback before touching the primary; quota/no-op failures fail closed.
     if (!writeVerified(PROFILE_BACKUP_KEY, backup)) return { status: 'unavailable' };
     if (readUsablePrimary() !== raw) return { status: 'recovery-required' };
@@ -351,19 +457,17 @@ export function recoverProfile(source: 'backup' | 'empty'): ProfileLoadResult {
     if (!restored) return state;
     // If the primary was removed, preserve the surviving backup before a deliberate fresh start.
     const original = raw ?? backupRaw;
-    if (original !== null) {
-      let preserved = false;
-      for (let index = 0; index < 1000; index += 1) {
-        const key = `${QUARANTINE_PREFIX}${index}`;
-        const existing = localStorage.getItem(key);
-        if (existing === original) { preserved = true; break; }
-        if (existing === null) { preserved = writeVerified(key, original); break; }
-      }
-      if (!preserved) return { ...state, status: 'unavailable' };
-    }
+    if (original !== null && !preserveProfileOriginal(original))
+      return { ...state, status: 'unavailable' };
+    if (source === 'empty' && hasDetailedHistory(backupRaw) && backupRaw !== original &&
+        !preserveProfileOriginal(backupRaw)) return { ...state, status: 'unavailable' };
     // A changed primary is never overwritten using a stale recovery decision.
-    if (readUsablePrimary() !== raw) return loadProfileState();
-    if (!writeVerified(STORAGE_KEY, JSON.stringify(restored))) return { ...state, status: 'unavailable' };
+    if (readUsablePrimary() !== raw || localStorage.getItem(PROFILE_BACKUP_KEY) !== backupRaw)
+      return loadProfileState();
+    // Preserve uncapped originals on explicit restore, not merely the display view.
+    const restoredRaw = source === 'backup' && backupRaw !== null &&
+      JSON.parse(backupRaw).workouts.length > 60 ? backupRaw : JSON.stringify(restored);
+    if (!writeVerified(STORAGE_KEY, restoredRaw)) return { ...state, status: 'unavailable' };
     return loadProfileState();
   } catch {
     return { ...state, status: 'unavailable' };

@@ -1,0 +1,77 @@
+{
+  "status": "LOCK_METADATA_ONLY",
+  "added": [
+    {
+      "path": "node_modules/@emnapi/core",
+      "version": "2.0.0-beta.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A=="
+    },
+    {
+      "path": "node_modules/@emnapi/runtime",
+      "version": "2.0.0-beta.2",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-JcrSPzPvZuNZvJqPTF9Fw25LbOJ8avzFVlaf2grmH4Cku0oGP47tRgqPZadcfj3YoZMHkFVnCYFbQM8I+i5QEw=="
+    },
+    {
+      "path": "node_modules/@emnapi/wasi-threads",
+      "version": "2.2.0",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw=="
+    },
+    {
+      "path": "node_modules/@napi-rs/wasm-runtime",
+      "version": "1.2.6",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-mRyDmEw9/fCDXCGfL1sbgIw/GUK0PVxRW4YwgPN61F3LQ+fSyoBFarJVzgGyhF6kRzEQZ0FejDqm4WLXSeqQmw=="
+    },
+    {
+      "path": "node_modules/@rolldown/binding-wasm32-wasi",
+      "version": "1.2.19",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": [
+        "wasm32"
+      ],
+      "integrity": "sha512-7EH+skOsl5qpWnK0vzamgJFhOv1cwxQpsxm8tI883K9fur5c27p8q87fzEO6BbBPabA2/+s/zR63/pLc137iOg=="
+    },
+    {
+      "path": "node_modules/@tybys/wasm-util",
+      "version": "0.10.5",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-dOGOPxlaNV+G046mZzN+9C0dAcQZeSKcXiVaM0TYy/LM4ttTmgSBDxYfovcYI8Em3+eAbiAYpvWLOv8+ZVRJKA=="
+    },
+    {
+      "path": "node_modules/tslib",
+      "version": "2.9.1",
+      "license": "0BSD",
+      "dev": true,
+      "optional": true,
+      "cpu": null,
+      "integrity": "sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA=="
+    }
+  ],
+  "installed": {
+    "vite": "8.3.4",
+    "rolldown": "1.2.14"
+  },
+  "root_unchanged": true,
+  "downloaded_packages": false,
+  "installation_approved": false
+}

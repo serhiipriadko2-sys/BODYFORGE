@@ -1,0 +1,26 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 17361,
+    "sha256": "4124c7f6da6ffb8761380868dc39ea79ed585ff0b127d02cb9677863c4bcc03d"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8335,
+    "sha256": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8192,
+    "sha256": "ee0210fe889559261b5ea4b5308bee19421a9b231e488e250898c4d78ecda5ec"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/jack-replay-e2e.mjs": {
+    "bytes": 13648,
+    "sha256": "6f7b35efe922adeaf3b3ec206c432caec251db994290fb2db7f02feefffcedbc"
+  }
+}

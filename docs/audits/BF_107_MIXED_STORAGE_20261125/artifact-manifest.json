@@ -1,0 +1,192 @@
+[
+  {
+    "path": "browser/bf-qa-mobile-360-premium.png",
+    "bytes": 89681,
+    "sha256": "0743492e67b54818ee9829b1dbd49eee2651b78916014768f8948fdb00035e78"
+  },
+  {
+    "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+    "bytes": 125126,
+    "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge-upgraded.png",
+    "bytes": 202274,
+    "sha256": "97f7d3280582f2303ae3d4fe0ab4aef589603278520451dac70ab1a6d8dadc40"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge.png",
+    "bytes": 190242,
+    "sha256": "505ee874f9b3f153d46e039f3e49c5d3f22d65bd60363eaf4c10834e5fb56027"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-360-premium.png",
+    "bytes": 195697,
+    "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-premium.png",
+    "bytes": 219422,
+    "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+  },
+  {
+    "path": "browser/bf-qa-mobile-lenses.png",
+    "bytes": 95103,
+    "sha256": "c3d60d4e9499de6d83a520fe97f6d4d2cbef1ebe81a5bfa617d811d875b108df"
+  },
+  {
+    "path": "browser/bf-qa-mobile-performance-panel.png",
+    "bytes": 93771,
+    "sha256": "eb3d668537fa043c4a69d77747fd00c40c72e1bec2adc8cd346f208e4c9a953d"
+  },
+  {
+    "path": "browser/bf-qa-mobile-setup.png",
+    "bytes": 148182,
+    "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+  },
+  {
+    "path": "browser/bf-qa-mobile-tower.png",
+    "bytes": 90750,
+    "sha256": "61129fd0b0cfcc0fe9844e43ce4be78b041a01b645fab5d9439b5e9bd302d0e3"
+  },
+  {
+    "path": "build-manifest.json",
+    "bytes": 13126,
+    "sha256": "0269e4b965e80473381f02420cc1fa02bdeb17cfc4098d0038b9a6e8a520f119"
+  },
+  {
+    "path": "build.log",
+    "bytes": 2824,
+    "sha256": "62d4e635c9fefb7861871b48e38abb0d443660b37c3f06bd6c78c1d634115885"
+  },
+  {
+    "path": "bundle.log",
+    "bytes": 285,
+    "sha256": "5fdbb7d2a49db1c04f33ca0e4164f1b8cbff462a6d3c71974ad4e5eed7a6182e"
+  },
+  {
+    "path": "dev-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "dev.log",
+    "bytes": 48,
+    "sha256": "9e304a7ae960f31a9e1ae73808bc0dad6bece41cd13ea31170ca77211ec75396"
+  },
+  {
+    "path": "durable-journal-e2e.mjs.before",
+    "bytes": 21954,
+    "sha256": "6a6eb254bb56d1627485111476635c041ff0dbdf094c7775f5802579fac6461c"
+  },
+  {
+    "path": "final-readback.json",
+    "bytes": 3666,
+    "sha256": "0242e47e3e4d27b8348e9076f5e0d05fbaeee012c3beaed7c90aed9bb3e7e6fd"
+  },
+  {
+    "path": "finalize-corrected.py",
+    "bytes": 10032,
+    "sha256": "542453a41a15ac9f5b2507779f118a95640e5531f66ebb7e3ec67b74ac5adf4d"
+  },
+  {
+    "path": "finalize.py",
+    "bytes": 9818,
+    "sha256": "75f16ad42a7d64fee4291d29297cdb6d5293fa9192595ae053eb70e7cd0a1734"
+  },
+  {
+    "path": "focused-exit.txt",
+    "bytes": 3,
+    "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+  },
+  {
+    "path": "focused.log",
+    "bytes": 515,
+    "sha256": "1bc221eca41013045997c85d240f929bd9851ee776b2010c25d220380854aac0"
+  },
+  {
+    "path": "freeze-corrected.py",
+    "bytes": 2210,
+    "sha256": "2ae06663f8124103b39c12d412b1d8ca5986752746d35ad5c2ff94416167e199"
+  },
+  {
+    "path": "freeze.py",
+    "bytes": 2209,
+    "sha256": "18e19d19accf6391c08e4ca3e05f952eeb6bd7810301a56e0e12b15a1d1839eb"
+  },
+  {
+    "path": "gates.json",
+    "bytes": 854,
+    "sha256": "e7320fa7c391beac9c8042a6108f7fb0ab5a1886d8f7134e0cb4e93646cc295e"
+  },
+  {
+    "path": "head.txt",
+    "bytes": 42,
+    "sha256": "3b26cb5db3606dc6aabe752b22e563f5baa65d996248695e41c77dd00210d5cc"
+  },
+  {
+    "path": "journal.log",
+    "bytes": 3987,
+    "sha256": "9bd670119413388324ca89fff5025a217efa28c4122c79befc6e7c8d7f7cb901"
+  },
+  {
+    "path": "mobile.log",
+    "bytes": 10334,
+    "sha256": "6e18936be7b7a45b8f4af838fdc677eaa9f67b44cd89c7bdad8e8d5fbffde6c0"
+  },
+  {
+    "path": "owned.json",
+    "bytes": 319,
+    "sha256": "9a45a9fb9dc2f359138d2b8fb4fe17ed8a144aa576fa249fa0e34e9a10fb2c5c"
+  },
+  {
+    "path": "patch-qa.py",
+    "bytes": 9243,
+    "sha256": "a39293ceccf8b8a69393c559c5b05d5e78f96aa3d1e63a1d1a7bb2078babd9e9"
+  },
+  {
+    "path": "preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "preview.log",
+    "bytes": 39,
+    "sha256": "df57aa030c8fcddf399f61d43ae2ffb4c69fdc1a75b8d112360d9515b5e30c25"
+  },
+  {
+    "path": "privacy-server-e2e.mjs",
+    "bytes": 777,
+    "sha256": "63ce23dcbb1ede906f06793262b1fed2438b26d83689f21c029ca9ba667faea3"
+  },
+  {
+    "path": "RECEIPT.md",
+    "bytes": 4518,
+    "sha256": "ad8c4ec4aac0ab074282005dfeb36f52da0fdb467ebaa9b16c293bcc281e6f9e"
+  },
+  {
+    "path": "source.json",
+    "bytes": 52444,
+    "sha256": "59df4c0a2c474822fb3d4292bca8decd780717829944e530a493d9e6b39195ea"
+  },
+  {
+    "path": "tsc-initial-exit.txt",
+    "bytes": 3,
+    "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+  },
+  {
+    "path": "tsc-initial.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "unit.log",
+    "bytes": 16900,
+    "sha256": "8ad5929561a0552b1d6d37a07c78dff67ca85941cb84b8189a49b51f8add3dfa"
+  }
+]

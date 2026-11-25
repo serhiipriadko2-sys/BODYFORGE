@@ -1,0 +1,40 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 300,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "owned": {
+    "src/App.tsx": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503",
+    "src/lib/camera.ts": "c486ff257e0cd95476cd387cba3994107bf080162c37f6f5879319df8ea51ef2",
+    "src/lib/camera.test.ts": "6277207b3f5390bae07f228766f631d20507c0d20d8df5e8c5210cf649e1c2ab",
+    "qa/camera-frame-gate-e2e.mjs": "2c4ab558135b1054b35c8e2d6379e416c6053458e2122a500ef3a7e31d85bb98"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "frame-gate": 0,
+    "lifecycle": 0,
+    "tower-final": 0,
+    "camera-runtime": 0,
+    "full-unit": 1
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:62266",
+    "entry": "index-BkDKFDeH.js",
+    "sha256": "3453288bb0b6bfa005fec16197a51c5324e34df0db050a0bfa6fb208b8de73ae",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/forge-home-xp-faq-e2e.mjs",
+    "src/lib/historyRetention.test.ts",
+    "src/lib/profileReplacement.ts",
+    "src/lib/progression.ts",
+    "src/lib/settledImportHistory.ts"
+  ],
+  "live_new": [],
+  "owned_match": true,
+  "finished": "2026-11-25T18:58:55.388870+03:00"
+}

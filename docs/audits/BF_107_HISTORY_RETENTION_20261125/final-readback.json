@@ -1,0 +1,136 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T19:03:11.540611+03:00",
+  "owned": [
+    {
+      "path": "src/lib/progression.ts",
+      "bytes": 25066,
+      "sha256": "cafc31cc4c43f9019cf8c45508bf6c5c84207ee0cee4a1519746bc089e3e4ff6"
+    },
+    {
+      "path": "src/lib/historyRetention.test.ts",
+      "bytes": 8497,
+      "sha256": "1efb043ec62d2770710e076c83bcefbd70e5cdb76922fae2dd1467d8154b2838"
+    },
+    {
+      "path": "src/lib/profileReplacement.ts",
+      "bytes": 19596,
+      "sha256": "b6c4163c487a5545bf85e8f5948566179c2707dc5923371fae3e31d98b532087"
+    },
+    {
+      "path": "src/lib/profileReplacement.test.ts",
+      "bytes": 24005,
+      "sha256": "b3d65e9aa9373cc77ab11573819b321232c7c6557899878b29a0ee24565be1ca"
+    },
+    {
+      "path": "src/lib/settledImportHistory.ts",
+      "bytes": 3848,
+      "sha256": "a7aacc81ad235383c3a53340ec447f12aca5b6e4a876f5170f337d74afc0985d"
+    },
+    {
+      "path": "qa/forge-home-xp-faq-e2e.mjs",
+      "bytes": 33336,
+      "sha256": "e957af783eea976aa19e62c391e44b31a50712c8b3e796b9d55b5a59f185d7d8"
+    }
+  ],
+  "sourceCount": 300,
+  "buildCount": 72,
+  "sourceManifestSha256": "71A83D919817E90CA7C48F97E84C76816944BFF7C6AC011BED0195CF4414EE68",
+  "buildManifestSha256": "14BACBC922805ADEDCEDC3DC1530A9C4E37FF5E6115133E26F4743DFF63F76FB",
+  "liveChangedPaths": [
+    "src/lib/squatCounter.ts"
+  ],
+  "liveNewPaths": [
+    "src/lib/squatReplay.test.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "forge.log": 93,
+    "replacement.log": 73,
+    "import-preview.log": 36,
+    "dedup.log": 34,
+    "privacy.log": 13
+  },
+  "screenshots": [
+    {
+      "path": "browser/camera-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 82788,
+      "sha256": "af9f919f447fe4575bca064454bfcc15987ad5c3f3a48ede0e41ee8293f82e57"
+    },
+    {
+      "path": "browser/camera-activity-30days-360.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 36240,
+      "sha256": "2278e49dbcb8036c5da1cf0657c8094733275e253e818c3836fe5cb294a80cff"
+    },
+    {
+      "path": "browser/forge-avatar-only-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 202640,
+      "sha256": "f736db71cc2ac6c6ba90e7330eaede5ac5343d09aa86101589b78b03b65de8f0"
+    },
+    {
+      "path": "browser/forge-missions-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 97430,
+      "sha256": "b0994226bdd86ee00fcba6cbfe5ab4f3d6d738be061675fad2a634da1db63ab1"
+    },
+    {
+      "path": "browser/home-320-fighter-xp.png",
+      "width": 320,
+      "height": 800,
+      "bytes": 175841,
+      "sha256": "275128eb5d2e60fd666edba3634d14b35932b2e5c78ef77cf0f2a423e1859acc"
+    },
+    {
+      "path": "browser/home-360-fighter-xp.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 194701,
+      "sha256": "acb8db8441a62027812d0f3901daa526f4d7f3a67f7118dca03c424ff4fb07bb"
+    },
+    {
+      "path": "browser/pulse-full-history-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 151588,
+      "sha256": "925eff1391e1c1e311e03105667aba9561e9fb4acd7c86a49cb84db5a0a09025"
+    },
+    {
+      "path": "browser/pulse-incomplete-history-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 144492,
+      "sha256": "a7884706edc21985476374802661fe22c78b23498d82c1e74f551a37c4be5c42"
+    },
+    {
+      "path": "browser/pulse-retained-restore-390.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 149623,
+      "sha256": "4589735fd415015061ebaed32991bfefd788f762a5d5f49a2b83142804dc4970"
+    },
+    {
+      "path": "browser/settings-390-camera-preparation-visible.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 120526,
+      "sha256": "601f8f8a674b28cc169d01a628462349505824726b45245f8dc1ecb7371eaeaf"
+    },
+    {
+      "path": "browser/settings-390-faq-overview.png",
+      "width": 390,
+      "height": 800,
+      "bytes": 83394,
+      "sha256": "5951b3cf191018bbbe2940f934d02bd1661e2fa2993321e43fd6348c9048af47"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 295,
+  "build_count": 72,
+  "initial_source_match": true,
+  "entry": "index-AnS-iAfD.js",
+  "sha256": "7ab6276752ef440234c1e07a39e30d998a41c98c986a731c1ecb4cdfcc8c5abf",
+  "origin": "http://127.0.0.1:61384",
+  "commands": {
+    "lifecycle": 0,
+    "camera-runtime": 0,
+    "tower-final": 0
+  },
+  "preview_stopped": true,
+  "frozen_match_after": true,
+  "live_changed": [
+    "qa/avatar-quality-e2e.mjs",
+    "src/components/Avatar3D.tsx"
+  ],
+  "ended_at": "2026-11-25T18:54:02.540345+03:00"
+}

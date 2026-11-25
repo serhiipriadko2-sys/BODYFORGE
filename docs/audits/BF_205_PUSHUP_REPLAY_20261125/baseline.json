@@ -1,0 +1,30 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 16049,
+    "sha256": "9c68edf823fe44ad6bc4e917147e3e76f316b99026ae91319c29526af6dadf69"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8188,
+    "sha256": "5eaf98ab69507a047c720c16963d78ab3a6b9c97fb509e8fc26d8101f2ef0b2f"
+  },
+  "src/lib/exerciseFraming.test.ts": {
+    "bytes": 6122,
+    "sha256": "ed470ebea299e7243fcf6211357ae1a37c0e3002a0a3d8496fd5b22f5cc06db6"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8027,
+    "sha256": "769d309bbd6a50b2ce4a0da304bc6ff5da85c283a65d34ba86f2b076e8deded6"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/lunge-replay-e2e.mjs": {
+    "bytes": 13388,
+    "sha256": "0d729960c2d20b43270fda8402bb9c5aeae9d3131f32f84f40ed70acdac7aca1"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T19:43:33.017677+03:00",
+  "owned": [
+    {
+      "path": "src/lib/durableJournal.ts",
+      "bytes": 11022,
+      "sha256": "99b5ab24987995dca1845c0c6256e27cb6ddb55958d4d7adf632fd4a99f3b062"
+    },
+    {
+      "path": "qa/durable-journal-e2e.mjs",
+      "bytes": 19094,
+      "sha256": "38415ab1673693948f6efd5c8f13db9c87193adc81ffa1cea08bf81125f7c554"
+    }
+  ],
+  "sourceCount": 317,
+  "buildCount": 73,
+  "sourceManifestSha256": "d69bffd7c3959a067d2d94f97d5371ef5bccddc414b1643e7d0e7c87767a0636",
+  "recheckManifestSha256": "21eff264be761ecedd12e88b00b6a3063ed4d43ffb582d11dd756c18443d6c31",
+  "buildManifestSha256": "b169e2dca1fdecd04d1014f93d519e1398c6b661c2329e17d378a88f6906e533",
+  "onlyRecheckDifference": "qa/durable-journal-e2e.mjs",
+  "liveChangedPaths": [
+    "src/lib/exerciseCounter.ts",
+    "src/lib/trainingCatalog.ts"
+  ],
+  "liveNewPaths": [
+    "qa/knees-replay-e2e.mjs",
+    "src/lib/kneesReplay.test.ts"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "recheck-green.log": 32,
+    "dedup.log": 34,
+    "mobile.log": 118,
+    "privacy.log": 13
+  },
+  "scaling": {
+    "puts": 1,
+    "putKeys": [
+      "bodyforge:pilot:v1:result:scale-active"
+    ],
+    "ack": "saved",
+    "ackCount": 257,
+    "allSettled": true,
+    "exact": true
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89454,
+      "sha256": "4b64d6651b1722feb1218e94824b501a016244533ae6cbb9d06db9929700fb21"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202352,
+      "sha256": "0510ca3ee53de3fdffeb11341c8e4f348113095c648db4224a6dca8201ba2346"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190241,
+      "sha256": "dd15460811db72ed090121a8632e464c8d927b0717c64185d02858eece40ebbf"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195697,
+      "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219422,
+      "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93996,
+      "sha256": "3f87f7c18b6cf237b315e9621b2e666f728507c409ff15f1ece410d5170c25d6"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93342,
+      "sha256": "b8df0eeb2f488b73ab22e5c26e58044418eb3398ea0947bd3700ce661d5569e6"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148182,
+      "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 90913,
+      "sha256": "a230fc780c807bd6f0449437a9ac5d03cfd055c1d1247973a0e85328dda205bf"
+    }
+  ]
+}

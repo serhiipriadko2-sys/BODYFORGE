@@ -1,0 +1,22 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 338,
+  "owned": {
+    "src/App.tsx": "e050140c6d2630b461b67904021ec0d3b19cb9141b48c241e70c0d281001c95c",
+    "src/lib/squatCounter.ts": "5bf166210e230003166df59a6ecedb1e58b70af8754d7be0cf1d5677fdce03e4",
+    "src/lib/exerciseCounter.ts": "93710e78e06445f70ca3a1fbb1eab8b2dc6c1768e0158c347cf04da425b12b14",
+    "src/trainingExperience.css": "5b0f82b6b4827b23dc31b0315ae17fcfbb8d211f1b2bff32d146d6464480a21e",
+    "src/lib/workoutHud.ts": "6b09d81502ddb540c0bb318bf80705e183d5fd43d860cf97c1875eeba6cc7ed9",
+    "src/lib/workoutHud.test.ts": "914c2c5eaeea8b26967d135fbaf5d0678d5e2a860737f9eb6577c8df078465e3",
+    "src/lib/calibrationHudReplay.test.ts": "80ed8dae7f9b0a802ec6f1a80abce6bedcea2ce8a41ba848203e49934b584d7e",
+    "qa/workout-hud-e2e.mjs": "875dd576d20f3a8f1b887a422efea8d3c74241457f3a469885316003c9d1e7b5"
+  },
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "commands": {
+    "syntax": 0,
+    "tsc": 0,
+    "build": 0,
+    "bundle": 1
+  }
+}

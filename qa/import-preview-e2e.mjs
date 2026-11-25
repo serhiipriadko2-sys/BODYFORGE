@@ -97,11 +97,12 @@ async function snapshot() {
     durable: { status: result.status, entries: [...result.entries].sort((a,b) => a.key.localeCompare(b.key)) },
   });
 }
-function selectFixture(payload, kind) {
+async function selectFixture(payload, kind) {
   const input = document.querySelector('[data-action=inspect-progress-file]');
   const contents = kind === 'oversize' ? [new Uint8Array(16*1024*1024+1)] :
-    kind === 'bad-utf8' ? [new Uint8Array([0xc3,0x28])] : [payload];
-  const file = new File(contents, 'bf106-' + kind + '.json', { type: 'application/json' });
+    kind === 'bad-utf8' ? [new Uint8Array([0xc3,0x28])] :
+    kind === 'gzip' ? [await new Response(new Blob([payload]).stream().pipeThrough(new CompressionStream('gzip'))).blob()] : [payload];
+  const file = new File(contents, 'bf106-' + kind + (kind==='gzip'?'.json.gz':'.json'), { type: kind==='gzip'?'application/gzip':'application/json' });
   const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
   input.dispatchEvent(new Event('change', { bubbles: true }));
   return true;
@@ -229,8 +230,8 @@ try {
   await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
   await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings reopened');
   await ev("document.querySelector('.progress-backup-file-checker').open=true");
-  async function requestReplacement(){
-    await choose(backup.json);
+  async function requestReplacement(kind='valid'){
+    await choose(backup.json,kind);
     await until("!!document.querySelector('[data-action=request-file-replacement]')",'compatible file eligible');
     await ev("document.querySelector('[data-action=request-file-replacement]').click()");
     await until("!!document.querySelector('[data-action=confirm-file-replacement]')",'explicit decision offered');
@@ -272,9 +273,11 @@ try {
   await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
   await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings after rollback');
   await ev("document.querySelector('.progress-backup-file-checker').open=true");
-  await requestReplacement();
+  await requestReplacement('gzip');
   await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
-  await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file can be selected again');
+  await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file in gzip can be selected again');
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
+    await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'gzip file replacement stages exact v1 bytes without new authority');
   await reopenAfterDecision('keep');
   check(JSON.stringify(JSON.parse(await ev('('+snapshot.toString()+')()')).durable.entries)===JSON.stringify(settled),
     'accepted paid original remains byte-exact in IndexedDB after reload');

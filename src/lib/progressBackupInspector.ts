@@ -75,7 +75,7 @@ function parseProfileForInspection(raw: string): { workouts: number; ambiguousRe
  * No storage APIs, network calls, or normalization of raw data are used here.
  */
 export function inspectProgressBackupJson(json: string): BackupInspection {
-  if (json.length > MAX_PROGRESS_BACKUP_BYTES) {
+  if (json.length > MAX_PROGRESS_BACKUP_BYTES || new Blob([json]).size > MAX_PROGRESS_BACKUP_BYTES) {
     return invalid('Файл слишком большой для локальной проверки (максимум 16 МБ).');
   }
   let decoded: unknown;

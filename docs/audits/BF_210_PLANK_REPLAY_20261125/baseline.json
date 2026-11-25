@@ -1,0 +1,26 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 19800,
+    "sha256": "66ae266f8ec8fa45d58b44a071702609e441ea2b29fe1f088ac1bc8c78a4d21e"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8335,
+    "sha256": "80242bb283a24005b90451be6bfe54ddfa1e345139f6c336dbe856c30e9fc701"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8755,
+    "sha256": "6ee3267ce58dcc1d1a78ea1517f2655fe1a6367c1f6e551bf5827b03a95d95cc"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/leg-raise-replay-e2e.mjs": {
+    "bytes": 14522,
+    "sha256": "ab850ff28ed16e919c763b50584483e5b4ba6c1493dd6e189b34072870a7002b"
+  }
+}

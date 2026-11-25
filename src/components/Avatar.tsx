@@ -116,13 +116,14 @@ export default function Avatar({ workouts, build = 'lean', muscles, outfit = 'ba
         <path d="M151 369Q163 378 176 362M214 362Q229 378 240 369" />
       </g>}
 
+      {look.shirt === true && <path d={`M${195 - shoulder} 160 Q${195 - shoulder - 8} 182 ${143 - power * 3} 211 L${153 - power * 1.5 - extraWaist} 291 Q${157 - extraWaist} 310 ${160 - extraWaist} 325 L${230 + extraWaist} 325 Q${232 + extraWaist} 317 ${237 + power * 1.5 + extraWaist} 291 L${247 + power * 3} 211 Q${195 + shoulder + 8} 182 ${195 + shoulder} 160 L218 154 Q195 181 172 154Z`} fill={outfit === 'ember' ? '#453130' : outfit === 'steel' ? '#263e53' : '#17212d'} stroke="#121718" strokeWidth="2.5"/>}
       {/* Shorts and belt */}
       <path d="M160 321Q195 331 230 321L242 380L200 383L195 358L190 383L148 380Z" fill={`url(#${id}-shorts)`} stroke="#121718" strokeWidth="2" />
       <path d="M159 324Q195 332 231 323" stroke={accent} strokeWidth="7" fill="none" />
       <rect x="185" y="322" width="20" height="11" rx="3" fill="#222b2d" stroke={accent} strokeWidth="2" />
       {outfit !== 'base' && <g fill="none" stroke={accent} strokeWidth="3" opacity=".9">
         <path d="M157 347L167 355M229 349L221 356" />
-        <path d="M172 160L195 172L219 160" strokeWidth="2" />
+        {look.shirt === true && <path d="M172 160L195 172L219 160" strokeWidth="2" />}
       </g>}
       <path d="M156 367L181 369M207 369L235 366" stroke="#a17965" strokeOpacity=".5" strokeWidth="2" />
 

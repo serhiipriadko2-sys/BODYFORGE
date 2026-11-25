@@ -1,0 +1,12 @@
+{
+  "id": "lower-face-contour-v3",
+  "baseProfile": "bodyforge-facial-planes-v2",
+  "zones": [
+    {"name":"malar-volume","center":[0.052,1.637,0.133],"radius":[0.023,0.020,0.034],"offset":[0.0008,0.0004,0.0015]},
+    {"name":"submalar-plane","center":[0.050,1.606,0.128],"radius":[0.017,0.021,0.032],"offset":[-0.0005,0,-0.0014]},
+    {"name":"mandible-angle","center":[0.052,1.581,0.110],"radius":[0.020,0.026,0.028],"offset":[0.0014,-0.0003,0.0008]},
+    {"name":"chin-bone","center":[0,1.570,0.151],"radius":[0.030,0.015,0.032],"offset":[0,-0.0010,0.0025]},
+    {"name":"nasal-dorsum","center":[0,1.644,0.164],"radius":[0.014,0.013,0.025],"offset":[0,0,-0.0016]},
+    {"name":"nasal-sidewall","center":[0.010,1.638,0.165],"radius":[0.009,0.011,0.019],"offset":[-0.0011,0,-0.0004]}
+  ]
+}

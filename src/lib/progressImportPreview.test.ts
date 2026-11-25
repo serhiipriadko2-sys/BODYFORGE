@@ -3,6 +3,7 @@ import { addCompletedWorkout, parseProfile, type Profile } from './progression';
 import { freshGame } from './game';
 import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
 import { previewProgressImportFile, previewProgressImportJson } from './progressImportPreview';
+import { prepareBackupArchive } from './backupArchive';
 const date = new Date('2026-11-24T12:00:00.000Z');
 const initial: Profile = parseProfile({ profileId: 'qa', xp: 400, coins: 200, creditedWorkoutIds: [],
   workouts: [], game: { ...freshGame(), created: true, outfit: 'ember', ownedOutfits: ['base', 'ember'] } });
@@ -102,6 +103,32 @@ describe('BF-106 local import preview', () => {
     expect((await previewProgressImportFile(new Blob([new Uint8Array([0xc3, 0x28])]), initial)).state).toBe('invalid');
     expect((await previewProgressImportFile({ size: 2, arrayBuffer }, initial)).state).toBe('invalid');
     expect((await previewProgressImportFile({ size: 1, arrayBuffer: async () => { throw Error('read'); } }, initial)).state).toBe('invalid');
+  });
+  it('compares an actual compressed backup with identical strict evidence and no additional authority', async () => {
+    const json = JSON.stringify(envelope({ extra: 'opaque '.repeat(3000) }));
+    const archive = await prepareBackupArchive(json, 'backup.json');
+    if (archive.status !== 'ready') throw Error(archive.status);
+    const comparable = vi.fn();
+    const result = await previewProgressImportFile(archive.blob, initial, comparable);
+    expect(result).toEqual(previewProgressImportJson(json, initial));
+    expect(result.applyAuthorized).toBe(false);
+    expect(comparable).toHaveBeenCalledExactlyOnceWith(json);
+    const signal = new AbortController();
+    signal.abort();
+    comparable.mockClear();
+    expect((await previewProgressImportFile(archive.blob, initial, comparable, signal.signal)).state).toBe('invalid');
+    expect(comparable).not.toHaveBeenCalled();
+  });
+  it('keeps strict duplicate-key validation and inflated byte limit for gzip', async () => {
+    const duplicate = JSON.stringify(envelope()).replace('"complete":true', '"complete":false,"complete":true');
+    const pack = async (json: string) => new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))).blob();
+    const comparable = vi.fn();
+    expect((await previewProgressImportFile(await pack(duplicate), initial, comparable)).state).toBe('invalid');
+    const huge = await pack('я'.repeat(MAX_PROGRESS_BACKUP_BYTES / 2 + 1));
+    const rejected = await previewProgressImportFile(huge, initial, comparable);
+    expect(rejected.state).toBe('invalid');
+    expect(rejected.inspection.message).toContain('Распакованный');
+    expect(comparable).not.toHaveBeenCalled();
   });
   it('captures comparison baseline before asynchronous reading', async () => {
     let finish!: (value: ArrayBuffer) => void;

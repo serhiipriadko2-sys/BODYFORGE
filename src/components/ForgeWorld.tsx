@@ -128,6 +128,13 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
           <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
           </div>
+          <button type="button" className="armory-visor studio-motion-toggle" data-shirt={look.shirt === true ? 'on' : 'off'}
+            aria-label="Футболка" aria-pressed={look.shirt === true}
+            onClick={() => onLookChange({ ...look, shirt: look.shirt !== true })}>
+            <span className="armory-visor-icon"><Shirt size={19}/></span>
+            <span><strong>{look.shirt === true ? 'СНЯТЬ ФУТБОЛКУ' : 'НАДЕТЬ ФУТБОЛКУ'}</strong><small>Открытый торс показывает развитие мышц · бесплатно</small></span>
+            <span className="armory-toggle" aria-hidden="true"><i/></span>
+          </button>
           <button type="button" className="armory-visor studio-motion-toggle" data-avatar-motion
             aria-pressed={animate} onClick={() => setAnimate(value => !value)}>
             <span className="armory-visor-icon"><UserRound size={19}/></span>

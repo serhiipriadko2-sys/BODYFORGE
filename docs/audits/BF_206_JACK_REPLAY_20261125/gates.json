@@ -1,0 +1,37 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 317,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "4124c7f6da6ffb8761380868dc39ea79ed585ff0b127d02cb9677863c4bcc03d",
+    "src/lib/trainingCatalog.ts": "ee0210fe889559261b5ea4b5308bee19421a9b231e488e250898c4d78ecda5ec",
+    "src/lib/jackReplay.test.ts": "e02df1875922560591c02670efd9d148936d6c97e0ff819bc2a6f8579500b91f",
+    "qa/jack-replay-e2e.mjs": "6f7b35efe922adeaf3b3ec206c432caec251db994290fb2db7f02feefffcedbc"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "jack": 0,
+    "pushup": 0,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:50408",
+    "entry": "index-Btl1L9Ys.js",
+    "sha256": "f3f763e6b346536bcaf622bfee764b790b542650b16e0058999fa793809a0c3a",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/durable-journal-e2e.mjs",
+    "src/lib/durableJournal.ts"
+  ],
+  "live_new": [],
+  "owned_match": true,
+  "finished": "2026-11-25T19:39:21.330122+03:00"
+}

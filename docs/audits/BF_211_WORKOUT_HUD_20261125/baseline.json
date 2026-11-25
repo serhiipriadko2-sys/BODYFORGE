@@ -1,0 +1,6 @@
+{
+  "src/App.tsx": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503",
+  "src/lib/squatCounter.ts": "d54e841e62f84fbdb55d8ee1620d813a26b438c3cc4b60a4dd04d8346e3e5ebd",
+  "src/lib/exerciseCounter.ts": "cab4f66ef8a7c26a889b1b993f5f8d7cb668cbca3c32c8306fd88a04b1132eea",
+  "src/trainingExperience.css": "f86e0478672046963330311de215dfa6a3715f7a6ceeef8aa49f383c72e12424"
+}

@@ -1,0 +1,30 @@
+{
+  "src/lib/exerciseCounter.ts": {
+    "bytes": 15048,
+    "sha256": "e4709fe6c8f022ed54b2614e2b585648f7de50a685c2d99d2d2914b099d5de87"
+  },
+  "src/lib/exerciseCounter.test.ts": {
+    "bytes": 14360,
+    "sha256": "53f61f904674e544bd1c6f14650a50f3b3d5b80eee4107f6a5dfb210d10993f6"
+  },
+  "src/lib/exerciseFraming.ts": {
+    "bytes": 8188,
+    "sha256": "5eaf98ab69507a047c720c16963d78ab3a6b9c97fb509e8fc26d8101f2ef0b2f"
+  },
+  "src/lib/trainingCatalog.ts": {
+    "bytes": 8027,
+    "sha256": "769d309bbd6a50b2ce4a0da304bc6ff5da85c283a65d34ba86f2b076e8deded6"
+  },
+  "src/lib/squatCounter.ts": {
+    "bytes": 11480,
+    "sha256": "d54e841e62f84fbdb55d8ee1620d813a26b438c3cc4b60a4dd04d8346e3e5ebd"
+  },
+  "src/App.tsx": {
+    "bytes": 82617,
+    "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+  },
+  "qa/camera-frame-gate-e2e.mjs": {
+    "bytes": 9636,
+    "sha256": "2c4ab558135b1054b35c8e2d6379e416c6053458e2122a500ef3a7e31d85bb98"
+  }
+}

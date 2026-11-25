@@ -1,0 +1,272 @@
+[
+  {
+    "path": "ADR.md",
+    "bytes": 2567,
+    "sha256": "3f76bbb5521ed897b2acb8c29d7d4f6cd36ff8d4a847a6ae38ae5f30462f954c"
+  },
+  {
+    "path": "browser/camera-390.png",
+    "bytes": 82788,
+    "sha256": "af9f919f447fe4575bca064454bfcc15987ad5c3f3a48ede0e41ee8293f82e57"
+  },
+  {
+    "path": "browser/camera-activity-30days-360.png",
+    "bytes": 36240,
+    "sha256": "2278e49dbcb8036c5da1cf0657c8094733275e253e818c3836fe5cb294a80cff"
+  },
+  {
+    "path": "browser/forge-avatar-only-390.png",
+    "bytes": 202640,
+    "sha256": "f736db71cc2ac6c6ba90e7330eaede5ac5343d09aa86101589b78b03b65de8f0"
+  },
+  {
+    "path": "browser/forge-missions-390.png",
+    "bytes": 97430,
+    "sha256": "b0994226bdd86ee00fcba6cbfe5ab4f3d6d738be061675fad2a634da1db63ab1"
+  },
+  {
+    "path": "browser/home-320-fighter-xp.png",
+    "bytes": 175841,
+    "sha256": "275128eb5d2e60fd666edba3634d14b35932b2e5c78ef77cf0f2a423e1859acc"
+  },
+  {
+    "path": "browser/home-360-fighter-xp.png",
+    "bytes": 194701,
+    "sha256": "acb8db8441a62027812d0f3901daa526f4d7f3a67f7118dca03c424ff4fb07bb"
+  },
+  {
+    "path": "browser/pulse-full-history-390.png",
+    "bytes": 151588,
+    "sha256": "925eff1391e1c1e311e03105667aba9561e9fb4acd7c86a49cb84db5a0a09025"
+  },
+  {
+    "path": "browser/pulse-incomplete-history-390.png",
+    "bytes": 144492,
+    "sha256": "a7884706edc21985476374802661fe22c78b23498d82c1e74f551a37c4be5c42"
+  },
+  {
+    "path": "browser/pulse-retained-restore-390.png",
+    "bytes": 149623,
+    "sha256": "4589735fd415015061ebaed32991bfefd788f762a5d5f49a2b83142804dc4970"
+  },
+  {
+    "path": "browser/settings-390-camera-preparation-visible.png",
+    "bytes": 120526,
+    "sha256": "601f8f8a674b28cc169d01a628462349505824726b45245f8dc1ecb7371eaeaf"
+  },
+  {
+    "path": "browser/settings-390-faq-overview.png",
+    "bytes": 83394,
+    "sha256": "5951b3cf191018bbbe2940f934d02bd1661e2fa2993321e43fd6348c9048af47"
+  },
+  {
+    "path": "build-manifest.json",
+    "bytes": 12939,
+    "sha256": "14bacbc922805adedcedc3dc1530a9c4e37ff5e6115133e26f4743dff63f76fb"
+  },
+  {
+    "path": "build.log",
+    "bytes": 2824,
+    "sha256": "8e69cf6c86837d08432ad57e0954508b2213a78c35f931b43806d13919d65e20"
+  },
+  {
+    "path": "bundle.log",
+    "bytes": 285,
+    "sha256": "ca6e43e3095b80360415f0a1ff574a74cda5e80480b581cc571494ed5c80c704"
+  },
+  {
+    "path": "dedup.log",
+    "bytes": 3107,
+    "sha256": "7c07bd39a552a2eeb776a5429ce769c496bfec4cd012e71bfe56f9c562bfd313"
+  },
+  {
+    "path": "dev-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "dev.log",
+    "bytes": 110,
+    "sha256": "5eb7415bdf040ae2e3f1aeae7257b3e943100fec6f5e36d3b81938d9f08d3dd2"
+  },
+  {
+    "path": "fallback-green-exit.txt",
+    "bytes": 3,
+    "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+  },
+  {
+    "path": "fallback-green.log",
+    "bytes": 719,
+    "sha256": "b76fd9fe77a96dbaf54cd13592dbd68b0e882615bf4bb4be33949e79f9630018"
+  },
+  {
+    "path": "fallback-red-exit.txt",
+    "bytes": 3,
+    "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+  },
+  {
+    "path": "fallback-red.log",
+    "bytes": 70126,
+    "sha256": "b44a6ee9f41d995a5381ce59029d9290ce5a8e8964734d22799e73c9b3b5c3fd"
+  },
+  {
+    "path": "final-readback.json",
+    "bytes": 4039,
+    "sha256": "7708cb9e9715c7a441c55c14a4e117d009fd7282a3d165d9425abe044a61b50d"
+  },
+  {
+    "path": "finalize.py",
+    "bytes": 11107,
+    "sha256": "53f86495cde039018ca37349678ca4fe86c35e32624f3af48fdb412817151650"
+  },
+  {
+    "path": "forge-home-xp-faq-e2e.mjs.before-fallback-qa",
+    "bytes": 29517,
+    "sha256": "efdb1cf0cf9755fefe1348fcf0a598f5f4d96f4682f26b1886d4601bd31c6e7c"
+  },
+  {
+    "path": "forge.log",
+    "bytes": 8901,
+    "sha256": "741ca88c7e4d28616f48826a61e8532e2410814ccb8eb6cc618d7bdf111f07c2"
+  },
+  {
+    "path": "freeze.py",
+    "bytes": 2266,
+    "sha256": "d56677f6a9c5a3c0d8a05a2d746dd3e820f03ebefb77ec61a8df0ba190dc3353"
+  },
+  {
+    "path": "gates.json",
+    "bytes": 901,
+    "sha256": "54e311fd3b7b357fecacb03c8754210879ce9ce0835c72685e84d62e35425463"
+  },
+  {
+    "path": "green-focused-exit.txt",
+    "bytes": 3,
+    "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+  },
+  {
+    "path": "green-focused.log",
+    "bytes": 722,
+    "sha256": "1392ea2c79dd12b2fa07f054b510974c2c84a70281443b294500f9e7941cb9d5"
+  },
+  {
+    "path": "head.txt",
+    "bytes": 42,
+    "sha256": "3b26cb5db3606dc6aabe752b22e563f5baa65d996248695e41c77dd00210d5cc"
+  },
+  {
+    "path": "historyRetention.test.ts.before-fallback-qa",
+    "bytes": 6142,
+    "sha256": "5d74919d33b5d461b62cfe7913fd0f3112356832812d92c1693205a2d71def60"
+  },
+  {
+    "path": "import-preview.log",
+    "bytes": 2097,
+    "sha256": "9a1bb8b2d1ab1c3ce7def8a9b133d34eea956a603793fd4f9dbd528df6e16cac"
+  },
+  {
+    "path": "patch-fallback-guard-fixed.py",
+    "bytes": 5148,
+    "sha256": "54a27ed9b547811c7be3e767fb80cc445bd68899566161e8d4557a3e52e5bfb9"
+  },
+  {
+    "path": "patch-fallback-guard.py",
+    "bytes": 5068,
+    "sha256": "70e0b63c4e62dab44166ee467aabdd86f2731460a21fef4cab9228a73a7d9381"
+  },
+  {
+    "path": "patch-fallback-qa.py",
+    "bytes": 7305,
+    "sha256": "4a0e83eaa6678dab44ef47aa836043d03fc1ac15921052e33dd87c5a355cdb41"
+  },
+  {
+    "path": "patch-retention.py",
+    "bytes": 8399,
+    "sha256": "f05a4a6adedf5f0c5704a15f60ab0799709e51ae7859fad86bb981b235b6c9eb"
+  },
+  {
+    "path": "patch-tests.py",
+    "bytes": 2900,
+    "sha256": "b67bcabd041446145eb4ff6ee71e4eccbe4a926b1e467c1229b330bfed99fbb6"
+  },
+  {
+    "path": "preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "preview.log",
+    "bytes": 39,
+    "sha256": "a3f07120711cafea53437c7c3f923c8eb1dc71832bce402c5641ff7823418c5f"
+  },
+  {
+    "path": "privacy.log",
+    "bytes": 777,
+    "sha256": "63ce23dcbb1ede906f06793262b1fed2438b26d83689f21c029ca9ba667faea3"
+  },
+  {
+    "path": "profileReplacement.test.ts.before",
+    "bytes": 21797,
+    "sha256": "2481f749f9e8a2a3197bb512b3b2f365b5ec33de1dbe073f024fb9cb288b9f61"
+  },
+  {
+    "path": "profileReplacement.ts.before",
+    "bytes": 19509,
+    "sha256": "6f9615cfbecc39a2c67fcb20e1d5469a614cbb20b4bcb02d680035642dc26ad2"
+  },
+  {
+    "path": "progression.ts.before",
+    "bytes": 19126,
+    "sha256": "867842538d7ae45e8dcde484ebdacc74de0567f9bbff398ae94340d9e657ff94"
+  },
+  {
+    "path": "progression.ts.before-fallback-guard",
+    "bytes": 23727,
+    "sha256": "1083bc29f8621ebc598c2918f87df2d1eb47e3b0928a8943910014213c453c31"
+  },
+  {
+    "path": "RECEIPT.md",
+    "bytes": 5177,
+    "sha256": "6c32e8c7540bbd87fe5c8e73598b07b872bf82b18f964f1f4a79af9e3bdf5094"
+  },
+  {
+    "path": "red-exit.txt",
+    "bytes": 3,
+    "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+  },
+  {
+    "path": "red.log",
+    "bytes": 132750,
+    "sha256": "598fc2ea68a1ff88d286c6b59d3d88a49a8787f25b06bbe87e53df613f4ed27a"
+  },
+  {
+    "path": "repair-patch.py",
+    "bytes": 418,
+    "sha256": "bfa6b8fd4993167b06c497edb4dfce06b43479191e52e68fbc7e8101c0a12d2a"
+  },
+  {
+    "path": "replacement.log",
+    "bytes": 4084,
+    "sha256": "9d7176898d8a913783e9a41992aa660ea76a50f9faf40a60eb878f265bdba3e5"
+  },
+  {
+    "path": "settledImportHistory.ts.before",
+    "bytes": 3836,
+    "sha256": "8613771e5a00c0cc6bb5274cef213ddc2c3ced0e0a67a80e9873cbdb0b406ae0"
+  },
+  {
+    "path": "source.json",
+    "bytes": 47652,
+    "sha256": "71a83d919817e90ca7c48f97e84c76816944bff7c6ac011bed0195cf4414ee68"
+  },
+  {
+    "path": "tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "unit.log",
+    "bytes": 11965,
+    "sha256": "95be6e136153713f31e994326658094ee77ae209bcb981f8d6add95cc313f001"
+  }
+]

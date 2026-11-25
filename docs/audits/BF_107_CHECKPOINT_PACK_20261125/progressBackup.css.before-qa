@@ -1,0 +1,173 @@
+/* Local-only progress backup. This card never blocks training or profile writes. */
+.progress-backup-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-width: 0;
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid #38566a;
+  border-radius: 13px;
+  background: linear-gradient(128deg, #162635, #121b26);
+  color: #e6f4fc;
+}
+.progress-backup-card > div { min-width: 0; }
+.progress-backup-card .section-index {
+  display: block;
+  color: #a9c5d7;
+  font-size: 10px;
+  letter-spacing: .075em;
+}
+.progress-backup-card h3 {
+  margin: 9px 0;
+  font-size: clamp(17px, 2.4vw, 22px);
+  line-height: 1.25;
+  letter-spacing: .02em;
+  color: #f1fafc;
+}
+.progress-backup-card p {
+  max-width: 70ch;
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d0e0ed;
+}
+.progress-backup-card small {
+  display: block;
+  margin-top: 9px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #afc5d4;
+}
+.progress-backup-actions {
+  flex: 0 1 300px;
+  width: 100%;
+}
+.progress-backup-actions button {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 15px;
+  border-radius: 9px;
+  border: 1px solid #88d9c7;
+  background: #77dfc8;
+  color: #092621;
+  font: 800 11px/1.45 'Manrope', sans-serif;
+  letter-spacing: .015em;
+  cursor: pointer;
+  white-space: normal;
+}
+.progress-backup-actions button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-backup-actions button:disabled {
+  opacity: .58;
+  cursor: wait;
+}
+.progress-backup-actions [role='status'] {
+  min-height: 1em;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.progress-install-help,
+.progress-storage-capacity {
+  margin-top: 13px;
+  border-top: 1px solid #365165;
+  padding-top: 10px;
+}
+.progress-install-help summary,
+.progress-storage-capacity summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  color: #a4f0da;
+  line-height: 1.5;
+}
+.progress-install-help summary:focus-visible,
+.progress-storage-capacity summary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-install-help p { margin: 7px 0; }
+.progress-install-help strong { color: #eef9fe; }
+.progress-backup-file-checker {
+  margin-top: 12px;
+  border-top: 1px solid #365165;
+  padding-top: 11px;
+}
+.progress-backup-file-checker summary {
+  cursor: pointer;
+  color: #a4f0da;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.progress-backup-file-checker summary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+.progress-backup-file-checker label {
+  display: block;
+  margin: 9px 0 7px;
+  font-size: 11px;
+  color: #d0e0ed;
+  line-height: 1.6;
+}
+.progress-backup-file-checker input[type='file'] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid #4d7081;
+  border-radius: 8px;
+  color: #d0e0ed;
+  background: #111f2b;
+  font-size: 11px;
+}
+.progress-backup-file-checker input[type='file']::file-selector-button {
+  cursor: pointer;
+  margin-right: 9px;
+  padding: 9px 11px;
+  background: #77dfc8;
+  border: 0;
+  border-radius: 6px;
+  color: #092621;
+  font-weight: 800;
+}
+.progress-backup-file-checker input:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+.progress-backup-file-checker[data-inspection-state='incomplete'] [data-inspection-result],
+.progress-backup-file-checker[data-inspection-state='invalid'] [data-inspection-result] {
+  color: #ffd6ab;
+}
+.progress-backup-file-checker[data-inspection-state='readable'] [data-inspection-result] {
+  color: #a4f0da;
+}
+.app-shell[data-screen="dashboard"] .content > .progress-backup-card { order: 8; }
+.app-shell[data-screen="dashboard"] .content > .footer { order: 9; }
+@media (max-width: 740px) {
+  .progress-backup-card { flex-direction: column; align-items: stretch; gap: 13px; }
+  .progress-backup-actions { flex-basis: auto; }
+}
+
+/* BF-106 comparison is read-only and fits narrow mobile viewports. */
+.progress-import-preview { margin: 12px 0; min-width: 0; }
+.progress-import-preview table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 11px; color: #e6f4fc; }
+.progress-import-preview th, .progress-import-preview td { padding: 7px 4px; border-bottom: 1px solid #365165; overflow-wrap: anywhere; }
+.progress-import-preview th:first-child { width: 46%; text-align: left; }
+.progress-import-preview td, .progress-import-preview th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.progress-import-preview thead th { color: #a4f0da; font-weight: 800; }
+.progress-import-warnings { margin: 10px 0; padding-left: 19px; color: #ffd6ab; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.progress-import-cancel { min-height: 44px; max-width: 100%; margin-top: 8px; padding: 9px 13px; border: 1px solid #4d7081; border-radius: 8px; background: #111f2b; color: #e6f4fc; font-size: 11px; cursor: pointer; }
+.progress-import-cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Advisory readings are not a quota guarantee. */
+.progress-storage-capacity [data-capacity-warning='advisory'] p { color: #ffd6ab; }
+.progress-backup-actions [data-backup-capacity='near-limit'],
+.progress-backup-actions [data-backup-capacity='oversize'] { color: #ffd6ab; }
+
+.progress-backup-actions [data-archive-stage] { margin-top: 8px; }

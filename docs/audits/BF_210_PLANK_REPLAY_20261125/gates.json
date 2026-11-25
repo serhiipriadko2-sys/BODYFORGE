@@ -1,0 +1,34 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 334,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "cab4f66ef8a7c26a889b1b993f5f8d7cb668cbca3c32c8306fd88a04b1132eea",
+    "src/lib/trainingCatalog.ts": "4ae5815aad93e7df6ab2cfd4d34765de85f60765eae37c41854854a2e316e19e",
+    "src/lib/plankReplay.test.ts": "0dce8c7d9978aa45dff5b1bea729821d262a349671876de9701dc5a81883b18d",
+    "qa/plank-replay-e2e.mjs": "3dfd70e610a45ab7359f8ed8f143a261ad125f087e18fc71c324eb1c0c81b9a8"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "plank": 0,
+    "leg-raise": 0,
+    "full-unit": 0
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:55465",
+    "entry": "index-CMgBvjol.js",
+    "sha256": "51930713156fe91ecffe59522816c533cdfc083a4e7db962c094485bb4b3da49",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [],
+  "live_new": [],
+  "owned_match": true,
+  "finished": "2026-11-25T20:22:18.057111+03:00"
+}

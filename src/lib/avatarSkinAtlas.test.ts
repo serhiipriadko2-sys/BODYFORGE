@@ -27,6 +27,15 @@ describe('bounded perioral skin atlas', () => {
     expect(acceptsSkinAtlas(PERIORAL_ATLAS,null)).toBe(false);
     expect(acceptsSkinAtlas('/assets/athlete-skin.jpg',{width:1024,height:1024})).toBe(true);
   });
+  it('pins the photographic review atlas at the same resolution and bounded file size', () => {
+    const candidate = readFileSync('src/lib/athlete-skin-scan-review.jpg');
+    const prior = readFileSync('public'+PERIORAL_ATLAS);
+    expect(dimensions(candidate)).toEqual([2048,2048]);
+    expect(acceptsSkinAtlas('/src/lib/athlete-skin-scan-review.jpg',{width:2048,height:2048})).toBe(true);
+    expect(createHash('sha256').update(candidate).digest('hex')).toBe('983d75f94cdd5d408bbce1aebbaa734cc27da7fe80deccdafa8af262df5d80e8');
+    expect(candidate.length).toBeLessThanOrEqual(prior.length);
+    expect(avatarSkinAtlases(true,true)).not.toContain('/src/lib/athlete-skin-scan-review.jpg');
+  });
   it('pins both the actual new JPEG and the original reserve without increasing resolution', () => {
     const candidate = readFileSync('public'+PERIORAL_ATLAS);
     const prior = readFileSync('public'+DERMAL_ATLAS);

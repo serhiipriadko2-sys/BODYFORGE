@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 const FACE_PROFILE = 'bodyforge-facial-planes-v2';
+export const DIRECTIONAL_BROW_INDEX_COUNT = 16800;
+export const DIRECTIONAL_BROW_VERTEX_COUNT = 7840;
 
 /** Adopt the Blender-fitted geometry only on the pinned head rig.
  * Existing weights are rigidly attached to the protected head bone.
@@ -23,13 +25,15 @@ export function installAvatarBrows(body: THREE.SkinnedMesh, brows: THREE.Skinned
 
   const surface = donor.children[0];
   if (!(surface instanceof THREE.Mesh) || surface instanceof THREE.SkinnedMesh || surface.children.length ||
-      surface.name !== 'BODYFORGE_BrowsV2' || !(surface.material instanceof THREE.MeshStandardMaterial) ||
+      !['BODYFORGE_BrowsV2','BODYFORGE_BrowsV3'].includes(surface.name) || !(surface.material instanceof THREE.MeshStandardMaterial) ||
       surface.position.lengthSq()>1e-12 || surface.quaternion.angleTo(new THREE.Quaternion())>1e-6 ||
       surface.scale.distanceTo(new THREE.Vector3(1,1,1))>1e-6) return false;
+  const directional=surface.name==='BODYFORGE_BrowsV3';
+  if(directional&&surface.userData.BODYFORGE_brow_revision!=='directional-v3')return false;
   const geometry=surface.geometry, pos=geometry.getAttribute('position'), normals=geometry.getAttribute('normal');
   const colors=geometry.getAttribute('color'), index=geometry.index;
-  if (pos?.count!==7545 || pos.itemSize!==3 || normals?.count!==pos.count || normals.itemSize!==3 ||
-      colors?.count!==pos.count || colors.itemSize!==4 || index?.count!==7560) return false;
+  if (pos?.count!==(directional?DIRECTIONAL_BROW_VERTEX_COUNT:7545) || pos.itemSize!==3 || normals?.count!==pos.count || normals.itemSize!==3 ||
+      colors?.count!==pos.count || colors.itemSize!==4 || index?.count!==(directional?DIRECTIONAL_BROW_INDEX_COUNT:7560)) return false;
 
   const skinIndex=new Uint16Array(pos.count*4), skinWeight=new Float32Array(pos.count*4);
   let left=0,right=0;
@@ -64,9 +68,10 @@ export function installAvatarBrows(body: THREE.SkinnedMesh, brows: THREE.Skinned
   material.color.copy(oldMaterial.color);
   material.vertexColors=true;
   material.side=THREE.DoubleSide;
-  material.roughness=.94;
+  material.roughness=directional?.87:.94;
   material.metalness=0;
-  material.envMapIntensity=.32;
+  material.envMapIntensity=directional?.42:.32;
+  geometry.userData.BODYFORGE_brow_revision=directional?'directional-v3':'fitted-v2';
   geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(skinIndex,4));
   geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skinWeight,4));
   donor.remove(surface);

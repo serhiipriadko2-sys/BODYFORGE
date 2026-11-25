@@ -71,19 +71,25 @@
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
-.progress-install-help {
+.progress-install-help,
+.progress-storage-capacity,
+.progress-checkpoint-preview {
   margin-top: 13px;
   border-top: 1px solid #365165;
   padding-top: 10px;
 }
-.progress-install-help summary {
+.progress-install-help summary,
+.progress-storage-capacity summary,
+.progress-checkpoint-preview summary {
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
   color: #a4f0da;
   line-height: 1.5;
 }
-.progress-install-help summary:focus-visible {
+.progress-install-help summary:focus-visible,
+.progress-storage-capacity summary:focus-visible,
+.progress-checkpoint-preview summary:focus-visible {
   outline: 2px solid #ffffff;
   outline-offset: 3px;
 }
@@ -161,3 +167,12 @@
 .progress-import-warnings { margin: 10px 0; padding-left: 19px; color: #ffd6ab; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
 .progress-import-cancel { min-height: 44px; max-width: 100%; margin-top: 8px; padding: 9px 13px; border: 1px solid #4d7081; border-radius: 8px; background: #111f2b; color: #e6f4fc; font-size: 11px; cursor: pointer; }
 .progress-import-cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Advisory readings are not a quota guarantee. */
+.progress-storage-capacity [data-capacity-warning='advisory'] p { color: #ffd6ab; }
+.progress-backup-actions [data-backup-capacity='near-limit'],
+.progress-backup-actions [data-backup-capacity='oversize'] { color: #ffd6ab; }
+
+.progress-backup-actions [data-archive-stage] { margin-top: 8px; }
+
+.progress-checkpoint-preview button { margin-top: 9px; }

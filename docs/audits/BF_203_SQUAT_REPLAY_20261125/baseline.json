@@ -1,0 +1,40 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "sources": {
+    "src/lib/squatCounter.ts": {
+      "bytes": 10544,
+      "sha256": "87742e64368550f26cdaf1986a423e3ecd046dd2dbdd6ddad5bcc2681c5c00f4"
+    },
+    "src/lib/squatCounter.test.ts": {
+      "bytes": 10274,
+      "sha256": "52a733407806c27d5aa8c25f4a04a9360a27757dd567a0a41bf31d2f89fac0a7"
+    },
+    "src/lib/exerciseCounter.ts": {
+      "bytes": 15048,
+      "sha256": "e4709fe6c8f022ed54b2614e2b585648f7de50a685c2d99d2d2914b099d5de87"
+    },
+    "src/lib/camera.ts": {
+      "bytes": 8302,
+      "sha256": "c486ff257e0cd95476cd387cba3994107bf080162c37f6f5879319df8ea51ef2"
+    },
+    "src/App.tsx": {
+      "bytes": 82617,
+      "sha256": "30cd05abed3240dc6b353ed7064e856841f9171c5ec30245641a4ebca009a503"
+    },
+    "qa/tower-squat-fixture.mjs": {
+      "bytes": 1738,
+      "sha256": "2201c53e64d7ef867c7753f249fe0e0278ed3c98ddb1003361780527165b2ecd"
+    },
+    "package.json": {
+      "bytes": 2006,
+      "sha256": "d12b1c4980345a8b05fbc50023cd9548aebc28bbc392b782c182047a9dd61963"
+    },
+    "package-lock.json": {
+      "bytes": 66821,
+      "sha256": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+    }
+  },
+  "model": "pose_landmarker_lite/float16/1",
+  "thresholds": "see exact squatCounter.ts.before",
+  "field": "NOT_RUN"
+}

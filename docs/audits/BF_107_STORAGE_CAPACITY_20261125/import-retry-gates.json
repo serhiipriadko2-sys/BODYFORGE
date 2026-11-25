@@ -1,0 +1,10 @@
+﻿{
+    "sourceManifestSha256":  "1A0FAC14D6AF33EA55E95CF143DB9970706830A1FF49826A10C79D97112A6F7A",
+    "importPreview":  0,
+    "started":  "2026-11-25T19:12:06.8086738+03:00",
+    "reason":  "Retry unchanged source and harness after transient CDP navigation error",
+    "port":  6900,
+    "unchanged":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-25T19:12:18.8260067+03:00"
+}

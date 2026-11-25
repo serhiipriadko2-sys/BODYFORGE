@@ -38,6 +38,11 @@ export const MUSCLE_LOBES: Record<Muscle, readonly MuscleLobe[]> = {
     {name:'external oblique',center:[.112,1.144,.072],radius:[.084,.144,.103],offset:[.008,0,.005],slope:[.12,-.15]},
   ],
   legs: [
+    // Hip extensor/abductor and medial thigh volume. These compact supports
+    // do not cross the midline, and follow the same field on skin and cloth.
+    {name:'gluteus maximus',center:[.088,.947,-.094],radius:[.076,.100,.059],offset:[.003,0,-.019],slope:[-.12,.10]},
+    {name:'gluteus medius',center:[.149,1.002,-.040],radius:[.058,.072,.080],offset:[.013,.001,-.006]},
+    {name:'thigh adductors',center:[.064,.816,.053],radius:[.038,.088,.077],offset:[-.013,0,.002],slope:[-.24,0]},
     {name:'rectus femoris',center:[.128,.779,.104],radius:[.063,.169,.085],offset:[.003,0,.024],slope:[-.10,0]},
     {name:'vastus lateralis',center:[.177,.773,.061],radius:[.058,.158,.094],offset:[.016,0,.013],slope:[-.10,.10]},
     {name:'vastus medialis',center:[.093,.649,.080],radius:[.054,.099,.080],offset:[-.009,0,.016],slope:[-.08,.20]},

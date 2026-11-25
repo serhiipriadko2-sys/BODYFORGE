@@ -11,7 +11,7 @@ import type { Outfit } from './game';
  * conservative guard in Avatar3D for incompatible replacement models.
  */
 export type SurfaceRegion = 'skin' | 'shirt' | 'shorts' | 'shoe' | 'trim';
-export type SurfacePalette = { skin: string; trim: string; outfit: Outfit };
+export type SurfacePalette = { skin: string; trim: string; outfit: Outfit; shirt?: boolean };
 
 export function bodySurfaceRegion(x: number, y: number, z: number): SurfaceRegion {
   if (![x, y, z].every(Number.isFinite)) return 'skin';
@@ -64,7 +64,8 @@ export function paintFittedBody(geometry: THREE.BufferGeometry, palette: Surface
     ? previous : new THREE.BufferAttribute(new Float32Array(positions.count * 3), 3);
   const counts: Record<SurfaceRegion, number> = { skin: 0, shirt: 0, shorts: 0, shoe: 0, trim: 0 };
   for (let i = 0; i < positions.count; i++) {
-    const region = bodySurfaceRegion(positions.getX(i), positions.getY(i), positions.getZ(i));
+    const classified = bodySurfaceRegion(positions.getX(i), positions.getY(i), positions.getZ(i));
+    const region = classified === 'shirt' && palette.shirt === false ? 'skin' : classified;
     counts[region]++;
     const color = colors[region];
     attribute.setXYZ(i, color.r, color.g, color.b);

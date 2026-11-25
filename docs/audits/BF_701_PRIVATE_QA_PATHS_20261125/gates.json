@@ -1,0 +1,12 @@
+{
+  "commands": {
+    "syntax": 0,
+    "green": 0,
+    "tsc-node": 0,
+    "diff": 0,
+    "canon": 0
+  },
+  "config_sha256": "3919cd43ebc9ad24478089e0918b5c06398256df0b1e0e0d134b19a2b6f05bb3",
+  "qa_sha256": "0cdc454e8a2624b66883c756f5ddd1a9b8c50b7b530b494619f3015ab8dabba2",
+  "red_expanded_exit": 12
+}

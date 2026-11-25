@@ -1,4 +1,4 @@
-import { STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY, parseProfile } from './progression';
+import { STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY, parseProfile, preservesStoredWorkoutHistory } from './progression';
 import { coversPaidHistory, matchesExportedHistory, type SettledImportHistory } from './settledImportHistory';
 import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
 import { inspectImportProfile, previewProgressImportJson } from './progressImportPreview';
@@ -38,7 +38,7 @@ export interface ReplacementPlan {
 // Revalidate raw strings on recovery: the marker survives a renderer restart.
 function supportedProfile(raw: string) {
   const view = inspectImportProfile(raw);
-  if (!view || !view.profile.profileId || view.receipts.length > 60) return null;
+  if (!view || !view.profile.profileId) return null;
   const known = ['schemaVersion','xp','coins','workouts','game','profileId','creditedWorkoutIds','totals'];
   if (Object.keys(JSON.parse(raw)).some(key => !known.includes(key))) return null;
   if (view.ledgerEvidence !== 'stored-identities' &&
@@ -57,7 +57,8 @@ function safeTransition(before: ProfilePair, after: ProfilePair): boolean {
     if (raw === null) continue;
     const prior = supportedProfile(raw);
     if (!prior || !next || prior.profileId !== next.profileId ||
-        prior.game.highestClearedFloor > next.game.highestClearedFloor) return false;
+        prior.game.highestClearedFloor > next.game.highestClearedFloor ||
+        after[slot] === null || !preservesStoredWorkoutHistory(raw, after[slot]!)) return false;
     const ids = new Set(next.creditedWorkoutIds);
     if (prior.creditedWorkoutIds?.some(id => !ids.has(id))) return false;
     for (const [days, last] of [['claimedLoginDays','lastLoginDay'], ['claimedQuestDays','lastQuestClaimDay']] as const) {

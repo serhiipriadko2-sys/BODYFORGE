@@ -1,0 +1,113 @@
+import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
+
+/** Gzip wraps the existing v1 JSON bytes; it is not a new save schema.
+ * Both compressed input and inflated JSON remain bounded for inspection. */
+export const MAX_ARCHIVE_SOURCE_BYTES = 32 * 1024 * 1024;
+const STREAM_TIMEOUT_MS = 15000;
+const INFLATE_CHUNK_BYTES = 4096;
+type ArchiveErrorCode = 'limit' | 'unsupported' | 'invalid' | 'cancelled';
+export class BackupArchiveError extends Error {
+  constructor(readonly code: ArchiveErrorCode) { super(code); }
+}
+export type PreparedBackupArchive =
+  | { status: 'ready'; blob: Blob; filename: string; sourceBytes: number; inspectableSize: boolean }
+  | { status: 'not-smaller' | 'too-large' | 'unsupported' | 'unavailable' | 'cancelled' };
+
+function checkCancellation(signal?: AbortSignal) {
+  if (signal?.aborted) throw new BackupArchiveError('cancelled');
+}
+function smallChunks(blob: Blob): ReadableStream<Uint8Array<ArrayBuffer>> {
+  let offset = 0, cancelled = false;
+  return new ReadableStream({
+    async pull(controller) {
+      if (cancelled) return;
+      if (offset >= blob.size) { controller.close(); return; }
+      const next = Math.min(blob.size, offset + INFLATE_CHUNK_BYTES);
+      const bytes = await blob.slice(offset, next).arrayBuffer();
+      if (cancelled) return;
+      offset = next;
+      controller.enqueue(new Uint8Array(bytes));
+    },
+    cancel() { cancelled = true; },
+  });
+}
+
+/** Never concatenate unbounded decompressed chunks. A limit, abort or stream
+ * error discards the partial result; only clean EOF can return bytes. */
+async function collect(stream: ReadableStream<Uint8Array>, limit: number, signal?: AbortSignal): Promise<Blob> {
+  const reader = stream.getReader();
+  let stopped = false, finished = false, total = 0;
+  const chunks: BlobPart[] = [];
+  const stop = () => {
+    stopped = true;
+    void reader.cancel().catch(() => {});
+  };
+  const timer = setTimeout(stop, STREAM_TIMEOUT_MS);
+  signal?.addEventListener('abort', stop, { once: true });
+  try {
+    if (signal?.aborted) stop();
+    while (true) {
+      if (stopped) throw new BackupArchiveError(signal?.aborted ? 'cancelled' : 'invalid');
+      const chunk = await reader.read();
+      if (stopped) throw new BackupArchiveError(signal?.aborted ? 'cancelled' : 'invalid');
+      if (chunk.done) { finished = true; break; }
+      total += chunk.value.byteLength;
+      if (total > limit) throw new BackupArchiveError('limit');
+      chunks.push(chunk.value.slice().buffer as ArrayBuffer);
+    }
+    return new Blob(chunks);
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', stop);
+    if (!finished) void reader.cancel().catch(() => {});
+    reader.releaseLock();
+  }
+}
+
+async function inflate(blob: Blob, limit: number, signal?: AbortSignal): Promise<Blob> {
+  checkCancellation(signal);
+  if (typeof DecompressionStream !== 'function') throw new BackupArchiveError('unsupported');
+  return collect(smallChunks(blob).pipeThrough(new DecompressionStream('gzip')), limit, signal);
+}
+
+/** A selected gzip is detected from its bytes, not trusted filename or MIME. */
+export async function decodeBackupBytes(bytes: ArrayBuffer, signal?: AbortSignal): Promise<string> {
+  checkCancellation(signal);
+  if (!bytes.byteLength || bytes.byteLength > MAX_PROGRESS_BACKUP_BYTES) throw new BackupArchiveError('limit');
+  const header = new Uint8Array(bytes, 0, Math.min(2, bytes.byteLength));
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  if (header[0] !== 0x1f || header[1] !== 0x8b) return decoder.decode(bytes);
+  const decoded = await inflate(new Blob([bytes]), MAX_PROGRESS_BACKUP_BYTES, signal);
+  checkCancellation(signal);
+  const output = decoder.decode(await decoded.arrayBuffer());
+  checkCancellation(signal);
+  return output;
+}
+
+/** Optional local archive. Verify the complete gzip round trip before exposing
+ * it for download. Larger uncompressed evidence keeps the plain JSON option. */
+export async function prepareBackupArchive(json: string, filename: string, signal?: AbortSignal): Promise<PreparedBackupArchive> {
+  if (signal?.aborted) return { status: 'cancelled' };
+  if (typeof CompressionStream !== 'function' || typeof DecompressionStream !== 'function') return { status: 'unsupported' };
+  if (json.length > MAX_ARCHIVE_SOURCE_BYTES) return { status: 'too-large' };
+  let source: Blob;
+  try { source = new Blob([json]); } catch { return { status: 'unavailable' }; }
+  if (source.size > MAX_ARCHIVE_SOURCE_BYTES) return { status: 'too-large' };
+  if (source.size < 2) return { status: 'not-smaller' };
+  let packed: Blob;
+  try {
+    packed = await collect(source.stream().pipeThrough(new CompressionStream('gzip')), source.size - 1, signal);
+  } catch (error) {
+    return { status: signal?.aborted ? 'cancelled' : error instanceof BackupArchiveError && error.code === 'limit' ? 'not-smaller' : 'unavailable' };
+  }
+  try {
+    const restored = await inflate(packed, source.size, signal);
+    const exact = restored.size === source.size &&
+      new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(await restored.arrayBuffer()) === json;
+    checkCancellation(signal);
+    if (!exact) return { status: 'unavailable' };
+    return { status: 'ready', blob: new Blob([packed], { type: 'application/gzip' }),
+      filename: filename + '.gz', sourceBytes: source.size,
+      inspectableSize: source.size <= MAX_PROGRESS_BACKUP_BYTES && packed.size <= MAX_PROGRESS_BACKUP_BYTES };
+  } catch { return { status: signal?.aborted ? 'cancelled' : 'unavailable' }; }
+}

@@ -131,3 +131,8 @@
   .bf-reward-flow { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .bf-goal-track>div,.bf-catalog-expand svg,.bf-guide-trigger svg:last-child { transition: none; } }
+
+/* BF-211: reachable cancel control and observation-backed calibration readout. */
+#challenge .workout-stop { min-height: 48px; flex-shrink: 0; touch-action: manipulation; }
+#challenge .workout-stop:focus-visible { outline: 3px solid var(--bf-accent-copy); outline-offset: -4px; }
+.pose-hud-countdown { display: block; font-variant-numeric: tabular-nums; }

@@ -22,7 +22,7 @@ assert hashlib.sha256(source.read_bytes()).hexdigest() == 'df8c4e3d0d8ebfbd6a03b
 assert not output.exists()
 groups = json.loads(recipe_path.read_text(encoding='utf-8-sig'))
 assert list(groups) == ['arms','core','legs','back']
-assert [len(v) for v in groups.values()] == [7,8,8,5]
+assert [len(v) for v in groups.values()] in ([7,8,8,5],[7,8,11,5])
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=str(source.resolve()))

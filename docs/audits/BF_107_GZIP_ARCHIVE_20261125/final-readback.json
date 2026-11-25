@@ -1,0 +1,152 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T19:29:01.176388+03:00",
+  "owned": [
+    {
+      "path": "src/lib/backupArchive.ts",
+      "bytes": 5568,
+      "sha256": "da43b805f52f4506045fdae15e78be24f42753272f1aad0845f9485a3db48489"
+    },
+    {
+      "path": "src/lib/backupArchive.test.ts",
+      "bytes": 4627,
+      "sha256": "9ffde048b410d228c5b6bfbb26df0cd31b369cb004b019917b2db3541dd7f8ee"
+    },
+    {
+      "path": "src/lib/progressImportPreview.ts",
+      "bytes": 10019,
+      "sha256": "cc85af6b931d5ba6093d537ced81e9ab77201e021088a8620e2f3185abf1a051"
+    },
+    {
+      "path": "src/lib/progressImportPreview.test.ts",
+      "bytes": 9918,
+      "sha256": "e018e757cfe2e89630a4e0144ab41193baee328a1f4e37a22a54fe9aeaa61c57"
+    },
+    {
+      "path": "src/lib/progressBackup.ts",
+      "bytes": 4331,
+      "sha256": "d4098f57f38ab3ca1206eed32532cd8098dda67b5bab9dc6a337359b72a4367b"
+    },
+    {
+      "path": "src/components/ProgressBackupPanel.tsx",
+      "bytes": 24073,
+      "sha256": "63b0d4e7bba2b463b7938cfc3c0ada32705c3c3355a4567332ee8a154623f3d1"
+    },
+    {
+      "path": "src/components/progressBackup.css",
+      "bytes": 5335,
+      "sha256": "0c7a1b487e9bcc30a8a01e0e8800411b46afb3c5447ee8e1c22c52de0c324f84"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 51775,
+      "sha256": "c6588ef16d7852fc3631d7d13bdf011ff5d5e4182c9df3f1d796f4baa449bcc6"
+    },
+    {
+      "path": "qa/import-preview-e2e.mjs",
+      "bytes": 21301,
+      "sha256": "fe83e87ed9c6d0527dbfce7451a3d535b67503ea1d0b567ced5808a2b964ec2e"
+    }
+  ],
+  "sourceCount": 315,
+  "buildCount": 73,
+  "sourceManifestSha256": "9E60E75D9403DB4DC25F91F719E2F81E9EE333F83EFC86480594B98FBAECF27B",
+  "buildManifestSha256": "2CA9301DB471A9C3A844AE815A80D753F45F2D16699D5EC3A727EA551CEE65EF",
+  "liveChangedPaths": [],
+  "liveNewPaths": [],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": [
+    0,
+    0
+  ],
+  "passLines": {
+    "mobile.log": 118,
+    "privacy.log": 13,
+    "import-preview.log": 37
+  },
+  "samples": {
+    "GZIP_SAMPLE": {
+      "sourceBytes": 1599,
+      "archiveBytes": 589
+    },
+    "GZIP_LARGE_SAMPLE": {
+      "bytes": 17080,
+      "sourceBytes": 16778921,
+      "exact": true
+    }
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89023,
+      "sha256": "d01635e5f58bd2a2db342b5edff75d5d99f4de1fcd0e03eb9e9317bbe3c256da"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202313,
+      "sha256": "4c8755f5253a30cd0e7f320ef01e9a7bee150b38542e81d307f91f199d5839a6"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190245,
+      "sha256": "bf20e09e15bee2bee9c875b26af80694940079517b125f0915110ea0cd30c0ef"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195697,
+      "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219422,
+      "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93327,
+      "sha256": "5102943f916ca325bf3774cbae07f58b5b24ee8861fd0231f915fda39105d012"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93576,
+      "sha256": "a44fd017931bf965cd6ef82e5b3d28fb6aa2dfa8aacdece1d67a455ccf092db2"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148182,
+      "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 91536,
+      "sha256": "5a76e94d0d3b46ba23299d97c35fd2320b1ad3ded3b4b526d243fdd9bbda6a35"
+    }
+  ]
+}

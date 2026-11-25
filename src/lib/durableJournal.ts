@@ -128,16 +128,23 @@ async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileR
       let remaining = unique.size;
       const existing = new Map<string, unknown>();
       const apply = () => {
+        const writes: StoredEntry[] = [];
         for (const entry of unique.values()) {
           const original = existing.get(entry.key), row = original === undefined ? null : storedEntry(original);
           if (original !== undefined && !row) { issue = 'unavailable'; tx!.abort(); return; }
           if ((row && row.raw !== entry.raw) || (state && !row) || (state === 'settled' && row?.state === 'quarantined')) {
             issue = 'invalid'; tx!.abort(); return;
           }
-          expected.set(entry.key, row ? { ...row, ...(state ? { state } : {}) }
-            : { schemaVersion: 1, ...entry, baseProfileRaw, state: 'active' });
+          const next: StoredEntry = row ? { ...row, ...(state ? { state } : {}) }
+            : { schemaVersion: 1, ...entry, baseProfileRaw, state: 'active' };
+          expected.set(entry.key, next);
+          // Keep all original receipts in the readback contract, but avoid
+          // rewriting unchanged terminal rows and their full baseline snapshots.
+          // New/active rows and actual state transitions still require a put.
+          if (!row || row.state === 'active' || row.state !== next.state) writes.push(next);
         }
-        for (const row of expected.values()) store.put(row);
+        // Validate the entire batch before issuing any writes, even on retries.
+        for (const row of writes) store.put(row);
       };
       for (const entry of unique.values()) {
         const request = store.get(entry.key);

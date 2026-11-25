@@ -1,0 +1,42 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 326,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "66ae266f8ec8fa45d58b44a071702609e441ea2b29fe1f088ac1bc8c78a4d21e",
+    "src/lib/trainingCatalog.ts": "6ee3267ce58dcc1d1a78ea1517f2655fe1a6367c1f6e551bf5827b03a95d95cc",
+    "src/lib/legRaiseReplay.test.ts": "e1ec1a4829fcde1dfcf61f18d037a3b9cbebc3cb08e3e6f53865b197b4604927",
+    "qa/leg-raise-replay-e2e.mjs": "ab850ff28ed16e919c763b50584483e5b4ba6c1493dd6e189b34072870a7002b"
+  },
+  "commands": {
+    "tsc": 0,
+    "build": 0,
+    "bundle": 0,
+    "leg-raise": 0,
+    "crunch": 0,
+    "full-unit": 1
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:54004",
+    "entry": "index-DQoZ1LQv.js",
+    "sha256": "5bde1316589e5b12eb365b060b09ac5483522ef4c711dd36981f793d6f36803b",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "live_changed": [
+    "qa/durable-journal-e2e.mjs",
+    "src/components/Avatar3D.tsx"
+  ],
+  "live_new": [
+    "src/lib/avatarViewFraming.test.ts",
+    "src/lib/avatarViewFraming.ts",
+    "src/lib/journalMixedStorage.test.ts",
+    "src/lib/journalMixedStorage.ts"
+  ],
+  "owned_match": true,
+  "finished": "2026-11-25T20:13:36.430484+03:00"
+}

@@ -1,0 +1,149 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T19:13:04.919007+03:00",
+  "owned": [
+    {
+      "path": "src/lib/progressBackup.ts",
+      "bytes": 4143,
+      "sha256": "f1affce4f28336a3e8147401c9669078886d920eae8ed93d686b9584c1cb1993"
+    },
+    {
+      "path": "src/lib/progressBackup.test.ts",
+      "bytes": 10160,
+      "sha256": "12d9d9a9e715b391590bdf71173d45cb51bd6afb363d775702d6755e014e1545"
+    },
+    {
+      "path": "src/lib/progressBackupInspector.ts",
+      "bytes": 9040,
+      "sha256": "c0303d46d4586ce7d962ab9422e396923d5b2a7a5a488d8c0d0c739fd03fe8a2"
+    },
+    {
+      "path": "src/lib/progressBackupInspector.test.ts",
+      "bytes": 7979,
+      "sha256": "9868ce56dd00281b5e55091388bb28b7fab36f42dc083ce5516d75fc29cc9c2a"
+    },
+    {
+      "path": "src/components/ProgressBackupPanel.tsx",
+      "bytes": 19889,
+      "sha256": "cebe5db74e06634e407b83af9261b7c7732a9cb0083833d67f098a97181a79ae"
+    },
+    {
+      "path": "src/components/progressBackup.css",
+      "bytes": 5267,
+      "sha256": "6b930b8ebb01546f83696ba807efb55d3359b793e7ed05b30fd866d493d9b9bd"
+    },
+    {
+      "path": "src/lib/storageCapacity.ts",
+      "bytes": 3492,
+      "sha256": "79505d32c6a6b18856a1041bca86e0323ff4f06e669cee954a316497456a8c98"
+    },
+    {
+      "path": "src/lib/storageCapacity.test.ts",
+      "bytes": 4120,
+      "sha256": "15032317c91d824774a6b130de932ba15bb963261e5967feb1897ead9c36f94d"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 45700,
+      "sha256": "b83a15cbf457d2b3b88a11a030498f49d9c8057bf49a6e0be4805e2351f51b08"
+    }
+  ],
+  "sourceCount": 307,
+  "buildCount": 73,
+  "sourceManifestSha256": "1A0FAC14D6AF33EA55E95CF143DB9970706830A1FF49826A10C79D97112A6F7A",
+  "buildManifestSha256": "B72D536A96BAF187FC2D5B6CBE5EF42C594C4B6ADFC6321BC8DA770160296A1C",
+  "liveChangedPaths": [
+    "public/assets/athlete-scan-transfer-source.md",
+    "qa/avatar-quality-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarSkinAtlas.test.ts",
+    "src/lib/exerciseCounter.ts"
+  ],
+  "liveNewPaths": [
+    "qa/lunge-replay-e2e.mjs",
+    "src/lib/athlete-skin-scan-review.jpg",
+    "src/lib/avatarScanColor.ts",
+    "src/lib/lungeReplay.test.ts"
+  ],
+  "diffCheck": 0,
+  "cachedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "mobile.log": 101,
+    "privacy.log": 13,
+    "import-preview-retry.log": 36
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89201,
+      "sha256": "4270121d0e0af404c22f32987cadd856307bd138a9720961a76aa39c189b249c"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 124635,
+      "sha256": "8b0e484d61693318bf12437d5d3113da31e15e11e9ff9e4f4890e982749d1493"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202315,
+      "sha256": "6cf8ef7e4f993082d37c459683a71cf8f004dcc2f332efdcd430877bd0dc3f13"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190273,
+      "sha256": "ef90dff4bd9f1f6f0c37247c9fd8b2e2ab5bfc10685cef014888771c89d71b6d"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195697,
+      "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219422,
+      "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93838,
+      "sha256": "4aa4fee71a1aba8631e998d12d4517a8ea8b418cff3ba76b75219af0b1c6e111"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93770,
+      "sha256": "5f8bb83ca47aaf79b2418758dabe46ce05e9040b3cc622454a44c35dc495066b"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148182,
+      "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 90750,
+      "sha256": "61129fd0b0cfcc0fe9844e43ce4be78b041a01b645fab5d9439b5e9bd302d0e3"
+    }
+  ]
+}

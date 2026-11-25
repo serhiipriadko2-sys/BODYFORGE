@@ -1,0 +1,9 @@
+{
+  "src/lib/journalCheckpointBatch.ts": "1f887f75b0d0fdd3b43e896a6828009aae3b7bd3f188d825e824b33a8598dd44",
+  "src/lib/journalCheckpointBatch.test.ts": "e1187de3f68d5208596653058a38a6b8a93fbb22395a17f359897ace7ddb17a5",
+  "src/lib/backupArchive.ts": "f1f6b0fffa81dab33cfb208327208d4ad6c2703b0d09c52162b545ad63aa1fd9",
+  "src/components/ProgressBackupPanel.tsx": "a4bb83109667f151a0f05d48cbb3e30f508eabd8060bd4fedbed976888aee217",
+  "src/components/progressBackup.css": "13c853fc3e563793f6d3a478f06db0dce64b334ab8ae5bb0c6f7c479f6572762",
+  "qa/durable-journal-e2e.mjs": "6a6eb254bb56d1627485111476635c041ff0dbdf094c7775f5802579fac6461c",
+  "qa/mobile-e2e.mjs": "dce2c8a9c0b0ad95c69e75a86eea7d0fc53f01d256fb96013040e6863375fff7"
+}

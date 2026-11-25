@@ -16,6 +16,9 @@ describe('Hero screen composition', () => {
     expect(muscle).toBeGreaterThan(preview);
     expect(options).toBeGreaterThan(muscle);
     expect(studio).toContain('MUSCLES.map((muscle)');
+    expect(studio.indexOf('data-shirt=')).toBeGreaterThan(preview);
+    expect(studio.indexOf('data-shirt=')).toBeLessThan(muscle);
+    expect(studio).toContain('shirt: look.shirt !== true');
     expect(css).toContain('#forge .studio-hero-column');
   });
 

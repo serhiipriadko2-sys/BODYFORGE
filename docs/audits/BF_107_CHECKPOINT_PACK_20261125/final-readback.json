@@ -1,0 +1,147 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "observed": "2026-11-25T19:54:08.659623+03:00",
+  "owned": [
+    {
+      "path": "src/lib/journalCheckpointBatch.ts",
+      "bytes": 11253,
+      "sha256": "1f887f75b0d0fdd3b43e896a6828009aae3b7bd3f188d825e824b33a8598dd44"
+    },
+    {
+      "path": "src/lib/journalCheckpointBatch.test.ts",
+      "bytes": 5851,
+      "sha256": "e1187de3f68d5208596653058a38a6b8a93fbb22395a17f359897ace7ddb17a5"
+    },
+    {
+      "path": "src/lib/backupArchive.ts",
+      "bytes": 5714,
+      "sha256": "f1f6b0fffa81dab33cfb208327208d4ad6c2703b0d09c52162b545ad63aa1fd9"
+    },
+    {
+      "path": "src/components/ProgressBackupPanel.tsx",
+      "bytes": 27447,
+      "sha256": "a4bb83109667f151a0f05d48cbb3e30f508eabd8060bd4fedbed976888aee217"
+    },
+    {
+      "path": "src/components/progressBackup.css",
+      "bytes": 5513,
+      "sha256": "13c853fc3e563793f6d3a478f06db0dce64b334ab8ae5bb0c6f7c479f6572762"
+    },
+    {
+      "path": "qa/durable-journal-e2e.mjs",
+      "bytes": 21954,
+      "sha256": "6a6eb254bb56d1627485111476635c041ff0dbdf094c7775f5802579fac6461c"
+    },
+    {
+      "path": "qa/mobile-e2e.mjs",
+      "bytes": 55872,
+      "sha256": "dce2c8a9c0b0ad95c69e75a86eea7d0fc53f01d256fb96013040e6863375fff7"
+    }
+  ],
+  "sourceCount": 324,
+  "buildCount": 73,
+  "sourceManifestSha256": "e86c13b45fbc321827da608c2c65db37dc11f5af1b08c17bde3a9f355001e677",
+  "buildManifestSha256": "b4e4dc23c14d33cf5116d863dff9696875dd000b6580e2fe716a70d4617e83f8",
+  "liveChangedPaths": [],
+  "liveNewPaths": [],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": [
+    0,
+    0
+  ],
+  "passLines": {
+    "journal.log": 34,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "samples": {
+    "CHECKPOINT_PACK_SAMPLE": {
+      "rows": 32,
+      "originalBytes": 1052471,
+      "packedBytes": 3016,
+      "uniqueCheckpoints": 1,
+      "exact": true,
+      "binary": true,
+      "abortedOriginal": true,
+      "originalUntouched": true
+    },
+    "CHECKPOINT_UI_SAMPLE": {
+      "sample": 4,
+      "original": 78293,
+      "packed": 708
+    }
+  },
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 89022,
+      "sha256": "07d86fa0945db1a3cd6255e64cba4bf5c9252bcfcb2302308b0b1df409b4f3eb"
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "width": 320,
+      "height": 740,
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 202308,
+      "sha256": "29673a65211cd6c6c9277133b1dcdd7e054731819b8ba08337b17164a20177a6"
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 190300,
+      "sha256": "66756a8e905aa5e324eda44c68aa95bc704eabade7e72aa8eb54ee4304ab6227"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "width": 360,
+      "height": 800,
+      "bytes": 195697,
+      "sha256": "aab5571c4280cae27460402408e35b9a8fa6bcde8648bc1dd9962409023e5ee1"
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 219422,
+      "sha256": "0650b3abb2fab452d7093edb40002840e66e35cc1507e05582d612536ed75d88"
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93613,
+      "sha256": "413e2d34f772eb02fcfaa6642621fc0097c841ccf3094e7febf6f37dec652d37"
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 93415,
+      "sha256": "114188bd95a9b63fe4ba60d86bf74c2c04cd849c7991af7c52cd834a5eefda96"
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 148182,
+      "sha256": "924de9f07a92a6291e3bcbe8e213a4e5eb9e5e95f1a7776c54ce59329bdc1592"
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 91536,
+      "sha256": "3f198fef4907229480d87170cae36465118f3b594b3c732c00670ebe16e6bfcd"
+    }
+  ]
+}

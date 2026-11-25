@@ -1,0 +1,17 @@
+{
+  "head": "664ab80c89b244bab1014ec5c652d11c6a490470",
+  "source_count": 319,
+  "frozen_initial_match": true,
+  "live_at_freeze_match": true,
+  "freeze_changed": [],
+  "freeze_new": [],
+  "owned": {
+    "src/lib/exerciseCounter.ts": "26e2c8f748f04046538fedd6edb21bc32fb73a52a628c251e1daaa84b9281beb",
+    "src/lib/trainingCatalog.ts": "9a824bbfdb538427c16629c6b577cbf2628664093f7f761790f42a8a273f3449",
+    "src/lib/kneesReplay.test.ts": "40664a41311ccd532801ce52da692a8536225081e8e12d292a26b147ae5ee35c",
+    "qa/knees-replay-e2e.mjs": "ed4da9bb7709374d82d536a271f3ff21131cee56f26b603b381725598421bf6d"
+  },
+  "commands": {
+    "tsc": 134
+  }
+}

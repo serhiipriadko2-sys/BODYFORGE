@@ -1,0 +1,294 @@
+{
+  "assets/athlete-eyes.jpg": {
+    "bytes": 30484,
+    "sha256": "286cbc415b376fb69871d0e4dde159b20ba307e3e7497274347a5c9617e72338"
+  },
+  "assets/athlete-fabric-normal.jpg": {
+    "bytes": 20917,
+    "sha256": "6c3ec0b37b85344f26c4aa927583fbe4612a33ddb9adac4419568d190ab8103e"
+  },
+  "assets/athlete-fabric-roughness.jpg": {
+    "bytes": 31510,
+    "sha256": "0c146a3d40e551c84135d90cc8974d3fbb68bf5561ee8c6cf7b391968da90d40"
+  },
+  "assets/athlete-face-relief-normal.png": {
+    "bytes": 231443,
+    "sha256": "1740a2f83974d90745684454302d65951ebbaeeca8cb275f5e528a139251c830"
+  },
+  "assets/athlete-face-relief-source.md": {
+    "bytes": 1959,
+    "sha256": "364c12908e002018bbfa7eb9685973d98e2d0e8cc26f5a1a6166024fcd544d7f"
+  },
+  "assets/athlete-groom-source.md": {
+    "bytes": 3867,
+    "sha256": "bf587d8b94367e9d25340e8e3582ccd840d43b84d20f7c4a2157f56b289c4ad0"
+  },
+  "assets/athlete-hair-normal.png": {
+    "bytes": 228087,
+    "sha256": "a3cc46bf1b45b668c9cf8a611c0b586779559f4488d1f9cdbc74c745767a5169"
+  },
+  "assets/athlete-hair.png": {
+    "bytes": 465622,
+    "sha256": "bf407d26fc79c7fa48c7eb5ce580384b2a5cb02b23cf97e5326c3335a2d70530"
+  },
+  "assets/athlete-lip-response.png": {
+    "bytes": 48119,
+    "sha256": "8a2ca0bb0b5889304cfa03d858c03befb17f900a768b5f9974ddc4608c0ac7fc"
+  },
+  "assets/athlete-normal.png": {
+    "bytes": 425857,
+    "sha256": "e95565df62af0349a6bfeb266f505ee23e0789bcb3f83fee0ae9c84c718ed67c"
+  },
+  "assets/athlete-orm.png": {
+    "bytes": 219446,
+    "sha256": "31a794d88e45423ccf1540846d607941946ace03a38741ebc1ce0b8ebf87b02a"
+  },
+  "assets/athlete-realism-source.md": {
+    "bytes": 2882,
+    "sha256": "928f8fca852a33b65f0c6f4219b4267f38ae9fc3f327ca48ecaab94116c9b5a7"
+  },
+  "assets/athlete-scan-pores.png": {
+    "bytes": 61364,
+    "sha256": "56628fec1902669f0cabb7b2dcda7f5bc7837d042db81f068805aa2a3cae0685"
+  },
+  "assets/athlete-scan-source.md": {
+    "bytes": 2338,
+    "sha256": "ac97a1e13cf9872ed6ba24e130f5e2438aa70625e76515ca7ac6bdf5b4dd803f"
+  },
+  "assets/athlete-scan-transfer-source.md": {
+    "bytes": 1702,
+    "sha256": "309e642ac7fb2e2f520c860263b3ab15f039911e8b09bc12981fff76ccff77f4"
+  },
+  "assets/athlete-skin-dermal.jpg": {
+    "bytes": 714509,
+    "sha256": "3d5fd26f0241d9f21097b619421b0cca3352b4398e2bdbb0c67bc08bb0fe14ab"
+  },
+  "assets/athlete-skin-detail.jpg": {
+    "bytes": 668292,
+    "sha256": "e5d5d5d7eee9568b386ad4a4457714dace161c11fa45f9dd6161a437fc6deaec"
+  },
+  "assets/athlete-skin-perioral.jpg": {
+    "bytes": 714818,
+    "sha256": "8cb93dfdb95c20fcb73d5eb9b5e3f0f9e636855cf44733074cec259c87eb19c0"
+  },
+  "assets/athlete-skin-portrait.jpg": {
+    "bytes": 705959,
+    "sha256": "e633c84f1ae7647005cf622e2ba1f866bc8d72ff6905b3c97e4ee8497b7a2be7"
+  },
+  "assets/athlete-skin-source.md": {
+    "bytes": 2051,
+    "sha256": "269c03fe3b003a1c2c0ecd9ac28d6ad878c86ab2318199c364d82831238cbbd7"
+  },
+  "assets/athlete-skin.jpg": {
+    "bytes": 130759,
+    "sha256": "33077073e7c16cb850310d0697392099711463f5704a442506c89bb893cbfd70"
+  },
+  "assets/athlete-studio-source.md": {
+    "bytes": 1092,
+    "sha256": "079aa5d4316f59a1bff62f5e13942f3bb0a7fe9f6da2dc121091189d9a4e841e"
+  },
+  "assets/athlete-studio.hdr": {
+    "bytes": 424097,
+    "sha256": "47904da51b108266a26ab71e56626304cfe744c49767472ca640a22ac4067614"
+  },
+  "assets/Avatar3D-BuIsYjs4.js": {
+    "bytes": 834478,
+    "sha256": "d0566261438f85e31d32a8ed2846fc23cc8a123172aa34ff67e00062f7942243"
+  },
+  "assets/AvatarLab-Dw4et8-x.js": {
+    "bytes": 7953,
+    "sha256": "0ca88a678942495be540607042542a8d2998f4a427bed1cf2a51fe874390a1c0"
+  },
+  "assets/avatarYaw-DhFhZpCe.js": {
+    "bytes": 240,
+    "sha256": "15c6daa41d39aac75e756f17f9daa5361b3683d3aa580f54deaf6dfddae30104"
+  },
+  "assets/bodyforge-athlete-detail.glb": {
+    "bytes": 6038680,
+    "sha256": "16d3f6110d07179d71378af462a2c0ddc99d7e73207df123b3401769f18d53d6"
+  },
+  "assets/bodyforge-athlete-efficient.glb": {
+    "bytes": 4639184,
+    "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+  },
+  "assets/bodyforge-athlete-realistic.glb": {
+    "bytes": 6757648,
+    "sha256": "4c7754507aed2b48a0fd1ceaa9bfacf8bcd35befe0091afc39f8798e3a561834"
+  },
+  "assets/bodyforge-athlete.glb": {
+    "bytes": 5011480,
+    "sha256": "e08a53c9833b43b80924d64123681fceeeea5bf3347e4339db07d03e1e722f97"
+  },
+  "assets/bodyforge-brows-v2.glb": {
+    "bytes": 257884,
+    "sha256": "dde831c44d835a7c6e078cba6d1654f0f4cd8b9833581985ca87c88ac9302bad"
+  },
+  "assets/bodyforge-brows-v3.glb": {
+    "bytes": 285860,
+    "sha256": "57ebb9ddeab1b5cfd43c9efc89348a931e3aef64fd7c2af663c4baf58316b98e"
+  },
+  "assets/bodyforge-ocular-detail.glb": {
+    "bytes": 96248,
+    "sha256": "bb558f02e88846add66bf4007b9038844eae9cec7f532aef8005bb453a7bbb39"
+  },
+  "assets/bodyforge-strand-groom-v2.glb": {
+    "bytes": 805772,
+    "sha256": "1f1d2d3d40a043bfbebf185be3614854588f755d1ce3028e3498976436714bc1"
+  },
+  "assets/bodyforge-strand-groom.glb": {
+    "bytes": 383436,
+    "sha256": "3c424b36e83abfea646edefde112b7dd04ccfda9f6fd4308a44f29d5529fea9e"
+  },
+  "assets/bodyforge-trainers.glb": {
+    "bytes": 122828,
+    "sha256": "6bb23fd585b4c21c81c81c17c3d50e5f902f36936c1c88513f54cd2bd968f957"
+  },
+  "assets/camera-CfL62wDG.js": {
+    "bytes": 238,
+    "sha256": "5b9094c24a311d0ada7c48a293caf5c97b9a7ea52d2111bab1e9e021de2404ba"
+  },
+  "assets/CameraControls-D-TzxxNN.js": {
+    "bytes": 4982,
+    "sha256": "522e2a7972c5fdb237bacacc486345c95192323570b987900b40c66b133b1b4f"
+  },
+  "assets/ExerciseCatalog-CoFNtBHi.js": {
+    "bytes": 3440,
+    "sha256": "3f0003a13f6c54f6e3c4d93f465bb426450c789dd1db4c5fb15ba38ceed0a700"
+  },
+  "assets/ForgeQuickDeck-DKt0L6Dv.js": {
+    "bytes": 3049,
+    "sha256": "1f105d5b96796330035ed68894533fd500be0ac160127c92965b0657da86b8ec"
+  },
+  "assets/index-Bpq-7uH1.css": {
+    "bytes": 175568,
+    "sha256": "e248fb9f2311354157a30cd5320cb8379234f69d31f8ba4ccb5b6fc174440e80"
+  },
+  "assets/index-jd61XR9V.js": {
+    "bytes": 393203,
+    "sha256": "c763c2c3d368f1ea7ad439a94ce2185499a035d2698e2e19c79aabdc2e25c4c7"
+  },
+  "assets/jsx-runtime-DyZJNswf.js": {
+    "bytes": 8784,
+    "sha256": "006c8c36904a2f42ac8e86d3e56badc6473450e8a3988d87f12c632a6487218b"
+  },
+  "assets/male-base-mesh-base_male.glb": {
+    "bytes": 4498248,
+    "sha256": "d15a07e2b4cf1d08a3b91cb212a9a06a91438077f05a3f2a62f45351e8a71eb8"
+  },
+  "assets/profileReplacementRecovery-DiXi5PcG.js": {
+    "bytes": 14705,
+    "sha256": "2ac8ccbb96152db481bc35a53d53eef1f5fb70fcff14f894a96a2ac52327e44a"
+  },
+  "assets/ProgressBackupPanel-CEyysRK2.js": {
+    "bytes": 19423,
+    "sha256": "6f168bff749de1970e1fe6435bc1b27fa5cdff17b3a11dafb7d078e0f54fa03e"
+  },
+  "assets/ProgressBackupPanel-DJ02Li01.css": {
+    "bytes": 4399,
+    "sha256": "3bb4312061f0bea2e062b8a9153208453517e8a704a675cc45c09a03d16886fc"
+  },
+  "assets/progressImportPreview-Bg_1mHYg.js": {
+    "bytes": 16129,
+    "sha256": "81ad05261bb32cf01128ff98842d52fe9720e875130821da683e20bd6aad0c60"
+  },
+  "assets/ProgressPulseBoard-cGjz54B1.js": {
+    "bytes": 18949,
+    "sha256": "56b1a81b6af0feead6de3c987880b1cf5d83e0ae1991ecee34c1f39c50a87a33"
+  },
+  "assets/RuntimeDiagnosticsPanel-8Kd3PZzS.js": {
+    "bytes": 4896,
+    "sha256": "47684feeab2454a3e8ab848fb34732889c6d88c7ed85a130c4065f172eb734a5"
+  },
+  "assets/SettingsFaq-DKy96xGf.js": {
+    "bytes": 5227,
+    "sha256": "12673383b1d418dd6589e9d6a5c12973d4189c27170a9853e8add0b4fe7a667c"
+  },
+  "assets/shield-CwzfbeFP.js": {
+    "bytes": 262,
+    "sha256": "325e0f4b523a6ab5f086cdc9316e3b6666fb32041f4dee5e3e5bcdaf129ddec6"
+  },
+  "assets/sparkles-CBuoYzxM.js": {
+    "bytes": 498,
+    "sha256": "7a81cfdfbec00d846cbbb6b61c29d05002e332b5a3dfe11dff09f21831f14d4e"
+  },
+  "assets/StepsBoard-VcRYZuUg.js": {
+    "bytes": 7209,
+    "sha256": "be877b0d76dbebf4adda65cd87fec8bb5ff0a0dac18c11de49de0ac8b971b6c7"
+  },
+  "assets/stepsLog-xFWxcGvX.js": {
+    "bytes": 1353,
+    "sha256": "bc6485c767fd0e580149d869d64daf378aa8610d9766e701f4691a4c1ced1a0c"
+  },
+  "assets/StorageRecovery-CCdjIRM4.js": {
+    "bytes": 15532,
+    "sha256": "36b6c96ea4ea20babe7a13cdd4fd3861e2034123ad7db09dc3d38acff7497d66"
+  },
+  "assets/vision_bundle-CAYAKVpY.js": {
+    "bytes": 154276,
+    "sha256": "05e1983746c60654c3a6736b68737d5c75bd165f2241baf5bfa52d68b2660b7f"
+  },
+  "favicon.svg": {
+    "bytes": 436,
+    "sha256": "495339d1b02a00931d8f986f1822507ae4c77cfd99d2784ca071338fd39bd12b"
+  },
+  "fonts/manrope-cyrillic-variable.woff2": {
+    "bytes": 14500,
+    "sha256": "c268b459a9329e59fecf39a17618efd44c71735532048d60b12aab76a8c14914"
+  },
+  "fonts/manrope-latin-variable.woff2": {
+    "bytes": 24836,
+    "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+  },
+  "fonts/Manrope-OFL.txt": {
+    "bytes": 4387,
+    "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+  },
+  "fonts/README.md": {
+    "bytes": 2275,
+    "sha256": "c72bec53390b14d22238d07a358f58b996c10e35a5fb457c90f4b56e45c1d6b6"
+  },
+  "fonts/unbounded-cyrillic-variable.woff2": {
+    "bytes": 31424,
+    "sha256": "e30bf6a6063b6a47232bbd657e24c7cf4fdaf76fc2c50d92d9ee63e2ad2087cf"
+  },
+  "fonts/unbounded-latin-variable.woff2": {
+    "bytes": 50904,
+    "sha256": "22f9b928aa3928a896340422b54d690fbb5875c30eae4c106f029c61f2289fd6"
+  },
+  "fonts/Unbounded-OFL.txt": {
+    "bytes": 4392,
+    "sha256": "31e5d4e83955e7103c34570dd49b0570ef490800bd65b42923c0dd02445263b3"
+  },
+  "icons/bodyforge-180.png": {
+    "bytes": 3223,
+    "sha256": "43115d5e3a50e7b229ddcc5c1c11277bebf1f88d4ed5af0336480977dc086ee1"
+  },
+  "icons/bodyforge-192.png": {
+    "bytes": 3362,
+    "sha256": "c91eb5e74c5ec9371edb896e230932d799b81749a1ac638601d85adfffc43332"
+  },
+  "icons/bodyforge-512.png": {
+    "bytes": 5525,
+    "sha256": "2e4223c25a93edecec87e1280f704b386372bb2111ef0617ef7942d258bf6e8d"
+  },
+  "icons/bodyforge-icon.svg": {
+    "bytes": 514,
+    "sha256": "0d16aac886f994b2229064e4bd95fae691823287b329c3f579440a4dac24d4be"
+  },
+  "icons/bodyforge-maskable-512.png": {
+    "bytes": 4593,
+    "sha256": "0b83a297284e68381ada89b8ac4225ffb98db2f7f7ce9eb7482c8a1c26b0ebee"
+  },
+  "icons/bodyforge-maskable.svg": {
+    "bytes": 579,
+    "sha256": "b902f0a4e50a56d78bbb5879d52724114db83dd140c2c2c5306978987b243975"
+  },
+  "index.html": {
+    "bytes": 1188,
+    "sha256": "3f280a5cebf7d4c49e89f8a2c5e307a264b80693b8cbae9eb4e693e9db972e94"
+  },
+  "manifest.webmanifest": {
+    "bytes": 927,
+    "sha256": "c0f1b84ce0e4f9a79e83198aebc9de7d4f0e8b9c2176dacbff2f17a02e955f0e"
+  }
+}

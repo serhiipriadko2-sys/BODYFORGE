@@ -57,6 +57,53 @@ describe('fresh camera observations', () => {
   });
 });
 
+describe('inference frame identity', () => {
+  it('does not reopen a processed or discarded image on recalibration', () => {
+    const gate = new VideoFrameGate();
+    expect(gate.acceptObservation(1, 100, 720, 1280)).toBe(true);
+    gate.discard(1);
+    expect(gate.acceptObservation(1, 200, 1280, 720)).toBe(false);
+    gate.discard(1.2);
+    gate.discard(1.1);
+    expect(gate.acceptObservation(1.2, 300, 1280, 720)).toBe(false);
+    expect(gate.acceptObservation(1.3, 300, 1280, 720)).toBe(true);
+  });
+
+  it('keeps monotonic inference time across a new stream clock', () => {
+    const gate = new VideoFrameGate();
+    expect(gate.acceptObservation(3, 500, 720, 1280)).toBe(true);
+    gate.resetSource();
+    expect(gate.acceptObservation(0, 499, 1280, 720)).toBe(false);
+    expect(gate.acceptObservation(0, 500, 1280, 720)).toBe(false);
+    expect(gate.acceptObservation(0, 589, 1280, 720)).toBe(false);
+    expect(gate.acceptObservation(0, 590, 1280, 720)).toBe(true);
+    gate.reset();
+    expect(gate.acceptObservation(0, 0, 720, 1280)).toBe(true);
+  });
+
+  it('rejects bad observation clocks and preserves the 90ms throttle', () => {
+    const gate = new VideoFrameGate();
+    for (const now of [NaN, Infinity, -1]) {
+      expect(gate.acceptObservation(0, now, 720, 1280)).toBe(false);
+    }
+    expect(gate.acceptObservation(0, 0, 720, 1280)).toBe(true);
+    expect(gate.acceptObservation(.1, 89, 720, 1280)).toBe(false);
+    expect(gate.acceptObservation(.1, 90, 720, 1280)).toBe(true);
+    expect(gate.acceptObservation(.2, 90, 720, 1280)).toBe(false);
+    expect(gate.acceptObservation(.2, 180, 720, 1280)).toBe(true);
+    expect(gate.acceptObservation(.19, 270, 720, 1280)).toBe(false);
+  });
+
+  it('rejects missing or nonfinite intrinsic geometry and waits for a new image', () => {
+    const gate = new VideoFrameGate();
+    for (const [w,h] of [[0,1280],[720,0],[-1,1],[NaN,1],[1,Infinity]]) {
+      expect(gate.acceptObservation(1, 100, w, h)).toBe(false);
+    }
+    expect(gate.acceptObservation(1, 200, 720, 1280)).toBe(false);
+    expect(gate.acceptObservation(1.1, 200, 720, 1280)).toBe(true);
+  });
+});
+
 describe('portrait-first camera', () => {
   it('requests a portrait feed instead of the previous 1280x720 landscape feed', () => {
     const constraints = portraitCameraConstraints();
