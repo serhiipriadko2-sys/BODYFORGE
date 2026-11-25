@@ -1,0 +1,220 @@
+{
+  "head": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "commands": {
+    "epoch-1": {
+      "exit": 22,
+      "args": [
+        "node",
+        "qa/workout-epoch-e2e.mjs"
+      ]
+    },
+    "replacement": {
+      "exit": 19,
+      "args": [
+        "node",
+        "qa/profile-replacement-e2e.mjs"
+      ]
+    },
+    "preview-file": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/import-preview-e2e.mjs"
+      ]
+    },
+    "privacy": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/privacy-server-e2e.mjs"
+      ]
+    },
+    "dedup": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "unit": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ]
+    },
+    "build": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-navigation-r1\\dist"
+      ]
+    },
+    "bundle": {
+      "exit": 0,
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ]
+    },
+    "tower20": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/tower20-e2e.mjs"
+      ]
+    },
+    "mobile": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/mobile-e2e.mjs"
+      ]
+    }
+  },
+  "preview": {
+    "url": "http://127.0.0.1:53265",
+    "http": 200,
+    "entry": "/assets/index-BH8oZBal.js",
+    "bytes": 388883,
+    "sha256": "97685b341b39bfc9bff723da543900ad7028aedb5b740c55e7611dc0455a914b"
+  },
+  "drift": [],
+  "diffCheck": 0,
+  "gitHeadAfter": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "file": {
+    "bytes": 14580,
+    "sha256": "42cd57201e6aa0edda47fbece1a222eb4fb884ea1f98adb6b097347a10f5e8ba",
+    "path": "qa/workout-epoch-e2e.mjs"
+  },
+  "beforeSha256": "f75c58f5602bc30be22f4a0f551b22048a5e43ba42d3aa21b9b6436acf8b4a5d",
+  "repeat": {
+    "epoch-repeat-1": 0,
+    "epoch-repeat-2": 0,
+    "epoch-repeat-3": 0,
+    "replacement-repeat": 0
+  },
+  "purpose": "Assert epoch-only conflict against the reloaded app document. Tag the outgoing JS window before reload. Retry only the read predicate on transient navigation errors.",
+  "baseline": "Initial QA on frozen product timed out waiting for a conflict. The former reload predicate also matched the outgoing document. This sequencing defect is established; the cause of that single timeout was not instrumented.",
+  "rollback": "Reverse only the two reload call sites and the Client navigation wait in the QA diff against this HEAD. No storage or application code change.",
+  "limitations": "Settings file selection remains preview-only. Fixture Chrome camera, no physical Android or power loss. Initial combined run superseded by the stated HEAD. Initial readiness timeouts are retained.",
+  "logs": {
+    "build.log": {
+      "bytes": 3267,
+      "sha256": "611936d67d19a75acf853b27fe6c4a22688d07945ea8049f71a7ab635e91a67f",
+      "summary": []
+    },
+    "bundle.log": {
+      "bytes": 281,
+      "sha256": "db25bf72286e9d8567e48ea6590649c4dd19ea543d95220c1a457422530ac36b",
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":388883,\"entryGzipBytes\":119151,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":107878,\"entryReductionPercent\":21.7,\"entryName\":\"index-BH8oZBal.js\",\"poseName\":\"vision_bundle-O0cA3fzJ.js\"}"
+      ]
+    },
+    "dedup.log": {
+      "bytes": 3067,
+      "sha256": "2f8728cd9bece3640e7378c9ecc58c6eddcee43cc2fcdc4f863a56ed1950ba8b",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":34,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "epoch-1.log": {
+      "bytes": 88,
+      "sha256": "8729d7f0769f7523d9ce61711929de5085c617782a27e530264791e33d2334e7",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_FAIL TimeoutError: The operation was aborted due to timeout"
+      ]
+    },
+    "epoch-repeat-1.log": {
+      "bytes": 1749,
+      "sha256": "feab86e02fb4aa49092311a2731c8f83dba896faaca15e802f44c65db38ee95a",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "epoch-repeat-2.log": {
+      "bytes": 1749,
+      "sha256": "42f33341d51fac8335976002bb627ee263b85534b4d35f24cd6fdd7e897258a1",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "epoch-repeat-3.log": {
+      "bytes": 1749,
+      "sha256": "202d53498f99c0b0ba486b30a866cccc5c063f6e4ca526ebddb8270986b8863d",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "mobile.log": {
+      "bytes": 7926,
+      "sha256": "3a90d0741b4bc63530aedca98dc331d0c389ef92488f3f2e9d505571972bb727",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "preview-file.log": {
+      "bytes": 1372,
+      "sha256": "e6acd8b1429f7460b123944ddbe9a58bcb85d35eb8392e786ea9cc0604116006",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=24",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "replacement-repeat.log": {
+      "bytes": 4005,
+      "sha256": "ac2678ba81c937881b4c9e7e19616ec5b4666482105f60682d40f4d05f83ef9b",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "replacement.log": {
+      "bytes": 87,
+      "sha256": "fbf3803822cba8646b07a6802f2c3568a3477634f109bf771140446c9633aeb0",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_FAIL TimeoutError: The operation was aborted due to timeout"
+      ]
+    },
+    "tower20.log": {
+      "bytes": 1877,
+      "sha256": "263a2eec18d909bffd1bb6c01e0a89f8d070b22d5e8ff1d9e7f697bd48fe2ed6",
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "unit.log": {
+      "bytes": 486,
+      "sha256": "9131988313ede16f52b286694feb3b613fd715349e8b956b2c4f055bef818fa1",
+      "summary": [
+        "Tests  809 passed (809)"
+      ]
+    }
+  }
+}

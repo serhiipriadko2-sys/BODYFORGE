@@ -1,0 +1,334 @@
+diff --git a/qa/import-preview-e2e.mjs b/qa/import-preview-e2e.mjs
+index c481b07..0198c49 100644
+--- a/qa/import-preview-e2e.mjs
++++ b/qa/import-preview-e2e.mjs
+@@ -1,5 +1,5 @@
+ // BF-106: actual Settings file input and read-only import comparison.
+-// Synthetic fixture only; no replacement operation exists.
++// Synthetic file fixtures exercise preview, cancellation and explicit replacement.
+ // Only disposable Chrome, no real camera, owner profile, Downloads or network upload.
+ import fs from 'node:fs';
+ import os from 'node:os';
+@@ -29,8 +29,8 @@ function cdp(method, params = {}) {
+     catch (error) { clearTimeout(timer); pending.delete(id); reject(error); }
+   });
+ }
+-async function ev(expression) {
+-  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
++async function ev(expression, userGesture = false) {
++  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true, userGesture });
+   if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+   return result.result.value;
+ }
+@@ -214,6 +214,44 @@ try {
+   await sleep(300);
+   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'reload preserves exact original primary');
+   await unchanged('reload');
++  await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
++  await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings reopened');
++  await ev("document.querySelector('.progress-backup-file-checker').open=true");
++  async function requestReplacement(){
++    await choose(backup.json);
++    await until("!!document.querySelector('[data-action=request-file-replacement]')",'compatible file eligible');
++    await ev("document.querySelector('[data-action=request-file-replacement]').click()");
++    await until("!!document.querySelector('[data-action=confirm-file-replacement]')",'explicit decision offered');
++    check(await ev("document.querySelector('[data-action=confirm-file-replacement]').getBoundingClientRect().height>=44"),'mobile confirmation has a 44px touch target');
++  }
++  await requestReplacement();
++  await cancel();
++  await unchanged('cancel explicit replacement');
++  await requestReplacement();
++  // A separate same-origin tab holds the real lock until the confirmed operation queues.
++  await ev(`window.__bfPeer=window.open('about:blank','_blank');if(!__bfPeer)throw Error('peer unavailable'); __bfPeer.eval("navigator.locks.request('bodyforge:pilot:v1:write',()=>new Promise(resolve=>{window.releaseFileLock=resolve}))");true`, true);
++  await until("typeof __bfPeer.releaseFileLock==='function'",'peer holds profile lock');
++  await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
++  await until("navigator.locks.query().then(q=>q.pending.some(l=>l.name==='bodyforge:pilot:v1:write'))",'confirmed operation waits for profile lock');
++  await ev("window.__bfFallback=localStorage.getItem('bodyforge:pilot:v1:backup'); __bfPeer.localStorage.setItem('bodyforge:pilot:v1:backup',__bfFallback+' '); __bfPeer.releaseFileLock();true");
++  await until("!document.querySelector('[data-action=confirm-file-replacement]')",'changed fallback invalidates confirmation');
++  check(await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null && localStorage.getItem('bodyforge:pilot:v1:backup')===__bfFallback+' '") &&
++    await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'stale approval preserves peer update and original primary');
++  await ev("__bfPeer.localStorage.setItem('bodyforge:pilot:v1:backup',__bfFallback);__bfPeer.close();true");
++  await until("document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle'",'fresh comparison required');
++  await requestReplacement();
++  await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
++  await until("document.querySelector('[data-replacement-recovery]')?.dataset.replacementRecovery==='applied'",'selected file reaches verified recovery screen');
++  const candidate=JSON.parse(backup.json);
++  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
++    await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'file import stages exact primary and fallback');
++  await ev("document.querySelector('[data-action=request-replacement-keep]').click()");
++  await ev("document.querySelector('[data-action=confirm-replacement-keep]').click()");
++  await until("!!document.querySelector('[data-action=open-restored-profile]')",'accepted file verified');
++  await ev("document.querySelector('[data-action=open-restored-profile]').click()");
++  await until("!!document.querySelector('.app-shell[data-fighter-created=true]')",'accepted fighter opens');
++  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
++    await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null"),'adopted file does not generate a new reward');
+   check(errors.length===0,'no uncaught browser exceptions');
+   console.log('BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions='+assertions);
+ } catch(error) {
+diff --git a/src/components/ProgressBackupPanel.tsx b/src/components/ProgressBackupPanel.tsx
+index bc43144..d988028 100644
+--- a/src/components/ProgressBackupPanel.tsx
++++ b/src/components/ProgressBackupPanel.tsx
+@@ -1,8 +1,11 @@
+-import { useEffect, useRef, useState } from 'react';
+-import type { Profile } from '../lib/progression';
++import { useEffect, useLayoutEffect, useRef, useState } from 'react';
++import { loadProfileState, type Profile } from '../lib/progression';
+ import type { CompletedWorkoutResult } from '../lib/workoutJournal';
+ import { prepareProgressBackup, requestProgressBackupDownload, type PreparedProgressBackup } from '../lib/progressBackup';
+ import { previewProgressImportFile, type ProgressImportPreview } from '../lib/progressImportPreview';
++import { readProfileEpoch } from '../lib/profileEpoch';
++import type { ReplacementPlan } from '../lib/profileReplacement';
++import { prepareFileReplacement, stageFileReplacement } from '../lib/profileReplacementRecovery';
+ import './progressBackup.css';
+ 
+ interface Props {
+@@ -11,9 +14,7 @@ interface Props {
+   disabled: boolean;
+ }
+ 
+-/** Manual, read-only device backup. Always require a fresh direct click to
+- * download; never automatically upload, overwrite or restore game progress.
+- */
++/** Preview and confirmation share the same immutable replacement plan. */
+ export default function ProgressBackupPanel({ profile, pendingResult, disabled }: Props) {
+   const [status, setStatus] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
+   const [prepared, setPrepared] = useState<PreparedProgressBackup | null>(null);
+@@ -23,26 +24,39 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+   const [inspecting, setInspecting] = useState(false);
+   const generation = useRef(0);
+   const inspectionGeneration = useRef(0);
++  const operation = useRef<AbortController | null>(null);
++  const [plan, setPlan] = useState<ReplacementPlan | null>(null);
++  const [confirming, setConfirming] = useState(false);
++  const [staging, setStaging] = useState(false);
++  const [importMessage, setImportMessage] = useState('');
+ 
+-  // A new profile revision invalidates any snapshot prepared from old data.
+-  useEffect(() => {
+-    generation.current++;
++  function invalidateImport() {
+     inspectionGeneration.current++;
++    operation.current?.abort();
++    operation.current = null;
++    setPlan(null);
++    setConfirming(false);
++    setStaging(false);
++    setImportMessage('');
+     setPreview(null);
+     setInspecting(false);
++  }
++
++  // A new profile revision invalidates any snapshot prepared from old data.
++  useLayoutEffect(() => {
++    generation.current++;
++    invalidateImport();
+     setPrepared(null);
+     setStatus('idle');
+     setMessage('');
+   }, [profile, pendingResult]);
+ 
+-  useEffect(() => {
++  useLayoutEffect(() => {
+     if (!disabled) return;
+     generation.current++;
+-    inspectionGeneration.current++;
++    invalidateImport();
+     setPrepared(null);
+     setStatus('idle');
+-    setInspecting(false);
+-    setPreview(null);
+   }, [disabled]);
+ 
+   useEffect(() => {
+@@ -51,9 +65,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+       // React profile object. Never offer a now-stale backup as current data.
+       if (event.key !== null && !event.key.startsWith('bodyforge:')) return;
+       generation.current++;
+-      inspectionGeneration.current++;
+-      setPreview(null);
+-      setInspecting(false);
++      invalidateImport();
+       setPrepared(null);
+       setStatus('idle');
+       setMessage('Данные изменились в другой вкладке. Подготовь новую копию.');
+@@ -62,7 +74,15 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+     return () => window.removeEventListener('storage', changedElsewhere);
+   }, []);
+ 
+-  useEffect(() => () => { generation.current++; inspectionGeneration.current++; }, []);
++  useLayoutEffect(() => {
++    window.addEventListener('pagehide', invalidateImport);
++    return () => {
++      window.removeEventListener('pagehide', invalidateImport);
++      generation.current++;
++      inspectionGeneration.current++;
++      operation.current?.abort();
++    };
++  }, []);
+ 
+   async function prepare() {
+     if (disabled || status === 'preparing') return;
+@@ -101,19 +121,42 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+ 
+   async function inspectFile(file: File) {
+     if (disabled) return;
+-    const request = ++inspectionGeneration.current;
+-    setPreview(null);
++    invalidateImport();
++    const request = inspectionGeneration.current;
++    const controller = new AbortController();
++    operation.current = controller;
+     setInspecting(true);
+-    const result = await previewProgressImportFile(file, profile);
+-    if (request !== inspectionGeneration.current) return;
++    const current = loadProfileState();
++    let epoch: string | null | undefined;
++    try { epoch = readProfileEpoch(); } catch { /* Comparison remains available. */ }
++    let json: string | undefined;
++    const result = await previewProgressImportFile(file, current.status === 'ready' ? current.profile : profile,
++      raw => { json = raw; });
++    if (controller.signal.aborted) return;
++    const replacement = json && !pendingResult && current.status === 'ready' && current.revision !== null && epoch !== undefined
++      ? await prepareFileReplacement(json, current.revision, epoch, controller.signal) : null;
++    if (controller.signal.aborted || request !== inspectionGeneration.current) return;
++    setPlan(replacement);
+     setPreview(result);
+     setInspecting(false);
++    if (result.state === 'preview-ready' && !replacement) {
++      setImportMessage('Доступен только просмотр. Для замены нужны тот же боец, совместимая история наград, совпадающие настройки и пустые журналы.');
++    }
+   }
+ 
+-  function cancelPreview() {
+-    inspectionGeneration.current++;
+-    setPreview(null);
+-    setInspecting(false);
++  async function confirmReplacement() {
++    const controller = operation.current;
++    if (!controller || controller.signal.aborted || disabled || pendingResult || !plan || !confirming || staging) return;
++    setStaging(true);
++    const result = await stageFileReplacement(plan, controller.signal);
++    if (result?.status === 'applied-pending-finalization' || result?.status === 'recovery-required') {
++      window.location.reload();
++      return;
++    }
++    if (controller.signal.aborted) return;
++    invalidateImport();
++    setImportMessage(result?.status === 'unchanged' ? 'Эта копия уже сохранена на устройстве.'
++      : 'Замена не подтверждена. Выбери файл заново, чтобы сравнить его с актуальным сохранением.');
+   }
+ 
+   return (
+@@ -123,7 +166,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+         <span className="section-index">ЗАЩИТА ПРОГРЕССА · ЛОКАЛЬНО</span>
+         <h3>СОХРАНИ СВОЕГО БОЙЦА</h3>
+         <p>Тренировки, XP, покупки, внешность и настройки хранятся в браузере. Перед очисткой данных или сменой телефона сохрани копию в JSON.</p>
+-        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Можно проверить копию и сравнить прогресс; замена сохранения пока недоступна.</small>
++        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Сначала сравни прогресс. Для совместимой копии можно подтвердить замену.</small>
+         <details className="progress-install-help">
+           <summary>КАК УСТАНОВИТЬ BODYFORGE НА ТЕЛЕФОН</summary>
+           <p><strong>Android / Chrome:</strong> меню браузера → «Установить приложение» или «Добавить на главный экран».</p>
+@@ -135,7 +178,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+           <summary>ПРОВЕРИТЬ СКАЧАННЫЙ JSON</summary>
+           <label htmlFor="bf-verify-local-backup">Выбери резервную копию с устройства. Файл останется в этом браузере.</label>
+           <input id="bf-verify-local-backup" data-action="inspect-progress-file"
+-            type="file" accept=".json,application/json" disabled={disabled || inspecting}
++            type="file" accept=".json,application/json" disabled={disabled || inspecting || staging}
+             onChange={(event) => {
+               const file = event.currentTarget.files?.[0];
+               event.currentTarget.value = '';
+@@ -176,9 +219,18 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+           {preview && preview.warnings.length > 0 && (
+             <ul className="progress-import-warnings" data-import-warnings>{preview.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>
+           )}
++          {plan && <div className="progress-backup-actions">
++            {!confirming ? <button type="button" data-action="request-file-replacement" disabled={disabled}
++            onClick={() => setConfirming(true)}>Перейти к замене…</button> : <div role="group" aria-label="Подтверждение замены">
++            <p>Основной профиль и резервная копия будут заменены данными выбранного файла. На следующем экране можно оставить новую копию или вернуть обе прежние.</p>
++            <button type="button" data-action="confirm-file-replacement" disabled={disabled || staging}
++              onClick={() => { void confirmReplacement(); }}>{staging ? 'Проверяем сохранение…' : 'Подтвердить замену'}</button>
++            </div>}
++          </div>}
++          {importMessage && <p role="status">{importMessage}</p>}
+           {(inspecting || preview) && <button type="button" className="progress-import-cancel"
+-            data-action="cancel-import-preview" onClick={cancelPreview}>ОТМЕНИТЬ ПРОСМОТР</button>}
+-          <small>Это проверка структуры файла, не доказательство подлинности наград и не импорт.
++            data-action="cancel-import-preview" onClick={invalidateImport}>ОТМЕНИТЬ ПРОСМОТР</button>}
++          <small>Просмотр файла сам по себе не изменяет прогресс.
+             Не удаляй данные браузера без проверенной полной копии и плана восстановления.</small>
+         </details>
+       </div>
+diff --git a/src/lib/profileReplacementRecovery.ts b/src/lib/profileReplacementRecovery.ts
+index add50bc..99dfffa 100644
+--- a/src/lib/profileReplacementRecovery.ts
++++ b/src/lib/profileReplacementRecovery.ts
+@@ -9,11 +9,11 @@ import { AVATAR_LOOK_KEY } from './avatarLook';
+ import { APPEARANCE_KEY } from './appearance';
+ import { MANUAL_STEPS_KEY } from './stepsLog';
+ import { DAILY_PLAN_KEY } from './dailyPlan';
+-import { inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
++import { planProfileReplacement, executeProfileReplacement, type ReplacementPlan, inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
+   type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
+ 
+ /**
+- * BF-106: explicit recovery of an already staged transaction. No apply API.
++ * BF-106: local file replacement and recovery under ordered locks.
+  * Observe both local and durable sources under the existing profile lock.
+  * Profile -> exclusive journal lock prevents an independent stage between
+  * the durable snapshot and rollback read-back. Never delete/replay records here,
+@@ -59,6 +59,30 @@ async function lockedPort(signal?: AbortSignal): Promise<ReplacementPort | null>
+   };
+ }
+ 
++async function withImportPort<T>(signal: AbortSignal, action: (port: ReplacementPort) => T): Promise<T | null> {
++  const profile = await withProfileWriteLock(async () => {
++    const journal = await withDurableJournalGate('exclusive', async () => {
++      const port = await lockedPort(signal);
++      return port && !signal.aborted ? action(port) : null;
++    }, { signal });
++    return journal.status === 'completed' ? journal.value : null;
++  }, { signal });
++  return profile.status === 'completed' ? profile.value : null;
++}
++
++export function prepareFileReplacement(json: string, revision: string, epoch: string | null, signal: AbortSignal) {
++  return withImportPort(signal, port => {
++    const current = port.observe();
++    if (port.getMarker() !== null || current.pair.primary !== revision || current.epoch !== epoch) return null;
++    const candidate = planProfileReplacement(json, current);
++    return candidate.status === 'planned' ? candidate.plan : null;
++  });
++}
++
++export function stageFileReplacement(plan: ReplacementPlan, signal: AbortSignal) {
++  return withImportPort(signal, port => executeProfileReplacement(port, plan, 'replace'));
++}
++
+ /** Raw marker is kept in RAM for exact confirmation and local export.
+  * A malformed marker is not automatically removed, even when rollback is blocked. */
+ export async function readReplacementRecovery(signal?: AbortSignal): Promise<ReplacementRecoveryView> {
+diff --git a/src/lib/progressImportPreview.ts b/src/lib/progressImportPreview.ts
+index c6bdeff..2fac8ab 100644
+--- a/src/lib/progressImportPreview.ts
++++ b/src/lib/progressImportPreview.ts
+@@ -129,6 +129,7 @@ function compare(json: string, current: ImportProfileSummary, currentId?: string
+ /** Reject oversize before reading, and invalid UTF-8 instead of replacing bytes. */
+ export async function previewProgressImportFile(
+   file: Pick<File, 'size' | 'arrayBuffer'>, currentProfile: Profile,
++  onComparable?: (validatedJson: string) => void,
+ ): Promise<ProgressImportPreview> {
+   const current = summary(currentProfile);
+   const currentId = currentProfile.profileId;
+@@ -140,7 +141,10 @@ export async function previewProgressImportFile(
+     if (bytes.byteLength !== size || bytes.byteLength > MAX_PROGRESS_BACKUP_BYTES) {
+       return invalid(current, 'Размер прочитанного файла не совпадает с выбранным.');
+     }
+-    return compare(new TextDecoder('utf-8', { fatal: true }).decode(bytes), current, currentId);
++    const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
++    const preview = compare(json, current, currentId);
++    if (preview.state === 'preview-ready') onComparable?.(json);
++    return preview;
+   } catch {
+     return invalid(current, 'Не удалось прочитать файл как корректный UTF-8 JSON.');
+   }

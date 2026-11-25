@@ -116,7 +116,8 @@ function compare(json: string, current: ImportProfileSummary, currentId?: string
       incoming.repetitions < current.repetitions || incoming.holdSeconds < current.holdSeconds) {
     warnings.push('В копии часть показателей меньше текущих. Замена может потерять прогресс.');
   }
-  if (inspection.journalRecords || inspection.durableRecords || inspection.quarantineRecords || data.pendingResult != null ||
+  if (inspection.journalRecords || inspection.quarantineRecords ||
+      (Array.isArray(data.durableResults) && data.durableResults.some(row => row.state !== 'settled')) || data.pendingResult != null ||
       (Array.isArray(data.pendingResults) && data.pendingResults.length > 0)) {
     warnings.push('Журнал и карантин требуют отдельного плана восстановления; выплаты не воспроизводятся.');
   }
@@ -129,6 +130,7 @@ function compare(json: string, current: ImportProfileSummary, currentId?: string
 /** Reject oversize before reading, and invalid UTF-8 instead of replacing bytes. */
 export async function previewProgressImportFile(
   file: Pick<File, 'size' | 'arrayBuffer'>, currentProfile: Profile,
+  onComparable?: (validatedJson: string) => void,
 ): Promise<ProgressImportPreview> {
   const current = summary(currentProfile);
   const currentId = currentProfile.profileId;
@@ -140,7 +142,10 @@ export async function previewProgressImportFile(
     if (bytes.byteLength !== size || bytes.byteLength > MAX_PROGRESS_BACKUP_BYTES) {
       return invalid(current, 'Размер прочитанного файла не совпадает с выбранным.');
     }
-    return compare(new TextDecoder('utf-8', { fatal: true }).decode(bytes), current, currentId);
+    const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    const preview = compare(json, current, currentId);
+    if (preview.state === 'preview-ready') onComparable?.(json);
+    return preview;
   } catch {
     return invalid(current, 'Не удалось прочитать файл как корректный UTF-8 JSON.');
   }

@@ -2,6 +2,7 @@ import { STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY } from 
 import { withProfileWriteLock } from './profileLock';
 import { PROFILE_EPOCH_KEY } from './profileEpoch';
 import { withDurableJournalGate } from './durableJournalGate';
+import { snapshotSettledHistory, type SettledImportHistory } from './settledImportHistory';
 import { readDurableJournal } from './durableJournal';
 import { readResultJournal, readQuarantinedResults } from './workoutJournal';
 import { readProfileQuarantine } from './profileQuarantineExport';
@@ -9,11 +10,11 @@ import { AVATAR_LOOK_KEY } from './avatarLook';
 import { APPEARANCE_KEY } from './appearance';
 import { MANUAL_STEPS_KEY } from './stepsLog';
 import { DAILY_PLAN_KEY } from './dailyPlan';
-import { inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
+import { planProfileReplacement, executeProfileReplacement, type ReplacementPlan, inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
   type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
 
 /**
- * BF-106: explicit recovery of an already staged transaction. No apply API.
+ * BF-106: local file replacement and recovery under ordered locks.
  * Observe both local and durable sources under the existing profile lock.
  * Profile -> exclusive journal lock prevents an independent stage between
  * the durable snapshot and rollback read-back. Never delete/replay records here,
@@ -25,7 +26,7 @@ export interface ReplacementRecoveryView {
 }
 const unavailable = (): ReplacementRecoveryView => ({ state: 'unavailable', marker: null });
 
-function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>>): ReplacementObservation {
+function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>>, settledHistory?: SettledImportHistory): ReplacementObservation {
   const journal = readResultJournal(), quarantine = readQuarantinedResults(), profiles = readProfileQuarantine();
   return {
     epoch: localStorage.getItem(PROFILE_EPOCH_KEY),
@@ -36,7 +37,7 @@ function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>
     },
     sourcesReady: durable.status === 'ready' && journal.status === 'ready' &&
       quarantine.status === 'ready' && profiles.status === 'ready',
-    pendingRecords: journal.entries.length, durableRecords: durable.entries.length,
+    settledHistory, pendingRecords: journal.entries.length, durableRecords: durable.entries.length,
     quarantineRecords: quarantine.entries.length + profiles.entries.length,
   };
 }
@@ -44,8 +45,10 @@ function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>
 async function lockedPort(signal?: AbortSignal): Promise<ReplacementPort | null> {
   const durable = await readDurableJournal();
   if (signal?.aborted) return null;
+  const settledHistory = durable.status === 'ready' ? await snapshotSettledHistory(durable.entries) : undefined;
+  if (signal?.aborted) return null;
   return {
-    observe: () => localObservation(durable),
+    observe: () => localObservation(durable, settledHistory),
     getMarker: () => localStorage.getItem(PROFILE_REPLACEMENT_MARKER_KEY),
     set(key, value) {
       // No await between core read-back and these narrowly scoped mutations.
@@ -57,6 +60,30 @@ async function lockedPort(signal?: AbortSignal): Promise<ReplacementPort | null>
       if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
     },
   };
+}
+
+async function withImportPort<T>(signal: AbortSignal, action: (port: ReplacementPort) => T): Promise<T | null> {
+  const profile = await withProfileWriteLock(async () => {
+    const journal = await withDurableJournalGate('exclusive', async () => {
+      const port = await lockedPort(signal);
+      return port && !signal.aborted ? action(port) : null;
+    }, { signal });
+    return journal.status === 'completed' ? journal.value : null;
+  }, { signal });
+  return profile.status === 'completed' ? profile.value : null;
+}
+
+export function prepareFileReplacement(json: string, revision: string, epoch: string | null, signal: AbortSignal) {
+  return withImportPort(signal, port => {
+    const current = port.observe();
+    if (port.getMarker() !== null || current.pair.primary !== revision || current.epoch !== epoch) return null;
+    const candidate = planProfileReplacement(json, current);
+    return candidate.status === 'planned' ? candidate.plan : null;
+  });
+}
+
+export function stageFileReplacement(plan: ReplacementPlan, signal: AbortSignal) {
+  return withImportPort(signal, port => executeProfileReplacement(port, plan, 'replace'));
 }
 
 /** Raw marker is kept in RAM for exact confirmation and local export.

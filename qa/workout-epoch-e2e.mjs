@@ -36,7 +36,24 @@ class Client {
   }
   async js(expression){const r=await this.cdp('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
     if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value}
-  async until(expression,label){const end=Date.now()+10000;while(Date.now()<end){if(await this.js(expression))return;await sleep(30)}throw Error('TIMEOUT '+label)}
+  async until(expression,label){
+    const end=Date.now()+10000;
+    while(Date.now()<end){
+      try { if(await this.js(expression))return; }
+      catch(error){
+        if(this.socket.readyState!==WebSocket.OPEN ||
+          !/Inspected target navigated or closed|Cannot find context with specified id|Execution context was destroyed/.test(String(error))) throw error;
+      }
+      await sleep(30);
+    }
+    throw Error('TIMEOUT '+label);
+  }
+  async reloadGame(label){
+    // CDP may acknowledge reload while the previous document still has a game shell.
+    await this.js('window.__bfEpochOutgoingDocument = true');
+    await this.cdp('Page.reload',{ignoreCache:true});
+    await this.until("!window.__bfEpochOutgoingDocument && !!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')",label);
+  }
   dispose(){this.reject();this.socket.close()}
 }
 async function tab(){
@@ -108,8 +125,7 @@ try{
  const paidRaw=await b.js('localStorage.getItem(p.STORAGE_KEY)'),wallet=JSON.parse(paidRaw);
  check(wallet.xp===520&&wallet.coins===235&&wallet.workouts.length===1,'one current completion pays exactly 120 XP and 35 coins');
  await replay(b);check(await b.js('localStorage.getItem(p.STORAGE_KEY)')===paidRaw,'repeat replay does not duplicate reward');
- await c.cdp('Page.reload',{ignoreCache:true});
- await c.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')",'fresh app after epoch-aware reward');
+ await c.reloadGame('fresh app after epoch-aware reward');
  const another=await prepare(b);check(another.session.sessionId.startsWith('epoch:'+A+':'),'next session retains current lineage before new fixture import');
  await rotateFixture(a,B);
  // Identical primary bytes are intentional: an epoch-only change must still
@@ -125,7 +141,7 @@ try{
  check(pendingEntries.length===1&&pendingEntries[0].raw===another.raw,'second late original is still available');
  const q=await b.js("l.withProfileWriteLock(()=>dw.quarantineDurableWorkouts(j.readResultJournal().entries,{signal:new AbortController().signal,isCurrent:()=>true}))");
  check(q.value.status==='saved','explicit second quarantine succeeds without data deletion');
- await c.cdp('Page.reload',{ignoreCache:true});await c.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')",'restart after second quarantine');
+ await c.reloadGame('restart after second quarantine');
  check(await a.js('localStorage.getItem(p.STORAGE_KEY)')===paidRaw,'repeated restart preserves exact wallet and ledger');
  await a.js("localStorage.setItem(ep.PROFILE_EPOCH_KEY,'{corrupt-metadata');true");
  await c.until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'",'unreadable lineage fails closed');

@@ -1,14 +1,14 @@
 import { STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY, parseProfile } from './progression';
+import { coversPaidHistory, matchesExportedHistory, type SettledImportHistory } from './settledImportHistory';
 import { MAX_PROGRESS_BACKUP_BYTES } from './progressBackupInspector';
 import { inspectImportProfile, previewProgressImportJson } from './progressImportPreview';
 import { previewReceiptMigration } from './receiptCompatibility';
 import { PROFILE_EPOCH_KEY, validProfileEpoch } from './profileEpoch';
 
 /**
- * BF-106 replacement core, NOT wired to the app or its storage hook yet.
+ * BF-106 profile replacement and recovery core.
  * Caller must acquire the existing exclusive profile lock and observe all
  * relevant stores under it. No browser-global storage or reward APIs here.
- * Until startup recovery and retention gates exist, use disposable QA only.
  */
 export { PROFILE_REPLACEMENT_MARKER_KEY } from './progression';
 type Raw = string | null;
@@ -24,10 +24,12 @@ export interface ReplacementObservation {
   readonly sourcesReady: boolean;
   readonly pendingRecords: number;
   readonly durableRecords: number;
+  readonly settledHistory?: SettledImportHistory;
   readonly quarantineRecords: number;
 }
 export interface ReplacementPlan {
   readonly transactionId: string;
+  readonly settledDigest?: string;
   readonly beforeEpoch: Raw;
   readonly before: ProfilePair;
   readonly after: ProfilePair;
@@ -75,18 +77,18 @@ const record = (value: unknown): value is Record<string, unknown> =>
 const rawValue = (v: unknown): v is Raw => v === null || typeof v === 'string';
 const pairEqual = (a: ProfilePair, b: ProfilePair) => a.primary === b.primary && a.backup === b.backup;
 const auxiliaryEqual = (a: Auxiliary, b: Auxiliary) => AUX_KEYS.every(k => a[k] === b[k]);
-function quiet(observed: ReplacementObservation): boolean {
+function quiet(observed: ReplacementObservation, expectedDigest?: string): boolean {
+  const history = observed.settledHistory;
   return observed.sourcesReady === true && (observed.epoch === null || validProfileEpoch(observed.epoch)) && observed.pendingRecords === 0 &&
-    observed.durableRecords === 0 && observed.quarantineRecords === 0 &&
+    observed.durableRecords === (history?.rows.size ?? 0) && history?.digest === expectedDigest && observed.quarantineRecords === 0 &&
     AUX_KEYS.every(k => rawValue(observed.auxiliary[k]));
 }
 function blocked(reason: string): PlanResult { return { status: 'blocked', reason }; }
 
 /** Deliberately narrow pilot: profile pair only, no journal/auxiliary merge.
- * Incoming and current sources with even settled journal records require a
- * separate replay-safe plan. Old records are never normalized before writing. */
+ * Settled rows stay in IndexedDB. File and device must contain identical paid originals. */
 export function planProfileReplacement(json: string, observed: ReplacementObservation): PlanResult {
-  if (!quiet(observed)) return blocked('current-sources-not-quiet');
+  if (!quiet(observed, observed.settledHistory?.digest)) return blocked('current-sources-not-quiet');
   const current = observed.pair.primary === null ? parseProfile(null) : (() => {
     const view = previewReceiptMigration(observed.pair.primary!);
     return view.status === 'preview-ready' ? view.profile : null;
@@ -97,18 +99,20 @@ export function planProfileReplacement(json: string, observed: ReplacementObserv
   const preview = previewProgressImportJson(json, current);
   if (preview.state !== 'preview-ready') return blocked('incoming-not-compatible');
   const data = JSON.parse(json) as Record<string, unknown>;
-  if (preview.inspection.journalRecords || preview.inspection.durableRecords || preview.inspection.quarantineRecords ||
+  if (preview.inspection.journalRecords || !matchesExportedHistory(data.durableResults, observed.settledHistory) || preview.inspection.quarantineRecords ||
       data.pendingResult != null || (data.pendingResults !== undefined &&
         (!Array.isArray(data.pendingResults) || data.pendingResults.length))) return blocked('incoming-journal-not-empty');
   const aux = data.storedAuxiliaryRaw as Auxiliary;
   if (!auxiliaryEqual(observed.auxiliary, aux)) return blocked('auxiliary-replacement-unsupported');
   if (observed.pair.primary !== null && preview.identity !== 'same') return blocked('identity-not-confirmed');
   const after = { primary: data.storedProfileRaw as string, backup: data.storedBackupRaw as Raw };
+  if (!coversPaidHistory(observed.pair.primary, observed.settledHistory) ||
+      !coversPaidHistory(after.primary, observed.settledHistory)) return blocked('settled-payment-unproven');
   if (!safeTransition(observed.pair, after)) return blocked('history-or-identity-unsupported');
   let transactionId: string;
   try { transactionId = crypto.randomUUID(); } catch { return blocked('transaction-id-unavailable'); }
   const plan: ReplacementPlan = Object.freeze({
-    transactionId, beforeEpoch: observed.epoch,
+    transactionId, beforeEpoch: observed.epoch, settledDigest: observed.settledHistory?.digest,
     before: Object.freeze({ primary: observed.pair.primary, backup: observed.pair.backup }), after: Object.freeze(after),
     auxiliary: Object.freeze(Object.fromEntries(AUX_KEYS.map(k => [k, aux[k]])) as Auxiliary),
   });
@@ -120,7 +124,8 @@ export function planProfileReplacement(json: string, observed: ReplacementObserv
 
 const issuedPlans = new WeakSet<ReplacementPlan>();
 interface ReplacementMarker {
-  version: 1 | 2;
+  version: 1 | 2 | 3;
+  settledDigest?: string;
   transactionId: string;
   beforeEpoch?: Raw;
   before: ProfilePair;
@@ -128,7 +133,7 @@ interface ReplacementMarker {
   auxiliary: Auxiliary;
 }
 function markerFor(plan: ReplacementPlan): string {
-  return JSON.stringify({ version: 2, transactionId: plan.transactionId, beforeEpoch: plan.beforeEpoch, before: plan.before, after: plan.after, auxiliary: plan.auxiliary });
+  return JSON.stringify({ version: plan.settledDigest ? 3 : 2, transactionId: plan.transactionId, beforeEpoch: plan.beforeEpoch, settledDigest: plan.settledDigest, before: plan.before, after: plan.after, auxiliary: plan.auxiliary });
 }
 function pairShape(v: unknown): v is ProfilePair {
   return record(v) && Object.keys(v).length === 2 && rawValue(v.primary) && rawValue(v.backup);
@@ -137,15 +142,17 @@ function markerFrom(raw: string): ReplacementMarker | null {
   if (raw.length > MAX_PROGRESS_BACKUP_BYTES || bytes(raw) > MAX_PROGRESS_BACKUP_BYTES) return null;
   try {
     const v: unknown = JSON.parse(raw);
-    if (!record(v) || (v.version !== 1 && v.version !== 2) || !validProfileEpoch(v.transactionId) ||
-        (v.version === 2 && (v.beforeEpoch !== null && !validProfileEpoch(v.beforeEpoch) || v.beforeEpoch === v.transactionId)) ||
+    if (!record(v) || (v.version !== 1 && v.version !== 2 && v.version !== 3) || !validProfileEpoch(v.transactionId) ||
+        (v.version === 3 && (typeof v.settledDigest !== 'string' || !/^[a-f0-9]{64}$/.test(v.settledDigest))) ||
+        (v.version !== 1 && (v.beforeEpoch !== null && !validProfileEpoch(v.beforeEpoch) || v.beforeEpoch === v.transactionId)) ||
         !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v.transactionId) ||
         !pairShape(v.before) || !pairShape(v.after) ||
         typeof v.after.primary !== 'string' || !record(v.auxiliary) ||
         !AUX_KEYS.every(k => rawValue((v.auxiliary as Record<string, unknown>)[k])) ||
         Object.keys(v.auxiliary).length !== AUX_KEYS.length) return null;
     const marker: ReplacementMarker = { version: v.version, transactionId: v.transactionId,
-      ...(v.version === 2 ? { beforeEpoch: v.beforeEpoch as Raw } : {}),
+      ...(v.version !== 1 ? { beforeEpoch: v.beforeEpoch as Raw } : {}),
+      ...(v.version === 3 ? { settledDigest: v.settledDigest as string } : {}),
       before: { primary: v.before.primary, backup: v.before.backup },
       after: { primary: v.after.primary, backup: v.after.backup },
       auxiliary: Object.fromEntries(AUX_KEYS.map(k => [k, (v.auxiliary as Record<string, unknown>)[k]])) as Auxiliary };
@@ -175,11 +182,11 @@ function matchingPrefix(pair: ProfilePair, m: ReplacementMarker): boolean {
 function originalEpoch(marker: ReplacementMarker): Raw { return marker.beforeEpoch ?? null; }
 function matchingEpoch(observed: ReplacementObservation, marker: ReplacementMarker): boolean {
   return observed.epoch === originalEpoch(marker) ||
-    (marker.version === 2 && observed.epoch === marker.transactionId && pairEqual(observed.pair, marker.after));
+    (marker.version !== 1 && observed.epoch === marker.transactionId && pairEqual(observed.pair, marker.after));
 }
 function observeSafe(port: ReplacementPort, marker: ReplacementMarker, raw: string): ProfilePair | null {
   const observed = port.observe();
-  return port.getMarker() === raw && quiet(observed) && auxiliaryEqual(observed.auxiliary, marker.auxiliary)
+  return port.getMarker() === raw && quiet(observed, marker.settledDigest) && auxiliaryEqual(observed.auxiliary, marker.auxiliary)
     && matchingPrefix(observed.pair, marker) && matchingEpoch(observed, marker) ? observed.pair : null;
 }
 
@@ -188,7 +195,7 @@ function observeSafe(port: ReplacementPort, marker: ReplacementMarker, raw: stri
 function rollback(port: ReplacementPort, marker: ReplacementMarker, raw: string): ReplacementResult {
   try {
     let pair = observeSafe(port, marker, raw);
-    if (!pair) return { status: 'recovery-required', reason: 'rollback-conflict' };
+    if (!pair || !coversPaidHistory(marker.before.primary, port.observe().settledHistory)) return { status: 'recovery-required', reason: 'rollback-conflict' };
     if (port.observe().epoch !== originalEpoch(marker)) {
       port.set(PROFILE_EPOCH_KEY, originalEpoch(marker));
       pair = observeSafe(port, marker, raw);
@@ -204,14 +211,14 @@ function rollback(port: ReplacementPort, marker: ReplacementMarker, raw: string)
     if (!pair || !pairEqual(pair, marker.before)) return { status: 'recovery-required', reason: 'rollback-readback' };
     port.set(PROFILE_REPLACEMENT_MARKER_KEY, null);
     const final = port.observe();
-    return port.getMarker() === null && quiet(final) && auxiliaryEqual(final.auxiliary, marker.auxiliary) &&
+    return port.getMarker() === null && quiet(final, marker.settledDigest) && auxiliaryEqual(final.auxiliary, marker.auxiliary) &&
       pairEqual(final.pair, marker.before) && final.epoch === originalEpoch(marker)
       ? { status: 'rolled-back' } : { status: 'recovery-required', reason: 'rollback-final-readback' };
   } catch {
     // The last remove may have taken effect before an adapter reported failure.
     try {
       const final = port.observe();
-      if (port.getMarker() === null && quiet(final) && auxiliaryEqual(final.auxiliary, marker.auxiliary) &&
+      if (port.getMarker() === null && quiet(final, marker.settledDigest) && auxiliaryEqual(final.auxiliary, marker.auxiliary) &&
           pairEqual(final.pair, marker.before) && final.epoch === originalEpoch(marker)) return { status: 'rolled-back' };
     } catch { /* no verified postcondition */ }
     return { status: 'recovery-required', reason: 'rollback-storage-failed' };
@@ -232,7 +239,7 @@ export function executeProfileReplacement(port: ReplacementPort, plan: Replaceme
   try {
     if (port.getMarker() !== null) return { status: 'recovery-required', reason: 'existing-marker' };
     const current = port.observe();
-    if (!quiet(current) || current.epoch !== originalEpoch(marker) || !pairEqual(current.pair, marker.before) ||
+    if (!quiet(current, marker.settledDigest) || current.epoch !== originalEpoch(marker) || !pairEqual(current.pair, marker.before) ||
         !auxiliaryEqual(current.auxiliary, marker.auxiliary)) return { status: 'conflict', reason: 'stale-observation' };
     if (pairEqual(marker.before, marker.after)) return { status: 'unchanged' };
     attemptedStage = true;
@@ -254,7 +261,7 @@ export function executeProfileReplacement(port: ReplacementPort, plan: Replaceme
       const found = port.getMarker();
       if (found === raw) return rollback(port, marker, raw);
       const current = port.observe();
-      if (found === null && quiet(current) && current.epoch === originalEpoch(marker) && pairEqual(current.pair, marker.before) &&
+      if (found === null && quiet(current, marker.settledDigest) && current.epoch === originalEpoch(marker) && pairEqual(current.pair, marker.before) &&
           auxiliaryEqual(current.auxiliary, marker.auxiliary)) return { status: 'unavailable', reason: 'stage-not-written' };
     } catch { /* uncertainty remains explicit */ }
     return { status: 'recovery-required', reason: 'stage-or-state-unknown' };
@@ -270,7 +277,7 @@ export function inspectProfileReplacement(port: ReplacementPort): ReplacementSta
     if (!marker) return 'conflict';
     const pair = observeSafe(port, marker, raw);
     if (!pair) return 'conflict';
-    return marker.version === 2 && pairEqual(pair, marker.after) ? 'applied' : 'staged';
+    return marker.version !== 1 && pairEqual(pair, marker.after) ? 'applied' : 'staged';
   } catch { return 'unavailable'; }
 }
 
@@ -280,7 +287,8 @@ export function finalizeProfileReplacement(port: ReplacementPort, expectedMarker
   try {
     if (port.getMarker() !== expectedMarker) return { status: 'conflict', reason: 'marker-changed' };
     const marker = markerFrom(expectedMarker);
-    if (!marker || marker.version !== 2 || !safeTransition(marker.before, marker.after)) return { status: 'blocked', reason: 'unsafe-history' };
+    if (!marker || marker.version === 1 || !safeTransition(marker.before, marker.after) ||
+        !coversPaidHistory(marker.after.primary, port.observe().settledHistory)) return { status: 'blocked', reason: 'unsafe-history' };
     const pair = observeSafe(port, marker, expectedMarker);
     if (!pair || !pairEqual(pair, marker.after)) return { status: 'conflict', reason: 'incomplete-or-changed' };
     // Commit generation first, keeping the exact marker until read-back.
@@ -295,7 +303,7 @@ export function finalizeProfileReplacement(port: ReplacementPort, expectedMarker
     try { port.set(PROFILE_REPLACEMENT_MARKER_KEY, null); }
     catch { /* A failing adapter may already have removed the marker. Verify. */ }
     const final = port.observe();
-    if (port.getMarker() === null && quiet(final) && final.epoch === marker.transactionId && pairEqual(final.pair, marker.after) &&
+    if (port.getMarker() === null && quiet(final, marker.settledDigest) && final.epoch === marker.transactionId && pairEqual(final.pair, marker.after) &&
         auxiliaryEqual(final.auxiliary, marker.auxiliary)) return { status: 'finalized' };
   } catch { /* A verified read-back is required for success. */ }
   return { status: 'recovery-required', reason: 'finalization-readback' };

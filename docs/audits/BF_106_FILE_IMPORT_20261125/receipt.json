@@ -1,0 +1,244 @@
+{
+  "head": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "commands": {
+    "ready-0": {
+      "exit": 1,
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+      ]
+    },
+    "ready-1": {
+      "exit": 0,
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+      ]
+    },
+    "file-import": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/import-preview-e2e.mjs"
+      ]
+    },
+    "epoch": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/workout-epoch-e2e.mjs"
+      ]
+    },
+    "replacement": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/profile-replacement-e2e.mjs"
+      ]
+    },
+    "privacy": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/privacy-server-e2e.mjs"
+      ]
+    },
+    "dedup": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "unit": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ]
+    },
+    "build": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-file-final\\dist"
+      ]
+    },
+    "bundle": {
+      "exit": 0,
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ]
+    },
+    "tower20": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/tower20-e2e.mjs"
+      ]
+    },
+    "mobile": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/mobile-e2e.mjs"
+      ]
+    }
+  },
+  "preview": {
+    "url": "http://127.0.0.1:56011",
+    "http": 200,
+    "entry": "/assets/index-Cyzel0ag.js",
+    "bytes": 388905,
+    "sha256": "c800f99ba89be2325d1be469ec706cef25e54951ffa5b606c29a5887a1e08de8"
+  },
+  "drift": [],
+  "diffCheck": 0,
+  "gitHeadAfter": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "files": {
+    "src/components/ProgressBackupPanel.tsx": {
+      "bytes": 14995,
+      "sha256": "738e1a96c9ed1074116ccf06c05bc76ec0312a85ab3bc53e086e0f84fe717253"
+    },
+    "src/lib/progressImportPreview.ts": {
+      "bytes": 9334,
+      "sha256": "8c324b17e60381e5efed59e62c6c2d0f271631abd37de097ff8f053a5f0e1fe1"
+    },
+    "src/lib/profileReplacementRecovery.ts": {
+      "bytes": 7859,
+      "sha256": "7e3567243ce7a42f69e52392048119eda16e1c9efa3cded5c83cf7be09571fbd"
+    },
+    "qa/import-preview-e2e.mjs": {
+      "bytes": 18661,
+      "sha256": "0c7313e1d2be45e9291159bd48a3c31e33d32dac717dc6f7c393fa9814a1abf3"
+    }
+  },
+  "logs": {
+    "build.log": {
+      "bytes": 3264,
+      "sha256": "6d5f96b1e3f0454a61a535eef54d62b6e01be5d5872d2c21003b7c5710bbc65f",
+      "summary": []
+    },
+    "bundle.log": {
+      "bytes": 281,
+      "sha256": "4e2f768e6e91a54e0323226f9a9555da10a819bba35bdbe3b7ece3e3a58d93a9",
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":388905,\"entryGzipBytes\":119154,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":107856,\"entryReductionPercent\":21.7,\"entryName\":\"index-Cyzel0ag.js\",\"poseName\":\"vision_bundle-BvFJgWCh.js\"}"
+      ]
+    },
+    "dedup.log": {
+      "bytes": 3067,
+      "sha256": "c604e9535560587a25e8152ed98369e6e7fa0acd9383f87c373d4b973492bde2",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":34,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "epoch.log": {
+      "bytes": 1749,
+      "sha256": "59d720c4fbb01db2330c387aa3fe4dc26f0fa5bf4a1e67d7bd9d8aa9884c8e97",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "file-import.log": {
+      "bytes": 1795,
+      "sha256": "cf65295664a8dbf04efff4aadacf94d21ec520f5ec955e08f239f2717901e1ef",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=32",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "mobile.log": {
+      "bytes": 7897,
+      "sha256": "0e7cba480fd1270d216760e31e85ed6d18d7cd71df339d81fe033e003a79f917",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "production-file.log": {
+      "bytes": 485,
+      "sha256": "c861c18ebe8e4af6b1b34221f2e16c226e50e64b77799b0bc501ad2a13ccd99f",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=7",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "ready-0.log": {
+      "bytes": 169,
+      "sha256": "3c0f315310512ec1b25714c036c6f19c64fc12cc7e93cc06e518b77d3555fa03",
+      "summary": []
+    },
+    "ready-1.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "replacement.log": {
+      "bytes": 4005,
+      "sha256": "699a0f6e3366402b5fec78496388a9a8d2d0217ea49e72fd7423c14cb8ead0af",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "tower20.log": {
+      "bytes": 1875,
+      "sha256": "2edf3ce8a883dfbbef94e84919d62c511a58f7e1abc10d422c106ebdffc72784",
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "unit.log": {
+      "bytes": 486,
+      "sha256": "99e2bde84d1f9d236bcbbdabfc88ba55b7219f0f8aac793493fa5465ebfac123",
+      "summary": [
+        "Tests  809 passed (809)"
+      ]
+    }
+  },
+  "decision": "Bind a plan to bytes decoded once from the selected file and to the inspected primary revision and epoch. Acquire profile then exclusive journal lock for each separate inspection and stage. Reuse the existing v2 recovery screen and rollback marker.",
+  "before": "Original E2E exit 18 waiting for a compatible file to offer replacement. Intermediate attempts preserved: Vite readiness timeout; popup denied without explicit browser user gesture in the QA harness.",
+  "limits": "Identified compatible local fighter, preserved reward history, quiet storage and matching auxiliary bytes. Device migration, merge of nonempty journals, physical Android and physical power loss unverified.",
+  "rollback": "Reverse only the accompanying diff after checking the four current file hashes. Code rollback does not undo a player decision: existing v2 recovery handles a staged replacement.",
+  "screenshot": {
+    "bytes": 132067,
+    "sha256": "708c1e426143484a930dd24e6524b5b69487bc91f5ecf7e071eea20b6a042d47"
+  },
+  "productionSmoke": {
+    "exit": 0,
+    "verified": "Actual production entry and local JSON input. Confirmed staged replacement, explicit keep and byte-exact primary and fallback on fresh reload."
+  },
+  "patch": {
+    "bytes": 20844,
+    "sha256": "6c11b452e7053cdd45ed97565ec9c5c9de086e29febc69e9b19a65f32a88e3a1"
+  }
+}

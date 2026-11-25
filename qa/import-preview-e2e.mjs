@@ -1,5 +1,5 @@
 // BF-106: actual Settings file input and read-only import comparison.
-// Synthetic fixture only; no replacement operation exists.
+// Synthetic file fixtures exercise preview, cancellation and explicit replacement.
 // Only disposable Chrome, no real camera, owner profile, Downloads or network upload.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -29,8 +29,8 @@ function cdp(method, params = {}) {
     catch (error) { clearTimeout(timer); pending.delete(id); reject(error); }
   });
 }
-async function ev(expression) {
-  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+async function ev(expression, userGesture = false) {
+  const result = await cdp('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true, userGesture });
   if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
   return result.result.value;
 }
@@ -153,6 +153,18 @@ try {
   const fixture = await ev('('+seed.toString()+')()');
   check(fixture.status==='completed' && fixture.value.exactPrimary && fixture.value.exactBackup,'fixture saved through actual Web Lock and read-back');
   const expected = fixture.value;
+  const settled = await ev(`(async()=>{
+    const {stageDurableResults,markDurableResults,readDurableJournal}=await import('/src/lib/durableJournal.ts');
+    const {resultJournalEntry}=await import('/src/lib/workoutJournal.ts');
+    const primary=JSON.parse(localStorage.getItem('bodyforge:pilot:v1'));
+    const workout=primary.workouts.find(w=>w.id==='tower-one');
+    const entry=resultJournalEntry({schemaVersion:1,profileId:primary.profileId,sessionId:workout.id,mode:'tower',
+      floor:1,durationMs:workout.durationMs,repetitions:20,finishedAt:workout.finishedAt,splitsMs:workout.splitsMs});
+    if(!entry || (await stageDurableResults([entry],null)).status!=='saved' ||
+       (await markDurableResults([entry],'settled')).status!=='saved') throw Error('paid journal fixture failed');
+    return (await readDurableJournal()).entries;
+  })()`);
+  check(settled.length===1 && settled[0].state==='settled','real IndexedDB holds the paid session');
   const backup = await ev('('+makeBackup.toString()+')()');
   check(backup.xp===825 && backup.coins===335 && backup.workouts===4,'backup candidate has independent totals');
   await cdp('Fetch.disable');
@@ -214,6 +226,61 @@ try {
   await sleep(300);
   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'reload preserves exact original primary');
   await unchanged('reload');
+  await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
+  await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings reopened');
+  await ev("document.querySelector('.progress-backup-file-checker').open=true");
+  async function requestReplacement(){
+    await choose(backup.json);
+    await until("!!document.querySelector('[data-action=request-file-replacement]')",'compatible file eligible');
+    await ev("document.querySelector('[data-action=request-file-replacement]').click()");
+    await until("!!document.querySelector('[data-action=confirm-file-replacement]')",'explicit decision offered');
+    check(await ev("document.querySelector('[data-action=confirm-file-replacement]').getBoundingClientRect().height>=44"),'mobile confirmation has a 44px touch target');
+  }
+  await requestReplacement();
+  await cancel();
+  await unchanged('cancel explicit replacement');
+  await requestReplacement();
+  // A separate same-origin tab holds the real lock until the confirmed operation queues.
+  await ev(`window.__bfPeer=window.open('about:blank','_blank');if(!__bfPeer)throw Error('peer unavailable'); __bfPeer.eval("navigator.locks.request('bodyforge:pilot:v1:write',()=>new Promise(resolve=>{window.releaseFileLock=resolve}))");true`, true);
+  await until("typeof __bfPeer.releaseFileLock==='function'",'peer holds profile lock');
+  await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
+  await until("navigator.locks.query().then(q=>q.pending.some(l=>l.name==='bodyforge:pilot:v1:write'))",'confirmed operation waits for profile lock');
+  await ev("window.__bfFallback=localStorage.getItem('bodyforge:pilot:v1:backup'); __bfPeer.localStorage.setItem('bodyforge:pilot:v1:backup',__bfFallback+' '); __bfPeer.releaseFileLock();true");
+  await until("!document.querySelector('[data-action=confirm-file-replacement]')",'changed fallback invalidates confirmation');
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null && localStorage.getItem('bodyforge:pilot:v1:backup')===__bfFallback+' '") &&
+    await ev("localStorage.getItem('bodyforge:pilot:v1')")===expected.raw,'stale approval preserves peer update and original primary');
+  await ev("__bfPeer.localStorage.setItem('bodyforge:pilot:v1:backup',__bfFallback);__bfPeer.close();true");
+  await until("document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle'",'fresh comparison required');
+  await requestReplacement();
+  await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
+  await until("document.querySelector('[data-replacement-recovery]')?.dataset.replacementRecovery==='applied'",'selected file reaches verified recovery screen');
+  const candidate=JSON.parse(backup.json);
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
+    await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'file import stages exact primary and fallback');
+  async function reopenAfterDecision(action){
+    await ev("document.querySelector('[data-action=request-replacement-"+action+"]')"+'.click()');
+    await ev("document.querySelector('[data-action=confirm-replacement-"+action+"]')"+'.click()');
+    await until("!!document.querySelector('[data-action=open-restored-profile]')",'decision verified');
+    await ev("document.querySelector('[data-action=open-restored-profile]').click()");
+    await until("!!document.querySelector('.app-shell[data-fighter-created=true]')",'profile reopened');
+    await ev('window.__paidBeforeReload=true');
+    await cdp('Page.reload',{ignoreCache:true});
+    await until("!window.__paidBeforeReload && !!document.querySelector('.app-shell[data-fighter-created=true]') && !document.querySelector('[data-storage-status]')",'paid history reloaded');
+  }
+  await reopenAfterDecision('rollback');
+  await unchanged('rollback and reload with settled history');
+  await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
+  await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings after rollback');
+  await ev("document.querySelector('.progress-backup-file-checker').open=true");
+  await requestReplacement();
+  await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
+  await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file can be selected again');
+  await reopenAfterDecision('keep');
+  check(JSON.stringify(JSON.parse(await ev('('+snapshot.toString()+')()')).durable.entries)===JSON.stringify(settled),
+    'accepted paid original remains byte-exact in IndexedDB after reload');
+
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
+    await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null"),'adopted file does not generate a new reward');
   check(errors.length===0,'no uncaught browser exceptions');
   console.log('BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions='+assertions);
 } catch(error) {

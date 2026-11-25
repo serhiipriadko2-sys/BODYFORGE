@@ -1,3 +1,5 @@
+import { snapshotSettledHistory } from './settledImportHistory';
+import { resultJournalEntry } from './workoutJournal';
 import { describe, expect, it } from 'vitest';
 import { addCompletedWorkout, parseProfile, STORAGE_KEY, PROFILE_BACKUP_KEY } from './progression';
 import { freshGame } from './game';
@@ -57,6 +59,72 @@ function original(m: ReturnType<typeof memory>) {
 }
 
 describe('BF-106 isolated replacement transaction', () => {
+  const paidResult = resultJournalEntry({ schemaVersion: 1, profileId: 'qa', sessionId: 'tower-1',
+    mode: 'tower', floor: 1, durationMs: 32000, finishedAt: date.toISOString(), repetitions: 20 })!;
+  const row = { key: paidResult.key, raw: paidResult.raw, state: 'settled' as const, baseProfileRaw: primary };
+  it.each(['keep', 'rollback'] as const)('preserves exact paid history across %s and checks it again on recovery', async choice => {
+    const m = memory();
+    m.values.set(STORAGE_KEY, JSON.stringify(incoming));
+    const history = await snapshotSettledHistory([row]);
+    expect(history).toBeDefined();
+    m.setSource({ durableRecords: 1, settledHistory: history });
+    const p = plan(m, envelope({ durableResults: [row] }));
+    const changed = await snapshotSettledHistory([{ ...row, baseProfileRaw: primary + ' ' }]);
+    m.setSource({ settledHistory: changed });
+    expect(executeProfileReplacement(m.port,p,'replace').status).toBe('conflict');
+    expect(m.calls).toHaveLength(0);
+    m.setSource({ settledHistory: history });
+    expect(executeProfileReplacement(m.port,p,'replace').status).toBe('applied-pending-finalization');
+    const marker = m.port.getMarker()!;
+    m.setSource({ settledHistory: changed });
+    expect(inspectProfileReplacement(m.port)).toBe('conflict');
+    expect(finalizeProfileReplacement(m.port,marker,'keep').status).not.toBe('finalized');
+    expect(rollbackProfileReplacement(m.port,marker,'rollback').status).not.toBe('rolled-back');
+    expect(m.port.getMarker()).toBe(marker);
+    m.setSource({ settledHistory: history });
+    const outcome = choice === 'keep' ? finalizeProfileReplacement(m.port,marker,'keep') : rollbackProfileReplacement(m.port,marker,'rollback');
+    expect(outcome.status).toBe(choice === 'keep' ? 'finalized' : 'rolled-back');
+    expect(m.port.observe().pair.primary).toBe(choice === 'keep' ? target : JSON.stringify(incoming));
+  });
+  it('checks available workout facts even when the payment ID matches', async () => {
+    const m = memory(), history = await snapshotSettledHistory([row]);
+    m.setSource({ durableRecords: 1, settledHistory: history });
+    m.values.set(STORAGE_KEY, JSON.stringify(incoming));
+    const different = { ...incoming, workouts: incoming.workouts.map(w => ({ ...w, durationMs: w.durationMs + 1000 })) };
+    expect(planProfileReplacement(envelope({ durableResults: [row], storedProfileRaw: JSON.stringify(different) }),
+      m.port.observe()).status).toBe('blocked');
+  });
+  it('accepts older paid IDs retained beyond the visible history without reconstructing a workout', async () => {
+    const m = memory(), history = await snapshotSettledHistory([row]);
+    const archived = JSON.stringify({ ...incoming, workouts: [] });
+    m.setSource({ durableRecords: 1, settledHistory: history });
+    m.values.set(STORAGE_KEY, archived);
+    expect(planProfileReplacement(envelope({ durableResults: [row], storedProfileRaw: archived+' ' }),m.port.observe()).status).toBe('planned');
+  });
+  it('compares multiple rows independently of array order', async () => {
+    const other = resultJournalEntry({ ...paidResult.result, sessionId: 'older-id' })!;
+    const second = { ...row, key: other.key, raw: other.raw };
+    const history = await snapshotSettledHistory([row,second]);
+    expect(history?.digest).toMatch(/^[a-f0-9]{64}$/);
+    expect((await snapshotSettledHistory([second,row]))?.digest).toBe(history?.digest);
+    const m = memory(), both = JSON.stringify({ ...incoming, creditedWorkoutIds: ['older-id','tower-1'] });
+    m.setSource({ durableRecords: 2, settledHistory: history });
+    m.values.set(STORAGE_KEY, both);
+    expect(planProfileReplacement(envelope({ durableResults: [second,row], storedProfileRaw: both+' ' }),m.port.observe()).status).toBe('planned');
+  });
+  it('blocks missing reward evidence, changed source bytes, duplicate keys and nonterminal states', async () => {
+    const m = memory(), history = await snapshotSettledHistory([row]);
+    m.setSource({ durableRecords: 1, settledHistory: history });
+    expect(planProfileReplacement(envelope({durableResults:[row]}), m.port.observe()).status).toBe('blocked');
+    m.values.set(STORAGE_KEY, JSON.stringify(incoming));
+    for (const rows of [[],[row,row],[{...row, raw:row.raw+' '}],[{...row,baseProfileRaw:null}],
+      [{...row,state:'active'}],[{...row,state:'quarantined'}],[{...row,extra:true}]]) {
+      expect(planProfileReplacement(envelope({durableResults:rows}), m.port.observe()).status).toBe('blocked');
+    }
+    for (const rows of [[row,row],[{...row,state:'active' as const}],[{...row,state:'quarantined' as const}],
+      [{...row,key:row.key+'x'}],[{...row,raw:'{'}]]) expect(await snapshotSettledHistory(rows)).toBeUndefined();
+    expect(m.calls).toHaveLength(0);
+  });
   it('accepts a fully applied pair after reload, verifying epoch before deleting the marker', () => {
     const m = memory();
     executeProfileReplacement(m.port, plan(m), 'replace');

@@ -1,0 +1,288 @@
+{
+  "head": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "commands": {
+    "ready-0": {
+      "exit": 0,
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+      ]
+    },
+    "file-import": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/import-preview-e2e.mjs"
+      ]
+    },
+    "epoch": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/workout-epoch-e2e.mjs"
+      ]
+    },
+    "replacement": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/profile-replacement-e2e.mjs"
+      ]
+    },
+    "privacy": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/privacy-server-e2e.mjs"
+      ]
+    },
+    "dedup": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "unit": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ]
+    },
+    "build": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-file-paid-final\\dist"
+      ]
+    },
+    "bundle": {
+      "exit": 0,
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ]
+    },
+    "tower20": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/tower20-e2e.mjs"
+      ]
+    },
+    "mobile": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/mobile-e2e.mjs"
+      ]
+    }
+  },
+  "preview": {
+    "url": "http://127.0.0.1:58451",
+    "http": 200,
+    "entry": "/assets/index-Bxwr828r.js",
+    "bytes": 388914,
+    "sha256": "6e435f76a275c952113b501fa082b7473df473fd1873e6885a6825f0f3c00d4d"
+  },
+  "drift": [],
+  "diffCheck": 0,
+  "gitHeadAfter": "aafe9f6d0bae8ea6afe9602144e5fe9dd0286f64",
+  "files": {
+    "src/lib/settledImportHistory.ts": {
+      "before": null,
+      "after": {
+        "bytes": 3836,
+        "sha256": "8613771e5a00c0cc6bb5274cef213ddc2c3ced0e0a67a80e9873cbdb0b406ae0"
+      }
+    },
+    "src/lib/profileReplacement.ts": {
+      "before": {
+        "bytes": 18454,
+        "sha256": "e0f1c325c7fad55fb66f6092c5e91769fddec55d2158ee9ddecdf2b523f3f1a5"
+      },
+      "after": {
+        "bytes": 19509,
+        "sha256": "6f9615cfbecc39a2c67fcb20e1d5469a614cbb20b4bcb02d680035642dc26ad2"
+      }
+    },
+    "src/lib/profileReplacementRecovery.ts": {
+      "before": {
+        "bytes": 7859,
+        "sha256": "7e3567243ce7a42f69e52392048119eda16e1c9efa3cded5c83cf7be09571fbd"
+      },
+      "after": {
+        "bytes": 8171,
+        "sha256": "bc71b58518137e4830825e70097f61c00d044801dce61cf77af92dc0c826df8f"
+      }
+    },
+    "src/lib/progressImportPreview.ts": {
+      "before": {
+        "bytes": 9334,
+        "sha256": "8c324b17e60381e5efed59e62c6c2d0f271631abd37de097ff8f053a5f0e1fe1"
+      },
+      "after": {
+        "bytes": 9412,
+        "sha256": "c932302058f927dd47b8ef1d5b980b01c07ad60d7bb36147393d7a0b6e0b076a"
+      }
+    },
+    "src/components/ProgressBackupPanel.tsx": {
+      "before": {
+        "bytes": 14995,
+        "sha256": "738e1a96c9ed1074116ccf06c05bc76ec0312a85ab3bc53e086e0f84fe717253"
+      },
+      "after": {
+        "bytes": 15080,
+        "sha256": "e9307a6a6b4821a3ff8fc1be615e121217085fc194d4f9f335d3e53f3aeee3ac"
+      }
+    },
+    "src/lib/profileReplacement.test.ts": {
+      "before": {
+        "bytes": 16892,
+        "sha256": "cff453bb160144253c9280bcc3a06ede1360cf2e89559f7e474ad78933eac701"
+      },
+      "after": {
+        "bytes": 21797,
+        "sha256": "2481f749f9e8a2a3197bb512b3b2f365b5ec33de1dbe073f024fb9cb288b9f61"
+      }
+    },
+    "qa/import-preview-e2e.mjs": {
+      "before": {
+        "bytes": 18661,
+        "sha256": "0c7313e1d2be45e9291159bd48a3c31e33d32dac717dc6f7c393fa9814a1abf3"
+      },
+      "after": {
+        "bytes": 20820,
+        "sha256": "fb523ceda0bb526a4ff3f21e4e8b83fc528c466a3886ab4c5d10b4f37f3aa624"
+      }
+    }
+  },
+  "diff": {
+    "bytes": 32425,
+    "sha256": "d83fbe395f28b0f227f3623ade70837a3e5ad16937bbd8ffbd8e640da9144c31"
+  },
+  "reverseCheck": 0,
+  "scope": "Accept identical local and exported settled records only. Preserve actual IndexedDB originals through cancel/keep/rollback/reload. Verify both primary ledgers and available workout facts. Do not copy rows across devices, migrate pending records or run payouts.",
+  "protocol": "v1 rollback, v2 empty-journal behavior retained. v3 records a SHA-256 over sorted key/raw/baseProfileRaw/state tuples. Profile and durable journal locks cover fresh digest generation and final state verification. Previously paid IDs outside visible history are checked against the stored ledger.",
+  "red": "Disposable Chromium: compatible file not eligible before patch (exit 18). Unit: one regression failed with planned vs blocked for same ID and conflicting duration, 43 passed before the correction.",
+  "limits": "Physical realme, sudden device shutdown, storage eviction and noncooperating writers unverified. Different journals/foreign fighters/unresolved records remain blocked. A local digest is not proof of real exercise.",
+  "logs": {
+    "build.log": {
+      "bytes": 3384,
+      "sha256": "3ab32b523d6e5cac85f930ad63ce5d96aa26f384220cb6fe7165562798d8abc0",
+      "summary": []
+    },
+    "bundle.log": {
+      "bytes": 281,
+      "sha256": "a3c0a62f57afcfd65c98e3f897eedf7b513a8af8a09562fd986b3a61f71c4125",
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":388914,\"entryGzipBytes\":119157,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":107847,\"entryReductionPercent\":21.7,\"entryName\":\"index-Bxwr828r.js\",\"poseName\":\"vision_bundle-C_oui0IU.js\"}"
+      ]
+    },
+    "dedup.log": {
+      "bytes": 3067,
+      "sha256": "d9ace09fb23e4bdbb41f238428ba2d32e1b3ba2be85f2ad2009cf14fee84c44f",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":34,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "epoch.log": {
+      "bytes": 1749,
+      "sha256": "8478a0378fe2a990aa9410c6b8bb5e18a23077865e55a87635c8bbfcbddf5cf8",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "file-import.log": {
+      "bytes": 2055,
+      "sha256": "dd777609a4d4bdf742e06277d3f6a4f66ab9921608a2560a15e67608b78858da",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=36",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "mobile.log": {
+      "bytes": 7946,
+      "sha256": "9a54cdc97e78a805585c1acca3787a38989a97dc986de6253be13730f34304cd",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "production-file-first.log": {
+      "bytes": 765,
+      "sha256": "bf466afbfc3ded78cedadf45dec67b44b79d6847c8d705951074c6ad120bc210",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_FAIL Error: FAIL production IndexedDB unchanged after acceptance and reload",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "production-file.log": {
+      "bytes": 797,
+      "sha256": "e04ca260bd1a94a322c3c72ca441a73df21fc370b3a3826fdd27e7af0a01b0f1",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=10",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "ready-0.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "replacement.log": {
+      "bytes": 4005,
+      "sha256": "6bb59492b5a0779a484e00f054906039b0c443a753f75b6f2025fbf4ddce6593",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "tower20.log": {
+      "bytes": 1879,
+      "sha256": "9f3ee5f2d3f7ba6312ed624ded8542ab5bc31eece5c002f784096644ce76f760",
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "unit.log": {
+      "bytes": 486,
+      "sha256": "8c7cd41f6b9279892ff0076b4dbdd569edce2ced732a99f48395bff2c2ac278f",
+      "summary": [
+        "Tests  815 passed (815)"
+      ]
+    }
+  },
+  "productionFileExit": 0,
+  "firstProductionCheck": "Exit 18 comparing serialized IndexedDB wrapper property order. Captured schemaVersion changed position after ordinary replay. Corrected the isolated smoke assertion to compare the complete set of properties and each exact value including raw and baseProfileRaw; repeated identical build exit 0. Production code unchanged between these two runs.",
+  "screenshot": {
+    "bytes": 132067,
+    "sha256": "708c1e426143484a930dd24e6524b5b69487bc91f5ecf7e071eea20b6a042d47"
+  }
+}
