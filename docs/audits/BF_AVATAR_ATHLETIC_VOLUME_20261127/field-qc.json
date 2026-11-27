@@ -1,0 +1,160 @@
+{
+  "status": "FAIL",
+  "scope": "All 6^4 discrete levels at each actual raw bind-space vertex; scan and alternate athletic growth field; excludes posed triangles, clothing folds, collisions and artistic evaluation",
+  "asset": {
+    "file": "public/assets/bodyforge-athlete-efficient.glb",
+    "bytes": 4639184,
+    "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+  },
+  "sourceHashes": {
+    "src/lib/avatarAthleticReview.ts": "ab0b8daabbbd2e4e56854b721b5cf704c6dc20a0993795861e89233012d8661b",
+    "src/lib/avatarMuscleAnatomy.ts": "4d167106d31dd1aadbb3926e267cead3ef23f8cc450be08f899ef9cd8c2fdc86",
+    "src/lib/avatarScanTorsoRelief.ts": "ba196979c01504c3f3833de05c7eb681522875be4a0a3fc300575758b1e7cf23",
+    "src/lib/avatarScanTorsoReviewData.ts": "16e4912f3a4a96d408be585a6e287329313cb66ac9f9a8cdbe188c46e5e48d46",
+    "src/lib/avatarPhysique.ts": "e8d8f7b25b55596edf580edc9c74bccab5ce87a0420cbe2cb5e0a2f2d20f34e1"
+  },
+  "vertices": 72344,
+  "states": 1296,
+  "covered": 93757824,
+  "explicit": 29748384,
+  "failures": 88428,
+  "minDet": -0.32367273305084965,
+  "maxDisplacementMm": 45.33583243433847,
+  "meshes": [
+    {
+      "name": "BODYFORGE_Body",
+      "vertices": 65895,
+      "statesPerVertex": 1296,
+      "covered": 85399920,
+      "explicit": 22909392,
+      "identityVertices": 48218,
+      "affectedAtBase": 3820,
+      "minDet": -0.2712731268300249,
+      "maxDisplacementMm": 45.33583243433847,
+      "failures": 55080,
+      "worst": {
+        "i": 48195,
+        "levels": [
+          5,
+          0,
+          0,
+          5
+        ],
+        "point": [
+          0.18153534829616547,
+          1.3180742263793945,
+          -0.005643887910991907
+        ],
+        "det": -0.2712731268300249
+      }
+    },
+    {
+      "name": "BODYFORGE_Shirt",
+      "vertices": 4415,
+      "statesPerVertex": 1296,
+      "covered": 5721840,
+      "explicit": 4567104,
+      "identityVertices": 891,
+      "affectedAtBase": 1453,
+      "minDet": -0.32367273305084965,
+      "maxDisplacementMm": 37.426938612185516,
+      "failures": 9588,
+      "worst": {
+        "i": 3324,
+        "levels": [
+          5,
+          0,
+          0,
+          5
+        ],
+        "point": [
+          0.1848624050617218,
+          1.3144360780715942,
+          -0.007004243787378073
+        ],
+        "det": -0.32367273305084965
+      }
+    },
+    {
+      "name": "BODYFORGE_Shorts",
+      "vertices": 1568,
+      "statesPerVertex": 1296,
+      "covered": 2032128,
+      "explicit": 1667952,
+      "identityVertices": 281,
+      "affectedAtBase": 0,
+      "minDet": -0.0760323899201116,
+      "maxDisplacementMm": 43.909171053631304,
+      "failures": 23760,
+      "worst": {
+        "i": 206,
+        "levels": [
+          0,
+          0,
+          5,
+          0
+        ],
+        "point": [
+          -0.09964645653963089,
+          0.812489926815033,
+          0.12279609590768814
+        ],
+        "det": -0.0760323899201116
+      }
+    },
+    {
+      "name": "BODYFORGE_SkinNipples",
+      "vertices": 458,
+      "statesPerVertex": 1296,
+      "covered": 593568,
+      "explicit": 593568,
+      "identityVertices": 0,
+      "affectedAtBase": 458,
+      "minDet": 0.5583980751087185,
+      "maxDisplacementMm": 33.07941332201805,
+      "failures": 0,
+      "worst": {
+        "i": 134,
+        "levels": [
+          0,
+          5,
+          0,
+          0
+        ],
+        "point": [
+          0.09667394310235977,
+          1.3171908855438232,
+          0.1426158994436264
+        ],
+        "det": 0.5583980751087185
+      }
+    },
+    {
+      "name": "BODYFORGE_ChestMark",
+      "vertices": 8,
+      "statesPerVertex": 1296,
+      "covered": 10368,
+      "explicit": 10368,
+      "identityVertices": 0,
+      "affectedAtBase": 8,
+      "minDet": 0.5677350389849116,
+      "maxDisplacementMm": 17.338502741225668,
+      "failures": 0,
+      "worst": {
+        "i": 7,
+        "levels": [
+          0,
+          5,
+          0,
+          0
+        ],
+        "point": [
+          -0.08499998599290848,
+          1.375988245010376,
+          0.13559168577194214
+        ],
+        "det": 0.5677350389849116
+      }
+    }
+  ]
+}

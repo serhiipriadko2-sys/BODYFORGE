@@ -21,3 +21,7 @@ CODEX_ISKRA.md
 
 # Local frozen QA copies; never stage duplicate working trees.
 .bodyforge-qa/
+
+# Local generated scan photo review; never publish automatically.
+/src/lib/athlete-torso-color-review.png
+/src/lib/athlete-torso-normal-review.png

@@ -1,0 +1,15 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: HTTP timeout
+    at ClientRequest.<anonymous> (file:///E:/github/BODYFORGE/qa/head-volume-endpoint-qc.mjs:16:38)
+    at ClientRequest.emit (node:events:509:28)
+    at Socket.emitRequestTimeout (node:_http_client:948:9)
+    at Object.onceWrapper (node:events:630:28)
+    at Socket.emit (node:events:521:24)
+    at Socket._onTimeout (node:net:611:8)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+
+Node.js v24.18.1

@@ -511,7 +511,24 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             const preferred = url.endsWith('/bodyforge-athlete-efficient.glb');
             let scanReview: ((source: THREE.Object3D) => number) | undefined;
             let scanColorUrl: string | undefined;
-            if (import.meta.env.DEV && preferred && new URLSearchParams(window.location.search).get('avatarScanReview') === '1') {
+            if (import.meta.env.DEV && preferred &&
+                (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+                new URLSearchParams(window.location.search).get('avatarHeadVolume') === '1') {
+              try {
+                const { parseHeadVolumeRecipe, applyAvatarHeadVolume } = await import('../lib/avatarHeadVolumeReview');
+                const response = await fetch('/_bodyforge/review/head-volume-v4.json', {
+                  cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(6000),
+                });
+                const recipe = response.ok ? parseHeadVolumeRecipe(await response.json()) : undefined;
+                if (recipe) scanReview = source => applyAvatarHeadVolume(source, recipe);
+              } catch {
+                // Optional local recipe unavailable: retain the verified base head.
+              }
+              if (disposed || runtime.current !== currentRuntime) {
+                disposeThreeTree(gltf.scene);
+                return;
+              }
+            } else if (import.meta.env.DEV && preferred && new URLSearchParams(window.location.search).get('avatarScanReview') === '1') {
               try {
                 scanReview = (await import('../lib/avatarScanTransfer')).applyAvatarScanTransfer;
                 if (new URLSearchParams(window.location.search).get('avatarScanColor') === '1') {
@@ -543,11 +560,15 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             delete element.dataset.groomGeometry;
             delete element.dataset.groomRevision;
             delete element.dataset.scanTorsoRelief;
+            delete element.dataset.athleticReview;
             delete element.dataset.ocularDetail;
             delete element.dataset.scanDetail;
             delete element.dataset.normalSurface;
             delete element.dataset.skinSurface;
             element.dataset.dermalRegions = imported.regionalDermal ? 'regional-v3' : 'base';
+            if (import.meta.env.DEV && imported.materials.body.userData.BODYFORGE_diffusionReview === true) {
+              element.dataset.skinDiffusion = 'angular-lut-v1';
+            } else delete element.dataset.skinDiffusion;
             element.dataset.bodyDermal = String(imported.face?.body.userData.bodyDermalRevision ?? 'base');
             delete element.dataset.lipResponse;
             element.dataset.fabricMaps = '0';
@@ -557,6 +578,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             if (typeof imported.root.userData.BODYFORGE_scanTorsoRelief === 'string') {
               element.dataset.scanTorsoRelief = imported.root.userData.BODYFORGE_scanTorsoRelief;
             }
+            if (typeof imported.root.userData.BODYFORGE_athleticReview === 'string') {
+              element.dataset.athleticReview = imported.root.userData.BODYFORGE_athleticReview;
+            }
             element.dataset.sleeveRepair = String(imported.sleeveRepair);
             element.dataset.garmentPatches = String(imported.seams?.patchTriangles ?? 0);
             element.dataset.avatarFace = imported.face ? 'sculpted' : 'base';
@@ -564,6 +588,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             if (import.meta.env.DEV && imported.face?.body.userData.scanTransfer) {
               element.dataset.scanTransfer = String(imported.face.body.userData.scanTransfer);
             } else delete element.dataset.scanTransfer;
+            if (import.meta.env.DEV && imported.face?.body.userData.headVolumeReview) {
+              element.dataset.headVolumeReview = String(imported.face.body.userData.headVolumeReview);
+            } else delete element.dataset.headVolumeReview;
             delete element.dataset.browDetail;
             delete element.dataset.browRevision;
             element.dataset.lashDetail = imported.lashes ? 'skinned-fibres' : 'base';
@@ -639,35 +666,49 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                 }, undefined, () => loadSkin(fallback));
               };
               const skinAtlases = avatarSkinAtlases(preferred && imported.regionalDermal, imported.realistic);
-              loadSkin(import.meta.env.DEV && scanColorUrl && imported.face?.body.userData.scanTransfer === 'scan-depth-review-v1'
+              // Local derivative only; no raw scan or private folder exposed.
+              // The optional file is git-ignored and not part of production.
+              const localTorsoReview = import.meta.env.DEV && preferred &&
+                (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+                imported.root.userData.BODYFORGE_scanTorsoRelief === 'BF_ARTEC_TORSO_RELIEF_DEV_V1';
+              const torsoPhotoReview = localTorsoReview &&
+                new URLSearchParams(window.location.search).get('avatarScanTorsoColor') === '1';
+              const torsoNormalReview = localTorsoReview &&
+                new URLSearchParams(window.location.search).get('avatarScanTorsoNormal') === '1';
+              loadSkin(torsoPhotoReview ? ['/src/lib/athlete-torso-color-review.png', ...skinAtlases]
+                : import.meta.env.DEV && scanColorUrl && imported.face?.body.userData.scanTransfer === 'scan-depth-review-v1'
                 ? [scanColorUrl, ...skinAtlases] : skinAtlases);
               if (imported.realistic) {
                 const isCurrent = () => !disposed && currentRuntime.current === imported.root;
                 const loadDetailMap = (kind: AvatarDetailMap, file: string) => {
                   if (!isCurrent()) return;
+                  const scanNormal = import.meta.env.DEV && kind === 'normal' && file === 'athlete-torso-normal-review.png';
                   const bakedNormal = kind === 'normal' && file === 'athlete-face-relief-normal.png';
                   const recover = () => {
-                    if (bakedNormal && isCurrent()) loadDetailMap('normal', 'athlete-normal.png');
+                    if (!isCurrent()) return;
+                    if (scanNormal) loadDetailMap('normal', 'athlete-face-relief-normal.png');
+                    else if (bakedNormal) loadDetailMap('normal', 'athlete-normal.png');
                   };
-                  new THREE.TextureLoader().load('/assets/' + file, (texture) => {
+                  new THREE.TextureLoader().load((scanNormal ? '/src/lib/' : '/assets/') + file, (texture) => {
                     if (!isCurrent()) {
                       texture.dispose();
                       return;
                     }
                     const image = texture.image as { width?: number; height?: number } | undefined;
-                    if (bakedNormal && (image?.width !== 1024 || image.height !== 1024)) {
+                    if ((bakedNormal || scanNormal) && (image?.width !== 1024 || image.height !== 1024)) {
                       texture.dispose();
                       recover();
                       return;
                     }
                     applyAvatarDetailMap(imported.materials, kind, texture);
-                    if (kind === 'normal') element.dataset.normalSurface = bakedNormal ? 'sculpt-bake-v1' : 'base';
+                    if (kind === 'normal') element.dataset.normalSurface = scanNormal ? 'scan-torso-bake-v1' : bakedNormal ? 'sculpt-bake-v1' : 'base';
                     if (kind === 'eyes') element.dataset.ocularDetail = 'atlas';
                     setDetailMaps(count => count + 1);
                     redraw();
                   }, undefined, recover);
                 };
-                loadDetailMap('normal', preferred && imported.face ? 'athlete-face-relief-normal.png' : 'athlete-normal.png');
+                loadDetailMap('normal', torsoNormalReview && imported.face ? 'athlete-torso-normal-review.png'
+                  : preferred && imported.face ? 'athlete-face-relief-normal.png' : 'athlete-normal.png');
                 loadDetailMap('orm', 'athlete-orm.png');
                 if (imported.regionalDermal) {
                   new THREE.TextureLoader().load('/assets/athlete-lip-response.png', texture => {
@@ -1015,6 +1056,9 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const regionalDermal = Boolean(face && installDermalRegions(surfaces, bodyDetail));
   if (regionalDermal) {
     materials.body.userData.BODYFORGE_regionalDermal = true;
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarSkinDiffusion') === '1') {
+      materials.body.userData.BODYFORGE_diffusionReview = true;
+    }
     installScalpDensity(surfaces, materials.body);
     installAvatarSkinLighting(materials.body);
   }
@@ -1026,7 +1070,12 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const landmarksReview = preferred && import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarLandmarks') === '1';
   const scanTorsoReview = preferred && import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarScanTorso') === '1'
     ? SCAN_TORSO_REVIEW_DATA : undefined;
-  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview) : undefined;
+  const athleticReview = import.meta.env.DEV && Boolean(scanTorsoReview) &&
+    new URLSearchParams(window.location.search).get('avatarAthletic') === '1';
+  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview, athleticReview) : undefined;
+  if (typeof source.userData.BODYFORGE_athleticReview === 'string') {
+    root.userData.BODYFORGE_athleticReview = source.userData.BODYFORGE_athleticReview;
+  }
   if (typeof source.userData.BODYFORGE_scanTorsoRelief === 'string') {
     root.userData.BODYFORGE_scanTorsoRelief = source.userData.BODYFORGE_scanTorsoRelief;
   }

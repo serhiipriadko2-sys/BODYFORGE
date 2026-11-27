@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "passed": 9,
+  "failed": 4,
+  "raw_sha256": "520e31ec439c34f2206069834a31067f72450602a91dcd3b5d878818fa8ca936",
+  "scope": "Four added synthetic negative tests; old cleanup did not enforce launch/profile and identity boundaries."
+}

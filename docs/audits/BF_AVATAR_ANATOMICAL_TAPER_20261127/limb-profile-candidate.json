@@ -1,0 +1,127 @@
+{
+  "revision": "BF_ATHLETIC_TAPER_REVIEW_V2",
+  "scope": "Deduplicated left surface vertices with >=60% named segment skin weights, signed radial change in original bind-space axial bins; excludes bone growth, not circumference or clinical data",
+  "sourceSha256": "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280",
+  "rows": [
+    {
+      "segment": "upper arm",
+      "bin": "proximal",
+      "vertices": 315,
+      "medianMm": 17.059385151381903,
+      "p90Mm": 26.77439790832764,
+      "meanMm": 18.20520104867508,
+      "posteriorMeanMm": 17.431600605582343,
+      "anteriorMeanMm": 19.099822729081872
+    },
+    {
+      "segment": "upper arm",
+      "bin": "middle",
+      "vertices": 208,
+      "medianMm": 19.541578778231052,
+      "p90Mm": 32.025194497553045,
+      "meanMm": 22.536175501561498,
+      "posteriorMeanMm": 22.229425788631872,
+      "anteriorMeanMm": 24.334732819651784
+    },
+    {
+      "segment": "upper arm",
+      "bin": "distal",
+      "vertices": 285,
+      "medianMm": 13.777783620387513,
+      "p90Mm": 24.59125120497007,
+      "meanMm": 14.163343886725325,
+      "posteriorMeanMm": 14.539487340423795,
+      "anteriorMeanMm": 15.050609088990978
+    },
+    {
+      "segment": "forearm",
+      "bin": "proximal",
+      "vertices": 182,
+      "medianMm": 7.42899111328283,
+      "p90Mm": 8.316366352230778,
+      "meanMm": 7.275627736126378,
+      "posteriorMeanMm": 7.775358178568047,
+      "anteriorMeanMm": 7.137226301141798
+    },
+    {
+      "segment": "forearm",
+      "bin": "middle",
+      "vertices": 148,
+      "medianMm": 5.871119656523108,
+      "p90Mm": 7.287069156189374,
+      "meanMm": 5.878152812284114,
+      "posteriorMeanMm": 5.811098747261512,
+      "anteriorMeanMm": 5.967768898457984
+    },
+    {
+      "segment": "forearm",
+      "bin": "distal",
+      "vertices": 232,
+      "medianMm": 1.6862069658282672,
+      "p90Mm": 3.539790264666151,
+      "meanMm": 1.8072744305048907,
+      "posteriorMeanMm": 1.9499710867506688,
+      "anteriorMeanMm": 1.953380818196805
+    },
+    {
+      "segment": "thigh",
+      "bin": "proximal",
+      "vertices": 424,
+      "medianMm": 11.788364659528442,
+      "p90Mm": 21.925511030475185,
+      "meanMm": 11.825131372053201,
+      "posteriorMeanMm": 14.586891743050936,
+      "anteriorMeanMm": 10.842809705948827
+    },
+    {
+      "segment": "thigh",
+      "bin": "middle",
+      "vertices": 266,
+      "medianMm": 20.002666691859904,
+      "p90Mm": 26.16908158262947,
+      "meanMm": 18.05280521411536,
+      "posteriorMeanMm": 20.098751829991887,
+      "anteriorMeanMm": 17.654467526278033
+    },
+    {
+      "segment": "thigh",
+      "bin": "distal",
+      "vertices": 318,
+      "medianMm": 12.189762087733188,
+      "p90Mm": 17.51632286433706,
+      "meanMm": 12.036777423494145,
+      "posteriorMeanMm": 11.158901278246136,
+      "anteriorMeanMm": 13.623464853282034
+    },
+    {
+      "segment": "calf",
+      "bin": "proximal",
+      "vertices": 220,
+      "medianMm": 8.73544850536631,
+      "p90Mm": 18.377099045914697,
+      "meanMm": 10.4764951189855,
+      "posteriorMeanMm": 13.815356815819605,
+      "anteriorMeanMm": 7.122659743453882
+    },
+    {
+      "segment": "calf",
+      "bin": "middle",
+      "vertices": 141,
+      "medianMm": 8.12910284315687,
+      "p90Mm": 14.64777479055797,
+      "meanMm": 8.879024903228359,
+      "posteriorMeanMm": 11.764076294658864,
+      "anteriorMeanMm": 5.869384609475025
+    },
+    {
+      "segment": "calf",
+      "bin": "distal",
+      "vertices": 230,
+      "medianMm": 2.2866565431593697,
+      "p90Mm": 5.177728248070383,
+      "meanMm": 2.630350172369297,
+      "posteriorMeanMm": 3.7432016475453955,
+      "anteriorMeanMm": 1.8495946712126967
+    }
+  ]
+}

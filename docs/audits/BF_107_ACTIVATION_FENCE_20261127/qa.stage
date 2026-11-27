@@ -1,0 +1,142 @@
+
+  // Activation is intentionally not exposed by the UI. Exercise its guarded
+  // API on an isolated real database with a genuine paid workout and backup.
+  const activation=await js(`(async()=>{
+    const v=await import('/src/lib/durableJournalV2.ts'),p=await import('/src/lib/progression.ts');
+    const {freshGame}=await import('/src/lib/game.ts');
+    const {withProfileWriteLock}=await import('/src/lib/profileLock.ts');
+    const {prepareProgressBackup}=await import('/src/lib/progressBackup.ts');
+    const {prepareWorkoutSession}=await import('/src/lib/workoutJournal.ts');
+    const {replayDurableWorkouts}=await import('/src/lib/durableWorkout.ts');
+    const result={},epoch='bodyforge:pilot:v1:epoch',key='bodyforge:pilot:v1';
+    const local=()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]));
+    async function fixture(){
+      await resetDB();localStorage.clear();
+      const saved=await withProfileWriteLock(async()=>{
+        const profile=p.parseProfile({profileId:'activation-qa',xp:0,coins:0,creditedWorkoutIds:[],workouts:[],
+          game:{...freshGame(),created:true,nickname:'ACTIVATION QA'}});
+        const receipt=p.saveProfile(profile,{expectedRaw:null});
+        if(receipt.status!=='saved')throw Error('activation profile fixture failed');
+        const session=prepareWorkoutSession(receipt.revision,'training');
+        if(session.status!=='ready')throw Error('activation session fixture failed');
+        const completed={...session.session,durationMs:42000,finishedAt:'2026-11-25T10:00:00.000Z',repetitions:20};
+        const replay=await replayDurableWorkouts(completed,{signal:new AbortController().signal,isCurrent:()=>true});
+        if(replay.status!=='saved'||replay.state.profile.xp!==120||replay.state.profile.coins!==35)throw Error('activation paid result fixture failed');
+      });
+      if(saved.status!=='completed')throw Error('activation fixture lock failed');
+      const backup=await prepareProgressBackup(p.loadProfileState().profile,null);
+      const rows=await directRows();
+      if(!backup.complete||rows.length!==1||rows[0].state!=='settled'||!rows[0].baseProfileRaw)throw Error('activation fixture backup incomplete');
+      return {json:backup.json,rows,local:local()};
+    }
+    const f=await fixture(),prepare=()=>v.planJournalActivation(f.json);
+    const initial=await prepare();
+    result.preflight=initial.status==='ready'&&initial.plan.version===1&&initial.plan.records===1&&Object.isFrozen(initial.plan)&&
+      JSON.stringify(await directRows())===JSON.stringify(f.rows)&&local()===f.local;
+    if(initial.status!=='ready')throw Error('activation preflight fixture: '+JSON.stringify(initial));
+    const fake={...initial.plan};
+    result.fake=(await v.activateJournalFromBackup(fake,'activate')).status==='stale';
+    result.cancel=(await v.activateJournalFromBackup(initial.plan,'cancel')).status==='cancelled'&&
+      (await v.activateJournalFromBackup(initial.plan,'activate')).status==='stale';
+    const bad=JSON.parse(f.json);bad.durableResults[0].baseProfileRaw+='changed';
+    const changed=await v.planJournalActivation(JSON.stringify(bad));
+    result.checkpoint=changed.status==='blocked'&&changed.reason==='stale';
+    const incomplete=JSON.parse(f.json);incomplete.complete=false;
+    const pending=JSON.parse(f.json);pending.pendingResult={invalid:true};
+    result.invalid=(await v.planJournalActivation(JSON.stringify(incomplete))).status==='blocked'&&
+      (await v.planJournalActivation(JSON.stringify(pending))).status==='blocked'&&
+      (await v.planJournalActivation('{broken')).status==='blocked';
+    const wrong=JSON.parse(f.json);wrong.storedProfileRaw=JSON.stringify({...JSON.parse(wrong.storedProfileRaw),coins:999});
+    result.wallet=(await v.planJournalActivation(JSON.stringify(wrong))).status==='blocked';
+    const pendingKey=key+':result:qa-block';
+    localStorage.setItem(pendingKey,'opaque');
+    result.pending=(await prepare()).status==='blocked';localStorage.removeItem(pendingKey);
+    localStorage.setItem(key+':replace-pending:v1','opaque');
+    result.replacement=(await prepare()).status==='blocked';localStorage.removeItem(key+':replace-pending:v1');
+    const epochPlan=await prepare();
+    if(epochPlan.status!=='ready')throw Error('epoch fixture failed');
+    localStorage.setItem(epoch,'b5c62a24-a3f1-4ad0-91a6-f38b3bafc0de');
+    result.epoch=(await v.activateJournalFromBackup(epochPlan.plan,'activate')).status==='stale';
+    localStorage.removeItem(epoch);
+    const stale=await prepare();
+    if(stale.status!=='ready')throw Error('stale fixture failed');
+    await directPut({...f.rows[0],baseProfileRaw:f.rows[0].baseProfileRaw+'changed'});
+    result.drift=(await v.activateJournalFromBackup(stale.plan,'activate')).status==='stale'&&
+      (await directRows())[0].baseProfileRaw.endsWith('changed');
+    await directPut(f.rows[0]);
+    const cursorPlan=await prepare();
+    if(cursorPlan.status!=='ready')throw Error('cursor fixture failed');
+    const cursor=IDBObjectStore.prototype.openCursor;
+    let injected=false;
+    IDBObjectStore.prototype.openCursor=function(...args){
+      if(this.name==='results'&&this.transaction.mode==='versionchange'){
+        injected=true;this.put({...f.rows[0],baseProfileRaw:'changed inside versionchange'});
+      }
+      return cursor.apply(this,args);
+    };
+    let conflict;
+    try{conflict=await v.activateJournalFromBackup(cursorPlan.plan,'activate')}finally{IDBObjectStore.prototype.openCursor=cursor}
+    result.transaction=injected&&conflict.status==='stale'&&JSON.stringify(await directRows())===JSON.stringify(f.rows)&&local()===f.local;
+    const blockedPlan=await prepare();
+    if(blockedPlan.status!=='ready')throw Error('blocked fixture failed');
+    const held=await openNative();
+    let blocked;
+    try{blocked=await v.activateJournalFromBackup(blockedPlan.plan,'activate')}finally{held.close()}
+    const still=await openNative();
+    result.blocked=blocked.status==='unavailable'&&still.version===1;still.close();
+    const abortedPlan=await prepare(),abort=new AbortController();
+    if(abortedPlan.status!=='ready')throw Error('abort fixture failed');
+    abort.abort();
+    result.aborted=(await v.activateJournalFromBackup(abortedPlan.plan,'activate',abort.signal)).status==='cancelled';
+    const plan=await prepare();
+    if(plan.status!=='ready')throw Error('activation final fixture failed');
+    const upgraded=await v.activateJournalFromBackup(plan.plan,'activate');
+    const upgradedRows=await mod.readDurableJournal();
+    const db=await openNative(2);
+    try{
+      const meta=await new Promise((resolve,reject)=>{
+        const tx=db.transaction('journal-meta','readonly'),req=tx.objectStore('journal-meta').get('state');
+        tx.oncomplete=()=>resolve(req.result);tx.onabort=()=>reject(tx.error);
+      });
+      result.activate=upgraded.status==='prepared'&&upgraded.versionConfirmed===2&&meta.revision===0&&
+        JSON.stringify(upgradedRows.entries)===JSON.stringify(f.rows.map(({schemaVersion,...row})=>row))&&local()===f.local;
+    }finally{db.close()}
+    result.repeat=(await v.activateJournalFromBackup(plan.plan,'activate')).status==='stale'&&(await prepare()).status==='blocked';
+    const second=await fixture(),readbackPlan=await v.planJournalActivation(second.json);
+    if(readbackPlan.status!=='ready')throw Error('readback fixture failed');
+    const tx=IDBDatabase.prototype.transaction;
+    let fault=false;
+    IDBDatabase.prototype.transaction=function(...args){
+      if(this.name===dbName&&this.version===2&&args[1]==='readonly'){fault=true;throw Error('QA lost readback')}
+      return tx.apply(this,args);
+    };
+    let unverified;
+    try{unverified=await v.activateJournalFromBackup(readbackPlan.plan,'activate')}finally{IDBDatabase.prototype.transaction=tx}
+    const confirmed=await openNative(2);confirmed.close();
+    result.unverified=fault&&unverified.status==='unverified'&&unverified.versionConfirmed===null&&
+      (await mod.readDurableJournal()).entries[0].baseProfileRaw===second.rows[0].baseProfileRaw&&local()===second.local;
+    await resetDB();
+    const absent=await v.planJournalActivation(second.json);
+    result.absent=absent.status==='blocked'&&!(await indexedDB.databases()).some(db=>db.name===dbName)&&local()===second.local;
+    localStorage.clear();return result;
+  })()`);
+  console.log('ACTIVATION_FENCE_SAMPLE',JSON.stringify(activation));
+  for(const [flag,label] of [
+    ['preflight','activation preflight is read-only and binds an immutable plan to exact paid originals'],
+    ['fake','fabricated activation plan has no write authority'],
+    ['cancel','explicit cancel consumes activation plan with no migration'],
+    ['checkpoint','backup checkpoint byte mismatch blocks preparation'],
+    ['invalid','incomplete pending and malformed backup files cannot authorize migration'],
+    ['wallet','different backup wallet is refused'],
+    ['pending','unresolved local workout blocks migration'],
+    ['replacement','interrupted replacement blocks migration'],
+    ['epoch','changed profile lineage invalidates confirmation'],
+    ['drift','changed durable checkpoint invalidates confirmation without overwriting it'],
+    ['transaction','drift inside native versionchange aborts upgrade and original bytes remain exact'],
+    ['blocked','blocked upgrade cannot migrate after caller refusal'],
+    ['aborted','pre-aborted activation cannot migrate'],
+    ['activate','confirmed exact backup activates v2 metadata only and preserves wallet and original rows'],
+    ['repeat','activation token cannot be replayed and v2 cannot issue a legacy plan'],
+    ['unverified','lost post-upgrade readback reports unverified even when native version committed'],
+    ['absent','read-only activation preflight never creates a missing journal'],
+  ])check(activation[flag]===true,label);

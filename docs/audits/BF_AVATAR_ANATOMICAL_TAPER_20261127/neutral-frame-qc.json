@@ -1,0 +1,48 @@
+﻿[
+    {
+        "view":  "bare-front",
+        "identicalBytes":  true,
+        "beforeSha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2",
+        "afterSha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+    },
+    {
+        "view":  "bare-rear",
+        "identicalBytes":  false,
+        "beforeSha256":  "9086ceda01d1db8edd5eb485ce28a7497571dddd1e5cca0acdcefbf6aa76f129",
+        "afterSha256":  "ee1098704cb5940f57a9606340bbd205ba626fb256311e635257724750ab5c55",
+        "changedPixels":  1,
+        "totalPixels":  1316640,
+        "maxChannelDelta":  1,
+        "meanChannelDelta":  1.8987726333697898E-07,
+        "bounds":  [
+                       310,
+                       1542,
+                       310,
+                       1542
+                   ]
+    },
+    {
+        "view":  "shirt-front",
+        "identicalBytes":  true,
+        "beforeSha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e",
+        "afterSha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+    },
+    {
+        "view":  "shirt-rear",
+        "identicalBytes":  true,
+        "beforeSha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e",
+        "afterSha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+    },
+    {
+        "view":  "legs-front",
+        "identicalBytes":  true,
+        "beforeSha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3",
+        "afterSha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3"
+    },
+    {
+        "view":  "legs-rear",
+        "identicalBytes":  true,
+        "beforeSha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f",
+        "afterSha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f"
+    }
+]

@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "origin": "http://127.0.0.1:5173",
+  "checks": [
+    {
+      "case": "valid local numeric recipe",
+      "status": 200,
+      "bytes": 1156
+    },
+    {
+      "case": "raw",
+      "status": 403
+    },
+    {
+      "case": "raw encoded",
+      "status": 403
+    },
+    {
+      "case": "forwarded",
+      "status": 403
+    },
+    {
+      "case": "origin",
+      "status": 403
+    },
+    {
+      "case": "cross-site",
+      "status": 403
+    },
+    {
+      "case": "query",
+      "status": 403
+    },
+    {
+      "case": "post",
+      "status": 403
+    },
+    {
+      "case": "host",
+      "status": 403
+    }
+  ]
+}

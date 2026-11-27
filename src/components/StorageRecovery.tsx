@@ -4,25 +4,13 @@ import { PROFILE_REPLACEMENT_MARKER_KEY, profileReplacementPending, type Profile
 import ReplacementRecoveryPanel from './ReplacementRecoveryPanel';
 import type { ProfileWriteIssue } from '../lib/profileLock';
 import type { CompletedWorkoutResult, JournalEntry } from '../lib/workoutJournal';
-import { createProgressExport } from '../lib/progressExport';
-import { readDurableJournal } from '../lib/durableJournal';
-
-async function exportProgress(profile: Profile, pendingResult: CompletedWorkoutResult | null) {
-  const durable = await readDurableJournal();
-  const payload = { ...createProgressExport(profile, pendingResult), durableResults: durable.entries, durableReadStatus: durable.status };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'bodyforge-local-progress.json';
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+import RecoveryExportButton from './RecoveryExportButton';
 
 export function ResultQuarantineNotice({ profile, count, unavailable }: { profile: Profile; count: number; unavailable: boolean }) {
   if (!count && !unavailable) return null;
   return <aside className="result-quarantine-notice" data-quarantined-results={count} aria-label="Отложенные результаты">
     <p>{unavailable ? 'Не удалось полностью прочитать отложенные результаты.' : `Отложенных результатов: ${count}. Исходные данные сохранены отдельно, награды за них не начисляются.`}</p>
-    <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, null); }}>Экспортировать сохранённые данные</button>
+    <RecoveryExportButton profile={profile} pendingResult={null}/>
   </aside>;
 }
 
@@ -61,7 +49,7 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
   }, []);
   if (replacementSeen) return <ReplacementRecoveryPanel
     disabled={isSaving || pendingResult !== null || journalEntries.length > 0}
-    onResolved={onReload} onExportSession={() => { void exportProgress(profile, pendingResult); }}/>;
+    onResolved={onReload} exportSession={<RecoveryExportButton profile={profile} pendingResult={pendingResult}/>}/>;
   const title = status === 'checking' ? 'ПРОВЕРЯЕМ СОХРАНЕНИЕ' : status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
     : status === 'recovery-required' ? 'ПРОГРЕСС НУЖНО ВОССТАНОВИТЬ' : 'НЕ УДАЛОСЬ СОХРАНИТЬ';
   const ambiguousRewards = status === 'recovery-required' && profile.creditedWorkoutIds === null;
@@ -116,7 +104,7 @@ export default function StorageRecovery({ status, backupAvailable, writeIssue, i
           <button type="button" data-action="confirm-quarantine" disabled={isSaving} onClick={() => { onQuarantine(quarantineSnapshot); setQuarantineSnapshot(null); }}>Подтверждаю: сохранить отдельно и продолжить</button>
           <button type="button" disabled={isSaving} onClick={() => setQuarantineSnapshot(null)}>Отмена</button>
         </div>)}
-      <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, pendingResult); }}>Экспортировать данные этой страницы</button>
+      <RecoveryExportButton profile={profile} pendingResult={pendingResult}/>
       <small>Данные остаются у тебя. Ничего не отправляется на сервер. Экспорт — локальный JSON для сохранения и восстановления вручную.</small>
     </section>
   </main>;

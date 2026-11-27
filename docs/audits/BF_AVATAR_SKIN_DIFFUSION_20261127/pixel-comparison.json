@@ -1,0 +1,65 @@
+{
+  "scope": "Same scripted QA scenarios, fixed viewport crop with background; differences are descriptive, not a photorealism score.",
+  "rows": "front, turned",
+  "columns": "baseline off, diffusion on",
+  "results": [
+    {
+      "view": "front",
+      "viewportCrop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "changedPixels": 122630,
+      "pixels": 335692,
+      "meanAbsoluteLinearDelta": 0.002207369077950716,
+      "p95MaxChannelDelta": 0.0156862735748291,
+      "maxDelta": 0.03529411554336548
+    },
+    {
+      "view": "turned",
+      "viewportCrop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "changedPixels": 116022,
+      "pixels": 335692,
+      "meanAbsoluteLinearDelta": 0.002571249147877097,
+      "p95MaxChannelDelta": 0.015686333179473877,
+      "maxDelta": 0.047058820724487305
+    },
+    {
+      "view": "deep",
+      "viewportCrop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "changedPixels": 112295,
+      "pixels": 335692,
+      "meanAbsoluteLinearDelta": 0.0012725639389827847,
+      "p95MaxChannelDelta": 0.011764705181121826,
+      "maxDelta": 0.023529410362243652
+    },
+    {
+      "view": "torso",
+      "viewportCrop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "changedPixels": 99220,
+      "pixels": 335692,
+      "meanAbsoluteLinearDelta": 0.0018403660506010056,
+      "p95MaxChannelDelta": 0.0156862735748291,
+      "maxDelta": 0.039215683937072754
+    }
+  ],
+  "comparisonBytes": 1058664,
+  "comparisonSha256": "c3b57b1e43baeb45b3fd5940204601d483824c3fd8c2e5b80d27ceaf79387bca"
+}

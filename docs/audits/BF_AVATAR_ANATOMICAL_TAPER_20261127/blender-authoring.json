@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "scope": "Exact indexed deltas on preserved Blender basis (sub-30um drift), all five triangle topology hashes and reopened key coordinates verified; 120 driver cases; excludes runtime bone-growth and posed garment fit",
+  "revision": "BF_ATHLETIC_TAPER_REVIEW_V2",
+  "sourceFieldSha256": "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280",
+  "bridgeSha256": "3c9d301f02d85c17d48976df7eff2987b614a5c478907f42a290b569544eb55b",
+  "blend": ".bodyforge-qa\\athletic-taper-review-v2.blend",
+  "bytes": 13178310,
+  "sha256": "3d8dc6ffe49bb20c069995f3bebd6797ff6f83114053b878d3dc836ca9b69d79",
+  "driverCases": 120,
+  "meshes": [
+    {
+      "mesh": "BODYFORGE_Body",
+      "sourceVertices": 65895,
+      "blenderVertices": 65895,
+      "maxMatchErrorM": 2.8186404375912052e-05,
+      "topologySha256": "d0eb21e3d86a9a08666b5a47ba3a8466bac2a945b500258a6bb25f3b14885fe8"
+    },
+    {
+      "mesh": "BODYFORGE_Shirt",
+      "sourceVertices": 4415,
+      "blenderVertices": 4415,
+      "maxMatchErrorM": 1.684084548555134e-05,
+      "topologySha256": "ad0813dc63c60a68e2af2166631334b9599b55b6bca691f44d33f4c7f0e1f6cf"
+    },
+    {
+      "mesh": "BODYFORGE_Shorts",
+      "sourceVertices": 1568,
+      "blenderVertices": 1568,
+      "maxMatchErrorM": 7.046626627043968e-06,
+      "topologySha256": "21b9c830f2998edb871d44ba6ad752db277fd850ce642f349635bbf907f8a480"
+    },
+    {
+      "mesh": "BODYFORGE_SkinNipples",
+      "sourceVertices": 458,
+      "blenderVertices": 458,
+      "maxMatchErrorM": 1.0392008280209517e-05,
+      "topologySha256": "e1c1b0c71755f8692c479284759b932afba5fecf91686e980668014ff7e48c6a"
+    },
+    {
+      "mesh": "BODYFORGE_ChestMark",
+      "sourceVertices": 8,
+      "blenderVertices": 8,
+      "maxMatchErrorM": 1.2780283122160566e-05,
+      "topologySha256": "3453402f24129562cac7e50e183c433fc84499c9ca80e117a831e784708801e8"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-import type { Profile } from './progression';
+import { profileReplacementPending, type Profile } from './progression';
+import { readProfileEpoch } from './profileEpoch';
 import type { CompletedWorkoutResult } from './workoutJournal';
 import { createProgressExport } from './progressExport';
 import { readDurableJournal } from './durableJournal';
@@ -21,26 +22,38 @@ export interface PreparedProgressBackup {
   readonly sourcesChangedDuringRead?: boolean;
 }
 
+function readBackupLineage() {
+  try {
+    return { pending: profileReplacementPending(), epoch: readProfileEpoch() };
+  } catch {
+    return null;
+  }
+}
+
 /** Build evidence without touching any app storage or making network requests.
  * The caller must later ask for a SECOND, direct user click to download.
  * iOS Safari can reject programmatic downloads triggered after an async wait.
  */
 export async function prepareProgressBackup(
   profile: Profile, pendingResult: CompletedWorkoutResult | null, now = new Date(),
+  kind: 'backup' | 'recovery-evidence' = 'backup',
 ): Promise<PreparedProgressBackup> {
+  const lineage = readBackupLineage();
   const local = createProgressExport(profile, pendingResult);
   const profileQuarantine = readProfileQuarantine();
   const durable = await readDurableJournal();
   // IndexedDB reads are asynchronous. Check the other stores again before
   // claiming a complete snapshot: another tab may have changed the wallet,
   // journal or appearance while the durable read was in flight.
-  const sourcesChangedDuringRead = JSON.stringify(local) !== JSON.stringify(createProgressExport(profile, pendingResult))
+  const latestLineage = readBackupLineage();
+  const sourcesChangedDuringRead = lineage?.pending !== latestLineage?.pending || lineage?.epoch !== latestLineage?.epoch
+    || JSON.stringify(local) !== JSON.stringify(createProgressExport(profile, pendingResult))
     || JSON.stringify(profileQuarantine) !== JSON.stringify(readProfileQuarantine());
-  const complete = !sourcesChangedDuringRead && local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
+  const complete = kind === 'backup' && lineage?.pending === false && latestLineage?.pending === false && !sourcesChangedDuringRead && local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
     && local.quarantineReadStatus === 'ready' && profileQuarantine.status === 'ready' && durable.status === 'ready'
     && Object.values(local.auxiliaryReadStatus).every((status) => status === 'ready');
   const json = JSON.stringify({
-    exportFormat: 'bodyforge-manual-backup',
+    exportFormat: kind === 'backup' ? 'bodyforge-manual-backup' : 'bodyforge-recovery-evidence',
     exportSchemaVersion: 1,
     exportedAt: now.toISOString(),
     complete,

@@ -50,7 +50,7 @@ button,input,select,textarea { font-family:inherit; }
 .nav-item { min-height:48px; border-radius:14px 4px 14px 14px; }
 .nav-item.selected,.nav-item:hover { background:var(--bf-raised); color:var(--bf-accent-copy); border-color:var(--bf-outline); box-shadow:none; }
 .nav-item.selected { box-shadow:inset 3px 0 var(--bf-accent-copy); }
-.topbar { background: var(--bf-surface-solid); border-color: var(--bf-outline); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.topbar { background: var(--bf-surface-solid); border-color: var(--bf-outline); backdrop-filter: none; }
 .topbar-right { gap: 12px; }
 .currency-pill,.level-hex,.sidebar-quote,.intro-badge,.studio-wallet { background:var(--bf-raised); border-color:var(--bf-outline); box-shadow:none; }
 .currency-pill { border-radius:100px; }
@@ -154,7 +154,7 @@ button,input,select,textarea { font-family:inherit; }
 .camera-lenses button,.camera-frame-toggle { background: var(--bf-raised); color: var(--bf-copy); border-color: var(--bf-outline); }
 .camera-lenses button.selected,.camera-frame-toggle.selected { border-color: var(--bf-accent-copy); color: var(--bf-accent-copy); background: var(--bf-raised); }
 .camera-control-help,.framing-primer,.portrait-notice,.training-settings>span { color: var(--bf-muted); }
-.training-visual,.camera-feed,.pose-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
+.training-visual,.camera-feed,.pose-overlay { backdrop-filter: none; }
 .training-visual { border-radius:24px 4px 24px 24px; border-color:var(--bf-outline); }
 .counter-circle svg circle:nth-child(1) { stroke:var(--bf-outline); }
 .counter-circle svg circle:nth-child(2) { stroke:var(--bf-accent); filter:none; }
@@ -182,7 +182,7 @@ button,input,select,textarea { font-family:inherit; }
 .avatar-3d-shell canvas:focus-visible { outline-color:var(--bf-accent-copy); }
 .scan-circle { border-color:rgb(var(--bf-accent-rgb) / .25); }
 .scan-corners::before,.scan-corners::after { border-color:var(--bf-accent-copy); }
-.mobile-nav { background: var(--bf-surface-solid); border: 1px solid var(--bf-outline); box-shadow: 0 8px 32px #0006; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.mobile-nav { background: var(--bf-surface-solid); border: 1px solid var(--bf-outline); box-shadow: 0 8px 32px #0006; backdrop-filter: none; }
 .mobile-nav button { color:var(--bf-muted); border-radius:20px 6px 20px 20px; }
 .mobile-nav button.active { background:var(--bf-accent); color:var(--bf-accent-ink); border:0; box-shadow:none; }
 .mobile-nav button.active::before { display: none; }
@@ -242,11 +242,17 @@ button,input,select,textarea { font-family:inherit; }
   .mobile-nav button,.nav-item,.appearance-trigger { transition:background-color 160ms,color 160ms,border-color 160ms; }
   .primary-button:not(:disabled):hover>svg:last-child,.forge-solid-button:not(:disabled):hover>svg:last-child { transform:translateX(3px); transition:transform 160ms; }
 }
+/* Topbar and dock also receive decorative styles later in the cascade. */
+:root[data-bf-material="solid"][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog),
+:root[data-bf-material][data-bf-contrast="high"] :is(.topbar,.mobile-nav,.appearance-dialog) {
+  background: var(--bf-surface-solid);
+  backdrop-filter: none;
+}
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
-  :root[data-bf-material="glass"][data-bf-contrast="standard"] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-glass); backdrop-filter:blur(16px) saturate(115%); -webkit-backdrop-filter:blur(16px) saturate(115%); }
+  :root[data-bf-material="glass"][data-bf-contrast="standard"] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-glass); backdrop-filter:blur(16px) saturate(115%); }
 }
 @media (prefers-reduced-transparency:reduce) {
-  :root[data-bf-material][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-surface-solid); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  :root[data-bf-material][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog) { background:var(--bf-surface-solid); backdrop-filter:none; }
 }
 @media (prefers-reduced-motion:reduce) {
   html { scroll-behavior:auto; }
@@ -310,5 +316,4 @@ button,input,select,textarea { font-family:inherit; }
 :root[data-bf-graphics="economy"][data-bf-material][data-bf-contrast] :is(.topbar,.mobile-nav,.appearance-dialog) {
   background: var(--bf-surface-solid);
   backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }

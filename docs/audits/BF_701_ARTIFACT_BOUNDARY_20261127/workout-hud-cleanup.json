@@ -1,0 +1,12 @@
+{
+  "status": "OWNED_BROWSER_CLEANED",
+  "original_log_sha256": "bdcf7c5f5f52ce7ade4558e148b57517767fbf9f401b0aaa04b10770842efae4",
+  "initial_owned_processes": 9,
+  "graceful_close_exit": 1,
+  "forced_exact_profile_only": true,
+  "owned_processes_remaining": 0,
+  "profile_removed": true,
+  "owned_port_closed": true,
+  "user_browser_untouched_by_scope": true,
+  "first_test_status": "CDP_TIMEOUT_AND_CLEANUP_FAILURE"
+}

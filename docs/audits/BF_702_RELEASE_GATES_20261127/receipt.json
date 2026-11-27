@@ -1,0 +1,101 @@
+{
+  "status": "TESTED_LOCAL",
+  "scope": "One deterministic-input local build and hashed loopback preview, with required privacy, budget, synthetic tower and mobile checks. Added GitHub Actions definition for the pinned event revision.",
+  "headAtSnapshot": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "source": {
+    "kind": "local-snapshot",
+    "inputCount": 376,
+    "sha256": "11f2d66e14adb1c6189e2f5222478c4af671ae4ab9d2c4e2185eb7823145795a"
+  },
+  "commands": {
+    "dirty-rejected": {
+      "args": [
+        "node",
+        "qa/release-gates.mjs",
+        "--commit",
+        "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e"
+      ],
+      "exit": 1
+    },
+    "sha-rejected": {
+      "args": [
+        "node",
+        "qa/release-gates.mjs",
+        "--commit",
+        "0000000000000000000000000000000000000000"
+      ],
+      "exit": 1
+    },
+    "public-verified": {
+      "args": [
+        "node",
+        "qa/release-artifact-boundary.mjs",
+        "--public"
+      ],
+      "exit": 0
+    },
+    "release": {
+      "args": [
+        "node",
+        "qa/release-gates.mjs"
+      ],
+      "exit": 0
+    },
+    "existing-output-rejected": {
+      "args": [
+        "node",
+        "qa/release-gates.mjs"
+      ],
+      "exit": 1
+    }
+  },
+  "concurrentDrift": [],
+  "files": {
+    ".gitattributes": {
+      "bytes": 190,
+      "sha256": "966e4dc5a0813fe32620976ea699bc9216ccbe5354e5385364d87fcff9de4f0c"
+    },
+    ".github/workflows/bodyforge-verification.yml": {
+      "bytes": 872,
+      "sha256": "95ffadaf58e7115a39d644670589f30a2f9a937047a5406e6bccb4ac2cbd2940"
+    },
+    "README.md": {
+      "bytes": 31144,
+      "sha256": "fb930beaf0ac27f5dd39fe3f5d289e8e30d4921bc32ea40358d58c1b2d4563ab"
+    },
+    "package.json": {
+      "bytes": 2054,
+      "sha256": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17"
+    },
+    "qa/public-artifact-allowlist.json": {
+      "bytes": 8298,
+      "sha256": "9c80454a7cab731e4175e298309a38749a0c95a2a0b17ad52c115501b96e9f83"
+    },
+    "qa/release-gates.mjs": {
+      "bytes": 8709,
+      "sha256": "04552065f1ccf08205cc6b23a758904af589ac95e9561e6886a013446c0ba31f"
+    },
+    "qa/mobile-e2e.mjs": {
+      "bytes": 54817,
+      "sha256": "e384741d098d6921dca74cfc49ee8d4cf9ba2c75ec4c8defdffd154366066de8"
+    }
+  },
+  "run": {
+    "bytes": 15175,
+    "sha256": "244b83d21006d59c4934c886375c675dfded5830a45f9d8d7dfa08102b0644d3"
+  },
+  "publicFilesMatchingGit": 49,
+  "fieldDevice": "not-run",
+  "hostedActions": "not-run",
+  "priorAttempts": [
+    "First local attempt interrupted before a complete receipt.",
+    "Second attempt stopped at synthetic-mobile exit 12. Its separate mobile replay on the same served index and entry SHA-256 exited 0. The failure did not establish a product root cause.",
+    "Third attempt stopped at a mobile CDP command timeout. Final changes use owned Chrome cleanup and permit one replay only for a classified CDP timeout with verified cleanup and the same preview entry."
+  ],
+  "lineEndingChange": "The old policy entry for assets/athlete-face-relief-source.md represented the mixed-ending worktree bytes. The LF entry matches the committed blob exactly. Other 48 entries retain their approved bytes.",
+  "references": [
+    "https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md",
+    "https://github.com/actions/checkout/releases/tag/v6.0.2",
+    "https://github.com/actions/setup-node/releases/tag/v6.2.0"
+  ]
+}

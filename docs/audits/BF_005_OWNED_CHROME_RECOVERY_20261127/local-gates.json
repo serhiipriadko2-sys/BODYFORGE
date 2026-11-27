@@ -1,0 +1,13 @@
+{
+  "owned": {
+    "qa/owned-chrome.mjs": "c7affba1479cf2a4c53721cdace390d97273cd070ad80669ee851b5a103d3ea6",
+    "qa/owned-chrome.test.mjs": "a5199c9bfcce913df7bf7e93a9e4c91d21558a518fe48cff776e4b95a44f85ac",
+    "qa/owned-chrome-windows.mjs": "c45c0056e2d18510842629ac263ce0668524a4e1081dcd68b5cf1382cf0e8389"
+  },
+  "commands": {
+    "syntax": 0,
+    "windows-syntax": 0,
+    "test-syntax": 0,
+    "unit": 0
+  }
+}

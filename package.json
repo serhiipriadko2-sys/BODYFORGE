@@ -14,6 +14,7 @@
     "qa:pulse-armory": "node qa/pulse-armory-e2e.mjs",
     "qa:kinetic": "node qa/kinetic-e2e.mjs",
     "qa:tower20": "node qa/tower20-e2e.mjs",
+    "qa:release": "node qa/release-gates.mjs",
     "qa:privacy": "node qa/privacy-server-e2e.mjs",
     "qa:resilience": "node qa/resilience-e2e.mjs",
     "qa:avatar": "node qa/avatar-lifecycle-e2e.mjs",

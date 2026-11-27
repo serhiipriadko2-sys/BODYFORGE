@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "original_log_sha256": "5585b4f3031c0f9de013a11b11685c60b88c595354ff8abde088c5ee197aa003",
+  "observed": "Expected OUTPUT_ALREADY_EXISTS, received native Vite UNRESOLVED_ENTRY when dangling link bypassed old existsSync precheck. Synthetic fixture, no real data. Original raw log replaced with sanitized evidence to remove machine paths."
+}

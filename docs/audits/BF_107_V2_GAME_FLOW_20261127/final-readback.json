@@ -1,0 +1,125 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "frozenHead": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "observed": "2026-11-27T15:08:37.120259+03:00",
+  "sourceCount": 358,
+  "buildCount": 79,
+  "sourceManifestSha256": "727418956f880fdf4cb455becbf2e6802200a4191faef4f9b0d965bbdc8da67e",
+  "buildManifestSha256": "9cd44e31b11553271f7ba917a5d3995318e2bdf09942f8fe1531b790abe4d68b",
+  "ownedHashesMatch": true,
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs"
+  ],
+  "liveNewPaths": [],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 110,
+    "tower-v2.log": 77,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "gameFlow": {
+    "rows": 2,
+    "packed": 1,
+    "revision": 6,
+    "xp": 360,
+    "coins": 120,
+    "workouts": 2
+  },
+  "bundle": {
+    "entryBytes": 383784,
+    "entryGzipBytes": 117795,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 112977,
+    "entryReductionPercent": 22.7,
+    "entryName": "index-I-LySMG8.js",
+    "poseName": "vision_bundle-CdEgUImF.js"
+  },
+  "entrySha256": "42f65464402becf89dea02c7c73b52a907851b6511af308ccc44cb7704148b05",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89321,
+      "sha256": "2d30fb1e843eea877bc11891b2f7d988c463ae7cc8544a8a3ca3b9f55127d23f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204652,
+      "sha256": "2fd700be83944f640cb0c2f400c7c807d8251a92e669ee8237920b594d84331a",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195379,
+      "sha256": "494ce28341b98cde61b701dcaceb7a0d010061695aa887f6d27872a5a45ab235",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 93654,
+      "sha256": "9bc7ad9c58525d74436ca22e155db021b7b431589e281f3388924e03efbef598",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93656,
+      "sha256": "95e991dbcd7f6a56e4b470897a54949904e86fdcf4ff15df8783c5e267c35b29",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91532,
+      "sha256": "6526ca096f803798081e58a43925d709af3c5839332c6fff073f6e7e5b2baeae",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "tower-browser/bf-qa-tower-victory.png",
+      "bytes": 144363,
+      "sha256": "e7815e860e4c870d6af62efdab0ac7d47dfe844c2f1c4a0e5df9544f12c0d64d",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "acceptance": "TESTED_LOCAL",
+  "ownerActivation": "NOT_RUN"
+}

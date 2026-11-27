@@ -1,0 +1,154 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "frozenHead": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "observed": "2026-11-27T15:18:02.618025+03:00",
+  "sourceCount": 360,
+  "buildCount": 79,
+  "sourceManifestSha256": "12e4a230a2823b9c0dd673fdccea73e094615e197d31ec7467e0db27fdc2363d",
+  "buildManifestSha256": "ef2e56fd472435b4e7f2cb70d56b9b1a3b7a7331be3593ec4271a7cf0b01f10b",
+  "ownedHashesMatch": true,
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs",
+    "qa/finish-save-e2e.mjs",
+    "qa/journal-e2e.mjs",
+    "src/lib/avatarAthleticReview.test.ts",
+    "src/lib/avatarAthleticReview.ts"
+  ],
+  "liveNewPaths": [
+    "qa/avatar-limb-profile-qc.mjs",
+    "qa/export-avatar-taper-authoring.mjs",
+    "qa/public-artifact-allowlist.json",
+    "qa/release-artifact-boundary.mjs",
+    "qa/release-artifact-boundary.test.mjs"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 127,
+    "tower-v2.log": 77,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "activation": {
+    "preflight": true,
+    "fake": true,
+    "cancel": true,
+    "checkpoint": true,
+    "invalid": true,
+    "wallet": true,
+    "pending": true,
+    "replacement": true,
+    "epoch": true,
+    "drift": true,
+    "transaction": true,
+    "blocked": true,
+    "aborted": true,
+    "activate": true,
+    "repeat": true,
+    "unverified": true,
+    "absent": true
+  },
+  "gameFlow": {
+    "rows": 2,
+    "packed": 1,
+    "revision": 6,
+    "xp": 360,
+    "coins": 120,
+    "workouts": 2
+  },
+  "bundle": {
+    "entryBytes": 383794,
+    "entryGzipBytes": 117802,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 112967,
+    "entryReductionPercent": 22.7,
+    "entryName": "index-D57GPVme.js",
+    "poseName": "vision_bundle-BG83xX-K.js"
+  },
+  "entrySha256": "d45a998e8c7c112da3c2677600613343a38b082cb77db5a49f370f4b891f9ad0",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89552,
+      "sha256": "6230575cb00acda96cff00027284bc65281d8e0d8ac9d36863a2865e7b35ce59",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204635,
+      "sha256": "9ade2fee1d252a71a50f8fea5accbcf6c2b13833fc909d966050bc9c1f56c4f6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195334,
+      "sha256": "8eecacc524d9b0678ccd15ea40a3b2c9fb3a80dcfcd0289076afcc6a44610101",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 93728,
+      "sha256": "41141bc8a4128832155ef86f041d2b066db41c265e7468cae2505a0eda2295df",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93136,
+      "sha256": "f4f122b8c465dc0e2696c308cb62fbdf7bda116d25b0a2108f5bfdc0de1be5ba",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91532,
+      "sha256": "5f5ff9459dcd1169dc2414d5cbca16f7c08f9ba1335785c82540682d970cfca5",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "tower-browser/bf-qa-tower-victory.png",
+      "bytes": 144295,
+      "sha256": "198e3ae5593394b8e4c50a95705f17fa564efe587b236fbe0a7d7f48a71d7905",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "acceptance": "TESTED_LOCAL",
+  "ownerActivation": "NOT_RUN"
+}

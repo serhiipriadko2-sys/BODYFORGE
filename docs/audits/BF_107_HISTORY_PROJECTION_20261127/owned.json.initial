@@ -1,0 +1,6 @@
+{
+  "src/lib/durableJournal.ts": "eb4ed8e3b9cc25d47ea38c3bcd918f4a62faa9b49c7704c577ca4129746afa0a",
+  "src/lib/activityHistory.ts": "c47b727df66b2dc2f308083f515d661e9272d1655a07df04f258c23879f86e49",
+  "src/lib/activityHistory.test.ts": "3b0f4e1528f3e3fa893396d32fc6635b52c499003a8491e970c3d3a89d42014c",
+  "qa/durable-journal-e2e.mjs": "a2a7b01ee53eb7e2fdca6007a80c97114361e376b3f1d83bf29d659fcf72788d"
+}

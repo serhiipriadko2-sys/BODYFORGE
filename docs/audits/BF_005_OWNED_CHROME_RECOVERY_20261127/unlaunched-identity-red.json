@@ -1,0 +1,6 @@
+{
+  "exit": 1,
+  "failed": 1,
+  "raw_sha256": "644c28eaa4b9522ffe94136b290a6aa6b4e38283547dd6255cf2ecc06ddc3d8d",
+  "scope": "Synthetic no-spawn identity fixture. No network or process signal; mocked fetch."
+}

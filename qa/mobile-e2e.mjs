@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
+import { waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome, requirePreviewOrigin } from './owned-chrome.mjs';
 
 const chromePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const origin=process.env.BODYFORGE_QA_ORIGIN||'http://127.0.0.1:5173';
@@ -15,7 +16,7 @@ const chrome=spawn(chromePath,[
   'about:blank',
 ],{stdio:'ignore'});
 const sleep=(ms)=>new Promise(ok=>setTimeout(ok,ms));
-let socket,seq=0,pageLoads=0;const pending=new Map();
+let browser, socket,seq=0,pageLoads=0;const pending=new Map();
 // Inspect actual resource pathnames in dev AND hashed production builds.
 function downloadedPanels(){
   const paths=performance.getEntriesByType('resource').map(e=>new URL(e.name).pathname);
@@ -25,21 +26,13 @@ function downloadedPanels(){
     controls:has('CameraControls'),dailyPlan:has('DailyPlanBoard')};
 }
 const downloadedPanelsExpression='('+downloadedPanels.toString()+')()';
-async function endpoint(){
-  for(let i=0;i<75;i++){
-    // Windows can exit the Chrome launcher while its owned CDP browser remains active.
-    // A working DevTools endpoint, not the short-lived launcher, proves readiness.
-    try{const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
-      const tabs=await(await fetch('http://127.0.0.1:'+port+'/json')).json();
-      const tab=tabs.find(t=>t.type==='page');
-      if(tab){console.log('CDP_OWNER',process.pid,port);return tab.webSocketDebuggerUrl;}
-    }catch{} await sleep(200);
-  }throw Error('Chrome DevTools unavailable');
-}
 function cdp(method,params={}){
   return new Promise((resolve,reject)=>{
     const id=++seq;
-    const timer=setTimeout(()=>{pending.delete(id);reject(Error(method+' timeout'))},18000);
+    const timer=setTimeout(()=>{
+      pending.delete(id);
+      reject(Object.assign(new Error(method+' timeout'), { code: 'MOBILE_CDP_TIMEOUT' }));
+    },18000);
     pending.set(id,(m)=>{clearTimeout(timer);m.error?reject(Error(JSON.stringify(m.error))):resolve(m.result)});
     socket.send(JSON.stringify({id,method,params}));
   });
@@ -84,8 +77,12 @@ async function snapshot(){
  return await read("({screen:document.querySelector('.app-shell')?.dataset.screen,scroll:document.documentElement.scrollWidth,viewport:innerWidth,setup:!!document.querySelector('#onboarding'), coins:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').coins,game:JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}').game,three:[...document.querySelectorAll('[data-3d-status]')].map(x=>x.dataset['3dStatus'])})");
 }
 try{
-  const url=await endpoint();
-  socket=new WebSocket(url);
+  if (process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256) {
+    await requirePreviewOrigin(origin, process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256);
+  }
+  browser=await waitForOwnedBrowser(profile, chrome);
+  const target=await newOwnedPage(browser);
+  socket=new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});
   socket.addEventListener('message',e=>{
     const m=JSON.parse(e.data.toString());
@@ -415,6 +412,8 @@ try{
   await click('.mobile-nav button:nth-child(1)');
   await until("document.querySelector('#quests')?.getClientRects().length>0",'Forge missions visible before reward');
   await click('#quests .quest-button');
+  await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.coins===10&&!!p.game?.lastLoginDay})()',
+    'daily login reward persisted before checking the wallet');
   s=await snapshot();
   check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
   // QA-only wallet top-up in this disposable Chrome profile. Never changes actual user data.
@@ -575,6 +574,7 @@ try{
   await screenshot('bf-qa-mobile-360-premium.png');
   console.log('BODYFORGE_MOBILE_E2E_PASS');
 }catch(error){
+  if (error?.code==='MOBILE_CDP_TIMEOUT') console.error('BODYFORGE_MOBILE_CDP_TIMEOUT');
   console.error('BODYFORGE_MOBILE_E2E_FAIL',error.stack||String(error));process.exitCode=12;
   if(socket?.readyState===1)try{
     console.log('FAILURE_STATE',await js("JSON.stringify({url:location.href,screen:document.querySelector('.app-shell')?.dataset.screen,storageStatus:document.querySelector('[data-storage-status]')?.dataset.storageStatus,loading:!!document.querySelector('.avatar-3d-wait'),message:document.body.innerText.slice(0,2000)})"));
@@ -582,28 +582,10 @@ try{
 }
 finally{
   socket?.close();
-  // The launcher may already be gone. Close only this test's browser through
-  // the browser-level CDP endpoint discovered in its unique temporary profile.
-  try{
-    const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
-    if(Number.isInteger(port)&&port>0){
-      const info=await(await fetch('http://127.0.0.1:'+port+'/json/version',
-        {signal:AbortSignal.timeout(1500)})).json();
-      if(typeof info.webSocketDebuggerUrl==='string'){
-        const owned=new WebSocket(info.webSocketDebuggerUrl);
-        await new Promise((resolve,reject)=>{
-          const timer=setTimeout(()=>reject(Error('CDP close connection timeout')),1500);
-          owned.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
-          owned.addEventListener('error',()=>{clearTimeout(timer);reject(Error('CDP close connection failed'));},{once:true});
-        });
-        owned.send(JSON.stringify({id:1,method:'Browser.close'}));
-        await sleep(400);
-        owned.close();
-      }
-    }
-  }catch(error){console.warn('QA_CHROME_CLOSE_UNCONFIRMED',String(error));}
-  chrome.kill();
-  await sleep(500);
-  try{fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:200});}
-  catch(error){console.error('QA_CHROME_PROFILE_CLEANUP_FAIL',String(error));process.exitCode=12;}
+  try {
+    await cleanupOwnedChrome(profile, 'bf-mobile-', chrome, browser);
+  } catch (error) {
+    console.error('QA_CHROME_PROFILE_CLEANUP_FAIL',String(error));
+    process.exitCode=12;
+  }
 }

@@ -3,7 +3,7 @@ import { freshGame } from './game';
 import { PROFILE_EPOCH_KEY as EPOCH } from './profileEpoch';
 import { addCompletedWorkout, parseProfile, STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY as MARKER } from './progression';
 import { executeProfileReplacement, planProfileReplacement, type ReplacementPort } from './profileReplacement';
-import { readReplacementRecovery, restoreInterruptedReplacement } from './profileReplacementRecovery';
+import { prepareFileReplacement, readReplacementRecovery, restoreInterruptedReplacement } from './profileReplacementRecovery';
 import { readDurableJournal } from './durableJournal';
 import { PROFILE_WRITE_LOCK } from './profileLock';
 
@@ -113,6 +113,19 @@ describe('BF-106 locked recovery adapter',()=>{
     expect((await readReplacementRecovery()).state).toBe('conflict');
     expect((await restoreInterruptedReplacement(marker,'rollback')).status).toBe('recovery-required');
     expect(write).not.toHaveBeenCalled();expect([...values]).toEqual(before);
+  });
+  it.each([
+    ['active', 'local-pending'],
+    ['quarantined', 'local-quarantine'],
+    ['settled', 'current-sources-not-quiet'],
+  ] as const)('reports local %s journal rows without writing the profile', async (state, reason) => {
+    durable.mockResolvedValue({ status: 'ready',
+      entries: [{ key: STORAGE_KEY+':result:x', raw: '{}', state, baseProfileRaw: null }] });
+    const before = [...values];
+    expect(await prepareFileReplacement('{}', primary, null, new AbortController().signal))
+      .toEqual({ status: 'blocked', reason });
+    expect(write).not.toHaveBeenCalled();
+    expect([...values]).toEqual(before);
   });
   it('blocks unavailable durable storage and malformed marker; export evidence remains exact',async()=>{
     const marker=stage();durable.mockResolvedValue({status:'unavailable',entries:[]});

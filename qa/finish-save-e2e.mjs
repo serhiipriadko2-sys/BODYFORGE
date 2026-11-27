@@ -3,8 +3,36 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { requireDevOrigin, requirePreviewOrigin } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
+const expectedEntry = process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256;
+const poseModule = await resolvePoseModule();
+
+async function resolvePoseModule() {
+  let sourcePath = '/src/App.tsx';
+  if (expectedEntry !== undefined) {
+    const { entry } = await requirePreviewOrigin(origin, expectedEntry);
+    sourcePath = entry;
+  } else {
+    await requireDevOrigin(origin);
+  }
+  const response = await fetch(origin + sourcePath, { redirect: 'error', signal: AbortSignal.timeout(5000) });
+  if (!response.ok) throw Error('Could not load application entry for test setup');
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (expectedEntry !== undefined && createHash('sha256').update(bytes).digest('hex') !== expectedEntry.toLowerCase()) {
+    throw Error('Production entry changed while resolving MediaPipe');
+  }
+  const source = bytes.toString('utf8');
+  const pattern = expectedEntry !== undefined
+    ? /import\(\s*["'`](\.\/vision_bundle-[\w-]+\.js)["'`]/g
+    : /["'](\/node_modules\/\.vite\/deps\/@mediapipe_tasks-vision\.js\?v=[^"']+)["']/g;
+  const paths = [...new Set([...source.matchAll(pattern)].map((match) => match[1]))];
+  if (paths.length !== 1) throw Error('Expected one MediaPipe module in the application entry');
+  const url = new URL(paths[0], origin + sourcePath);
+  return url.pathname + url.search;
+}
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-finish-save-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
   '--headless=new',
@@ -85,13 +113,7 @@ async function readProfile() { return JSON.parse(await js('localStorage.getItem(
 
 async function startTower() {
   await js(`(async()=>{
-    const source=await(await fetch('/src/App.tsx')).text();
-    const marker=source.indexOf('@mediapipe_tasks-vision.js?v=');
-    if(marker<0)throw Error('MediaPipe module URL missing');
-    const prefix=source.slice(0,marker);
-    const start=Math.max(prefix.lastIndexOf(String.fromCharCode(34)),prefix.lastIndexOf(String.fromCharCode(39)))+1;
-    const url=source.slice(start).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];
-    const mp=await import(url);
+    const mp=await import(${JSON.stringify(poseModule)});
     const rep=[170,170,170,158,144,132,125,120,119,124,138,151,165,170,172,173];
     const angles=[170,170,170,...Array.from({length:20},()=>rep).flat()];
     window.__poseCalls=0;window.__modelsClosed=0;window.__tracks=[];
@@ -207,6 +229,8 @@ try {
       URL.createObjectURL=function(blob){window.__exportedBlob=blob;return create(blob)};
       HTMLAnchorElement.prototype.click=function(){if(this.download==='bodyforge-local-progress.json'){window.__exportRequested=true;return;}return click.call(this)};return true})()`);
     await click('[data-action=export-session]');
+    await until("!!document.querySelector('[data-action=download-session]')", 'recovery export ready to download');
+    await click('[data-action=download-session]');
     const exported = await js('(async()=>JSON.parse(await window.__exportedBlob.text()))()');
     check(exported.xp === 500 && exported.coins === 900 && exported.workouts.length === 0 &&
       exported.pendingResults.length === 1 && exported.pendingResults[0].repetitions === 20 &&

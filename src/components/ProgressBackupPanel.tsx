@@ -5,7 +5,7 @@ import { prepareProgressBackup, requestProgressBackupDownload, requestLocalBacku
 import { previewProgressImportFile, type ProgressImportPreview } from '../lib/progressImportPreview';
 import { readProfileEpoch } from '../lib/profileEpoch';
 import type { ReplacementPlan } from '../lib/profileReplacement';
-import { prepareFileReplacement, stageFileReplacement } from '../lib/profileReplacementRecovery';
+import { prepareFileReplacement, stageFileReplacement, type FileReplacementPreparation } from '../lib/profileReplacementRecovery';
 import { formatStorageBytes, readStorageCapacity, type StorageCapacity } from '../lib/storageCapacity';
 import { prepareBackupArchive, type PreparedBackupArchive } from '../lib/backupArchive';
 import { previewCheckpointBatch, type CheckpointPreview } from '../lib/journalCheckpointBatch';
@@ -16,6 +16,28 @@ interface Props {
   pendingResult: CompletedWorkoutResult | null;
   disabled: boolean;
 }
+
+type ImportIssue = Extract<FileReplacementPreparation, { status: 'blocked' }>['reason'];
+const importIssueText: Record<ImportIssue, string> = {
+  'local-pending': 'В этом браузере есть результат, который ещё обрабатывается. Дождись завершения сохранения и выбери файл снова.',
+  'local-quarantine': 'В этом браузере есть данные в карантине. Проверь их на экране восстановления прогресса.',
+  'incoming-pending': 'В копии есть результат, ожидающий начисления. Подготовь свежую копию в исходном браузере после завершения сохранения.',
+  'incoming-quarantine': 'В копии есть данные в карантине. Сохрани файл для восстановления в исходном браузере.',
+  'different-journal': 'Журналы оплаченных тренировок различаются. Замена доступна для копии с теми же записями журнала.',
+  'current-sources-not-quiet': 'Не удалось подтвердить состояние локального журнала. Проверь сохранение в этом браузере.',
+  'current-recovery-required': 'Текущему профилю нужно восстановление. Сохрани локальную резервную копию перед дальнейшими действиями.',
+  'incoming-not-compatible': 'Файл не прошёл проверку совместимости. Подготовь полную копию в исходном браузере.',
+  'auxiliary-replacement-unsupported': 'Настройки или дополнительные данные в копии отличаются от текущих. Для этой копии доступно сравнение.',
+  'identity-not-confirmed': 'Идентификатор бойца в копии не совпадает с текущим. Выбери копию этого бойца.',
+  'settled-payment-unproven': 'Сведения об оплаченной тренировке в журнале и в профиле не совпадают.',
+  'history-or-identity-unsupported': 'Копия или её резервный профиль несовместимы либо теряют часть сохранённой истории.',
+  'transaction-id-unavailable': 'Браузер не смог подготовить защищённую замену. Обнови страницу и попробуй снова.',
+  'transaction-id-reused': 'Браузер не смог подготовить защищённую замену. Обнови страницу и попробуй снова.',
+  'rollback-record-too-large': 'Данных слишком много для безопасного отката. Для этой копии доступно сравнение.',
+  'replacement-in-progress': 'Другая замена уже началась. Открой приложение заново, чтобы завершить её или вернуть прежнюю копию.',
+  'stale-observation': 'Профиль изменился во время проверки. Выбери файл заново для сравнения с актуальным прогрессом.',
+  'verification-unavailable': 'Браузер не смог проверить локальное сохранение. Дождись окончания других операций и выбери файл снова.',
+};
 
 /** Preview and confirmation share the same immutable replacement plan. */
 export default function ProgressBackupPanel({ profile, pendingResult, disabled }: Props) {
@@ -32,6 +54,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   const [confirming, setConfirming] = useState(false);
   const [staging, setStaging] = useState(false);
   const [importMessage, setImportMessage] = useState('');
+  const [importIssue, setImportIssue] = useState<ImportIssue | null>(null);
   const [capacity, setCapacity] = useState<StorageCapacity | null>(null);
   const [measuring, setMeasuring] = useState(false);
   const capacityGeneration = useRef(0);
@@ -127,6 +150,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
     setConfirming(false);
     setStaging(false);
     setImportMessage('');
+    setImportIssue(null);
     setPreview(null);
     setInspecting(false);
   }
@@ -236,11 +260,12 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
     const replacement = json && !pendingResult && current.status === 'ready' && current.revision !== null && epoch !== undefined
       ? await prepareFileReplacement(json, current.revision, epoch, controller.signal) : null;
     if (controller.signal.aborted || request !== inspectionGeneration.current) return;
-    setPlan(replacement);
+    setPlan(replacement?.status === 'planned' ? replacement.plan : null);
     setPreview(result);
     setInspecting(false);
-    if (result.state === 'preview-ready' && !replacement) {
-      setImportMessage('Доступен только просмотр. Для замены нужны тот же боец, совместимая история наград, совпадающие настройки и одинаковые журналы без ожидающих или отложенных результатов.');
+    if (replacement?.status === 'blocked') setImportIssue(replacement.reason);
+    else if (!replacement && result.state === 'preview-ready') {
+      setImportIssue(pendingResult ? 'local-pending' : 'verification-unavailable');
     }
   }
 
@@ -350,7 +375,9 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
               onClick={() => { void confirmReplacement(); }}>{staging ? 'Проверяем сохранение…' : 'Подтвердить замену'}</button>
             </div>}
           </div>}
-          {importMessage && <p role="status">{importMessage}</p>}
+          <div role="status" aria-atomic="true" data-file-replacement-status={importIssue ?? undefined}>
+            {(importIssue || importMessage) && <p>{importIssue ? importIssueText[importIssue] : importMessage}</p>}
+          </div>
           {(inspecting || preview) && <button type="button" className="progress-import-cancel"
             data-action="cancel-import-preview" onClick={invalidateImport}>ОТМЕНИТЬ ПРОСМОТР</button>}
           <small>Просмотр файла сам по себе не изменяет прогресс.

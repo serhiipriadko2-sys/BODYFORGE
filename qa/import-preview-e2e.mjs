@@ -166,6 +166,10 @@ try {
     return (await readDurableJournal()).entries;
   })()`);
   check(settled.length===1 && settled[0].state==='settled','real IndexedDB holds the paid session');
+  if (process.argv.includes('--journal-v2')) {
+    const upgrade = await ev("(async()=>await(await import('/src/lib/durableJournalV2.ts')).prepareVersionedJournal())()");
+    check(upgrade.status==='prepared' && upgrade.versionConfirmed===2,'explicit upgrade on disposable IndexedDB');
+  }
   const backup = await ev('('+makeBackup.toString()+')()');
   check(backup.xp===825 && backup.coins===335 && backup.workouts===4,'backup candidate has independent totals');
   await cdp('Fetch.disable');
@@ -230,6 +234,25 @@ try {
   await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
   await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings reopened');
   await ev("document.querySelector('.progress-backup-file-checker').open=true");
+  const candidateFile = JSON.parse(backup.json);
+  for (const [candidate, issue, phrase] of [
+    [{ ...candidateFile, durableResults: settled.map(row => ({ ...row, state: 'active' })) },
+      'incoming-pending', 'ожидающий начисления'],
+    [{ ...candidateFile, durableResults: settled.map(row => ({ ...row, state: 'quarantined' })) },
+      'incoming-quarantine', 'карантине'],
+    [{ ...candidateFile, durableResults: [] }, 'different-journal', 'оплаченных тренировок различаются'],
+    [{ ...candidateFile, storedAuxiliaryRaw: { ...candidateFile.storedAuxiliaryRaw, manualSteps: '[]' } },
+      'auxiliary-replacement-unsupported', 'настройки'],
+  ]) {
+    await choose(JSON.stringify(candidate));
+    await until("!!document.querySelector('[data-file-replacement-status="+issue+"]')",'visible import block '+issue);
+    const feedback = await ev("document.querySelector('[data-file-replacement-status]').textContent");
+    check(feedback.toLowerCase().includes(phrase) &&
+      await ev("!!document.querySelector('[data-import-preview]') && !document.querySelector('[data-action=request-file-replacement]')"),
+      issue+' exposes specific guidance with comparison and no replace action');
+    await unchanged(issue);
+    await cancel();
+  }
   async function requestReplacement(kind='valid'){
     await choose(backup.json,kind);
     await until("!!document.querySelector('[data-action=request-file-replacement]')",'compatible file eligible');
@@ -258,6 +281,40 @@ try {
   const candidate=JSON.parse(backup.json);
   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
     await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'file import stages exact primary and fallback');
+  const stagedEvidence = await ev(`(async()=>{
+    const {prepareProgressBackup}=await import('/src/lib/progressBackup.ts');
+    const {parseProfile}=await import('/src/lib/progression.ts');
+    const {inspectProgressBackupJson}=await import('/src/lib/progressBackupInspector.ts');
+    const exportFile=await prepareProgressBackup(parseProfile(null),null);
+    const content=JSON.parse(exportFile.json);
+    return {complete:exportFile.complete, inspection:inspectProgressBackupJson(exportFile.json).state,
+      primary:content.storedProfileRaw, backup:content.storedBackupRaw,
+      rows:content.durableResults};
+  })()`);
+  check(!stagedEvidence.complete && stagedEvidence.inspection==='incomplete' &&
+    stagedEvidence.primary===candidate.storedProfileRaw && stagedEvidence.backup===candidate.storedBackupRaw &&
+    JSON.stringify(stagedEvidence.rows)===JSON.stringify(settled),
+    'export during unresolved replacement keeps exact profiles and journal as incomplete evidence');
+  await ev(`window.__bfRecoveryPeer=window.open('about:blank','_blank');
+    if(!__bfRecoveryPeer)throw Error('recovery peer unavailable');
+    __bfRecoveryPeer.eval("navigator.locks.request('bodyforge:pilot:v1:write',()=>new Promise(resolve=>{window.releaseRecoveryLock=resolve}))");
+    true`, true);
+  await until("typeof __bfRecoveryPeer.releaseRecoveryLock==='function'",'peer holds lock before recovery reload');
+  const peerTargets=await cdp('Target.getTargets');
+  const peerInfo=peerTargets.targetInfos.find(page=>page.type==='page' && page.url==='about:blank' && page.openerId===target.id);
+  const recoveryPeer=peerInfo && { id: peerInfo.targetId };
+  if (!recoveryPeer) throw Error('owned recovery peer missing');
+  await cdp('Page.bringToFront');
+  await ev('window.__bfRecoveryBeforeReload=true');
+  await cdp('Page.reload',{ignoreCache:true});
+  await until("!window.__bfRecoveryBeforeReload && !!document.querySelector('[data-replacement-recovery] [role=alert]')",
+    'startup blocks recovery actions while the profile lock is held');
+  const released = await cdp('Target.closeTarget',{targetId:recoveryPeer.id});
+  if (!released.success) throw Error('owned recovery peer did not close');
+  await until("!!document.querySelector('[data-action=request-replacement-keep]:enabled')",
+    'recovery reads staged copy automatically after startup unlocks');
+  check(await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')!==null"),
+    'waiting for recovery preserves rollback record');
   async function reopenAfterDecision(action){
     await ev("document.querySelector('[data-action=request-replacement-"+action+"]')"+'.click()');
     await ev("document.querySelector('[data-action=confirm-replacement-"+action+"]')"+'.click()');
@@ -275,7 +332,18 @@ try {
   await ev("document.querySelector('.progress-backup-file-checker').open=true");
   await requestReplacement('gzip');
   await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
-  await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file in gzip can be selected again');
+  try {
+    await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file in gzip can be selected again');
+  } catch (error) {
+    console.error('GZIP_REPLACEMENT_STATUS', await ev(`({
+      storage: document.querySelector('[data-storage-status]')?.dataset.storageStatus,
+      recovery: document.querySelector('[data-replacement-recovery]')?.dataset.replacementRecovery,
+      reason: document.querySelector('[data-file-replacement-status]')?.dataset.fileReplacementStatus,
+      confirmation: !!document.querySelector('[data-action=confirm-file-replacement]'),
+      pendingReplacement: localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1') !== null,
+    })`));
+    throw error;
+  }
   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
     await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'gzip file replacement stages exact v1 bytes without new authority');
   await reopenAfterDecision('keep');

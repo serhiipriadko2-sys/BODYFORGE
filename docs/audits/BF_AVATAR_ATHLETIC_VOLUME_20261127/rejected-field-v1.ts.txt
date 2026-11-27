@@ -1,0 +1,112 @@
+import type { Muscle } from './game';
+import { MUSCLE_LOBES, addMuscleLobe, type MuscleLobe } from './avatarMuscleAnatomy.ts';
+
+type Vec3 = readonly [number, number, number];
+type Envelope = {
+  readonly name: string;
+  readonly start: Vec3;
+  readonly end: Vec3;
+  readonly inner: number;
+  readonly outer: number;
+  readonly gain: number;
+  readonly medialGuard?: boolean;
+};
+type Axis = Envelope & { readonly ux: number; readonly uy: number; readonly uz: number; readonly length: number };
+export const ATHLETIC_REVIEW_ID = 'BF_ATHLETIC_VOLUME_REVIEW_V1';
+
+/** Rest-pose axes measured from the compact athlete's left-side skeleton.
+ * The artistic gains are not clinical hypertrophy predictions.
+ * Only radial displacement is added; joints and segment length are retained. */
+const axes: Record<'arms' | 'legs', readonly Envelope[]> = {
+  arms: [
+    { name: 'upper arm', start: [.20357, 1.42893, .01860], end: [.37359, 1.23189, .01716], inner: .064, outer: .108, gain: .38 },
+    { name: 'forearm', start: [.37359, 1.23189, .01716], end: [.51171, 1.09962, .21447], inner: .057, outer: .095, gain: .28 },
+  ],
+  legs: [
+    { name: 'thigh', start: [.11101, .95978, -.00733], end: [.15220, .52146, .02767], inner: .102, outer: .148, gain: .28, medialGuard: true },
+    { name: 'calf', start: [.15220, .52146, .02767], end: [.20250, .07402, .01382], inner: .067, outer: .111, gain: .27, medialGuard: true },
+  ],
+};
+function axis(e: Envelope): Axis {
+  const x = e.end[0] - e.start[0], y = e.end[1] - e.start[1], z = e.end[2] - e.start[2];
+  const length = Math.hypot(x, y, z);
+  return { ...e, ux: x / length, uy: y / length, uz: z / length, length };
+}
+const compiled = { arms: axes.arms.map(axis), legs: axes.legs.map(axis) };
+export const ATHLETIC_REVIEW_AXES = axes;
+
+const broad: Record<'core' | 'back', readonly MuscleLobe[]> = {
+  core: [
+    { name: 'broad pectoral bed', center: [.102, 1.344, .109], radius: [.133, .104, .111], offset: [.004, .001, .018], slope: [.20, -.24] },
+    { name: 'lateral abdominal support', center: [.116, 1.185, .052], radius: [.083, .165, .115], offset: [.006, 0, .003] },
+  ],
+  back: [
+    { name: 'broad dorsal bed', center: [.125, 1.328, -.057], radius: [.105, .170, .116], offset: [.014, 0, -.014], slope: [.28, -.10] },
+    { name: 'upper trapezius transition', center: [.091, 1.429, -.047], radius: [.093, .091, .093], offset: [.003, .005, -.008] },
+  ],
+};
+function smoother(t: number): number {
+  return t * t * t * (10 + t * (-15 + 6 * t));
+}
+function derivative(t: number): number {
+  return 30 * t * t * (1 - t) * (1 - t);
+}
+
+/** Analytic F(p)=p+gain*axial(t)*radial(r)*r. C2 at both joints and at
+ * the support boundary. Evaluate the same field on body and clothing. */
+function addRadial(e: Axis, weight: number, x: number, y: number, z: number,
+  d: Float64Array, j: Float64Array): void {
+  const side = x < 0 ? -1 : 1;
+  const ax = e.ux * side, ay = e.uy, az = e.uz;
+  const px = x - e.start[0] * side, py = y - e.start[1], pz = z - e.start[2];
+  const along = px * ax + py * ay + pz * az, t = along / e.length;
+  if (t <= 0 || t >= 1) return;
+  const rx = px - along * ax, ry = py - along * ay, rz = pz - along * az;
+  const r2 = rx * rx + ry * ry + rz * rz;
+  if (r2 >= e.outer * e.outer) return;
+  const left = Math.min(1, t / .22), right = Math.min(1, (1 - t) / .22);
+  const a = smoother(left), b = smoother(right);
+  const da = left < 1 ? derivative(left) / .22 : 0;
+  const db = right < 1 ? -derivative(right) / .22 : 0;
+  const shape = 4 * t * (1 - t), shapeD = 4 - 8 * t;
+  const axial = a * b * shape, axialD = (da * b * shape + a * db * shape + a * b * shapeD) / e.length;
+  const span = e.outer * e.outer - e.inner * e.inner;
+  const r = Math.max(0, (r2 - e.inner * e.inner) / span);
+  const radial = 1 - smoother(r), radialD = -2 * derivative(r) / span;
+  const medial = e.medialGuard ? Math.max(0, Math.min(1, (Math.abs(x) - .008) / .047)) : 1;
+  const m = smoother(medial), md = e.medialGuard ? derivative(medial) * side / .047 : 0;
+  const gain = weight * e.gain;
+  const w = gain * axial * radial * m;
+  const gx = gain * (m * (axialD * ax * radial + axial * radialD * rx) + axial * radial * md);
+  const gy = gain * m * (axialD * ay * radial + axial * radialD * ry);
+  const gz = gain * m * (axialD * az * radial + axial * radialD * rz);
+  d[0] += w * rx; d[1] += w * ry; d[2] += w * rz;
+  j[0] += w * (1 - ax * ax) + rx * gx;
+  j[1] += -w * ax * ay + rx * gy;
+  j[2] += -w * ax * az + rx * gz;
+  j[3] += -w * ay * ax + ry * gx;
+  j[4] += w * (1 - ay * ay) + ry * gy;
+  j[5] += -w * ay * az + ry * gz;
+  j[6] += -w * az * ax + rz * gx;
+  j[7] += -w * az * ay + rz * gy;
+  j[8] += w * (1 - az * az) + rz * gz;
+}
+
+/** Alternate sculpt profile: preserve local anatomical landmarks but reduce
+ * isolated peaks, distribute additional volume along the actual limb axes.
+ * No effect at zero level; the four existing gameplay groups are unchanged. */
+export function addAvatarAthleticReviewGrowth(group: Muscle, weight: number,
+  x: number, y: number, z: number, d: Float64Array, j: Float64Array): void {
+  if (!Number.isFinite(weight) || weight <= 0) return;
+  const w = Math.min(weight, 1);
+  for (const lobe of MUSCLE_LOBES[group]) {
+    const scale = group === 'core' && lobe.name.includes('rectus') ? .70 :
+      group === 'arms' || group === 'legs' ? .74 : .86;
+    addMuscleLobe(lobe, w * scale, x, y, z, d, j);
+  }
+  if (group === 'arms' || group === 'legs') {
+    for (const e of compiled[group]) addRadial(e, w, x, y, z, d, j);
+  } else {
+    for (const lobe of broad[group]) addMuscleLobe(lobe, w, x, y, z, d, j);
+  }
+}

@@ -1,8 +1,8 @@
 import { RESULT_JOURNAL_PREFIX } from './workoutJournal';
 import { withDurableJournalGate } from './durableJournalGate';
 
-export const DURABLE_JOURNAL_DATABASE = 'bodyforge:durable-results:v1';
-const STORE = 'results';
+import { DURABLE_JOURNAL_DATABASE, DURABLE_RESULT_STORE as STORE, isVersionedJournalLayout } from './durableJournalSchema';
+export { DURABLE_JOURNAL_DATABASE } from './durableJournalSchema';
 const TIMEOUT_MS = 5000;
 export interface DurableJournalEntry {
   key: string;
@@ -15,7 +15,9 @@ type EntryInput = Pick<DurableJournalEntry, 'key' | 'raw'>;
 export type DurableWriteResult = { status: 'saved'; entries: DurableJournalEntry[] }
   | { status: 'invalid' | 'unavailable' };
 type TransactionResult = { status: 'saved' | 'invalid' | 'unavailable' };
-type ReadResult = { status: 'ready' | 'unavailable'; entries: DurableJournalEntry[] };
+type ReadResult<T = DurableJournalEntry> = { status: 'ready' | 'unavailable'; entries: T[] };
+/** Activity-only evidence. Recovery and backup must use the full originals. */
+export type DurableHistoryReceipt = Pick<DurableJournalEntry, 'key' | 'raw' | 'state'>;
 const validInput = (value: unknown): value is EntryInput => !!value && typeof value === 'object'
   && typeof (value as EntryInput).key === 'string' && (value as EntryInput).key.startsWith(RESULT_JOURNAL_PREFIX)
   && typeof (value as EntryInput).raw === 'string';
@@ -43,17 +45,17 @@ function openDatabase(signal?: AbortSignal): Promise<IDBDatabase | null> {
     const timer = setTimeout(aborted, TIMEOUT_MS);
     signal?.addEventListener('abort', aborted, { once: true });
     try {
-      const request = indexedDB.open(DURABLE_JOURNAL_DATABASE, 1);
+      const request = indexedDB.open(DURABLE_JOURNAL_DATABASE);
       request.onblocked = () => finish(null);
       request.onerror = () => finish(null);
-      request.onupgradeneeded = () => {
-        if (done || signal?.aborted) { request.transaction?.abort(); return; }
+      request.onupgradeneeded = event => {
+        if (done || signal?.aborted || event.oldVersion !== 0 || request.result.version !== 1) { request.transaction?.abort(); return; }
         if (!request.result.objectStoreNames.contains(STORE)) request.result.createObjectStore(STORE, { keyPath: 'key' });
       };
       request.onsuccess = () => {
         const db = request.result;
         db.onversionchange = () => db.close();
-        if (done || signal?.aborted || !db.objectStoreNames.contains(STORE)) { db.close(); finish(null); return; }
+        if (done || signal?.aborted || !db.objectStoreNames.contains(STORE) || (db.version !== 1 && !isVersionedJournalLayout(db))) { db.close(); finish(null); return; }
         finish(db);
       };
     } catch { finish(null); }
@@ -65,15 +67,22 @@ function openDatabase(signal?: AbortSignal): Promise<IDBDatabase | null> {
  * Selected readback retains only requested originals but validates EVERY row.
  * Never treat a corrupt, incomplete or cancelled scan as an empty history. */
 const JOURNAL_PAGE_ROWS = 32;
-async function readJournalSnapshot(selected?: ReadonlySet<string>, signal?: AbortSignal): Promise<ReadResult> {
-  const unavailable: ReadResult = { status: 'unavailable', entries: [] };
+async function readJournalSnapshot<T>(project: (row: StoredEntry) => T | undefined, signal?: AbortSignal): Promise<ReadResult<T>> {
+  const unavailable: ReadResult<T> = { status: 'unavailable', entries: [] };
   const db = await openDatabase(signal);
   if (!db || signal?.aborted) { db?.close(); return unavailable; }
+  if (isVersionedJournalLayout(db)) {
+    try {
+      const { readVersionedJournal } = await import('./durableJournalV2');
+      return await readVersionedJournal(db,row=>project({...row,schemaVersion:1}),signal);
+    } catch { return unavailable; }
+    finally { db.close(); }
+  }
   return new Promise((resolve) => {
     let done = false, complete = false;
-    const entries: DurableJournalEntry[] = [];
+    const entries: T[] = [];
     let tx: IDBTransaction | undefined;
-    const finish = (result: ReadResult) => {
+    const finish = (result: ReadResult<T>) => {
       if (done) return;
       done = true; clearTimeout(timer); signal?.removeEventListener('abort', abort);
       db.close(); resolve(result);
@@ -105,7 +114,8 @@ async function readJournalSnapshot(selected?: ReadonlySet<string>, signal?: Abor
               const row = storedEntry(value);
               if (!row || (previous !== undefined && row.key <= previous)) { abort(); return; }
               previous = row.key;
-              if (!selected || selected.has(row.key)) entries.push(publicEntry(row));
+              const projected = project(row);
+              if (projected !== undefined) entries.push(projected);
             }
             if (values.length < JOURNAL_PAGE_ROWS) complete = true;
             else page();
@@ -119,7 +129,15 @@ async function readJournalSnapshot(selected?: ReadonlySet<string>, signal?: Abor
 
 /** Opaque raw records are preserved; unknown store schema fails closed. */
 export function readDurableJournal(): Promise<ReadResult> {
-  return readJournalSnapshot();
+  return readJournalSnapshot(publicEntry);
+}
+
+/** Scan and validate every physical row, but retain only settled receipt
+ * fields needed for activity statistics. No checkpoint data or write authority
+ * escapes this view; incomplete/cancelled scans still fail closed. */
+export function readDurableHistoryReceipts(signal?: AbortSignal): Promise<ReadResult<DurableHistoryReceipt>> {
+  return readJournalSnapshot(({ key, raw, state }) =>
+    state === 'settled' ? { key, raw, state } : undefined, signal);
 }
 
 async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileRaw: string | null,
@@ -135,6 +153,13 @@ async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileR
   if (!unique.size) return { status: 'saved', entries: [] };
   const db = await openDatabase(signal);
   if (!db || signal?.aborted) { db?.close(); return { status: 'unavailable' }; }
+  if (isVersionedJournalLayout(db)) {
+    try {
+      const { writeVersionedJournal } = await import('./durableJournalV2');
+      return await writeVersionedJournal(db,unique,baseProfileRaw,state,signal);
+    } catch { return {status:'unavailable'}; }
+    finally { db.close(); }
+  }
   const expected = new Map<string, StoredEntry>();
   const acknowledged = await new Promise<TransactionResult>((resolve) => {
     let done = false, issue: TransactionResult['status'] = 'unavailable', tx: IDBTransaction | undefined;
@@ -192,7 +217,7 @@ async function writeEntriesUnlocked(entries: readonly EntryInput[], baseProfileR
   if (signal?.aborted) return { status: 'unavailable' };
   // A request success is insufficient: only transaction complete plus a new
   // readonly transaction can authorize the caller to credit localStorage.
-  const checked = await readJournalSnapshot(new Set(expected.keys()), signal);
+  const checked = await readJournalSnapshot(row => expected.has(row.key) ? publicEntry(row) : undefined, signal);
   if (checked.status !== 'ready' || signal?.aborted) return { status: 'unavailable' };
   const actual = new Map(checked.entries.map((entry) => [entry.key, entry]));
   const entriesReadBack: DurableJournalEntry[] = [];

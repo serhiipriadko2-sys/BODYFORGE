@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "scope": "Scan-informed 2\u20138mm depth band composed analytically into the existing 1024 tangent-space atlas; approximate local registration, not pore scan",
+  "fields": {
+    "front": {
+      "validDepthSamples": 33311,
+      "peakReliefMm": 1.4000000000000006,
+      "maxSlope": 0.32000000000000006,
+      "rmsSlope": 0.05708063779388543
+    },
+    "back": {
+      "validDepthSamples": 33311,
+      "peakReliefMm": 1.4000000000000006,
+      "maxSlope": 0.32000000000000006,
+      "rmsSlope": 0.05686841366875671
+    }
+  },
+  "changedTexels": 67214,
+  "protectedTexels": 557284,
+  "maxNormalAngleDegrees": 16.790215950683535,
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "bytes": 298089,
+  "sha256": "a0f81449d6c17b57047b6da5da7143711ece49c960ab09004c54ff4b49f8e159",
+  "blendBytes": 13093268,
+  "blendSha256": "9057d807f671e24b45b5676f376dd05108dbe388efc6da0d05c7028638c10b8a"
+}

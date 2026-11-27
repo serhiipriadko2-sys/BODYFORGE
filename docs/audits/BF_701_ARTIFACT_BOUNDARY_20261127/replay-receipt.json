@@ -1,0 +1,18 @@
+{
+  "status": "VALID_REPLAY_PASS",
+  "first_exit": 16,
+  "first_failure": "CDP Runtime.evaluate timeout and cleanup EPERM",
+  "initial_cleanup_recovered": true,
+  "bounded_retry_count": 1,
+  "replay_exit": 0,
+  "replay_cleanup_pass": true,
+  "entry_sha256": "0b67fc4f486567f0a464be4407e3a4d1175ef4a4d63268885e9936d2d28bfa99",
+  "replay_log_sha256": "296a810d2eba014f938598d1e9fff53ebddc1bbe5bf739bed8ea2fcc776d8da8",
+  "source_and_build_unchanged": true,
+  "owned_match": true,
+  "preview_stopped": true,
+  "root_drift": [],
+  "root_package_unchanged": true,
+  "root_server_5173_running": true,
+  "scope": "Same pinned build and unchanged test. First failure preserved. No new release or field acceptance. Root update still not performed."
+}

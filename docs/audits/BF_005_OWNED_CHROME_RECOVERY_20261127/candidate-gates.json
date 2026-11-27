@@ -1,0 +1,15 @@
+{
+  "owned": {
+    "qa/owned-chrome.mjs": "fe73965a17ac6f645034270aca4d996945549718dc36d62598dd629760dfd4ad",
+    "qa/owned-chrome.test.mjs": "a5199c9bfcce913df7bf7e93a9e4c91d21558a518fe48cff776e4b95a44f85ac",
+    "qa/owned-chrome-windows.mjs": "ac9ba5f7a6bd86a4ae943981db99205926e57d10b72e50bdb1f7fee7cbdd9b94",
+    "qa/owned-chrome-cleanup-e2e.mjs": "2a3ab5a7d41f00f2101b34ba233aa8afa7610e10f2fccf376d86f34d97412dca"
+  },
+  "commands": {
+    "syntax-final": 0,
+    "windows-syntax-final": 0,
+    "integration-syntax": 0,
+    "unit-final": 0,
+    "cleanup-integration": 0
+  }
+}

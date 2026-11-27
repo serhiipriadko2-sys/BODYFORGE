@@ -1,0 +1,45 @@
+{
+  "status": "INSPECTED_SOURCE_NOT_INTEGRATED",
+  "scope": "Orthographic head feasibility only, no landmark registration or license approval; raw scan local only",
+  "sourceSha256": "55ee5fafccc58322f7c348c716f25365151a38e1234cf3ff0e77b358d0f6f602",
+  "targetSha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+  "source": {
+    "headRegionVertices": 92985,
+    "headRegionTriangles": 185220,
+    "photoSourceSize": [
+      8192,
+      8192
+    ],
+    "views": [
+      {
+        "yaw": 0,
+        "visiblePixels": 60059,
+        "photoPixels": 60059
+      },
+      {
+        "yaw": 40,
+        "visiblePixels": 67462,
+        "photoPixels": 67462
+      }
+    ]
+  },
+  "target": {
+    "headRegionVertices": 19587,
+    "headRegionTriangles": 27574,
+    "views": [
+      {
+        "yaw": 0,
+        "visiblePixels": 57027,
+        "photoPixels": 0
+      },
+      {
+        "yaw": 40,
+        "visiblePixels": 65056,
+        "photoPixels": 0
+      }
+    ]
+  },
+  "panel": ".bodyforge-qa\\scan-reference-artec\\head-feasibility-v1.png",
+  "panelBytes": 509935,
+  "panelSha256": "27120ec321e26433917662a55d1159f19c0000bc58616108b0abd1c1b4fa58fa"
+}

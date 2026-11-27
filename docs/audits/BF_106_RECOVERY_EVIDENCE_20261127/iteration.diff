@@ -1,0 +1,240 @@
+diff --git a/src/lib/progressBackup.ts b/src/lib/progressBackup.ts
+--- a/src/lib/progressBackup.ts
++++ b/src/lib/progressBackup.ts
+@@ -36,6 +36,7 @@
+  */
+ export async function prepareProgressBackup(
+   profile: Profile, pendingResult: CompletedWorkoutResult | null, now = new Date(),
++  kind: 'backup' | 'recovery-evidence' = 'backup',
+ ): Promise<PreparedProgressBackup> {
+   const lineage = readBackupLineage();
+   const local = createProgressExport(profile, pendingResult);
+@@ -48,11 +49,11 @@
+   const sourcesChangedDuringRead = lineage?.pending !== latestLineage?.pending || lineage?.epoch !== latestLineage?.epoch
+     || JSON.stringify(local) !== JSON.stringify(createProgressExport(profile, pendingResult))
+     || JSON.stringify(profileQuarantine) !== JSON.stringify(readProfileQuarantine());
+-  const complete = lineage?.pending === false && latestLineage?.pending === false && !sourcesChangedDuringRead && local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
++  const complete = kind === 'backup' && lineage?.pending === false && latestLineage?.pending === false && !sourcesChangedDuringRead && local.storedProfileRaw !== null && local.storageReadStatus === 'ready' && local.journalReadStatus === 'ready'
+     && local.quarantineReadStatus === 'ready' && profileQuarantine.status === 'ready' && durable.status === 'ready'
+     && Object.values(local.auxiliaryReadStatus).every((status) => status === 'ready');
+   const json = JSON.stringify({
+-    exportFormat: 'bodyforge-manual-backup',
++    exportFormat: kind === 'backup' ? 'bodyforge-manual-backup' : 'bodyforge-recovery-evidence',
+     exportSchemaVersion: 1,
+     exportedAt: now.toISOString(),
+     complete,
+diff --git a/src/components/RecoveryExportButton.tsx b/src/components/RecoveryExportButton.tsx
+new file mode 100644
+--- /dev/null
++++ b/src/components/RecoveryExportButton.tsx
+@@ -0,0 +1,69 @@
++import { useLayoutEffect, useRef, useState } from 'react';
++import type { Profile } from '../lib/progression';
++import type { CompletedWorkoutResult } from '../lib/workoutJournal';
++import { prepareProgressBackup, requestProgressBackupDownload } from '../lib/progressBackup';
++
++interface Props { profile: Profile; pendingResult: CompletedWorkoutResult | null }
++
++export default function RecoveryExportButton({ profile, pendingResult }: Props) {
++  const [prepared, setPrepared] = useState<string | null>(null);
++  const [preparing, setPreparing] = useState(false);
++  const [message, setMessage] = useState('');
++  const generation = useRef(0);
++
++  useLayoutEffect(() => {
++    function invalidate() {
++      generation.current++;
++      setPrepared(null);
++      setPreparing(false);
++      setMessage('');
++    }
++    function storageChanged(event: StorageEvent) {
++      if (event.key === null || event.key.startsWith('bodyforge:')) invalidate();
++    }
++    invalidate();
++    window.addEventListener('storage', storageChanged);
++    window.addEventListener('pagehide', invalidate);
++    return () => {
++      generation.current++;
++      window.removeEventListener('storage', storageChanged);
++      window.removeEventListener('pagehide', invalidate);
++    };
++  }, [profile, pendingResult]);
++
++  async function prepare() {
++    if (preparing) return;
++    const request = ++generation.current;
++    setPreparing(true);
++    setMessage('Читаем данные для восстановления…');
++    try {
++      const evidence = await prepareProgressBackup(profile, pendingResult, new Date(), 'recovery-evidence');
++      if (generation.current !== request) return;
++      setPrepared(evidence.json);
++      setMessage('Файл для разбора готов. Нажми «Скачать данные» и проверь загрузки.');
++    } catch {
++      if (generation.current === request) setMessage('Не удалось подготовить файл. Попробуй снова.');
++    } finally {
++      if (generation.current === request) setPreparing(false);
++    }
++  }
++
++  function download() {
++    if (prepared === null) return;
++    try {
++      requestProgressBackupDownload({ json: prepared, filename: 'bodyforge-local-progress.json', complete: false });
++      setPrepared(null);
++      setMessage('Запрос на скачивание передан браузеру. Проверь загрузки.');
++    } catch {
++      setMessage('Браузер не принял запрос. Попробуй скачать файл снова.');
++    }
++  }
++
++  return <>
++    {prepared === null
++      ? <button type="button" data-action="export-session" disabled={preparing}
++        onClick={() => { void prepare(); }}>Подготовить данные для восстановления</button>
++      : <button type="button" data-action="download-session" onClick={download}>Скачать данные</button>}
++    <p role="status" aria-atomic="true">{message}</p>
++  </>;
++}
+diff --git a/src/components/StorageRecovery.tsx b/src/components/StorageRecovery.tsx
+--- a/src/components/StorageRecovery.tsx
++++ b/src/components/StorageRecovery.tsx
+@@ -4,25 +4,13 @@
+ import ReplacementRecoveryPanel from './ReplacementRecoveryPanel';
+ import type { ProfileWriteIssue } from '../lib/profileLock';
+ import type { CompletedWorkoutResult, JournalEntry } from '../lib/workoutJournal';
+-import { createProgressExport } from '../lib/progressExport';
+-import { readDurableJournal } from '../lib/durableJournal';
+-
+-async function exportProgress(profile: Profile, pendingResult: CompletedWorkoutResult | null) {
+-  const durable = await readDurableJournal();
+-  const payload = { ...createProgressExport(profile, pendingResult), durableResults: durable.entries, durableReadStatus: durable.status };
+-  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+-  const link = document.createElement('a');
+-  link.href = url;
+-  link.download = 'bodyforge-local-progress.json';
+-  link.click();
+-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+-}
++import RecoveryExportButton from './RecoveryExportButton';
+ 
+ export function ResultQuarantineNotice({ profile, count, unavailable }: { profile: Profile; count: number; unavailable: boolean }) {
+   if (!count && !unavailable) return null;
+   return <aside className="result-quarantine-notice" data-quarantined-results={count} aria-label="Отложенные результаты">
+     <p>{unavailable ? 'Не удалось полностью прочитать отложенные результаты.' : `Отложенных результатов: ${count}. Исходные данные сохранены отдельно, награды за них не начисляются.`}</p>
+-    <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, null); }}>Экспортировать сохранённые данные</button>
++    <RecoveryExportButton profile={profile} pendingResult={null}/>
+   </aside>;
+ }
+ 
+@@ -61,7 +49,7 @@
+   }, []);
+   if (replacementSeen) return <ReplacementRecoveryPanel
+     disabled={isSaving || pendingResult !== null || journalEntries.length > 0}
+-    onResolved={onReload} onExportSession={() => { void exportProgress(profile, pendingResult); }}/>;
++    onResolved={onReload} exportSession={<RecoveryExportButton profile={profile} pendingResult={pendingResult}/>}/>;
+   const title = status === 'checking' ? 'ПРОВЕРЯЕМ СОХРАНЕНИЕ' : status === 'pending-result' ? 'ТРЕНИРОВКА ОЖИДАЕТ ВОССТАНОВЛЕНИЯ' : status === 'conflict' ? 'СОХРАНЕНИЕ ИЗМЕНИЛОСЬ'
+     : status === 'recovery-required' ? 'ПРОГРЕСС НУЖНО ВОССТАНОВИТЬ' : 'НЕ УДАЛОСЬ СОХРАНИТЬ';
+   const ambiguousRewards = status === 'recovery-required' && profile.creditedWorkoutIds === null;
+@@ -116,7 +104,7 @@
+           <button type="button" data-action="confirm-quarantine" disabled={isSaving} onClick={() => { onQuarantine(quarantineSnapshot); setQuarantineSnapshot(null); }}>Подтверждаю: сохранить отдельно и продолжить</button>
+           <button type="button" disabled={isSaving} onClick={() => setQuarantineSnapshot(null)}>Отмена</button>
+         </div>)}
+-      <button type="button" data-action="export-session" onClick={() => { void exportProgress(profile, pendingResult); }}>Экспортировать данные этой страницы</button>
++      <RecoveryExportButton profile={profile} pendingResult={pendingResult}/>
+       <small>Данные остаются у тебя. Ничего не отправляется на сервер. Экспорт — локальный JSON для сохранения и восстановления вручную.</small>
+     </section>
+   </main>;
+diff --git a/src/components/ReplacementRecoveryPanel.tsx b/src/components/ReplacementRecoveryPanel.tsx
+--- a/src/components/ReplacementRecoveryPanel.tsx
++++ b/src/components/ReplacementRecoveryPanel.tsx
+@@ -1,11 +1,11 @@
+-import { useEffect, useRef, useState } from 'react';
++import { useEffect, useRef, useState, type ReactNode } from 'react';
+ import { readReplacementRecovery, restoreInterruptedReplacement, downloadReplacementEvidence,
+   type ReplacementRecoveryView } from '../lib/profileReplacementRecovery';
+ 
+-interface Props { disabled: boolean; onResolved: () => void; onExportSession: () => void }
++interface Props { disabled: boolean; onResolved: () => void; exportSession: ReactNode }
+ 
+ /** Only recovery of an existing marker. Forward import is deliberately absent. */
+-export default function ReplacementRecoveryPanel({ disabled, onResolved, onExportSession }: Props) {
++export default function ReplacementRecoveryPanel({ disabled, onResolved, exportSession }: Props) {
+   const [view, setView] = useState<ReplacementRecoveryView | null>(null);
+   const [confirm, setConfirm] = useState<{ marker: string; action: 'keep' | 'rollback' } | null>(null);
+   const [busy, setBusy] = useState(false);
+@@ -82,7 +82,7 @@
+       {view?.state === 'none'
+         ? <button type="button" className="forge-solid-button" data-action="open-restored-profile" disabled={disabled || busy} onClick={onResolved}>ОТКРЫТЬ СОХРАНЕНИЕ</button>
+         : <button type="button" data-action="refresh-replacement-recovery" disabled={disabled || busy} onClick={() => { void refresh(); }}>Проверить состояние ещё раз</button>}
+-      <button type="button" data-action="export-session" onClick={onExportSession}>Экспортировать данные этой страницы</button>
++      {exportSession}
+       <small>Данные остаются на устройстве. Не очищай хранилище браузера.</small>
+     </section>
+   </main>;
+diff --git a/qa/finish-save-e2e.mjs b/qa/finish-save-e2e.mjs
+--- a/qa/finish-save-e2e.mjs
++++ b/qa/finish-save-e2e.mjs
+@@ -207,6 +207,8 @@
+       URL.createObjectURL=function(blob){window.__exportedBlob=blob;return create(blob)};
+       HTMLAnchorElement.prototype.click=function(){if(this.download==='bodyforge-local-progress.json'){window.__exportRequested=true;return;}return click.call(this)};return true})()`);
+     await click('[data-action=export-session]');
++    await until("!!document.querySelector('[data-action=download-session]')", 'recovery export ready to download');
++    await click('[data-action=download-session]');
+     const exported = await js('(async()=>JSON.parse(await window.__exportedBlob.text()))()');
+     check(exported.xp === 500 && exported.coins === 900 && exported.workouts.length === 0 &&
+       exported.pendingResults.length === 1 && exported.pendingResults[0].repetitions === 20 &&
+diff --git a/qa/journal-e2e.mjs b/qa/journal-e2e.mjs
+--- a/qa/journal-e2e.mjs
++++ b/qa/journal-e2e.mjs
+@@ -159,7 +159,12 @@
+ }
+ async function exportSession() {
+   await page.js(`(()=>{const create=URL.createObjectURL.bind(URL),click=HTMLAnchorElement.prototype.click;URL.createObjectURL=function(blob){window.__exportedBlob=blob;return create(blob)};HTMLAnchorElement.prototype.click=function(){if(this.download==='bodyforge-local-progress.json'){window.__exportRequested=true;return}return click.call(this)};return true})()`);
++  await page.js('window.__exportRequested=false;window.__exportedBlob=null');
+   await click('[data-action=export-session]');
++  await page.until("!!document.querySelector('[data-action=download-session]')",'recovery file prepared');
++  check(await page.js('!window.__exportRequested && window.__exportedBlob===null'),
++    'preparation does not trigger the download');
++  await click('[data-action=download-session]');
+   return page.js('(async()=>JSON.parse(await window.__exportedBlob.text()))()');
+ }
+ async function reload(tab = page, removeInit = false) {
+@@ -505,7 +510,9 @@
+       if((await d.markDurableResults([entry],'settled')).status!=='saved')throw Error('Real durable settlement failed');
+       localStorage.setItem(${JSON.stringify(key)},original);localStorage.setItem(p.PROFILE_BACKUP_KEY,backup);
+     });
+-    return{profile,original,backup,entry,durable:await d.readDurableJournal()};
++    const quarantinedProfile={key:p.STORAGE_KEY+':quarantine:older-fighter',raw:'{legacy profile evidence'};
++    localStorage.setItem(quarantinedProfile.key,quarantinedProfile.raw);
++    return{profile,original,backup,entry,quarantinedProfile,durable:await d.readDurableJournal()};
+   })()`);
+   check(fixture.profile.workouts.length === 60 && fixture.profile.totals.workouts === 65,
+     'production-generated fixture trims visible history but retains 65 total workouts');
+@@ -537,12 +544,25 @@
+   check(exported.profileId === player.profileId && exported.xp === 7800 && exported.coins === 2275 &&
+     exported.totals.workouts === 65 && exported.creditedWorkoutIds === null,
+     'download payload preserves readable progress and an explicit ambiguous-ledger sentinel');
++  check(exported.exportFormat==='bodyforge-recovery-evidence' && exported.complete===false,
++    'recovery file identifies evidence separately from restorable backups');
++  check(exported.profileQuarantineReadStatus === 'ready' &&
++    exported.storedProfileQuarantineRaw?.some(row => row.key===fixture.quarantinedProfile.key && row.raw===fixture.quarantinedProfile.raw),
++    'recovery download includes exact quarantined profile');
+   check(exported.storedProfileRaw === fixture.original && exported.storedBackupRaw === fixture.backup,
+     'download payload preserves exact damaged primary and trusted backup bytes');
+   check(exported.durableReadStatus === 'ready' && exported.durableResults.length === 1 &&
+     exported.durableResults[0].state === 'settled' && exported.durableResults[0].raw === fixture.entry.raw,
+     'download payload includes the actual preserved IndexedDB settled receipt');
+   check(await originalIntact(), 'reading and exporting recovery data never normalizes or overwrites the stored error');
++  await page.js('window.__exportRequested=false;window.__exportedBlob=null');
++  await click('[data-action=export-session]');
++  await page.until("!!document.querySelector('[data-action=download-session]')",'fresh file prepared before peer update');
++  await observer.js("localStorage.setItem('bodyforge:qa:recovery-export-invalidation','1')");
++  await page.until("!!document.querySelector('[data-action=export-session]') && !document.querySelector('[data-action=download-session]')",
++    'native storage event invalidates the prepared file');
++  check(await page.js('!window.__exportRequested && window.__exportedBlob===null'),
++    'invalidated recovery data are never downloaded');
+   await click('[data-action=restore-backup]');
+   await page.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')", 'explicit trusted backup recovery opens the application');
+   const restored = await readProfile();

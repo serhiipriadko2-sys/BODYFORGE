@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { readReplacementRecovery, restoreInterruptedReplacement, downloadReplacementEvidence,
   type ReplacementRecoveryView } from '../lib/profileReplacementRecovery';
 
-interface Props { disabled: boolean; onResolved: () => void; onExportSession: () => void }
+interface Props { disabled: boolean; onResolved: () => void; exportSession: ReactNode }
 
 /** Only recovery of an existing marker. Forward import is deliberately absent. */
-export default function ReplacementRecoveryPanel({ disabled, onResolved, onExportSession }: Props) {
+export default function ReplacementRecoveryPanel({ disabled, onResolved, exportSession }: Props) {
   const [view, setView] = useState<ReplacementRecoveryView | null>(null);
   const [confirm, setConfirm] = useState<{ marker: string; action: 'keep' | 'rollback' } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -19,17 +19,20 @@ export default function ReplacementRecoveryPanel({ disabled, onResolved, onExpor
     return { controller, request: ++generation.current };
   }
   useEffect(() => {
+    if (disabled) {
+      setConfirm(null);
+      setBusy(false);
+      setView(null);
+      return;
+    }
     const { controller, request } = begin();
     void readReplacementRecovery(controller.signal).then(result => {
       if (generation.current === request && !controller.signal.aborted) setView(result);
     });
     return () => { generation.current++; active.current?.abort(); };
-  }, []);
-  useEffect(() => {
-    if (!disabled) return;
-    generation.current++; active.current?.abort(); setConfirm(null); setBusy(false);
   }, [disabled]);
   async function refresh() {
+    if (disabled) return;
     setConfirm(null);setMessage('');setBusy(true);
     const { controller, request } = begin();
     const result = await readReplacementRecovery(controller.signal);
@@ -78,8 +81,8 @@ export default function ReplacementRecoveryPanel({ disabled, onResolved, onExpor
         </div>)}
       {view?.state === 'none'
         ? <button type="button" className="forge-solid-button" data-action="open-restored-profile" disabled={disabled || busy} onClick={onResolved}>ОТКРЫТЬ СОХРАНЕНИЕ</button>
-        : <button type="button" data-action="refresh-replacement-recovery" disabled={busy} onClick={() => { void refresh(); }}>Проверить состояние ещё раз</button>}
-      <button type="button" data-action="export-session" onClick={onExportSession}>Экспортировать данные этой страницы</button>
+        : <button type="button" data-action="refresh-replacement-recovery" disabled={disabled || busy} onClick={() => { void refresh(); }}>Проверить состояние ещё раз</button>}
+      {exportSession}
       <small>Данные остаются на устройстве. Не очищай хранилище браузера.</small>
     </section>
   </main>;

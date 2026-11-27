@@ -1,0 +1,358 @@
+{
+    "status":  "TECHNICAL_PASS_ARTISTIC_PARTIAL",
+    "head":  "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+    "fieldCovered":  93757824,
+    "browser":  [
+                    {
+                        "scenario":  "taper-max",
+                        "assertions":  57,
+                        "screenshots":  6
+                    },
+                    {
+                        "scenario":  "taper-neutral",
+                        "assertions":  57,
+                        "screenshots":  6
+                    }
+                ],
+    "blender":  {
+                    "status":  "PASS",
+                    "scope":  "Exact indexed deltas on preserved Blender basis (sub-30um drift), all five triangle topology hashes and reopened key coordinates verified; 120 driver cases; excludes runtime bone-growth and posed garment fit",
+                    "revision":  "BF_ATHLETIC_TAPER_REVIEW_V2",
+                    "sourceFieldSha256":  "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280",
+                    "bridgeSha256":  "3c9d301f02d85c17d48976df7eff2987b614a5c478907f42a290b569544eb55b",
+                    "blend":  ".bodyforge-qa\\athletic-taper-review-v2.blend",
+                    "bytes":  13178310,
+                    "sha256":  "3d8dc6ffe49bb20c069995f3bebd6797ff6f83114053b878d3dc836ca9b69d79",
+                    "driverCases":  120,
+                    "meshes":  [
+                                   {
+                                       "mesh":  "BODYFORGE_Body",
+                                       "sourceVertices":  65895,
+                                       "blenderVertices":  65895,
+                                       "maxMatchErrorM":  2.8186404375912052E-05,
+                                       "topologySha256":  "d0eb21e3d86a9a08666b5a47ba3a8466bac2a945b500258a6bb25f3b14885fe8"
+                                   },
+                                   {
+                                       "mesh":  "BODYFORGE_Shirt",
+                                       "sourceVertices":  4415,
+                                       "blenderVertices":  4415,
+                                       "maxMatchErrorM":  1.684084548555134E-05,
+                                       "topologySha256":  "ad0813dc63c60a68e2af2166631334b9599b55b6bca691f44d33f4c7f0e1f6cf"
+                                   },
+                                   {
+                                       "mesh":  "BODYFORGE_Shorts",
+                                       "sourceVertices":  1568,
+                                       "blenderVertices":  1568,
+                                       "maxMatchErrorM":  7.0466266270439684E-06,
+                                       "topologySha256":  "21b9c830f2998edb871d44ba6ad752db277fd850ce642f349635bbf907f8a480"
+                                   },
+                                   {
+                                       "mesh":  "BODYFORGE_SkinNipples",
+                                       "sourceVertices":  458,
+                                       "blenderVertices":  458,
+                                       "maxMatchErrorM":  1.0392008280209517E-05,
+                                       "topologySha256":  "e1c1b0c71755f8692c479284759b932afba5fecf91686e980668014ff7e48c6a"
+                                   },
+                                   {
+                                       "mesh":  "BODYFORGE_ChestMark",
+                                       "sourceVertices":  8,
+                                       "blenderVertices":  8,
+                                       "maxMatchErrorM":  1.2780283122160566E-05,
+                                       "topologySha256":  "3453402f24129562cac7e50e183c433fc84499c9ca80e117a831e784708801e8"
+                                   }
+                               ]
+                },
+    "neutral":  {
+                    "value":  [
+                                  {
+                                      "view":  "bare-front",
+                                      "identicalBytes":  true,
+                                      "beforeSha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2",
+                                      "afterSha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+                                  },
+                                  {
+                                      "view":  "bare-rear",
+                                      "identicalBytes":  false,
+                                      "beforeSha256":  "9086ceda01d1db8edd5eb485ce28a7497571dddd1e5cca0acdcefbf6aa76f129",
+                                      "afterSha256":  "ee1098704cb5940f57a9606340bbd205ba626fb256311e635257724750ab5c55",
+                                      "changedPixels":  1,
+                                      "totalPixels":  1316640,
+                                      "maxChannelDelta":  1,
+                                      "meanChannelDelta":  1.8987726333697898E-07,
+                                      "bounds":  [
+                                                     310,
+                                                     1542,
+                                                     310,
+                                                     1542
+                                                 ]
+                                  },
+                                  {
+                                      "view":  "shirt-front",
+                                      "identicalBytes":  true,
+                                      "beforeSha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e",
+                                      "afterSha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+                                  },
+                                  {
+                                      "view":  "shirt-rear",
+                                      "identicalBytes":  true,
+                                      "beforeSha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e",
+                                      "afterSha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+                                  },
+                                  {
+                                      "view":  "legs-front",
+                                      "identicalBytes":  true,
+                                      "beforeSha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3",
+                                      "afterSha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3"
+                                  },
+                                  {
+                                      "view":  "legs-rear",
+                                      "identicalBytes":  true,
+                                      "beforeSha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f",
+                                      "afterSha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f"
+                                  }
+                              ],
+                    "Count":  6
+                },
+    "files":  [
+                  {
+                      "path":  "src\\lib\\avatarAthleticReview.ts",
+                      "bytes":  6971,
+                      "sha256":  "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280"
+                  },
+                  {
+                      "path":  "src\\lib\\avatarAthleticReview.test.ts",
+                      "bytes":  9852,
+                      "sha256":  "a5358605f0de344f9de3c6a4cbdf94f8014520945e721156e3486bbf67a1fe58"
+                  },
+                  {
+                      "path":  "src\\lib\\avatarPhysique.ts",
+                      "bytes":  6143,
+                      "sha256":  "a0dd1a34d656c83e4c4efb7a3a120a092b7f6cb65811696192cb07d36e8e74e5"
+                  },
+                  {
+                      "path":  "src\\components\\Avatar3D.tsx",
+                      "bytes":  65632,
+                      "sha256":  "6637d93374870f9cc9852b4602a4528aff4c7cbfcea9eb7458ddf3ac7487f7ca"
+                  },
+                  {
+                      "path":  "qa\\avatar-quality-e2e.mjs",
+                      "bytes":  121103,
+                      "sha256":  "ee892f1995ae5cf6a4dc62e26805aab0cde5d31fdf45f175a801c3ddc99e2934"
+                  },
+                  {
+                      "path":  "qa\\avatar-athletic-field-qc.mjs",
+                      "bytes":  4768,
+                      "sha256":  "ca8c6e7437f54d08b998c1201012ffed5bb9469bc6ce3796790d834d2fc28733"
+                  },
+                  {
+                      "path":  "qa\\avatar-limb-profile-qc.mjs",
+                      "bytes":  3324,
+                      "sha256":  "4faa10f238e52bde9822a078e22759e83226cf55af7cd47347383ea66aa28d2b"
+                  },
+                  {
+                      "path":  "qa\\export-avatar-taper-authoring.mjs",
+                      "bytes":  1740,
+                      "sha256":  "6e693331d658e3746dfdf293136b1606437275fbb46840fa828fdf089cee3010"
+                  },
+                  {
+                      "path":  "scripts\\author-avatar-taper-review.py",
+                      "bytes":  6242,
+                      "sha256":  "b4e8bb6b08c350255a9c11a5238e50b771467e6414f9b7bf3d7d6d89e6c880ca"
+                  },
+                  {
+                      "path":  "public\\assets\\bodyforge-athlete-efficient.glb",
+                      "bytes":  4639184,
+                      "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+                  },
+                  {
+                      "path":  ".bodyforge-qa\\athletic-taper-authoring-v2.bin",
+                      "bytes":  4340640,
+                      "sha256":  "3c9d301f02d85c17d48976df7eff2987b614a5c478907f42a290b569544eb55b"
+                  },
+                  {
+                      "path":  ".bodyforge-qa\\athletic-taper-authoring-v2.json",
+                      "bytes":  883,
+                      "sha256":  "ad76a6c89c1b528d94871d71ef8f09aacd92e4aadfc38760e488bd31f7b10579"
+                  },
+                  {
+                      "path":  ".bodyforge-qa\\athletic-taper-review-v2.blend",
+                      "bytes":  13178310,
+                      "sha256":  "3d8dc6ffe49bb20c069995f3bebd6797ff6f83114053b878d3dc836ca9b69d79"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\athletic-v1.before.txt",
+                      "bytes":  6026,
+                      "sha256":  "4b0938815aef00e1172d7368ecc00d9069ab6430554e7217e8e1290cad2231e1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\author-blender-before.py.txt",
+                      "bytes":  5103,
+                      "sha256":  "2b9942d5fcced0abcf14cd325cc4640b719819cbc7dc81bfc4a9fab5d88bebcd"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\avatar-quality-e2e.mjs.before.txt",
+                      "bytes":  121104,
+                      "sha256":  "cd5b63aeb8c204a711ccbd1ce12ed40d007f8c94cad70d1c8d6cc162911a8186"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\avatarAthleticReview.test.ts.before.txt",
+                      "bytes":  6968,
+                      "sha256":  "31ba99285ef26a14bf7fd143c076c9fa232d4ba16b98f6b1059d846520a975a3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\blender-authoring-before.log",
+                      "bytes":  1766,
+                      "sha256":  "b98bbdff4150f2256e05ceb6a43139d0f92aeba0b816ce66513192fe6ef179cd"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\blender-authoring-v2.log",
+                      "bytes":  4098,
+                      "sha256":  "4491b1b35228acad533e3234b18a3f392688c1f2442937c4972c8804be6d93c2"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\blender-authoring.json",
+                      "bytes":  1946,
+                      "sha256":  "73d7f8d7d95e098b93794d7c2274745f33831c31f7fff2655eb65cf56bf79953"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\blender-authoring.log",
+                      "bytes":  1766,
+                      "sha256":  "b98bbdff4150f2256e05ceb6a43139d0f92aeba0b816ce66513192fe6ef179cd"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\blender-mapping.log",
+                      "bytes":  7154,
+                      "sha256":  "c7a1d33cde4d61e193e7e6e2dd30dd872bbc90bbf397f881393e9e431679dcc7"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\build.log",
+                      "bytes":  3100,
+                      "sha256":  "2df0975faa0aba6bc98a92b9708c931324b6f090765e65e682391da3d268aca2"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\comparison-taper.png",
+                      "bytes":  919442,
+                      "sha256":  "1e031029d8d7c7d0811acd205f12e2d73ab9c09a3a9337587c03a015f217b1a1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\field-qc-candidate.json",
+                      "bytes":  4143,
+                      "sha256":  "196e18f6902fc93978c7a71fb69af322c4f1116223432ff1fc5127848be55595"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\field-qc-candidate.log",
+                      "bytes":  4637,
+                      "sha256":  "65f37e8a6af438243714586c8673e9991be36651d8cb781dca81acf27fd7b7ad"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\full-vitest.log",
+                      "bytes":  29002,
+                      "sha256":  "3c562d34cbba1721704418d187df5e22e727326bc3623a183d460aeeed4570b0"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\limb-profile-before.json",
+                      "bytes":  3736,
+                      "sha256":  "c9d7b5f074aa8ee1eb345ac82bedf93cd8fdc443abad12f4c363d279e62ead99"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\limb-profile-candidate.json",
+                      "bytes":  3726,
+                      "sha256":  "c790c57934191bc2aace87700c4fe4dc9d6f84986e0bdfce597028a5ce3a2ff9"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\neutral-frame-qc.json",
+                      "bytes":  1922,
+                      "sha256":  "34fe16add09f6b53d57332027a44a9bc6c937c2f8f6b05f00994beebabe86bb5"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\report.md",
+                      "bytes":  4382,
+                      "sha256":  "9ccfdedb787a495fa62996885a581648e47eb19e576a45ec6caccbd6d04419c4"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\server.out.log",
+                      "bytes":  397,
+                      "sha256":  "d462a5c60b5ba00c43cc508931ddc7c97085d2d807c285e6cfeb76269c32a6e5"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max.log",
+                      "bytes":  4675,
+                      "sha256":  "fa26d550e149d9df4edc5c02e374a78bcccb02e726267eec95b6254cd29df4da"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral.log",
+                      "bytes":  4775,
+                      "sha256":  "4b804cd35dacc63a120d95bf2e6d2b55fad359f26ef44c4124c56f43696d6f52"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\targeted-vitest.log",
+                      "bytes":  6455,
+                      "sha256":  "028afd6bc681fd6557ff573fede6299482b73fe5155594438fd28fab31493b22"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\topology-source.json",
+                      "bytes":  1410,
+                      "sha256":  "d9384bfa40ab4976dae1c6ddfc5f832f34ad0fe7a118fe1652424c08accd8076"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-bare-front.png",
+                      "bytes":  621377,
+                      "sha256":  "2691eeb857562edda14f0c85a044f477fb86ebb1a569745727b83e8854687d8a"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-bare-rear.png",
+                      "bytes":  619519,
+                      "sha256":  "8eaa22d62d827aecc72457460445e913204b7ab542061c8b04a790f4f9b5853b"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-legs-front.png",
+                      "bytes":  601793,
+                      "sha256":  "dda2d49a451368af942f8a9a1ba7b3a3a7cf11f6c3d4150fa4c548a8484488c1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-legs-rear.png",
+                      "bytes":  595959,
+                      "sha256":  "856860cc0ae07c5527be9cc631ac92c2c85415857368476a9462ffd78d772f74"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-shirt-front.png",
+                      "bytes":  590553,
+                      "sha256":  "b1c064323a438e9ebd211108670476c9bb36327c6465e6e4ae7dba035778cd9f"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-max\\wardrobe-max-shirt-rear.png",
+                      "bytes":  566568,
+                      "sha256":  "38c6fea1b0d3cb46c9ad9894118d00e1562adb1a7f5a025aae567353b57e0fc7"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-bare-front.png",
+                      "bytes":  621833,
+                      "sha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-bare-rear.png",
+                      "bytes":  621503,
+                      "sha256":  "ee1098704cb5940f57a9606340bbd205ba626fb256311e635257724750ab5c55"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-legs-front.png",
+                      "bytes":  599637,
+                      "sha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-legs-rear.png",
+                      "bytes":  596116,
+                      "sha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-shirt-front.png",
+                      "bytes":  593055,
+                      "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ANATOMICAL_TAPER_20261127\\taper-neutral\\wardrobe-neutral-shirt-rear.png",
+                      "bytes":  572626,
+                      "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+                  }
+              ]
+}

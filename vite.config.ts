@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { posix } from 'node:path';
+import { localAvatarHeadReview } from './qa/local-avatar-head-review.ts';
 
 // Vite is accessible over Wi-Fi on port 5174. Never allow the browser to read
 // project-level Codex instructions, canon mirrors or local automation policy.
@@ -50,8 +51,19 @@ function blockPrivateAgentFiles() {
 }
 
 export default defineConfig({
-  plugins: [blockPrivateAgentFiles(), react()],
+  plugins: [blockPrivateAgentFiles(), localAvatarHeadReview(), react()],
+  // Only the live SPA entry, not frozen HTML copies under .bodyforge-qa.
+  optimizeDeps: {
+    noDiscovery: true,
+    include: [
+      'react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime',
+      'lucide-react', 'three', '@mediapipe/tasks-vision',
+      'three/addons/environments/RoomEnvironment.js', 'three/addons/loaders/GLTFLoader.js',
+      'three/addons/loaders/HDRLoader.js', 'three/addons/utils/BufferGeometryUtils.js',
+    ],
+  },
   server: {
+    watch: { ignored: ['**/.bodyforge-qa/**', '**/docs/audits/**'] },
     fs: {
       // Preserve Vite's sensitive-file defaults when extending its deny list.
       deny: [

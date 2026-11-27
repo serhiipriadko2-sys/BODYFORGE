@@ -57,3 +57,101 @@ test('preview proof rejects missing, stale and fallback entry responses', async 
   html = '<script type="module" src="/@vite/client"></script>';
   await assert.rejects(requirePreviewOrigin(origin, digest), /production preview/);
 });
+
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { ChildProcess } from 'node:child_process';
+import { cleanupOwnedChrome } from './owned-chrome.mjs';
+
+function cleanupFixture(t) {
+  const prefix='bf-owned-cleanup-unit-';
+  const profile=fs.mkdtempSync(path.join(os.tmpdir(),prefix));
+  t.after(()=>fs.rmSync(profile,{recursive:true,force:true}));
+  const executable=path.join(os.tmpdir(),process.platform==='win32'?'chrome.exe':'chrome');
+  const chrome=Object.assign(new ChildProcess(),{
+    spawnfile:executable,spawnargs:[executable,'--remote-debugging-address=127.0.0.1',
+      '--remote-debugging-port=0','--user-data-dir='+profile,'about:blank'],
+    pid:2147483647,exitCode:0,
+  });
+  chrome.kill=()=>{throw Error('test must never signal a process')};
+  fs.writeFileSync(path.join(profile,'canary.txt'),'SYNTHETIC_OWNED_TEST');
+  return {prefix,profile,chrome};
+}
+test('cleanup refuses a profile not bound to the launcher arguments',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  chrome.spawnargs[3]='--user-data-dir='+profile+'-other';
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome),/launch.*profile|profile.*launch/i);
+  assert.equal(fs.readFileSync(path.join(profile,'canary.txt'),'utf8'),'SYNTHETIC_OWNED_TEST');
+});
+test('cleanup rejects multiple profile arguments without touching the directory',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  chrome.spawnargs.push('--user-data-dir='+profile+'-other');
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome),/launch.*profile|profile.*launch/i);
+  assert.equal(fs.existsSync(profile),true);
+});
+test('cleanup rejects a supplied identity different from the profile before contacting CDP',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  fs.writeFileSync(path.join(profile,'DevToolsActivePort'),'49152\n'+browserPath+'\n');
+  const saved=globalThis.fetch;let requests=0;
+  globalThis.fetch=async()=>{requests++;throw Error('synthetic no network')};
+  t.after(()=>{globalThis.fetch=saved});
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome,{...identity,port:49153}),/identity.*mismatch|mismatch.*identity/i);
+  assert.equal(requests,0);
+  assert.equal(fs.existsSync(profile),true);
+});
+test('cleanup refuses a linked profile root even when the launcher arguments match',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  const target=profile+'-target';
+  fs.renameSync(profile,target);
+  t.after(()=>fs.rmSync(target,{recursive:true,force:true}));
+  fs.symlinkSync(target,profile,process.platform==='win32'?'junction':'dir');
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome),/profile.*link|link.*profile/i);
+  assert.equal(fs.lstatSync(profile).isSymbolicLink(),true);
+  assert.equal(fs.readFileSync(path.join(target,'canary.txt'),'utf8'),'SYNTHETIC_OWNED_TEST');
+});
+
+test('unlaunched child cannot authorize closing a supplied on-disk browser identity',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  chrome.pid=undefined;
+  fs.writeFileSync(path.join(profile,'DevToolsActivePort'),'49152\n'+browserPath+'\n');
+  const saved=globalThis.fetch;let requests=0;
+  globalThis.fetch=async()=>{requests++;throw Error('synthetic no network')};
+  t.after(()=>{globalThis.fetch=saved});
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome,identity),/identity.*launcher|launcher.*identity/i);
+  assert.equal(requests,0);
+  assert.equal(fs.existsSync(profile),true);
+});
+test('a different loopback browser UUID prevents cleanup and preserves the profile',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  let requests=0;
+  const server=createServer((request,response)=>{
+    requests++;
+    response.writeHead(200,{'Content-Type':'application/json'});
+    response.end(JSON.stringify({webSocketDebuggerUrl:'ws://127.0.0.1:'+server.address().port+browserPath.replace('11111111','aaaaaaaa')}));
+  }).listen(0,'127.0.0.1');
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  await once(server,'listening');
+  const local={port:server.address().port,browserPath};
+  fs.writeFileSync(path.join(profile,'DevToolsActivePort'),local.port+'\n'+browserPath+'\n');
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome,local),/endpoint does not match/i);
+  assert.equal(requests,1);
+  assert.equal(fs.existsSync(profile),true);
+});
+test('identity hard link is rejected before contacting any endpoint',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  const target=path.join(profile,'identity-fixture.txt');
+  fs.writeFileSync(target,'49152\n'+browserPath+'\n');
+  fs.linkSync(target,path.join(profile,'DevToolsActivePort'));
+  await assert.rejects(cleanupOwnedChrome(profile,prefix,chrome,identity),/identity file/i);
+  assert.equal(fs.existsSync(profile),true);
+});
+test('failed spawn without identity can remove only its bound disposable directory',async t=>{
+  const {prefix,profile,chrome}=cleanupFixture(t);
+  chrome.pid=undefined;
+  const result=await cleanupOwnedChrome(profile,prefix,chrome);
+  assert.equal(result.mode,'graceful-or-no-spawn');
+  assert.equal(result.profileRemoved,true);
+  assert.equal(result.portClosed,null);
+  assert.equal(fs.existsSync(profile),false);
+});

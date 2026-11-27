@@ -11,7 +11,7 @@ import { APPEARANCE_KEY } from './appearance';
 import { MANUAL_STEPS_KEY } from './stepsLog';
 import { DAILY_PLAN_KEY } from './dailyPlan';
 import { planProfileReplacement, executeProfileReplacement, type ReplacementPlan, inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
-  type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
+  type PlanResult, type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
 
 /**
  * BF-106: local file replacement and recovery under ordered locks.
@@ -38,7 +38,9 @@ function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>
     sourcesReady: durable.status === 'ready' && journal.status === 'ready' &&
       quarantine.status === 'ready' && profiles.status === 'ready',
     settledHistory, pendingRecords: journal.entries.length, durableRecords: durable.entries.length,
-    quarantineRecords: quarantine.entries.length + profiles.entries.length,
+    durableActiveRecords: durable.entries.filter(row => row.state === 'active').length,
+    quarantineRecords: quarantine.entries.length + profiles.entries.length +
+      durable.entries.filter(row => row.state === 'quarantined').length,
   };
 }
 
@@ -73,13 +75,17 @@ async function withImportPort<T>(signal: AbortSignal, action: (port: Replacement
   return profile.status === 'completed' ? profile.value : null;
 }
 
-export function prepareFileReplacement(json: string, revision: string, epoch: string | null, signal: AbortSignal) {
-  return withImportPort(signal, port => {
+export type FileReplacementPreparation = PlanResult |
+  { status: 'blocked'; reason: 'replacement-in-progress' | 'stale-observation' | 'verification-unavailable' };
+
+export async function prepareFileReplacement(json: string, revision: string, epoch: string | null,
+  signal: AbortSignal): Promise<FileReplacementPreparation> {
+  return await withImportPort<FileReplacementPreparation>(signal, port => {
     const current = port.observe();
-    if (port.getMarker() !== null || current.pair.primary !== revision || current.epoch !== epoch) return null;
-    const candidate = planProfileReplacement(json, current);
-    return candidate.status === 'planned' ? candidate.plan : null;
-  });
+    if (port.getMarker() !== null) return { status: 'blocked', reason: 'replacement-in-progress' };
+    if (current.pair.primary !== revision || current.epoch !== epoch) return { status: 'blocked', reason: 'stale-observation' };
+    return planProfileReplacement(json, current);
+  }) ?? { status: 'blocked', reason: 'verification-unavailable' };
 }
 
 export function stageFileReplacement(plan: ReplacementPlan, signal: AbortSignal) {

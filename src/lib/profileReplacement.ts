@@ -24,6 +24,7 @@ export interface ReplacementObservation {
   readonly sourcesReady: boolean;
   readonly pendingRecords: number;
   readonly durableRecords: number;
+  readonly durableActiveRecords?: number;
   readonly settledHistory?: SettledImportHistory;
   readonly quarantineRecords: number;
 }
@@ -69,8 +70,16 @@ function safeTransition(before: ProfilePair, after: ProfilePair): boolean {
   return true;
 }
 
+export type ReplacementBlockReason =
+  | 'current-sources-not-quiet' | 'current-recovery-required'
+  | 'local-pending' | 'local-quarantine'
+  | 'incoming-not-compatible' | 'incoming-pending' | 'incoming-quarantine' | 'different-journal'
+  | 'auxiliary-replacement-unsupported' | 'identity-not-confirmed'
+  | 'settled-payment-unproven' | 'history-or-identity-unsupported'
+  | 'transaction-id-unavailable' | 'transaction-id-reused' | 'rollback-record-too-large';
+
 export type PlanResult = { status: 'planned'; plan: ReplacementPlan } |
-  { status: 'blocked'; reason: string };
+  { status: 'blocked'; reason: ReplacementBlockReason };
 
 const bytes = (raw: string) => new TextEncoder().encode(raw).byteLength;
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -84,11 +93,14 @@ function quiet(observed: ReplacementObservation, expectedDigest?: string): boole
     observed.durableRecords === (history?.rows.size ?? 0) && history?.digest === expectedDigest && observed.quarantineRecords === 0 &&
     AUX_KEYS.every(k => rawValue(observed.auxiliary[k]));
 }
-function blocked(reason: string): PlanResult { return { status: 'blocked', reason }; }
+function blocked(reason: ReplacementBlockReason): PlanResult { return { status: 'blocked', reason }; }
 
 /** Deliberately narrow pilot: profile pair only, no journal/auxiliary merge.
  * Settled rows stay in IndexedDB. File and device must contain identical paid originals. */
 export function planProfileReplacement(json: string, observed: ReplacementObservation): PlanResult {
+  if (!observed.sourcesReady) return blocked('current-sources-not-quiet');
+  if (observed.pendingRecords || observed.durableActiveRecords) return blocked('local-pending');
+  if (observed.quarantineRecords) return blocked('local-quarantine');
   if (!quiet(observed, observed.settledHistory?.digest)) return blocked('current-sources-not-quiet');
   const current = observed.pair.primary === null ? parseProfile(null) : (() => {
     const view = previewReceiptMigration(observed.pair.primary!);
@@ -100,9 +112,14 @@ export function planProfileReplacement(json: string, observed: ReplacementObserv
   const preview = previewProgressImportJson(json, current);
   if (preview.state !== 'preview-ready') return blocked('incoming-not-compatible');
   const data = JSON.parse(json) as Record<string, unknown>;
-  if (preview.inspection.journalRecords || !matchesExportedHistory(data.durableResults, observed.settledHistory) || preview.inspection.quarantineRecords ||
-      data.pendingResult != null || (data.pendingResults !== undefined &&
-        (!Array.isArray(data.pendingResults) || data.pendingResults.length))) return blocked('incoming-journal-not-empty');
+  const exportedRows = data.durableResults as { state: string }[];
+  if (preview.inspection.quarantineRecords || exportedRows.some(row => row.state === 'quarantined')) {
+    return blocked('incoming-quarantine');
+  }
+  if (preview.inspection.journalRecords || data.pendingResult != null ||
+      (data.pendingResults !== undefined && (!Array.isArray(data.pendingResults) || data.pendingResults.length)) ||
+      exportedRows.some(row => row.state === 'active')) return blocked('incoming-pending');
+  if (!matchesExportedHistory(exportedRows, observed.settledHistory)) return blocked('different-journal');
   const aux = data.storedAuxiliaryRaw as Auxiliary;
   if (!auxiliaryEqual(observed.auxiliary, aux)) return blocked('auxiliary-replacement-unsupported');
   if (observed.pair.primary !== null && preview.identity !== 'same') return blocked('identity-not-confirmed');

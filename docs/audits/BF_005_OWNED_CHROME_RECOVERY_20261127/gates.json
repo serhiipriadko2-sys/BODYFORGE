@@ -1,0 +1,59 @@
+{
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate\\owned-chrome-recovery-20261127",
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "source_count": 370,
+  "owned": {
+    "qa/owned-chrome.mjs": "371767b91dcb52b21d25c1aa27ef10acff01786b420121862f2253ab0e0b853d",
+    "qa/owned-chrome.test.mjs": "2abdb71d0f2e6040368f9c4563dead9efed70b2d2139bc43046384235b8d14ad",
+    "qa/owned-chrome-windows.mjs": "ac9ba5f7a6bd86a4ae943981db99205926e57d10b72e50bdb1f7fee7cbdd9b94",
+    "qa/owned-chrome-cleanup-e2e.mjs": "2a3ab5a7d41f00f2101b34ba233aa8afa7610e10f2fccf376d86f34d97412dca"
+  },
+  "candidate_package": {
+    "package.json": "ba4e8e3bd4eceda98cba384df1e53d600149ad281970a3bbf10256ebf4b4a50a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "root_package_before": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "commands": {
+    "module-resolution": 0,
+    "snapshot-qa-unit": 0,
+    "cleanup-integration-final": 0,
+    "tsc": 0,
+    "boundary-build": 0,
+    "bundle": 0,
+    "pwa": 0,
+    "privacy": 0,
+    "full-unit": 134,
+    "camera-frame": 16,
+    "scoped-diff": 0,
+    "canon": 0
+  },
+  "started": "2026-11-27T16:11:08.090834+03:00",
+  "distribution": {
+    "count": 79,
+    "bytes": 35917217,
+    "publicCount": 49,
+    "generatedCount": 30
+  },
+  "entry": {
+    "name": "/assets/index-BGJTR-QA.js",
+    "bytes": 383875,
+    "sha256": "7135e932caa2dee1aa7f636b0e7a6b59e4d63ec618ebdf23a2a68aa41c4d038c"
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:63141",
+    "entry_sha256": "7135e932caa2dee1aa7f636b0e7a6b59e4d63ec618ebdf23a2a68aa41c4d038c",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "owned_match": true,
+  "root_package_unchanged": true,
+  "root_drift": [],
+  "root_new": [],
+  "root_server_5173_running": true,
+  "status": "BLOCKED",
+  "finished": "2026-11-27T16:12:13.986069+03:00"
+}

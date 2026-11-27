@@ -1,0 +1,49 @@
+﻿{
+    "head":  "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+    "sourceCount":  352,
+    "sourceManifestSha256":  "897BB6B2FD52F0B01608BE3DF66A4FB4343E9533854CDA0D8EDB48D5EAD157DA",
+    "focused":  0,
+    "unit":  0,
+    "tsc":  0,
+    "build":  0,
+    "bundle":  0,
+    "journal":  0,
+    "mobile":  0,
+    "privacy":  0,
+    "started":  "2026-11-27T14:34:02.2640269+03:00",
+    "priorTsc":  2,
+    "tools":  [
+                  {
+                      "path":  "node_modules/vite/package.json",
+                      "hash":  "260A0A7A96A35E1B657480014C0F3B592B70061E42099EDEFC8FE97972F05FD4",
+                      "version":  "8.3.4"
+                  },
+                  {
+                      "path":  "node_modules/rolldown/package.json",
+                      "hash":  "F46FA23BCCBB2A1EE76A763B02A55853CDFEA4AAF8B0F3B82E8D16BAD8778020",
+                      "version":  "1.2.14"
+                  },
+                  {
+                      "path":  "node_modules/vitest/package.json",
+                      "hash":  "D00333F3A13ED44FEDC77184C8675BAE45246534F06684D94CFF5E4F8A9F7C10",
+                      "version":  "5.0.5"
+                  },
+                  {
+                      "path":  "node_modules/typescript/package.json",
+                      "hash":  "822EF7CA6452205657B6288B066481ECF508BFBF43455D715CF7D3EC457561E6",
+                      "version":  "5.9.3"
+                  }
+              ],
+    "devPort":  8400,
+    "buildCount":  74,
+    "buildManifestSha256":  "951AD3790113CE21963DC4AC831D39BFAF180BFCB7D94D881855E5262F4C90DB",
+    "entry":  "assets/index-BuWYjnZA.js",
+    "entrySha256":  "d1c4d64f41f30753dfe9bf7e8ff9778fca406aaf34aa6c7aa85ed72863cf9ba6",
+    "entryBytes":  394968,
+    "previewPort":  8400,
+    "preview":  200,
+    "frozenSourceAndBuildUnchanged":  true,
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-27T14:37:13.1945863+03:00"
+}

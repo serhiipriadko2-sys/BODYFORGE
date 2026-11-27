@@ -1,0 +1,59 @@
+{
+  "status": "VALID_REPLAY_PASS",
+  "bounded_retry_count": 1,
+  "original_gates_sha256": "367989209c4ecb589c19f8e1d6c1e95fdd9f6c29bb80114b62ecb3865d1f5fab",
+  "first_full_unit_sha256": "8a46561da45259a5a33413be2b7c4b2bf56bc7b0e189fa3d7f556460f7fadea7",
+  "first_camera_sha256": "110239975532e456c298f1962c0680512d2c313c66352c2aff13d7b9f3bdd46d",
+  "entry_sha256": "7135e932caa2dee1aa7f636b0e7a6b59e4d63ec618ebdf23a2a68aa41c4d038c",
+  "commands": {
+    "full-unit-replay": 0,
+    "camera-frame-replay": 0,
+    "appearance-lazy-replay": 0,
+    "workout-hud-replay": 0
+  },
+  "resources": [
+    {
+      "before": "full-unit-replay",
+      "physicalMiB": 16456,
+      "virtualMiB": 27237,
+      "status": "PASS"
+    },
+    {
+      "before": "preview",
+      "physicalMiB": 10317,
+      "virtualMiB": 20045,
+      "status": "PASS"
+    },
+    {
+      "before": "camera-frame-replay",
+      "physicalMiB": 10995,
+      "virtualMiB": 21077,
+      "status": "PASS"
+    },
+    {
+      "before": "appearance-lazy-replay",
+      "physicalMiB": 10896,
+      "virtualMiB": 20998,
+      "status": "PASS"
+    },
+    {
+      "before": "workout-hud-replay",
+      "physicalMiB": 11089,
+      "virtualMiB": 21190,
+      "status": "PASS"
+    }
+  ],
+  "started": "2026-11-27T16:13:17.899598+03:00",
+  "preview_exact_bytes": true,
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "owned_match": true,
+  "root_package_unchanged": true,
+  "root_drift": [
+    "qa/avatar-quality-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "vite.config.ts"
+  ],
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T16:14:55.381595+03:00"
+}

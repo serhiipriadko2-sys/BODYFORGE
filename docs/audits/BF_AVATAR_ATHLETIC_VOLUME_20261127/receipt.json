@@ -1,0 +1,350 @@
+{
+    "status":  "TECHNICAL_PASS_ARTISTIC_PARTIAL",
+    "head":  "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+    "browser":  [
+                    {
+                        "scenario":  "athletic-max",
+                        "assertions":  57,
+                        "screenshots":  6
+                    },
+                    {
+                        "scenario":  "athletic-neutral",
+                        "assertions":  57,
+                        "screenshots":  6
+                    },
+                    {
+                        "scenario":  "reference-max-final",
+                        "assertions":  57,
+                        "screenshots":  6
+                    }
+                ],
+    "neutral":  [
+                    {
+                        "view":  "bare-front",
+                        "identical":  true,
+                        "sha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+                    },
+                    {
+                        "view":  "bare-rear",
+                        "identical":  true,
+                        "sha256":  "9086ceda01d1db8edd5eb485ce28a7497571dddd1e5cca0acdcefbf6aa76f129"
+                    },
+                    {
+                        "view":  "shirt-front",
+                        "identical":  true,
+                        "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+                    },
+                    {
+                        "view":  "shirt-rear",
+                        "identical":  true,
+                        "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+                    }
+                ],
+    "files":  [
+                  {
+                      "path":  "src\\lib\\avatarAthleticReview.ts",
+                      "bytes":  6026,
+                      "sha256":  "4b0938815aef00e1172d7368ecc00d9069ab6430554e7217e8e1290cad2231e1"
+                  },
+                  {
+                      "path":  "src\\lib\\avatarAthleticReview.test.ts",
+                      "bytes":  6968,
+                      "sha256":  "31ba99285ef26a14bf7fd143c076c9fa232d4ba16b98f6b1059d846520a975a3"
+                  },
+                  {
+                      "path":  "src\\lib\\avatarPhysique.ts",
+                      "bytes":  6143,
+                      "sha256":  "a0dd1a34d656c83e4c4efb7a3a120a092b7f6cb65811696192cb07d36e8e74e5"
+                  },
+                  {
+                      "path":  "src\\components\\Avatar3D.tsx",
+                      "bytes":  65632,
+                      "sha256":  "6637d93374870f9cc9852b4602a4528aff4c7cbfcea9eb7458ddf3ac7487f7ca"
+                  },
+                  {
+                      "path":  "qa\\avatar-quality-e2e.mjs",
+                      "bytes":  121104,
+                      "sha256":  "cd5b63aeb8c204a711ccbd1ce12ed40d007f8c94cad70d1c8d6cc162911a8186"
+                  },
+                  {
+                      "path":  "qa\\avatar-athletic-field-qc.mjs",
+                      "bytes":  4768,
+                      "sha256":  "ca8c6e7437f54d08b998c1201012ffed5bb9469bc6ce3796790d834d2fc28733"
+                  },
+                  {
+                      "path":  "public\\assets\\bodyforge-athlete-efficient.glb",
+                      "bytes":  4639184,
+                      "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+                  },
+                  {
+                      "path":  "src\\lib\\athlete-torso-color-review.png",
+                      "bytes":  3854848,
+                      "sha256":  "d36c1235f1adaf4bd5e32fadf641d2b225c38a27eaf147ac070000545208e364"
+                  },
+                  {
+                      "path":  "src\\lib\\athlete-torso-normal-review.png",
+                      "bytes":  298089,
+                      "sha256":  "a0f81449d6c17b57047b6da5da7143711ece49c960ab09004c54ff4b49f8e159"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max.log",
+                      "bytes":  4699,
+                      "sha256":  "9558cf5857fad64c5f04904c7f95874ff5f9b36bdb6e8fece0351baf48552730"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral.log",
+                      "bytes":  4799,
+                      "sha256":  "0d422235ed2c836bd1887e845a2dde676187c1c2a29dae0dce0c0bb8369357b5"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\avatar-quality-e2e.mjs.before.txt",
+                      "bytes":  118667,
+                      "sha256":  "16db0f508f83cf6882ba967fa1d82467c3c46bc442428d85c53e10bec31c1884"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\Avatar3D.tsx.before.txt",
+                      "bytes":  65050,
+                      "sha256":  "282ea555e2f882d70f161fb1ab44cc27a1a9c2cb329e965957da1a62dda7d09f"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\avatarPhysique.ts.before.txt",
+                      "bytes":  5564,
+                      "sha256":  "e8d8f7b25b55596edf580edc9c74bccab5ce87a0420cbe2cb5e0a2f2d20f34e1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\build-before-type-fix.log",
+                      "bytes":  215,
+                      "sha256":  "dfa1d70d1b4953a7411b031a662142375b4ed6c552b01c4d23d2f13f51bac9d3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\build-final.log",
+                      "bytes":  3100,
+                      "sha256":  "b1b12a555822332c54c00c13eb8d4b0b28c525047cc84df596ac9da090aee5fd"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\build.log",
+                      "bytes":  215,
+                      "sha256":  "dfa1d70d1b4953a7411b031a662142375b4ed6c552b01c4d23d2f13f51bac9d3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\comparison-athletic.png",
+                      "bytes":  3338840,
+                      "sha256":  "d1d0a75cbb6e348ef606c5c425bedb6417389de11118c5c74b913a9653c777ba"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-final.json",
+                      "bytes":  4143,
+                      "sha256":  "28ec427c9aeab055c3a10c01688c36d786ad299957e0403adebcf800c4da9db1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-final.log",
+                      "bytes":  4637,
+                      "sha256":  "52d3c617b26f0fbc622ee2200d5eff4abc667064ba6f7e532d109dee1450076d"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-v2.json",
+                      "bytes":  4143,
+                      "sha256":  "94f4506c99b8d77a2eac0381c2da29756f631e1de3f3aad0dd4ba3e1c190b476"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-v2.log",
+                      "bytes":  4637,
+                      "sha256":  "eb3632cde36e12d3bdc7e0ed706936e0f16b8cdb808c31454a1699154fd1560a"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-v3.json",
+                      "bytes":  4143,
+                      "sha256":  "018b8a1942ccb486c182b3f32f33563acb110750c9e6e0f05f5351aac99002de"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc-v3.log",
+                      "bytes":  4637,
+                      "sha256":  "5c371652b2bb18ae024a4a4dae0b650c99e174a269d39f290318cfe929cc8b20"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc.json",
+                      "bytes":  4167,
+                      "sha256":  "7676afe70203e3c2a2867786efed171c743051b78a3c5a7933bafaf2a1b0b662"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-qc.log",
+                      "bytes":  4680,
+                      "sha256":  "6c2f1de0e99966eec2cf06b0db3f7f8c16958350497d65a0697136b5293e26a6"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\field-v2.ts.txt",
+                      "bytes":  5526,
+                      "sha256":  "1e18387357bf82023a4698d81b404419d875ff9ecebf45355941c32da3cae82d"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\full-vitest.log",
+                      "bytes":  32510,
+                      "sha256":  "f965d9b1251afc67e3795ddab48227edc72892f14644319ce9d1763c56320280"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final.log",
+                      "bytes":  4783,
+                      "sha256":  "5125c627c2cc2fb0092f462ba660835b6fcf2c57ead550cf744ad9dea6cce0f9"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-v2.log",
+                      "bytes":  618,
+                      "sha256":  "221379f5d691979fd2ef56b6166a498e8034a100933426be51b79b8f0cf42bd3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max.log",
+                      "bytes":  3956,
+                      "sha256":  "4be2991094b17d7c87562fe00b6c198b04d572b71b237c4bb66a74970686e067"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\rejected-field-v1.ts.txt",
+                      "bytes":  5602,
+                      "sha256":  "ab0b8daabbbd2e4e56854b721b5cf704c6dc20a0993795861e89233012d8661b"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\report.md",
+                      "bytes":  4239,
+                      "sha256":  "eabc2fa886c2b66a9879c8ce67781ce6cb7a226e4498b8d0fd889dd921a9320d"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\server-final.out.log",
+                      "bytes":  48,
+                      "sha256":  "9fdf432fc5eff5e7309ac96502340f4f553577166def3d06cc30f7beca77b848"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\server-third.out.log",
+                      "bytes":  48,
+                      "sha256":  "9fdf432fc5eff5e7309ac96502340f4f553577166def3d06cc30f7beca77b848"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\server.out.log",
+                      "bytes":  288,
+                      "sha256":  "673ac4f23aa8a1a52a53cfe6db7792ce15b142b7125332f273a2f76c220f73d9"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\targeted-vitest.log",
+                      "bytes":  5820,
+                      "sha256":  "26b6cd64d05dcf940bf2ad788f547bac43ba2d35048b2ba661501733362867c4"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-bare-front.png",
+                      "bytes":  621504,
+                      "sha256":  "cd98698a3f3fab339aea54efed8b33583dce65d0b5d94cb94c47388af24ab55a"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-bare-rear.png",
+                      "bytes":  619698,
+                      "sha256":  "e374fd84a7dd3c2898de0ee730ebeae89677624ccb512183809f1325a9e924a6"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-legs-front.png",
+                      "bytes":  602757,
+                      "sha256":  "7f44f677c925ef71bb0487b234325a22f1763ef7397a117bf91c2cb6be70c3fc"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-legs-rear.png",
+                      "bytes":  596596,
+                      "sha256":  "31c41ca09361e0f6e5f7fe9033c0c5bb32ff729b637f6492fe61c71a3df4edb3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-shirt-front.png",
+                      "bytes":  590659,
+                      "sha256":  "dc3124226c696d95272223dac093eeca9e32aabea4138a76d0d2bac0db74306f"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-max\\wardrobe-max-shirt-rear.png",
+                      "bytes":  566774,
+                      "sha256":  "6a7fc4e0bdfa59a9ce8e158f4fb831f1a7273cf3db02ce3dd88ea7ad998713e9"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-bare-front.png",
+                      "bytes":  621833,
+                      "sha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-bare-rear.png",
+                      "bytes":  621504,
+                      "sha256":  "9086ceda01d1db8edd5eb485ce28a7497571dddd1e5cca0acdcefbf6aa76f129"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-legs-front.png",
+                      "bytes":  599637,
+                      "sha256":  "8ca317087d9e9fdd8f67e7ef085fdd7ca69f8e667af2b8d85462f011407bfbf3"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-legs-rear.png",
+                      "bytes":  596116,
+                      "sha256":  "878859c2b96cb5a881446ba2ee2c80df8a178427ee22e349ff5e746d603b5d6f"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-shirt-front.png",
+                      "bytes":  593055,
+                      "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\athletic-neutral\\wardrobe-neutral-shirt-rear.png",
+                      "bytes":  572626,
+                      "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max\\failure-21030A6A.png",
+                      "bytes":  601188,
+                      "sha256":  "9d8302c31159ce41c574141c8be0db2e8c8cc7ffc7b0fb3512eab286a5b2d7c5"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max\\wardrobe-max-bare-front.png",
+                      "bytes":  623681,
+                      "sha256":  "08d0e459bf3c9d003b1a0e2135fa023ad166586937c3867976ea2527695f6951"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max\\wardrobe-max-bare-rear.png",
+                      "bytes":  622643,
+                      "sha256":  "99a380b26e6539814a712ba924b79b09325c97b862ee8d63a45e8e9454a108fc"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max\\wardrobe-max-shirt-front.png",
+                      "bytes":  594303,
+                      "sha256":  "3f0eb396d9fad772b422b2ae6126c7862402e801781d653f42a783885cf52081"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max\\wardrobe-max-shirt-rear.png",
+                      "bytes":  572041,
+                      "sha256":  "b26c452f68dc3db54c467e73a8fc5cfea0096602b4cc06e289285c1fdd4a8c47"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-bare-front.png",
+                      "bytes":  623681,
+                      "sha256":  "08d0e459bf3c9d003b1a0e2135fa023ad166586937c3867976ea2527695f6951"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-bare-rear.png",
+                      "bytes":  622643,
+                      "sha256":  "99a380b26e6539814a712ba924b79b09325c97b862ee8d63a45e8e9454a108fc"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-legs-front.png",
+                      "bytes":  601188,
+                      "sha256":  "9d8302c31159ce41c574141c8be0db2e8c8cc7ffc7b0fb3512eab286a5b2d7c5"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-legs-rear.png",
+                      "bytes":  596806,
+                      "sha256":  "c50e63dee31f0129bd831a98501b75492665435968a1014525a24be2a890fdc1"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-shirt-front.png",
+                      "bytes":  594303,
+                      "sha256":  "3f0eb396d9fad772b422b2ae6126c7862402e801781d653f42a783885cf52081"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-final\\wardrobe-max-shirt-rear.png",
+                      "bytes":  572041,
+                      "sha256":  "b26c452f68dc3db54c467e73a8fc5cfea0096602b4cc06e289285c1fdd4a8c47"
+                  },
+                  {
+                      "path":  "docs\\audits\\BF_AVATAR_ATHLETIC_VOLUME_20261127\\reference-max-v2\\failure-0BAE2C78.png",
+                      "bytes":  2740,
+                      "sha256":  "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e"
+                  }
+              ]
+}

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "blend": ".bodyforge-qa\\scan-reference-artec\\head-volume-review-v4.blend",
+  "bytes": 7533074,
+  "sha256": "7d59b1ed54a8552059c3d59fb19d555d7bc2a2608b19ca7c41173deb30e6e7bc",
+  "keys": [
+    "Basis",
+    "Face V3 baseline",
+    "Scan-informed bilateral volume V4"
+  ],
+  "vertices": 65895,
+  "changedAbove005mm": 3806,
+  "protectedVertices": 60438,
+  "peakMm": 3.456705331802368,
+  "affectedTriangles": 6418,
+  "minOrientationRatio": 0.8508813381195068,
+  "scope": "Reopened actual local shape-key coordinates; unchanged protected vertices and armature. No global collision or runtime appearance claim."
+}

@@ -130,6 +130,17 @@ async function reset(entries = [], value = player) {
     request.onerror=request.onblocked=()=>{clearTimeout(timer);resolve(false)};
   }))()`);
   if (!erased) throw Error('Disposable durable journal reset failed');
+  if (process.argv.includes('--journal-v2')) {
+    const prepared=await observer.js(`(async()=>{
+      const {readDurableJournal}=await import('/src/lib/durableJournal.ts');
+      const {prepareVersionedJournal}=await import('/src/lib/durableJournalV2.ts');
+      const legacy=await readDurableJournal();
+      if (legacy.status!=='ready' || legacy.entries.length) throw Error('fresh fixture journal is not empty');
+      return prepareVersionedJournal();
+    })()`);
+    check(prepared.status==='prepared' && prepared.versionConfirmed===2,
+      'only the reset disposable journal is explicitly prepared as v2');
+  }
   await observer.js(`(()=>{localStorage.clear();localStorage.setItem(${JSON.stringify(key)},${JSON.stringify(JSON.stringify(value))});
     for(const [k,v] of ${JSON.stringify(entries)})localStorage.setItem(k,v);return true})()`);
 }
@@ -148,7 +159,12 @@ async function click(selector, tab = page) {
 }
 async function exportSession() {
   await page.js(`(()=>{const create=URL.createObjectURL.bind(URL),click=HTMLAnchorElement.prototype.click;URL.createObjectURL=function(blob){window.__exportedBlob=blob;return create(blob)};HTMLAnchorElement.prototype.click=function(){if(this.download==='bodyforge-local-progress.json'){window.__exportRequested=true;return}return click.call(this)};return true})()`);
+  await page.js('window.__exportRequested=false;window.__exportedBlob=null');
   await click('[data-action=export-session]');
+  await page.until("!!document.querySelector('[data-action=download-session]')",'recovery file prepared');
+  check(await page.js('!window.__exportRequested && window.__exportedBlob===null'),
+    'preparation does not trigger the download');
+  await click('[data-action=download-session]');
   return page.js('(async()=>JSON.parse(await window.__exportedBlob.text()))()');
 }
 async function reload(tab = page, removeInit = false) {
@@ -494,7 +510,9 @@ async function dedupRecovery() {
       if((await d.markDurableResults([entry],'settled')).status!=='saved')throw Error('Real durable settlement failed');
       localStorage.setItem(${JSON.stringify(key)},original);localStorage.setItem(p.PROFILE_BACKUP_KEY,backup);
     });
-    return{profile,original,backup,entry,durable:await d.readDurableJournal()};
+    const quarantinedProfile={key:p.STORAGE_KEY+':quarantine:older-fighter',raw:'{legacy profile evidence'};
+    localStorage.setItem(quarantinedProfile.key,quarantinedProfile.raw);
+    return{profile,original,backup,entry,quarantinedProfile,durable:await d.readDurableJournal()};
   })()`);
   check(fixture.profile.workouts.length === 60 && fixture.profile.totals.workouts === 65,
     'production-generated fixture trims visible history but retains 65 total workouts');
@@ -526,12 +544,25 @@ async function dedupRecovery() {
   check(exported.profileId === player.profileId && exported.xp === 7800 && exported.coins === 2275 &&
     exported.totals.workouts === 65 && exported.creditedWorkoutIds === null,
     'download payload preserves readable progress and an explicit ambiguous-ledger sentinel');
+  check(exported.exportFormat==='bodyforge-recovery-evidence' && exported.complete===false,
+    'recovery file identifies evidence separately from restorable backups');
+  check(exported.profileQuarantineReadStatus === 'ready' &&
+    exported.storedProfileQuarantineRaw?.some(row => row.key===fixture.quarantinedProfile.key && row.raw===fixture.quarantinedProfile.raw),
+    'recovery download includes exact quarantined profile');
   check(exported.storedProfileRaw === fixture.original && exported.storedBackupRaw === fixture.backup,
     'download payload preserves exact damaged primary and trusted backup bytes');
   check(exported.durableReadStatus === 'ready' && exported.durableResults.length === 1 &&
     exported.durableResults[0].state === 'settled' && exported.durableResults[0].raw === fixture.entry.raw,
     'download payload includes the actual preserved IndexedDB settled receipt');
   check(await originalIntact(), 'reading and exporting recovery data never normalizes or overwrites the stored error');
+  await page.js('window.__exportRequested=false;window.__exportedBlob=null');
+  await click('[data-action=export-session]');
+  await page.until("!!document.querySelector('[data-action=download-session]')",'fresh file prepared before peer update');
+  await observer.js("localStorage.setItem('bodyforge:qa:recovery-export-invalidation','1')");
+  await page.until("!!document.querySelector('[data-action=export-session]') && !document.querySelector('[data-action=download-session]')",
+    'native storage event invalidates the prepared file');
+  check(await page.js('!window.__exportRequested && window.__exportedBlob===null'),
+    'invalidated recovery data are never downloaded');
   await click('[data-action=restore-backup]');
   await page.until("!!document.querySelector('.app-shell') && !document.querySelector('[data-storage-status]')", 'explicit trusted backup recovery opens the application');
   const restored = await readProfile();

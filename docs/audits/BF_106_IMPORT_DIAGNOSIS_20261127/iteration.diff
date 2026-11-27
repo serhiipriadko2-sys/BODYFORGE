@@ -1,0 +1,358 @@
+diff --git a/qa/import-preview-e2e.mjs b/qa/import-preview-e2e.mjs
+index 25e0d8f..0517043 100644
+--- a/qa/import-preview-e2e.mjs
++++ b/qa/import-preview-e2e.mjs
+@@ -230,6 +230,25 @@ try {
+   await ev("document.querySelector('.mobile-nav button:nth-child(6)').click()");
+   await until("!!document.querySelector('[data-action=inspect-progress-file]')",'settings reopened');
+   await ev("document.querySelector('.progress-backup-file-checker').open=true");
++  const candidateFile = JSON.parse(backup.json);
++  for (const [candidate, issue, phrase] of [
++    [{ ...candidateFile, durableResults: settled.map(row => ({ ...row, state: 'active' })) },
++      'incoming-pending', 'ожидающий начисления'],
++    [{ ...candidateFile, durableResults: settled.map(row => ({ ...row, state: 'quarantined' })) },
++      'incoming-quarantine', 'карантине'],
++    [{ ...candidateFile, durableResults: [] }, 'different-journal', 'оплаченных тренировок различаются'],
++    [{ ...candidateFile, storedAuxiliaryRaw: { ...candidateFile.storedAuxiliaryRaw, manualSteps: '[]' } },
++      'auxiliary-replacement-unsupported', 'настройки'],
++  ]) {
++    await choose(JSON.stringify(candidate));
++    await until("!!document.querySelector('[data-file-replacement-status="+issue+"]')",'visible import block '+issue);
++    const feedback = await ev("document.querySelector('[data-file-replacement-status]').textContent");
++    check(feedback.toLowerCase().includes(phrase) &&
++      await ev("!!document.querySelector('[data-import-preview]') && !document.querySelector('[data-action=request-file-replacement]')"),
++      issue+' exposes specific guidance with comparison and no replace action');
++    await unchanged(issue);
++    await cancel();
++  }
+   async function requestReplacement(kind='valid'){
+     await choose(backup.json,kind);
+     await until("!!document.querySelector('[data-action=request-file-replacement]')",'compatible file eligible');
+@@ -258,6 +277,26 @@ try {
+   const candidate=JSON.parse(backup.json);
+   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
+     await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'file import stages exact primary and fallback');
++  await ev(`window.__bfRecoveryPeer=window.open('about:blank','_blank');
++    if(!__bfRecoveryPeer)throw Error('recovery peer unavailable');
++    __bfRecoveryPeer.eval("navigator.locks.request('bodyforge:pilot:v1:write',()=>new Promise(resolve=>{window.releaseRecoveryLock=resolve}))");
++    true`, true);
++  await until("typeof __bfRecoveryPeer.releaseRecoveryLock==='function'",'peer holds lock before recovery reload');
++  const peerTargets=await cdp('Target.getTargets');
++  const peerInfo=peerTargets.targetInfos.find(page=>page.type==='page' && page.url==='about:blank' && page.openerId===target.id);
++  const recoveryPeer=peerInfo && { id: peerInfo.targetId };
++  if (!recoveryPeer) throw Error('owned recovery peer missing');
++  await cdp('Page.bringToFront');
++  await ev('window.__bfRecoveryBeforeReload=true');
++  await cdp('Page.reload',{ignoreCache:true});
++  await until("!window.__bfRecoveryBeforeReload && !!document.querySelector('[data-replacement-recovery] [role=alert]')",
++    'startup blocks recovery actions while the profile lock is held');
++  const released = await cdp('Target.closeTarget',{targetId:recoveryPeer.id});
++  if (!released.success) throw Error('owned recovery peer did not close');
++  await until("!!document.querySelector('[data-action=request-replacement-keep]:enabled')",
++    'recovery reads staged copy automatically after startup unlocks');
++  check(await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')!==null"),
++    'waiting for recovery preserves rollback record');
+   async function reopenAfterDecision(action){
+     await ev("document.querySelector('[data-action=request-replacement-"+action+"]')"+'.click()');
+     await ev("document.querySelector('[data-action=confirm-replacement-"+action+"]')"+'.click()');
+@@ -275,7 +314,18 @@ try {
+   await ev("document.querySelector('.progress-backup-file-checker').open=true");
+   await requestReplacement('gzip');
+   await ev("document.querySelector('[data-action=confirm-file-replacement]').click()");
+-  await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file in gzip can be selected again');
++  try {
++    await until("!!document.querySelector('[data-action=request-replacement-keep]')",'same paid file in gzip can be selected again');
++  } catch (error) {
++    console.error('GZIP_REPLACEMENT_STATUS', await ev(`({
++      storage: document.querySelector('[data-storage-status]')?.dataset.storageStatus,
++      recovery: document.querySelector('[data-replacement-recovery]')?.dataset.replacementRecovery,
++      reason: document.querySelector('[data-file-replacement-status]')?.dataset.fileReplacementStatus,
++      confirmation: !!document.querySelector('[data-action=confirm-file-replacement]'),
++      pendingReplacement: localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1') !== null,
++    })`));
++    throw error;
++  }
+   check(await ev("localStorage.getItem('bodyforge:pilot:v1')")===candidate.storedProfileRaw &&
+     await ev("localStorage.getItem('bodyforge:pilot:v1:backup')")===candidate.storedBackupRaw,'gzip file replacement stages exact v1 bytes without new authority');
+   await reopenAfterDecision('keep');
+diff --git a/qa/mobile-e2e.mjs b/qa/mobile-e2e.mjs
+index 2dd2f9f..1a3892c 100644
+--- a/qa/mobile-e2e.mjs
++++ b/qa/mobile-e2e.mjs
+@@ -415,6 +415,8 @@ try{
+   await click('.mobile-nav button:nth-child(1)');
+   await until("document.querySelector('#quests')?.getClientRects().length>0",'Forge missions visible before reward');
+   await click('#quests .quest-button');
++  await until('(()=>{const p=JSON.parse(localStorage.getItem("bodyforge:pilot:v1")||"{}");return p.coins===10&&!!p.game?.lastLoginDay})()',
++    'daily login reward persisted before checking the wallet');
+   s=await snapshot();
+   check(s.coins===10&&s.game.lastLoginDay,'daily login reward once');
+   // QA-only wallet top-up in this disposable Chrome profile. Never changes actual user data.
+diff --git a/src/components/ProgressBackupPanel.tsx b/src/components/ProgressBackupPanel.tsx
+index 880be2a..fff49f7 100644
+--- a/src/components/ProgressBackupPanel.tsx
++++ b/src/components/ProgressBackupPanel.tsx
+@@ -5,7 +5,7 @@ import { prepareProgressBackup, requestProgressBackupDownload, requestLocalBacku
+ import { previewProgressImportFile, type ProgressImportPreview } from '../lib/progressImportPreview';
+ import { readProfileEpoch } from '../lib/profileEpoch';
+ import type { ReplacementPlan } from '../lib/profileReplacement';
+-import { prepareFileReplacement, stageFileReplacement } from '../lib/profileReplacementRecovery';
++import { prepareFileReplacement, stageFileReplacement, type FileReplacementPreparation } from '../lib/profileReplacementRecovery';
+ import { formatStorageBytes, readStorageCapacity, type StorageCapacity } from '../lib/storageCapacity';
+ import { prepareBackupArchive, type PreparedBackupArchive } from '../lib/backupArchive';
+ import { previewCheckpointBatch, type CheckpointPreview } from '../lib/journalCheckpointBatch';
+@@ -17,6 +17,28 @@ interface Props {
+   disabled: boolean;
+ }
+ 
++type ImportIssue = Extract<FileReplacementPreparation, { status: 'blocked' }>['reason'];
++const importIssueText: Record<ImportIssue, string> = {
++  'local-pending': 'В этом браузере есть результат, который ещё обрабатывается. Дождись завершения сохранения и выбери файл снова.',
++  'local-quarantine': 'В этом браузере есть данные в карантине. Проверь их на экране восстановления прогресса.',
++  'incoming-pending': 'В копии есть результат, ожидающий начисления. Подготовь свежую копию в исходном браузере после завершения сохранения.',
++  'incoming-quarantine': 'В копии есть данные в карантине. Сохрани файл для восстановления в исходном браузере.',
++  'different-journal': 'Журналы оплаченных тренировок различаются. Замена доступна для копии с теми же записями журнала.',
++  'current-sources-not-quiet': 'Не удалось подтвердить состояние локального журнала. Проверь сохранение в этом браузере.',
++  'current-recovery-required': 'Текущему профилю нужно восстановление. Сохрани локальную резервную копию перед дальнейшими действиями.',
++  'incoming-not-compatible': 'Файл не прошёл проверку совместимости. Подготовь полную копию в исходном браузере.',
++  'auxiliary-replacement-unsupported': 'Настройки или дополнительные данные в копии отличаются от текущих. Для этой копии доступно сравнение.',
++  'identity-not-confirmed': 'Идентификатор бойца в копии не совпадает с текущим. Выбери копию этого бойца.',
++  'settled-payment-unproven': 'Сведения об оплаченной тренировке в журнале и в профиле не совпадают.',
++  'history-or-identity-unsupported': 'Копия или её резервный профиль несовместимы либо теряют часть сохранённой истории.',
++  'transaction-id-unavailable': 'Браузер не смог подготовить защищённую замену. Обнови страницу и попробуй снова.',
++  'transaction-id-reused': 'Браузер не смог подготовить защищённую замену. Обнови страницу и попробуй снова.',
++  'rollback-record-too-large': 'Данных слишком много для безопасного отката. Для этой копии доступно сравнение.',
++  'replacement-in-progress': 'Другая замена уже началась. Открой приложение заново, чтобы завершить её или вернуть прежнюю копию.',
++  'stale-observation': 'Профиль изменился во время проверки. Выбери файл заново для сравнения с актуальным прогрессом.',
++  'verification-unavailable': 'Браузер не смог проверить локальное сохранение. Дождись окончания других операций и выбери файл снова.',
++};
++
+ /** Preview and confirmation share the same immutable replacement plan. */
+ export default function ProgressBackupPanel({ profile, pendingResult, disabled }: Props) {
+   const [status, setStatus] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
+@@ -32,6 +54,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+   const [confirming, setConfirming] = useState(false);
+   const [staging, setStaging] = useState(false);
+   const [importMessage, setImportMessage] = useState('');
++  const [importIssue, setImportIssue] = useState<ImportIssue | null>(null);
+   const [capacity, setCapacity] = useState<StorageCapacity | null>(null);
+   const [measuring, setMeasuring] = useState(false);
+   const capacityGeneration = useRef(0);
+@@ -127,6 +150,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+     setConfirming(false);
+     setStaging(false);
+     setImportMessage('');
++    setImportIssue(null);
+     setPreview(null);
+     setInspecting(false);
+   }
+@@ -236,11 +260,12 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+     const replacement = json && !pendingResult && current.status === 'ready' && current.revision !== null && epoch !== undefined
+       ? await prepareFileReplacement(json, current.revision, epoch, controller.signal) : null;
+     if (controller.signal.aborted || request !== inspectionGeneration.current) return;
+-    setPlan(replacement);
++    setPlan(replacement?.status === 'planned' ? replacement.plan : null);
+     setPreview(result);
+     setInspecting(false);
+-    if (result.state === 'preview-ready' && !replacement) {
+-      setImportMessage('Доступен только просмотр. Для замены нужны тот же боец, совместимая история наград, совпадающие настройки и одинаковые журналы без ожидающих или отложенных результатов.');
++    if (replacement?.status === 'blocked') setImportIssue(replacement.reason);
++    else if (!replacement && result.state === 'preview-ready') {
++      setImportIssue(pendingResult ? 'local-pending' : 'verification-unavailable');
+     }
+   }
+ 
+@@ -350,7 +375,9 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
+               onClick={() => { void confirmReplacement(); }}>{staging ? 'Проверяем сохранение…' : 'Подтвердить замену'}</button>
+             </div>}
+           </div>}
+-          {importMessage && <p role="status">{importMessage}</p>}
++          <div role="status" aria-atomic="true" data-file-replacement-status={importIssue ?? undefined}>
++            {(importIssue || importMessage) && <p>{importIssue ? importIssueText[importIssue] : importMessage}</p>}
++          </div>
+           {(inspecting || preview) && <button type="button" className="progress-import-cancel"
+             data-action="cancel-import-preview" onClick={invalidateImport}>ОТМЕНИТЬ ПРОСМОТР</button>}
+           <small>Просмотр файла сам по себе не изменяет прогресс.
+diff --git a/src/components/ReplacementRecoveryPanel.tsx b/src/components/ReplacementRecoveryPanel.tsx
+index f29b51f..c805f63 100644
+--- a/src/components/ReplacementRecoveryPanel.tsx
++++ b/src/components/ReplacementRecoveryPanel.tsx
+@@ -19,17 +19,20 @@ export default function ReplacementRecoveryPanel({ disabled, onResolved, onExpor
+     return { controller, request: ++generation.current };
+   }
+   useEffect(() => {
++    if (disabled) {
++      setConfirm(null);
++      setBusy(false);
++      setView(null);
++      return;
++    }
+     const { controller, request } = begin();
+     void readReplacementRecovery(controller.signal).then(result => {
+       if (generation.current === request && !controller.signal.aborted) setView(result);
+     });
+     return () => { generation.current++; active.current?.abort(); };
+-  }, []);
+-  useEffect(() => {
+-    if (!disabled) return;
+-    generation.current++; active.current?.abort(); setConfirm(null); setBusy(false);
+   }, [disabled]);
+   async function refresh() {
++    if (disabled) return;
+     setConfirm(null);setMessage('');setBusy(true);
+     const { controller, request } = begin();
+     const result = await readReplacementRecovery(controller.signal);
+@@ -78,7 +81,7 @@ export default function ReplacementRecoveryPanel({ disabled, onResolved, onExpor
+         </div>)}
+       {view?.state === 'none'
+         ? <button type="button" className="forge-solid-button" data-action="open-restored-profile" disabled={disabled || busy} onClick={onResolved}>ОТКРЫТЬ СОХРАНЕНИЕ</button>
+-        : <button type="button" data-action="refresh-replacement-recovery" disabled={busy} onClick={() => { void refresh(); }}>Проверить состояние ещё раз</button>}
++        : <button type="button" data-action="refresh-replacement-recovery" disabled={disabled || busy} onClick={() => { void refresh(); }}>Проверить состояние ещё раз</button>}
+       <button type="button" data-action="export-session" onClick={onExportSession}>Экспортировать данные этой страницы</button>
+       <small>Данные остаются на устройстве. Не очищай хранилище браузера.</small>
+     </section>
+diff --git a/src/lib/profileReplacement.ts b/src/lib/profileReplacement.ts
+index 60f4105..f239861 100644
+--- a/src/lib/profileReplacement.ts
++++ b/src/lib/profileReplacement.ts
+@@ -24,6 +24,7 @@ export interface ReplacementObservation {
+   readonly sourcesReady: boolean;
+   readonly pendingRecords: number;
+   readonly durableRecords: number;
++  readonly durableActiveRecords?: number;
+   readonly settledHistory?: SettledImportHistory;
+   readonly quarantineRecords: number;
+ }
+@@ -69,8 +70,16 @@ function safeTransition(before: ProfilePair, after: ProfilePair): boolean {
+   return true;
+ }
+ 
++export type ReplacementBlockReason =
++  | 'current-sources-not-quiet' | 'current-recovery-required'
++  | 'local-pending' | 'local-quarantine'
++  | 'incoming-not-compatible' | 'incoming-pending' | 'incoming-quarantine' | 'different-journal'
++  | 'auxiliary-replacement-unsupported' | 'identity-not-confirmed'
++  | 'settled-payment-unproven' | 'history-or-identity-unsupported'
++  | 'transaction-id-unavailable' | 'transaction-id-reused' | 'rollback-record-too-large';
++
+ export type PlanResult = { status: 'planned'; plan: ReplacementPlan } |
+-  { status: 'blocked'; reason: string };
++  { status: 'blocked'; reason: ReplacementBlockReason };
+ 
+ const bytes = (raw: string) => new TextEncoder().encode(raw).byteLength;
+ const record = (value: unknown): value is Record<string, unknown> =>
+@@ -84,11 +93,14 @@ function quiet(observed: ReplacementObservation, expectedDigest?: string): boole
+     observed.durableRecords === (history?.rows.size ?? 0) && history?.digest === expectedDigest && observed.quarantineRecords === 0 &&
+     AUX_KEYS.every(k => rawValue(observed.auxiliary[k]));
+ }
+-function blocked(reason: string): PlanResult { return { status: 'blocked', reason }; }
++function blocked(reason: ReplacementBlockReason): PlanResult { return { status: 'blocked', reason }; }
+ 
+ /** Deliberately narrow pilot: profile pair only, no journal/auxiliary merge.
+  * Settled rows stay in IndexedDB. File and device must contain identical paid originals. */
+ export function planProfileReplacement(json: string, observed: ReplacementObservation): PlanResult {
++  if (!observed.sourcesReady) return blocked('current-sources-not-quiet');
++  if (observed.pendingRecords || observed.durableActiveRecords) return blocked('local-pending');
++  if (observed.quarantineRecords) return blocked('local-quarantine');
+   if (!quiet(observed, observed.settledHistory?.digest)) return blocked('current-sources-not-quiet');
+   const current = observed.pair.primary === null ? parseProfile(null) : (() => {
+     const view = previewReceiptMigration(observed.pair.primary!);
+@@ -100,9 +112,14 @@ export function planProfileReplacement(json: string, observed: ReplacementObserv
+   const preview = previewProgressImportJson(json, current);
+   if (preview.state !== 'preview-ready') return blocked('incoming-not-compatible');
+   const data = JSON.parse(json) as Record<string, unknown>;
+-  if (preview.inspection.journalRecords || !matchesExportedHistory(data.durableResults, observed.settledHistory) || preview.inspection.quarantineRecords ||
+-      data.pendingResult != null || (data.pendingResults !== undefined &&
+-        (!Array.isArray(data.pendingResults) || data.pendingResults.length))) return blocked('incoming-journal-not-empty');
++  const exportedRows = data.durableResults as { state: string }[];
++  if (preview.inspection.quarantineRecords || exportedRows.some(row => row.state === 'quarantined')) {
++    return blocked('incoming-quarantine');
++  }
++  if (preview.inspection.journalRecords || data.pendingResult != null ||
++      (data.pendingResults !== undefined && (!Array.isArray(data.pendingResults) || data.pendingResults.length)) ||
++      exportedRows.some(row => row.state === 'active')) return blocked('incoming-pending');
++  if (!matchesExportedHistory(exportedRows, observed.settledHistory)) return blocked('different-journal');
+   const aux = data.storedAuxiliaryRaw as Auxiliary;
+   if (!auxiliaryEqual(observed.auxiliary, aux)) return blocked('auxiliary-replacement-unsupported');
+   if (observed.pair.primary !== null && preview.identity !== 'same') return blocked('identity-not-confirmed');
+diff --git a/src/lib/profileReplacementRecovery.test.ts b/src/lib/profileReplacementRecovery.test.ts
+index cdde614..3099e02 100644
+--- a/src/lib/profileReplacementRecovery.test.ts
++++ b/src/lib/profileReplacementRecovery.test.ts
+@@ -3,7 +3,7 @@ import { freshGame } from './game';
+ import { PROFILE_EPOCH_KEY as EPOCH } from './profileEpoch';
+ import { addCompletedWorkout, parseProfile, STORAGE_KEY, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY as MARKER } from './progression';
+ import { executeProfileReplacement, planProfileReplacement, type ReplacementPort } from './profileReplacement';
+-import { readReplacementRecovery, restoreInterruptedReplacement } from './profileReplacementRecovery';
++import { prepareFileReplacement, readReplacementRecovery, restoreInterruptedReplacement } from './profileReplacementRecovery';
+ import { readDurableJournal } from './durableJournal';
+ import { PROFILE_WRITE_LOCK } from './profileLock';
+ 
+@@ -114,6 +114,19 @@ describe('BF-106 locked recovery adapter',()=>{
+     expect((await restoreInterruptedReplacement(marker,'rollback')).status).toBe('recovery-required');
+     expect(write).not.toHaveBeenCalled();expect([...values]).toEqual(before);
+   });
++  it.each([
++    ['active', 'local-pending'],
++    ['quarantined', 'local-quarantine'],
++    ['settled', 'current-sources-not-quiet'],
++  ] as const)('reports local %s journal rows without writing the profile', async (state, reason) => {
++    durable.mockResolvedValue({ status: 'ready',
++      entries: [{ key: STORAGE_KEY+':result:x', raw: '{}', state, baseProfileRaw: null }] });
++    const before = [...values];
++    expect(await prepareFileReplacement('{}', primary, null, new AbortController().signal))
++      .toEqual({ status: 'blocked', reason });
++    expect(write).not.toHaveBeenCalled();
++    expect([...values]).toEqual(before);
++  });
+   it('blocks unavailable durable storage and malformed marker; export evidence remains exact',async()=>{
+     const marker=stage();durable.mockResolvedValue({status:'unavailable',entries:[]});
+     expect(await readReplacementRecovery()).toEqual({state:'conflict',marker});
+diff --git a/src/lib/profileReplacementRecovery.ts b/src/lib/profileReplacementRecovery.ts
+index b161259..a08ff8f 100644
+--- a/src/lib/profileReplacementRecovery.ts
++++ b/src/lib/profileReplacementRecovery.ts
+@@ -11,7 +11,7 @@ import { APPEARANCE_KEY } from './appearance';
+ import { MANUAL_STEPS_KEY } from './stepsLog';
+ import { DAILY_PLAN_KEY } from './dailyPlan';
+ import { planProfileReplacement, executeProfileReplacement, type ReplacementPlan, inspectProfileReplacement, rollbackProfileReplacement, finalizeProfileReplacement,
+-  type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
++  type PlanResult, type ReplacementObservation, type ReplacementPort, type ReplacementResult, type ReplacementState } from './profileReplacement';
+ 
+ /**
+  * BF-106: local file replacement and recovery under ordered locks.
+@@ -38,7 +38,9 @@ function localObservation(durable: Awaited<ReturnType<typeof readDurableJournal>
+     sourcesReady: durable.status === 'ready' && journal.status === 'ready' &&
+       quarantine.status === 'ready' && profiles.status === 'ready',
+     settledHistory, pendingRecords: journal.entries.length, durableRecords: durable.entries.length,
+-    quarantineRecords: quarantine.entries.length + profiles.entries.length,
++    durableActiveRecords: durable.entries.filter(row => row.state === 'active').length,
++    quarantineRecords: quarantine.entries.length + profiles.entries.length +
++      durable.entries.filter(row => row.state === 'quarantined').length,
+   };
+ }
+ 
+@@ -73,13 +75,17 @@ async function withImportPort<T>(signal: AbortSignal, action: (port: Replacement
+   return profile.status === 'completed' ? profile.value : null;
+ }
+ 
+-export function prepareFileReplacement(json: string, revision: string, epoch: string | null, signal: AbortSignal) {
+-  return withImportPort(signal, port => {
++export type FileReplacementPreparation = PlanResult |
++  { status: 'blocked'; reason: 'replacement-in-progress' | 'stale-observation' | 'verification-unavailable' };
++
++export async function prepareFileReplacement(json: string, revision: string, epoch: string | null,
++  signal: AbortSignal): Promise<FileReplacementPreparation> {
++  return await withImportPort<FileReplacementPreparation>(signal, port => {
+     const current = port.observe();
+-    if (port.getMarker() !== null || current.pair.primary !== revision || current.epoch !== epoch) return null;
+-    const candidate = planProfileReplacement(json, current);
+-    return candidate.status === 'planned' ? candidate.plan : null;
+-  });
++    if (port.getMarker() !== null) return { status: 'blocked', reason: 'replacement-in-progress' };
++    if (current.pair.primary !== revision || current.epoch !== epoch) return { status: 'blocked', reason: 'stale-observation' };
++    return planProfileReplacement(json, current);
++  }) ?? { status: 'blocked', reason: 'verification-unavailable' };
+ }
+ 
+ export function stageFileReplacement(plan: ReplacementPlan, signal: AbortSignal) {

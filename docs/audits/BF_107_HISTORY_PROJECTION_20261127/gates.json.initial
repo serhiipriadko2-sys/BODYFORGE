@@ -1,0 +1,40 @@
+﻿{
+    "head":  "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+    "sourceCount":  352,
+    "sourceManifestSha256":  "A8771F9E3E9CFFE58E679BEB05336269D6FE4984030B05A9C52554397D145434",
+    "focused":  "NOT_RUN",
+    "unit":  "NOT_RUN",
+    "tsc":  2,
+    "build":  "NOT_RUN",
+    "bundle":  "NOT_RUN",
+    "journal":  "NOT_RUN",
+    "mobile":  "NOT_RUN",
+    "privacy":  "NOT_RUN",
+    "started":  "2026-11-27T14:33:10.8682523+03:00",
+    "tools":  [
+                  {
+                      "path":  "node_modules/vite/package.json",
+                      "hash":  "260A0A7A96A35E1B657480014C0F3B592B70061E42099EDEFC8FE97972F05FD4",
+                      "version":  "8.3.4"
+                  },
+                  {
+                      "path":  "node_modules/rolldown/package.json",
+                      "hash":  "F46FA23BCCBB2A1EE76A763B02A55853CDFEA4AAF8B0F3B82E8D16BAD8778020",
+                      "version":  "1.2.14"
+                  },
+                  {
+                      "path":  "node_modules/vitest/package.json",
+                      "hash":  "D00333F3A13ED44FEDC77184C8675BAE45246534F06684D94CFF5E4F8A9F7C10",
+                      "version":  "5.0.5"
+                  },
+                  {
+                      "path":  "node_modules/typescript/package.json",
+                      "hash":  "822EF7CA6452205657B6288B066481ECF508BFBF43455D715CF7D3EC457561E6",
+                      "version":  "5.9.3"
+                  }
+              ],
+    "error":  "TypeScript failed",
+    "previewStopped":  true,
+    "devStopped":  true,
+    "finished":  "2026-11-27T14:33:18.7069737+03:00"
+}

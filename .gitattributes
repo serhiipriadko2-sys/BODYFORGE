@@ -1,0 +1,5 @@
+# The release gate hashes public files as bytes on every platform.
+public/**/*.md text eol=lf
+public/**/*.txt text eol=lf
+public/**/*.svg text eol=lf
+public/manifest.webmanifest text eol=lf

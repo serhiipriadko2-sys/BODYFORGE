@@ -2,7 +2,7 @@ import { loadProfileState, type Profile } from './progression';
 import { inspectImportProfile } from './progressImportPreview';
 import { receiptFromJournal, type WorkoutReceiptView } from './receiptCompatibility';
 import { resultJournalEntry } from './workoutJournal';
-import { readDurableJournal, type DurableJournalEntry } from './durableJournal';
+import { readDurableHistoryReceipts, type DurableHistoryReceipt } from './durableJournal';
 import { readProfileEpoch } from './profileEpoch';
 import { withProfileWriteLock } from './profileLock';
 import type { ActivityRecord } from './progressPulse';
@@ -43,7 +43,7 @@ export function visibleActivityHistory(profile: Profile, forcePartial = false): 
  * Missing dates are never estimated from totals, rewards or row order.
  * Contradicting originals are excluded from the projection, not deleted. */
 export function indexActivityHistory(raw: string, profile: Profile,
-  journal: { status: 'ready' | 'unavailable'; entries: readonly DurableJournalEntry[] }): ActivityHistoryIndex {
+  journal: { status: 'ready' | 'unavailable'; entries: readonly DurableHistoryReceipt[] }): ActivityHistoryIndex {
   const view = inspectImportProfile(raw);
   if (!view || historySignature(view.profile) !== historySignature(profile)) return visibleActivityHistory(profile, true);
   const ids = view.storedCreditedWorkoutIds;
@@ -102,7 +102,7 @@ export async function readActivityHistory(profile: Profile, signal: AbortSignal)
     if (initial.status !== 'ready' || initial.revision === null ||
         historySignature(initial.profile) !== historySignature(profile)) return fallback;
     const epoch = readProfileEpoch();
-    const journal = await readDurableJournal();
+    const journal = await readDurableHistoryReceipts(signal);
     const final = loadProfileState();
     if (signal.aborted || final.status !== 'ready' || final.revision !== initial.revision ||
         readProfileEpoch() !== epoch) return fallback;

@@ -484,6 +484,14 @@ try {
       const full=await mod.readDurableJournal();
       result.full=full.status==='ready'&&full.entries.length===count+1&&full.entries.slice(0,count).every((row,i)=>row.key===rows[i].key&&row.raw===rows[i].raw&&row.baseProfileRaw===rows[i].baseProfileRaw&&row.state==='settled')&&full.entries[count].key===small.key;
       result.fullPages=unbounded===0&&largest<=32&&pages===Math.floor((count+1)/32)+1;
+      pages=0;largest=0;unbounded=0;
+      const projected=await mod.readDurableHistoryReceipts();
+      result.slim=projected.status==='ready'&&projected.entries.length===count&&
+        projected.entries.every((row,i)=>row.key===rows[i].key&&row.raw===rows[i].raw&&row.state==='settled'&&
+          Object.keys(row).length===3&&!('baseProfileRaw' in row));
+      result.slimPages=unbounded===0&&largest<=32&&pages===Math.floor((count+1)/32)+1;
+      result.fullJsonBytes=new TextEncoder().encode(JSON.stringify(full.entries)).byteLength;
+      result.receiptJsonBytes=new TextEncoder().encode(JSON.stringify(projected.entries)).byteLength;
       result.count=count;result.logicalBaselineBytes=520*new TextEncoder().encode(base).byteLength;
       result.retained=(await countRows())===count+1;
     }finally{IDBObjectStore.prototype.getAll=old}
@@ -491,7 +499,9 @@ try {
     const bad={schemaVersion:99,key:prefix+'zz-invalid',raw:'future',baseProfileRaw:null,state:'active'};
     await putDirect([bad]);
     const refused=await mod.markDurableResults([small],'settled'),invalid=await mod.readDurableJournal();
-    result.damage=refused.status==='unavailable'&&invalid.status==='unavailable'&&invalid.entries.length===0&&(await countRows())===count+2;
+    const invalidSlim=await mod.readDurableHistoryReceipts();
+    result.damage=refused.status==='unavailable'&&invalid.status==='unavailable'&&invalid.entries.length===0&&
+      invalidSlim.status==='unavailable'&&invalidSlim.entries.length===0&&(await countRows())===count+2;
     // Even if the write commits, cancellation or an interrupted later page
     // cannot authorize a saved receipt. Do not claim zero writes.
     await resetDB();await mod.readDurableJournal();
@@ -516,6 +526,20 @@ try {
     let failed;
     try{failed=await mod.readDurableJournal()}finally{IDBObjectStore.prototype.getAll=pageOriginal}
     result.noPartial=failed.status==='unavailable'&&failed.entries.length===0&&interrupted===2&&(await mod.readDurableJournal()).entries.length===66;
+    const controller2=new AbortController();
+    let slimPages=0;
+    IDBObjectStore.prototype.getAll=function(...args){
+      const r=pageOriginal.apply(this,args);
+      if(this.transaction.db.name===dbName&&++slimPages===2)r.addEventListener('success',()=>controller2.abort());
+      return r;
+    };
+    let stoppedSlim;
+    try{stoppedSlim=await mod.readDurableHistoryReceipts(controller2.signal)}finally{IDBObjectStore.prototype.getAll=pageOriginal}
+    const marked=await mod.markDurableResults([small],'quarantined');
+    const finalSlim=await mod.readDurableHistoryReceipts();
+    result.slimCancel=stoppedSlim.status==='unavailable'&&stoppedSlim.entries.length===0&&slimPages===2;
+    result.slimQuarantine=marked.status==='saved'&&finalSlim.status==='ready'&&finalSlim.entries.length===65&&
+      finalSlim.entries.every(row=>row.state==='settled'&&row.key!==small.key)&&(await countRows())===66;
     await resetDB();await mod.readDurableJournal();
     return result;
   })()`);
@@ -525,11 +549,68 @@ try {
     ['pageBound','write readback scans all originals in pages of at most 32'],
     ['full','full history read restores every large legacy original exactly'],
     ['fullPages','full history also uses a consistent bounded page scan'],
+    ['slim','activity receipt projection retains all settled records without checkpoint fields'],
+    ['slimPages','receipt projection validates entire history with the same bounded pages'],
+    ['slimCancel','cancelled receipt projection returns no partial trusted records'],
+    ['slimQuarantine','receipt projection excludes quarantine while all physical originals remain'],
     ['retained','large history retains every physical record'],
     ['damage','damaged final page prevents trusted receipt and partial history'],
     ['cancel','cancelled later readback page cannot acknowledge and exact retry preserves baseline'],
     ['noPartial','failed second page never returns partial trusted history'],
   ])check(largeHistory[flag]===true,label);
+
+  // Exercise the actual activity-history reader, including its profile lock,
+  // against valid receipts in the isolated browser, not merely a codec fixture.
+  const activityProjection=await js(`(async()=>{
+    const progress=await import('/src/lib/progression.ts'), game=await import('/src/lib/game.ts');
+    const journal=await import('/src/lib/workoutJournal.ts'), history=await import('/src/lib/activityHistory.ts');
+    let profile={profileId:'qa-history-projection',xp:0,coins:0,creditedWorkoutIds:[],workouts:[],game:{...game.freshGame(),created:true}};
+    const rows=[],base='recovery checkpoint '.repeat(1024);
+    for(let i=0;i<65;i++){
+      const sessionId='qa-projection-'+i,date=new Date(Date.UTC(2026,10,20,0,i));
+      profile=progress.addCompletedWorkout(profile,32000,date,{sessionId,mode:'training'});
+      const entry=journal.resultJournalEntry({schemaVersion:1,profileId:profile.profileId,sessionId,mode:'training',
+        floor:null,durationMs:32000,finishedAt:date.toISOString(),repetitions:20});
+      if(!entry)throw Error('invalid projection fixture');
+      rows.push({schemaVersion:1,key:entry.key,raw:entry.raw,baseProfileRaw:base,state:'settled'});
+    }
+    await resetDB();await mod.readDurableJournal();
+    const db=await openNative();
+    try{await new Promise((resolve,reject)=>{
+      const tx=db.transaction('results','readwrite',{durability:'strict'}),store=tx.objectStore('results');
+      tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);rows.forEach(row=>store.add(row));
+    })}finally{db.close()}
+    const key=progress.STORAGE_KEY,raw=JSON.stringify(profile),prior=localStorage.getItem(key);
+    localStorage.setItem(key,raw);
+    const native=IDBDatabase.prototype.transaction;
+    let writes=0;
+    IDBDatabase.prototype.transaction=function(...args){
+      if(this.name===dbName&&args[1]==='readwrite')writes++;
+      return native.apply(this,args);
+    };
+    try{
+      const loaded=progress.loadProfileState();
+      if(loaded.status!=='ready')throw Error('profile fixture not ready');
+      const signal=new AbortController().signal;
+      const view=await history.readActivityHistory(loaded.profile,signal);
+      const full=history.indexActivityHistory(raw,loaded.profile,await mod.readDurableJournal());
+      const cancelled=await history.readActivityHistory(loaded.profile,AbortSignal.abort());
+      return {complete:view.complete===true&&view.expectedCount===65&&view.restoredCount===5&&view.records.length===65,
+        exact:JSON.stringify(view)===JSON.stringify(full),noWrites:writes===0&&localStorage.getItem(key)===raw,
+        cancel:cancelled.complete===false&&cancelled.restoredCount===0&&cancelled.records.length===60};
+    }finally{
+      IDBDatabase.prototype.transaction=native;
+      if(prior===null)localStorage.removeItem(key);else localStorage.setItem(key,prior);
+      await resetDB();await mod.readDurableJournal();
+    }
+  })()`);
+  console.log('ACTIVITY_RECEIPT_PROJECTION',JSON.stringify(activityProjection));
+  for(const [flag,label] of [
+    ['complete','actual activity reader restores every paid historical result'],
+    ['exact','receipt-only activity reader agrees exactly with full original history'],
+    ['noWrites','activity reader never writes journal or profile'],
+    ['cancel','cancelled activity reader retains conservative visible history'],
+  ])check(activityProjection[flag]===true,label);
   await test(`(async()=>{const result=await mod.stageDurableResults([entry],null);const db=await openNative(2);db.close();return result.status==='saved'})()`, 'module releases every handle so a later version upgrade is unblocked');
 
   // A real version fence blocks the existing v1 module after upgrade.
@@ -549,7 +630,352 @@ try {
       const mark=await mod.markDurableResults([entry],'settled');
       return oldVersionRejected&&read.status==='unavailable'&&stage.status==='unavailable'&&mark.status==='unavailable'&&before===await exactRows();
     }finally{db.close()}
-  })()`,'native version fence blocks old journal readers and writers without altering records');
+  })()`,'unrecognized native v2 layout blocks journal readers and writers without altering records');
+
+  // Production facade recognizes only an explicitly prepared keyed v2 layout.
+  // This harness owns a disposable browser profile; never run on owner data.
+  const keyedV2=await js(`(async()=>{
+    const v=await import('/src/lib/durableJournalV2.ts');
+    const schema=await import('/src/lib/durableJournalSchema.ts');
+    const result={},prefix='bodyforge:pilot:v1:result:v2-key-';
+    const inputs=Array.from({length:4},(_,i)=>({key:prefix+i,raw:'exact-'+i}));
+    const base='repeat checkpoint '.repeat(2400)+'\\ud800';
+    await resetDB();
+    result.absent=(await v.prepareVersionedJournal()).status==='invalid';
+    await mod.readDurableJournal();
+    if((await mod.stageDurableResults(inputs.slice(0,2),base)).status!=='saved'||
+      (await mod.markDurableResults([inputs[0]],'settled')).status!=='saved')throw Error('legacy fixture failed');
+    const before=await directRows(),blocker=await openNative();
+    let blocked;
+    try{blocked=await v.prepareVersionedJournal()}finally{blocker.close()}
+    const unchanged=await openNative();
+    result.blocked=blocked.status==='unavailable'&&unchanged.version===1;unchanged.close();
+    result.before=JSON.stringify(await directRows())===JSON.stringify(before);
+    const upgraded=await v.prepareVersionedJournal(),db=await openNative(2);
+    const native=IDBDatabase.prototype.transaction,put=IDBObjectStore.prototype.put;
+    const readPhysical=async()=>new Promise((resolve,reject)=>{
+      const tx=native.call(db,['results',schema.DURABLE_META_STORE],'readonly');
+      const rows=tx.objectStore('results').getAll(),meta=tx.objectStore(schema.DURABLE_META_STORE).get('state');
+      tx.oncomplete=()=>resolve({rows:rows.result,revision:meta.result.revision});
+      tx.onabort=()=>reject(tx.error);
+    });
+    try{
+      const physical=await readPhysical(),read=await mod.readDurableJournal();
+      result.prepare=upgraded.status==='prepared'&&upgraded.versionConfirmed===2&&physical.revision===0&&
+        JSON.stringify(physical.rows)===JSON.stringify(before)&&read.status==='ready'&&read.entries.length===2;
+      result.repeat=(await v.prepareVersionedJournal()).status==='already-prepared'&&(await readPhysical()).revision===0;
+      let oldRejected=false;
+      try{const old=await openNative(1);old.close()}catch(e){oldRejected=e.name==='VersionError'}
+      result.fence=oldRejected;
+      const maintenance=await v.maintainVersionedJournal(db,[inputs[0].key],'compact'),packed=await readPhysical();
+      const exact=(await mod.readDurableJournal()).entries;
+      result.compact=maintenance.status==='saved'&&maintenance.count===1&&packed.revision===1&&packed.rows.length===2&&
+        packed.rows[0].key===inputs[0].key&&packed.rows[0].schemaVersion===2&&exact[0].baseProfileRaw===base&&exact[0].raw===inputs[0].raw;
+      const again=await v.maintainVersionedJournal(db,[inputs[0].key],'compact');
+      result.noRewrite=again.status==='unchanged'&&again.count===0&&(await readPhysical()).revision===1;
+      const settled=await mod.markDurableResults([inputs[1]],'settled');
+      result.settle=settled.status==='saved'&&settled.entries[0].baseProfileRaw===base&&
+        (await readPhysical()).rows.every(row=>row.schemaVersion===2);
+      const stage=await mod.stageDurableResults([inputs[2]],'new');
+      const duplicate=await mod.stageDurableResults([inputs[0]],'ignored');
+      result.stage=stage.status==='saved'&&stage.entries[0].state==='active'&&duplicate.status==='saved'&&
+        duplicate.entries[0].baseProfileRaw===base&&duplicate.entries[0].state==='settled';
+      const rev=(await readPhysical()).revision;
+      const bad=await mod.stageDurableResults([inputs[3],{...inputs[0],raw:'different'}],null);
+      result.conflict=bad.status==='invalid'&&(await readPhysical()).revision===rev&&(await readPhysical()).rows.length===3;
+      IDBObjectStore.prototype.put=function(...args){
+        const r=put.apply(this,args);
+        if(this.name==='results'&&args[0]?.key===inputs[0].key)r.addEventListener('success',()=>this.transaction.abort(),{once:true});
+        return r;
+      };
+      let aborted;
+      try{aborted=await mod.markDurableResults([inputs[0]],'quarantined')}finally{IDBObjectStore.prototype.put=put}
+      const rolled=await readPhysical();
+      result.abort=aborted.status==='unavailable'&&rolled.revision===rev&&rolled.rows[0].schemaVersion===2;
+      const quarantine=await mod.markDurableResults([inputs[0]],'quarantined'),after=await readPhysical();
+      result.quarantine=quarantine.status==='saved'&&quarantine.entries[0].baseProfileRaw===base&&
+        after.rows[0].schemaVersion===1&&after.rows[0].state==='quarantined'&&
+        (await mod.markDurableResults([inputs[0]],'settled')).status==='invalid';
+      const restored=await v.maintainVersionedJournal(db,[inputs[1].key],'restore');
+      result.restore=restored.status==='saved'&&restored.count===1&&
+        (await readPhysical()).rows[1].schemaVersion===1&&(await mod.readDurableJournal()).entries[1].baseProfileRaw===base;
+      const slim=await mod.readDurableHistoryReceipts();
+      result.projection=slim.status==='ready'&&slim.entries.length===1&&slim.entries[0].key===inputs[1].key&&
+        !('baseProfileRaw' in slim.entries[0]);
+      const prior=(await readPhysical()).revision;
+      result.refuseMaintenance=(await v.maintainVersionedJournal(db,[inputs[1].key,inputs[2].key],'compact')).status==='invalid'&&
+        (await readPhysical()).revision===prior;
+      let committed=false,readFault=false;
+      IDBDatabase.prototype.transaction=function(...args){
+        if(this.name===dbName&&args[1]==='readonly'&&committed&&!readFault){readFault=true;throw Error('QA lost readback')}
+        const tx=native.apply(this,args);
+        if(this.name===dbName&&args[1]==='readwrite')tx.addEventListener('complete',()=>{committed=true},{once:true});
+        return tx;
+      };
+      let lost;
+      try{lost=await mod.stageDurableResults([inputs[3]],null)}finally{IDBDatabase.prototype.transaction=native}
+      const recovered=await mod.stageDurableResults([inputs[3]],'different baseline');
+      result.readback=lost.status==='unavailable'&&readFault&&recovered.status==='saved'&&recovered.entries[0].baseProfileRaw===null;
+      const huge={key:prefix+'huge',raw:'large'},big='x'.repeat(2*1024*1024+7);
+      const largeStage=await mod.stageDurableResults([huge],big),largeSettled=await mod.markDurableResults([huge],'settled');
+      result.fallback=largeStage.status==='saved'&&largeSettled.status==='saved'&&largeSettled.entries[0].baseProfileRaw===big&&
+        (await readPhysical()).rows.find(row=>row.key===huge.key)?.schemaVersion===1;
+      // A cooperating writer changes an unrelated result and revision before
+      // strict CAS. The original selection cannot be committed.
+      let injected=false;
+      IDBDatabase.prototype.transaction=function(...args){
+        if(this.name===dbName&&args[1]==='readwrite'&&!injected){
+          injected=true;
+          const other=native.call(db,['results',schema.DURABLE_META_STORE],'readwrite',{durability:'strict'});
+          const meta=other.objectStore(schema.DURABLE_META_STORE),r=meta.get('state');
+          r.onsuccess=()=>{meta.put({...r.result,revision:r.result.revision+1});
+            other.objectStore('results').add({schemaVersion:1,key:prefix+'concurrent',raw:'other',baseProfileRaw:null,state:'active'})};
+        }
+        return native.apply(this,args);
+      };
+      const race={key:prefix+'not-written',raw:'new'};
+      let stale;
+      try{stale=await mod.stageDurableResults([race],null)}finally{IDBDatabase.prototype.transaction=native}
+      const post=await readPhysical();
+      result.cas=injected&&stale.status==='unavailable'&&post.rows.some(row=>row.key===prefix+'concurrent')&&
+        !post.rows.some(row=>row.key===race.key);
+    }finally{IDBDatabase.prototype.transaction=native;IDBObjectStore.prototype.put=put;db.close()}
+    await resetDB();await mod.readDurableJournal();
+    await directPut({schemaVersion:99,key:prefix+'bad',raw:'bad',baseProfileRaw:null,state:'settled'});
+    const refused=await v.prepareVersionedJournal(),old=await openNative();
+    try{result.invalidUpgrade=refused.status==='invalid'&&old.version===1&&
+      old.objectStoreNames.length===1&&(await directRows())[0].schemaVersion===99}finally{old.close()}
+    await resetDB();await mod.readDurableJournal();
+    return result;
+  })()`);
+  console.log('KEYED_V2_SAMPLE',JSON.stringify(keyedV2));
+  for(const [flag,label] of [
+    ['absent','explicit v2 preparation refuses absent database'],
+    ['blocked','blocked version change cannot upgrade later without a new request'],
+    ['before','blocked preparation leaves original records exact'],
+    ['prepare','native v2 preparation preserves every v1 original and exposes compatible facade'],
+    ['repeat','prepared schema is idempotent without revision mutation'],
+    ['fence','native v1 opens remain fenced after recognized v2 preparation'],
+    ['compact','bounded existing settlement compacts under the same original key'],
+    ['noRewrite','repeated compaction never rewrites a compact original'],
+    ['settle','normal v2 settlement compresses exact checkpoint'],
+    ['stage','normal v2 stage and compact terminal retry retain original state and baseline'],
+    ['conflict','conflicting v2 batch changes neither revision nor records'],
+    ['abort','aborted v2 rewrite rolls back result and revision together'],
+    ['quarantine','compact quarantine materializes original and cannot be revived'],
+    ['restore','explicit v2 inverse restores original physical record'],
+    ['projection','v2 activity projection excludes active and quarantined receipts'],
+    ['refuseMaintenance','maintenance refuses mixed settled and active inputs atomically'],
+    ['readback','lost v2 acknowledgement is unavailable and exact retry retains baseline'],
+    ['fallback','oversized v2 checkpoint remains an exact uncompressed original'],
+    ['cas','stale v2 revision refuses selected write without overwriting a competing result'],
+    ['invalidUpgrade','invalid legacy record aborts schema change and retains original'],
+  ])check(keyedV2[flag]===true,label);
+
+  const keyedV2Large=await js(`(async()=>{
+    const v=await import('/src/lib/durableJournalV2.ts'),schema=await import('/src/lib/durableJournalSchema.ts');
+    const prefix='bodyforge:pilot:v1:result:v2-large-',count=4105,base='checkpoint-original '.repeat(1900);
+    const rows=Array.from({length:count},(_,i)=>({schemaVersion:1,key:prefix+String(i).padStart(5,'0'),
+      raw:'result-'+i,baseProfileRaw:i<520?base:null,state:'settled'}));
+    const legacy=await openNative();
+    try{await new Promise((resolve,reject)=>{const tx=legacy.transaction('results','readwrite',{durability:'strict'});
+      rows.forEach(row=>tx.objectStore('results').add(row));tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)})}finally{legacy.close()}
+    if((await v.prepareVersionedJournal()).status!=='prepared')throw Error('large preparation failed');
+    const db=await openNative(2),native=IDBDatabase.prototype.transaction,oldGet=IDBObjectStore.prototype.getAll,result={};
+    try{
+      const packed=await v.maintainVersionedJournal(db,rows.slice(0,8).map(row=>row.key),'compact');
+      const newRow={key:prefix+'new',raw:'new result'};
+      const stage=await mod.stageDurableResults([newRow],null);
+      result.large=packed.status==='saved'&&packed.count===8&&stage.status==='saved'&&stage.entries.length===1;
+      let pages=0,bounded=true;
+      IDBObjectStore.prototype.getAll=function(...args){
+        if(this.transaction.db.name===dbName&&this.name==='results'){pages++;if(args[1]!==32)bounded=false}
+        return oldGet.apply(this,args);
+      };
+      let full,slim;
+      try{full=await mod.readDurableJournal();slim=await mod.readDurableHistoryReceipts()}finally{IDBObjectStore.prototype.getAll=oldGet}
+      result.full=full.status==='ready'&&full.entries.length===count+1&&full.entries.slice(0,count).every((row,i)=>
+        row.key===rows[i].key&&row.raw===rows[i].raw&&row.baseProfileRaw===rows[i].baseProfileRaw&&row.state==='settled');
+      result.pages=bounded&&pages===2*(Math.floor((count+1)/32)+1)&&slim.status==='ready'&&slim.entries.length===count&&
+        slim.entries.every(row=>!('baseProfileRaw' in row));
+      let readPages=0,injected=false;
+      IDBObjectStore.prototype.getAll=function(...args){
+        if(this.transaction.db.name===dbName&&this.name==='results'&&++readPages===2){
+          injected=true;
+          const competing=native.call(db,['results',schema.DURABLE_META_STORE],'readwrite',{durability:'strict'});
+          const meta=competing.objectStore(schema.DURABLE_META_STORE),req=meta.get('state');
+          req.onsuccess=()=>{meta.put({...req.result,revision:req.result.revision+1});
+            competing.objectStore('results').add({schemaVersion:1,key:prefix+'race',raw:'competing',baseProfileRaw:null,state:'active'})};
+        }
+        return oldGet.apply(this,args);
+      };
+      let drift;
+      try{drift=await mod.readDurableHistoryReceipts()}finally{IDBObjectStore.prototype.getAll=oldGet}
+      const current=await mod.readDurableJournal();
+      result.drift=injected&&drift.status==='unavailable'&&drift.entries.length===0&&current.status==='ready'&&
+        current.entries.length===count+2;
+      await new Promise((resolve,reject)=>{
+        const tx=native.call(db,['results',schema.DURABLE_META_STORE],'readwrite',{durability:'strict'});
+        const store=tx.objectStore('results'),r=store.get(rows[0].key),meta=tx.objectStore(schema.DURABLE_META_STORE),m=meta.get('state');
+        r.onsuccess=()=>{const value=r.result;new Uint8Array(value.batch.checkpointData)[0]^=255;store.put(value)};
+        m.onsuccess=()=>meta.put({...m.result,revision:m.result.revision+1});
+        tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);
+      });
+      const damaged=await mod.readDurableJournal(),damagedSlim=await mod.readDurableHistoryReceipts();
+      result.corrupt=damaged.status==='unavailable'&&damaged.entries.length===0&&damagedSlim.status==='unavailable'&&damagedSlim.entries.length===0;
+      return result;
+    }finally{IDBDatabase.prototype.transaction=native;IDBObjectStore.prototype.getAll=oldGet;db.close();await resetDB()}
+  })()`);
+  console.log('KEYED_V2_LARGE_SAMPLE',JSON.stringify(keyedV2Large));
+  for(const [flag,label] of [
+    ['large','keyed v2 accepts new training beyond original candidate aggregate limits'],
+    ['full','large v2 mixed history reconstructs every original exactly'],
+    ['pages','large v2 reads remain paged and activity projection omits checkpoints'],
+    ['drift','revision change between v2 pages refuses partial history'],
+    ['corrupt','damaged compressed v2 checkpoint blocks all trusted history views'],
+  ])check(keyedV2Large[flag]===true,label);
+
+  // Activation is intentionally not exposed by the UI. Exercise its guarded
+  // API on an isolated real database with a genuine paid workout and backup.
+  const activation=await js(`(async()=>{
+    const v=await import('/src/lib/durableJournalV2.ts'),p=await import('/src/lib/progression.ts');
+    const {freshGame}=await import('/src/lib/game.ts');
+    const {withProfileWriteLock}=await import('/src/lib/profileLock.ts');
+    const {prepareProgressBackup}=await import('/src/lib/progressBackup.ts');
+    const {prepareWorkoutSession}=await import('/src/lib/workoutJournal.ts');
+    const {replayDurableWorkouts}=await import('/src/lib/durableWorkout.ts');
+    const result={},epoch='bodyforge:pilot:v1:epoch',key='bodyforge:pilot:v1';
+    const local=()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]));
+    async function fixture(){
+      await resetDB();localStorage.clear();
+      const saved=await withProfileWriteLock(async()=>{
+        const profile=p.parseProfile({profileId:'activation-qa',xp:0,coins:0,creditedWorkoutIds:[],workouts:[],
+          game:{...freshGame(),created:true,nickname:'ACTIVATION QA'}});
+        const receipt=p.saveProfile(profile,{expectedRaw:null});
+        if(receipt.status!=='saved')throw Error('activation profile fixture failed');
+        const session=prepareWorkoutSession(receipt.revision,'training');
+        if(session.status!=='ready')throw Error('activation session fixture failed');
+        const completed={...session.session,durationMs:42000,finishedAt:'2026-11-25T10:00:00.000Z',repetitions:20};
+        const replay=await replayDurableWorkouts(completed,{signal:new AbortController().signal,isCurrent:()=>true});
+        if(replay.status!=='saved'||replay.state.profile.xp!==120||replay.state.profile.coins!==35)throw Error('activation paid result fixture failed');
+      });
+      if(saved.status!=='completed')throw Error('activation fixture lock failed');
+      const backup=await prepareProgressBackup(p.loadProfileState().profile,null);
+      const rows=await directRows();
+      if(!backup.complete||rows.length!==1||rows[0].state!=='settled'||!rows[0].baseProfileRaw)throw Error('activation fixture backup incomplete');
+      return {json:backup.json,rows,local:local()};
+    }
+    const f=await fixture(),prepare=()=>v.planJournalActivation(f.json);
+    const initial=await prepare();
+    result.preflight=initial.status==='ready'&&initial.plan.version===1&&initial.plan.records===1&&Object.isFrozen(initial.plan)&&
+      JSON.stringify(await directRows())===JSON.stringify(f.rows)&&local()===f.local;
+    if(initial.status!=='ready')throw Error('activation preflight fixture: '+JSON.stringify(initial));
+    const fake={...initial.plan};
+    result.fake=(await v.activateJournalFromBackup(fake,'activate')).status==='stale';
+    result.cancel=(await v.activateJournalFromBackup(initial.plan,'cancel')).status==='cancelled'&&
+      (await v.activateJournalFromBackup(initial.plan,'activate')).status==='stale';
+    const bad=JSON.parse(f.json);bad.durableResults[0].baseProfileRaw+='changed';
+    const changed=await v.planJournalActivation(JSON.stringify(bad));
+    result.checkpoint=changed.status==='blocked'&&changed.reason==='stale';
+    const incomplete=JSON.parse(f.json);incomplete.complete=false;
+    const pending=JSON.parse(f.json);pending.pendingResult={invalid:true};
+    result.invalid=(await v.planJournalActivation(JSON.stringify(incomplete))).status==='blocked'&&
+      (await v.planJournalActivation(JSON.stringify(pending))).status==='blocked'&&
+      (await v.planJournalActivation('{broken')).status==='blocked';
+    const wrong=JSON.parse(f.json);wrong.storedProfileRaw=JSON.stringify({...JSON.parse(wrong.storedProfileRaw),coins:999});
+    result.wallet=(await v.planJournalActivation(JSON.stringify(wrong))).status==='blocked';
+    const pendingKey=key+':result:qa-block';
+    localStorage.setItem(pendingKey,'opaque');
+    result.pending=(await prepare()).status==='blocked';localStorage.removeItem(pendingKey);
+    localStorage.setItem(key+':replace-pending:v1','opaque');
+    result.replacement=(await prepare()).status==='blocked';localStorage.removeItem(key+':replace-pending:v1');
+    const epochPlan=await prepare();
+    if(epochPlan.status!=='ready')throw Error('epoch fixture failed');
+    localStorage.setItem(epoch,'b5c62a24-a3f1-4ad0-91a6-f38b3bafc0de');
+    result.epoch=(await v.activateJournalFromBackup(epochPlan.plan,'activate')).status==='stale';
+    localStorage.removeItem(epoch);
+    const stale=await prepare();
+    if(stale.status!=='ready')throw Error('stale fixture failed');
+    await directPut({...f.rows[0],baseProfileRaw:f.rows[0].baseProfileRaw+'changed'});
+    result.drift=(await v.activateJournalFromBackup(stale.plan,'activate')).status==='stale'&&
+      (await directRows())[0].baseProfileRaw.endsWith('changed');
+    await directPut(f.rows[0]);
+    const cursorPlan=await prepare();
+    if(cursorPlan.status!=='ready')throw Error('cursor fixture failed');
+    const cursor=IDBObjectStore.prototype.openCursor;
+    let injected=false;
+    IDBObjectStore.prototype.openCursor=function(...args){
+      if(this.name==='results'&&this.transaction.mode==='versionchange'){
+        injected=true;this.put({...f.rows[0],baseProfileRaw:'changed inside versionchange'});
+      }
+      return cursor.apply(this,args);
+    };
+    let conflict;
+    try{conflict=await v.activateJournalFromBackup(cursorPlan.plan,'activate')}finally{IDBObjectStore.prototype.openCursor=cursor}
+    result.transaction=injected&&conflict.status==='stale'&&JSON.stringify(await directRows())===JSON.stringify(f.rows)&&local()===f.local;
+    const blockedPlan=await prepare();
+    if(blockedPlan.status!=='ready')throw Error('blocked fixture failed');
+    const held=await openNative();
+    let blocked;
+    try{blocked=await v.activateJournalFromBackup(blockedPlan.plan,'activate')}finally{held.close()}
+    const still=await openNative();
+    result.blocked=blocked.status==='unavailable'&&still.version===1;still.close();
+    const abortedPlan=await prepare(),abort=new AbortController();
+    if(abortedPlan.status!=='ready')throw Error('abort fixture failed');
+    abort.abort();
+    result.aborted=(await v.activateJournalFromBackup(abortedPlan.plan,'activate',abort.signal)).status==='cancelled';
+    const plan=await prepare();
+    if(plan.status!=='ready')throw Error('activation final fixture failed');
+    const upgraded=await v.activateJournalFromBackup(plan.plan,'activate');
+    const upgradedRows=await mod.readDurableJournal();
+    const db=await openNative(2);
+    try{
+      const meta=await new Promise((resolve,reject)=>{
+        const tx=db.transaction('journal-meta','readonly'),req=tx.objectStore('journal-meta').get('state');
+        tx.oncomplete=()=>resolve(req.result);tx.onabort=()=>reject(tx.error);
+      });
+      result.activate=upgraded.status==='prepared'&&upgraded.versionConfirmed===2&&meta.revision===0&&
+        JSON.stringify(upgradedRows.entries)===JSON.stringify(f.rows.map(({schemaVersion,...row})=>row))&&local()===f.local;
+    }finally{db.close()}
+    result.repeat=(await v.activateJournalFromBackup(plan.plan,'activate')).status==='stale'&&(await prepare()).status==='blocked';
+    const second=await fixture(),readbackPlan=await v.planJournalActivation(second.json);
+    if(readbackPlan.status!=='ready')throw Error('readback fixture failed');
+    const tx=IDBDatabase.prototype.transaction;
+    let fault=false;
+    IDBDatabase.prototype.transaction=function(...args){
+      if(this.name===dbName&&this.version===2&&args[1]==='readonly'){fault=true;throw Error('QA lost readback')}
+      return tx.apply(this,args);
+    };
+    let unverified;
+    try{unverified=await v.activateJournalFromBackup(readbackPlan.plan,'activate')}finally{IDBDatabase.prototype.transaction=tx}
+    const confirmed=await openNative(2);confirmed.close();
+    result.unverified=fault&&unverified.status==='unverified'&&unverified.versionConfirmed===null&&
+      (await mod.readDurableJournal()).entries[0].baseProfileRaw===second.rows[0].baseProfileRaw&&local()===second.local;
+    await resetDB();
+    const absent=await v.planJournalActivation(second.json);
+    result.absent=absent.status==='blocked'&&!(await indexedDB.databases()).some(db=>db.name===dbName)&&local()===second.local;
+    localStorage.clear();return result;
+  })()`);
+  console.log('ACTIVATION_FENCE_SAMPLE',JSON.stringify(activation));
+  for(const [flag,label] of [
+    ['preflight','activation preflight is read-only and binds an immutable plan to exact paid originals'],
+    ['fake','fabricated activation plan has no write authority'],
+    ['cancel','explicit cancel consumes activation plan with no migration'],
+    ['checkpoint','backup checkpoint byte mismatch blocks preparation'],
+    ['invalid','incomplete pending and malformed backup files cannot authorize migration'],
+    ['wallet','different backup wallet is refused'],
+    ['pending','unresolved local workout blocks migration'],
+    ['replacement','interrupted replacement blocks migration'],
+    ['epoch','changed profile lineage invalidates confirmation'],
+    ['drift','changed durable checkpoint invalidates confirmation without overwriting it'],
+    ['transaction','drift inside native versionchange aborts upgrade and original bytes remain exact'],
+    ['blocked','blocked upgrade cannot migrate after caller refusal'],
+    ['aborted','pre-aborted activation cannot migrate'],
+    ['activate','confirmed exact backup activates v2 metadata only and preserves wallet and original rows'],
+    ['repeat','activation token cannot be replayed and v2 cannot issue a legacy plan'],
+    ['unverified','lost post-upgrade readback reports unverified even when native version committed'],
+    ['absent','read-only activation preflight never creates a missing journal'],
+  ])check(activation[flag]===true,label);
   console.log('BODYFORGE_DURABLE_JOURNAL_PASS', JSON.stringify({ assertions, actualIndexedDB: true, strictReadwrite: true }));
 } catch (error) {
   console.error('BODYFORGE_DURABLE_JOURNAL_FAIL', error.stack || String(error)); process.exitCode = 22;

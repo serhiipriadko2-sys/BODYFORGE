@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { parseProfile, PROFILE_BACKUP_KEY, STORAGE_KEY } from './progression';
+import { parseProfile, PROFILE_BACKUP_KEY, PROFILE_REPLACEMENT_MARKER_KEY, STORAGE_KEY } from './progression';
+import { PROFILE_EPOCH_KEY } from './profileEpoch';
 import { AVATAR_LOOK_KEY } from './avatarLook';
 import { APPEARANCE_KEY } from './appearance';
 import { MANUAL_STEPS_KEY } from './stepsLog';
@@ -101,6 +102,52 @@ describe('manual BODYFORGE backup without changing game state', () => {
     expect(inspectProgressBackupJson(prepared.json).state).toBe('invalid');
     expect(setItem).not.toHaveBeenCalled();
     expect(removeItem).not.toHaveBeenCalled();
+  });
+
+  it.each(['already-staged', 'staged-during-read', 'resolved-during-read'] as const)(
+    'labels backup evidence incomplete while replacement is %s', async timing => {
+      if (timing !== 'staged-during-read') values.set(PROFILE_REPLACEMENT_MARKER_KEY, 'staged');
+      vi.mocked(readDurableJournal).mockImplementation(async () => {
+        if (timing === 'staged-during-read') values.set(PROFILE_REPLACEMENT_MARKER_KEY, 'staged');
+        if (timing === 'resolved-during-read') values.delete(PROFILE_REPLACEMENT_MARKER_KEY);
+        return { status: 'ready', entries: [] };
+      });
+      const prepared = await prepareProgressBackup(parseProfile(null), null);
+      expect(prepared.complete).toBe(false);
+      expect(prepared.sourcesChangedDuringRead).toBe(timing !== 'already-staged');
+      expect(JSON.parse(prepared.json).storedProfileRaw).toBe(original.profile);
+      expect(inspectProgressBackupJson(prepared.json).state).toBe('incomplete');
+      expect(setItem).not.toHaveBeenCalled();
+      expect(removeItem).not.toHaveBeenCalled();
+    },
+  );
+
+  it('treats an epoch-only change as a new source revision', async () => {
+    vi.mocked(readDurableJournal).mockImplementation(async () => {
+      values.set(PROFILE_EPOCH_KEY, '00000000-0000-4000-8000-000000000001');
+      return { status: 'ready', entries: [] };
+    });
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    expect(prepared.complete).toBe(false);
+    expect(prepared.sourcesChangedDuringRead).toBe(true);
+    expect(JSON.parse(prepared.json).storedProfileRaw).toBe(original.profile);
+    expect(setItem).not.toHaveBeenCalled();
+  });
+
+  it('keeps readable originals when lineage metadata is malformed or blocked', async () => {
+    values.set(PROFILE_EPOCH_KEY, '{damaged');
+    expect((await prepareProgressBackup(parseProfile(null), null)).complete).toBe(false);
+    const readable = localStorage;
+    vi.stubGlobal('localStorage', {
+      ...readable,
+      getItem(key: string) {
+        if (key === PROFILE_REPLACEMENT_MARKER_KEY) throw new DOMException('blocked', 'SecurityError');
+        return readable.getItem(key);
+      },
+    });
+    const prepared = await prepareProgressBackup(parseProfile(null), null);
+    expect(prepared.complete).toBe(false);
+    expect(JSON.parse(prepared.json).storedProfileRaw).toBe(original.profile);
   });
 
   it('detects a cross-tab mutation while an asynchronous IndexedDB read is in progress', async () => {

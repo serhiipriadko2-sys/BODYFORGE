@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import { createTowerSquatFixture } from './tower-squat-fixture.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
@@ -16,7 +17,8 @@ const infra = message => new InfrastructureError(message);
 let profile, chrome, launchError, browserURL, ws, seq = 0, pageLoads = 0, assertions = 0;
 const requests = new Map(), browserErrors = [];
 const storageKey = 'bodyforge:pilot:v1';
-const finalFloor = process.env.BODYFORGE_QA_TOWER_FINAL === '1';
+const journalV2 = process.argv.includes('--journal-v2');
+const finalFloor = journalV2 || process.env.BODYFORGE_QA_TOWER_FINAL === '1';
 
 async function get(url) {
   let response;
@@ -172,6 +174,200 @@ async function awaitCompletion(label) {
   if(timing.failure)throw infra('Pose fixture timing invalid: '+timing.failure);
   assert(timing.cycles >= 19 && timing.cycles <= 20, 'credit follows the finite timestamp-paced pose sequence');
 }
+
+// The production bundle cannot expose a test-only activation command. This
+// fixture prepares an empty v1 database in the owned browser before training.
+// Actual prepareVersionedJournal is exercised separately by native QA.
+async function prepareQaV2() {
+  const name='bodyforge:durable-results:v1', key='bodyforge:pilot:v1';
+  return navigator.locks.request(key+':write',()=>navigator.locks.request(key+':durable-write',{mode:'exclusive'},()=>new Promise((resolve,reject)=>{
+    let done=false;
+    const finish=(ok,message)=>{
+      if(done)return;
+      done=true;clearTimeout(timer);ok?resolve(true):reject(Error(message));
+    };
+    const timer=setTimeout(()=>finish(false,'QA v2 preparation timed out'),5000);
+    const request=indexedDB.open(name,2);
+    request.onblocked=()=>finish(false,'QA v2 preparation blocked');
+    request.onerror=()=>finish(false,'QA v2 preparation failed');
+    request.onupgradeneeded=event=>{
+      const db=request.result,tx=request.transaction;
+      if(done||event.oldVersion!==1||db.objectStoreNames.length!==1||!db.objectStoreNames.contains('results')){
+        tx.abort();return;
+      }
+      const store=tx.objectStore('results');
+      if(store.keyPath!=='key'||store.autoIncrement||store.indexNames.length){tx.abort();return;}
+      const count=store.count();
+      count.onsuccess=()=>{
+        if(done||count.result!==0){tx.abort();return;}
+        db.createObjectStore('journal-meta',{keyPath:'key'}).add({key:'state',format:'bodyforge-keyed-journal',version:2,revision:0});
+      };
+    };
+    request.onsuccess=()=>{
+      const db=request.result;
+      const valid=db.version===2&&db.objectStoreNames.length===2&&db.objectStoreNames.contains('journal-meta');
+      db.close();finish(valid,'QA unexpected prepared layout');
+    };
+  })));
+}
+async function physicalV2() {
+  const db=await new Promise((resolve,reject)=>{
+    const request=indexedDB.open('bodyforge:durable-results:v1');
+    request.onupgradeneeded=()=>request.transaction.abort();
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+  });
+  try {
+    if(db.version!==2||db.objectStoreNames.length!==2)throw Error('QA expected keyed v2');
+    return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(['results','journal-meta'],'readonly');
+      const rows=tx.objectStore('results').getAll(),meta=tx.objectStore('journal-meta');
+      const marker=meta.get('state'),count=meta.count();
+      tx.oncomplete=()=>{
+        if(count.result!==1||marker.result?.format!=='bodyforge-keyed-journal'||marker.result.version!==2||
+          !Number.isSafeInteger(marker.result.revision)){reject(Error('QA invalid revision'));return;}
+        resolve({marker:marker.result,rows:rows.result.map(row=>row.schemaVersion===2?
+          {...row,batch:{...row.batch,checkpointData:Array.from(new Uint8Array(row.batch.checkpointData))}}:row)});
+      };
+      tx.onabort=tx.onerror=()=>reject(tx.error||Error('QA physical read failed'));
+    });
+  } finally {db.close();}
+}
+const readPhysicalV2=()=>ev('('+physicalV2.toString()+')()');
+const readPair=()=>obj("({primary:localStorage.getItem('bodyforge:pilot:v1'),backup:localStorage.getItem('bodyforge:pilot:v1:backup')})");
+function logicalV2(physical) {
+  return physical.rows.map(row=>{
+    if(row.schemaVersion===1) return {key:row.key,raw:row.raw,baseProfileRaw:row.baseProfileRaw,state:row.state};
+    if(row.schemaVersion!==2)throw Error('QA unknown physical record');
+    const b=row.batch,bytes=Buffer.from(b.checkpointData);
+    const decoded=b.encoding==='gzip-json'?gunzipSync(bytes,{maxOutputLength:2*1024*1024}):
+      b.encoding==='utf8-json'?bytes:null;
+    if(!decoded||decoded.length!==b.decodedBytes||b.rows.length!==1||b.rows[0].key!==row.key)throw Error('QA invalid packed row');
+    const pool=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(decoded)),ref=b.rows[0];
+    const original={key:row.key,raw:ref.raw,baseProfileRaw:ref.checkpoint===null?null:pool[ref.checkpoint],state:'settled'};
+    if(typeof original.baseProfileRaw!=='string'&&original.baseProfileRaw!==null)throw Error('QA invalid original checkpoint');
+    if(sha(Buffer.from(JSON.stringify([original])))!==b.digest||
+       Buffer.byteLength(JSON.stringify([original]))!==b.logicalBytes)throw Error('QA logical digest mismatch');
+    return original;
+  });
+}
+async function reloadV2(label) {
+  const before=pageLoads;
+  await cmd('Page.reload',{ignoreCache:true});
+  const deadline=Date.now()+30000;
+  while(pageLoads<=before){if(Date.now()>deadline)throw infra('QA reload did not complete: '+label);await sleep(100);}
+}
+async function replayAfterWalletRollback(before,next) {
+  const savedPair=await readPair(),physical=await readPhysicalV2(),rows=logicalV2(physical);
+  const recent=next.workouts[0],key=storageKey+':result:'+encodeURIComponent(recent.id);
+  const original=rows.find(row=>row.key===key),packed=physical.rows.find(row=>row.key===key);
+  assert(rows.length===2&&rows.every(row=>row.state==='settled')&&packed?.schemaVersion===2,
+    'normal completion writes a real packed settled checkpoint in production v2');
+  assert(original?.baseProfileRaw===before.primary&&JSON.parse(original.raw).sessionId===recent.id,
+    'packed ordinary workout retains its exact pre-workout checkpoint and identity');
+  assert(rows.every(row=>next.creditedWorkoutIds.includes(JSON.parse(row.raw).sessionId)),
+    'every durable result has its paid identity');
+  assert(savedPair.primary!==before.primary,'fixture has a real completed wallet change');
+  const injection=await cmd('Page.addScriptToEvaluateOnNewDocument',{source:
+    'if(location.origin==='+JSON.stringify(origin)+'){const pair='+JSON.stringify(before)+';'+
+    'for(const [k,v] of [["bodyforge:pilot:v1",pair.primary],["bodyforge:pilot:v1:backup",pair.backup]])'+
+    '{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}window.__bfV2Rollback=true;}'});
+  try {
+    await reloadV2('wallet rollback');
+    await until("window.__bfV2Rollback===true && !!document.querySelector('.app-shell')",'rollback fixture loaded',30000);
+  } finally {await cmd('Page.removeScriptToEvaluateOnNewDocument',{identifier:injection.identifier});}
+  await until("(()=>{const p=JSON.parse(localStorage.getItem('bodyforge:pilot:v1')||'{}');return p.xp===305&&p.coins===100&&p.workouts?.length===2&&!document.querySelector('[data-storage-status]')})()",'automatic durable replay after rollback',30000);
+  assert(JSON.stringify(await readPair())===JSON.stringify(savedPair),'automatic replay restores exact primary and backup bytes once');
+  assert(JSON.stringify(await readPhysicalV2())===JSON.stringify(physical),'replay never rewrites settled packed bytes or revision');
+  assert(await ev("!Object.keys(localStorage).some(k=>k.startsWith('bodyforge:pilot:v1:result:'))"),'replay removes only acknowledged pending local results');
+  return physical;
+}
+async function openBackupV2() {
+  await click('.mobile-nav button:nth-child(6)');
+  await until("!!document.querySelector('#progress-backup [data-action=inspect-progress-file]')",'backup UI mounted',30000);
+  await ev("document.querySelector('.progress-backup-file-checker').open=true;true");
+}
+async function selectV2File(json,gzip) {
+  const input=document.querySelector('[data-action=inspect-progress-file]');
+  const data=gzip?await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))).blob():json;
+  const file=new File([data],gzip?'keyed-v2.json.gz':'keyed-v2.json',{type:gzip?'application/gzip':'application/json'});
+  const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));
+  return true;
+}
+async function chooseV2File(json,gzip=false) {
+  await ev('('+selectV2File.toString()+')('+JSON.stringify(json)+','+JSON.stringify(gzip)+')');
+  await until("document.querySelector('[data-import-preview]')?.dataset.importPreview==='preview-ready'",'v2 backup preview ready',30000);
+}
+async function verifyV2BackupAndRestore() {
+  const physical=await readPhysicalV2(),originals=logicalV2(physical),before=await readPair();
+  assert(physical.rows.some(row=>row.schemaVersion===2)&&originals.length===2,'backup uses mixed journal with a compact result');
+  await openBackupV2();
+  // Capture the real second-click Blob, never download into owner Downloads.
+  await ev("(function(){const create=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;window.__bfV2Blobs=new Map();window.__bfV2RestoreHooks=()=>{URL.createObjectURL=create;HTMLAnchorElement.prototype.click=click};URL.createObjectURL=function(b){const u=create.call(URL,b);if(b.type.includes('application/json'))__bfV2Blobs.set(u,b);return u};HTMLAnchorElement.prototype.click=function(){if(this.download.startsWith('bodyforge-backup-')){window.__bfV2Export=__bfV2Blobs.get(this.href);return}return click.call(this)};return true})()");
+  let payload;
+  try {
+    await click('[data-action=prepare-progress]');
+    await until("document.querySelector('#progress-backup')?.dataset.backupStage==='ready'",'complete backup assembled',30000);
+    await click('[data-action=download-progress]');
+    const json=await ev('window.__bfV2Export.text()');
+    payload=JSON.parse(json);
+    assert(payload.complete===true&&payload.exportSchemaVersion===1&&payload.durableReadStatus==='ready',
+      'v2 exports the supported complete logical v1 backup envelope');
+    assert(payload.storedProfileRaw===before.primary&&payload.storedBackupRaw===before.backup&&
+      JSON.stringify(payload.durableResults)===JSON.stringify(originals),
+      'actual downloaded backup contains exact logical originals, independently decoded from physical records');
+    await chooseV2File(json);
+    await click('[data-action=cancel-import-preview]');
+    await until("document.querySelector('[data-inspection-state]')?.dataset.inspectionState==='idle'",'export preview cancelled');
+  } finally {await ev("window.__bfV2RestoreHooks?.();delete window.__bfV2RestoreHooks;delete window.__bfV2Blobs;delete window.__bfV2Export;true");}
+  assert(JSON.stringify(await readPair())===JSON.stringify(before)&&JSON.stringify(await readPhysicalV2())===JSON.stringify(physical),
+    'backup and file preview do not alter wallet or packed journal');
+  // Same paid identity and complete history, different display nickname.
+  // This is a local synthetic replacement, never an externally granted reward.
+  const profile=JSON.parse(payload.storedProfileRaw);
+  profile.game.nickname='QA V2';
+  const candidate={...payload,storedProfileRaw:JSON.stringify(profile)},json=JSON.stringify(candidate);
+  assert(candidate.storedProfileRaw!==before.primary,'replacement fixture differs only in the saved nickname');
+  async function stage(gzip) {
+    await chooseV2File(json,gzip);
+    await until("!!document.querySelector('[data-action=request-file-replacement]:enabled')",'replacement eligible',30000);
+    await click('[data-action=request-file-replacement]');
+    await click('[data-action=confirm-file-replacement]');
+    await until("document.querySelector('[data-replacement-recovery]')?.dataset.replacementRecovery==='applied'",'verified replacement recovery',30000);
+    assert(JSON.stringify(await readPair())===JSON.stringify({primary:candidate.storedProfileRaw,backup:candidate.storedBackupRaw})&&
+      await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')!==null"),
+      'explicit replacement stages exact imported pair and recovery marker');
+    assert(JSON.stringify(await readPhysicalV2())===JSON.stringify(physical),'profile replacement leaves all packed physical records exact');
+  }
+  async function decide(action) {
+    await until("!!document.querySelector('[data-action=request-replacement-"+action+"]:enabled')",'recovery decision '+action,30000);
+    await click('[data-action=request-replacement-'+action+']');
+    await click('[data-action=confirm-replacement-'+action+']');
+    await until("!!document.querySelector('[data-action=open-restored-profile]')",'verified recovery decision',30000);
+    await click('[data-action=open-restored-profile]');
+    await until("document.querySelector('.app-shell')?.dataset.fighterCreated==='true' && !document.querySelector('[data-storage-status]')",'recovered app hydrated',30000);
+    await reloadV2(action);
+    await until("document.querySelector('.app-shell')?.dataset.fighterCreated==='true' && !document.querySelector('[data-storage-status]')",'recovered app reloaded',30000);
+  }
+  await stage(false);
+  await reloadV2('pending replacement');
+  await decide('rollback');
+  assert(JSON.stringify(await readPair())===JSON.stringify(before)&&JSON.stringify(await readPhysicalV2())===JSON.stringify(physical)&&
+    await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null"),
+    'restart and explicit rollback restore exact original pair and journal');
+  await openBackupV2();
+  await stage(true);
+  await decide('keep');
+  const adopted=await readProfile();
+  assert(JSON.stringify(await readPair())===JSON.stringify({primary:candidate.storedProfileRaw,backup:candidate.storedBackupRaw})&&
+    adopted.xp===360&&adopted.coins===120&&adopted.workouts.length===2&&adopted.creditedWorkoutIds.length===2,
+    'confirmed gzip replacement survives reload without extra rewards');
+  assert(JSON.stringify(await readPhysicalV2())===JSON.stringify(physical)&&
+    await ev("localStorage.getItem('bodyforge:pilot:v1:replace-pending:v1')===null && typeof localStorage.getItem('bodyforge:pilot:v1:epoch')==='string'"),
+    'finalized replacement preserves packed journal and activates only the confirmed profile epoch');
+  console.log('BODYFORGE_KEYED_V2_GAME_FLOW_PASS',JSON.stringify({rows:originals.length,packed:physical.rows.filter(row=>row.schemaVersion===2).length,
+    revision:physical.marker.revision,xp:adopted.xp,coins:adopted.coins,workouts:adopted.workouts.length}));
+}
+
 async function closeOwned() {
   ws?.close();
   let failed=false;
@@ -213,6 +409,7 @@ async function closeOwned() {
 }
 try {
   const build=await resolveBuild();
+  if(journalV2&&!build.entry)throw infra('Keyed v2 game flow requires a pinned production preview');
   ws=await ownChrome();
   ws.addEventListener('close',()=>{for(const req of requests.values())req.reject(infra('CDP disconnected'));requests.clear();});
   ws.addEventListener('error',()=>{for(const req of requests.values())req.reject(infra('CDP socket error'));requests.clear();});
@@ -245,6 +442,12 @@ try {
     while(pageLoads<=beforeLoad){if(Date.now()>reloadDeadline)throw infra('Final-floor fixture reload did not complete');await sleep(100);}
     await until("document.querySelector('.app-shell')?.dataset.fighterCreated==='true'",'final-floor fixture hydrated',30000);
     assert((await readProfile()).game.highestClearedFloor===4,'disposable final-floor fixture starts at four');
+  }
+  if(journalV2) {
+    await until("!document.querySelector('[data-storage-status]')",'clean profile before QA preparation',30000);
+    assert(await ev('('+prepareQaV2.toString()+')()'),'owned empty v1 database prepared with keyed v2 layout');
+    const prepared=await readPhysicalV2();
+    assert(prepared.marker.revision===0&&prepared.rows.length===0,'v2 fixture starts without fabricated workout evidence');
   }
   assert(await installFixture(build.pose),'synthetic pose stream installed in actual lazy module');
   await click('.mobile-nav button:nth-child(4)');
@@ -285,6 +488,7 @@ try {
     await until("!document.querySelector('.live-tag') && window.__bfPose.tracks.every(t=>t.readyState==='ended')",'partial workout stopped and camera released');
     assert(await ev("localStorage.getItem('bodyforge:pilot:v1')")===afterWin,'stopped partial workout changes no profile bytes');
     assert(await ev("!Object.keys(localStorage).some(k=>k.startsWith('bodyforge:pilot:v1:result:'))"),'stopped partial workout creates no pending local result');
+    const beforeSecond=journalV2?await readPair():null;
     await ev('window.__bfPose.used=0');
     await click('#challenge button.primary-button');
     await awaitCompletion('ordinary training after tower');
@@ -296,6 +500,7 @@ try {
     assert(trainingGrants?.length===1 && trainingGrants[0].sourceType==='workout-base' &&
       trainingGrants[0].xpDelta===120 && trainingGrants[0].coinDelta===35,
     'ordinary retry records only the award it actually paid');
+    if(journalV2)await replayAfterWalletRollback(beforeSecond,next);
   }
   await click('.mobile-nav button:nth-child(4)');
   if(finalFloor)assert(await ev("document.querySelector('#tower .forge-solid-button')?.disabled===true"),'completed tower cannot start another floor');
@@ -319,6 +524,7 @@ try {
   await click('.mobile-nav button:nth-child(1)');
   await until('document.querySelector('+JSON.stringify(quest)+')?.disabled===true','claim stays disabled after reload');
   assert(await ev("localStorage.getItem('bodyforge:pilot:v1')")===raw,'reload preserves exact wallet, reward ID and history');
+  if(journalV2)await verifyV2BackupAndRestore();
   assert(browserErrors.length===0,'no uncaught browser exceptions');
   console.log('BODYFORGE_TOWER_20REPS_E2E_PASS assertions='+assertions);
 } catch(error) {

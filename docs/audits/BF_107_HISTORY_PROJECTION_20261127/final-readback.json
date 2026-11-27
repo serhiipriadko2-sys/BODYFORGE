@@ -1,0 +1,143 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "frozenHead": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "observed": "2026-11-27T14:37:47.597840+03:00",
+  "sourceCount": 352,
+  "buildCount": 74,
+  "sourceManifestSha256": "897bb6b2fd52f0b01608be3df66a4fb4343e9533854cda0d8edb48d5ead157da",
+  "buildManifestSha256": "951ad3790113ce21963dc4ac831d39bfaf180bfcb7d94d881855e5262f4c90db",
+  "ownedHashesMatch": true,
+  "liveChangedPaths": [
+    "qa/import-preview-e2e.mjs",
+    "src/components/ProgressBackupPanel.tsx",
+    "src/lib/avatarPhysique.ts",
+    "src/lib/avatarScanTorsoRelief.test.ts",
+    "src/lib/profileReplacement.ts",
+    "src/lib/profileReplacementRecovery.test.ts",
+    "src/lib/profileReplacementRecovery.ts"
+  ],
+  "liveNewPaths": [
+    "qa/avatar-scan-torso-field-qc.mjs"
+  ],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 85,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "largeHistory": {
+    "stage": true,
+    "pageBound": true,
+    "pages": 129,
+    "maxPage": 32,
+    "elapsedMs": 87,
+    "full": true,
+    "fullPages": true,
+    "slim": true,
+    "slimPages": true,
+    "fullJsonBytes": 19952627,
+    "receiptJsonBytes": 360131,
+    "count": 4105,
+    "logicalBaselineBytes": 19501560,
+    "retained": true,
+    "damage": true,
+    "cancel": true,
+    "noPartial": true,
+    "slimCancel": true,
+    "slimQuarantine": true
+  },
+  "activityProjection": {
+    "complete": true,
+    "exact": true,
+    "noWrites": true,
+    "cancel": true
+  },
+  "bundle": {
+    "entryBytes": 394968,
+    "entryGzipBytes": 120966,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 101793,
+    "entryReductionPercent": 20.5,
+    "entryName": "index-BuWYjnZA.js",
+    "poseName": "vision_bundle-D8BN1mF3.js"
+  },
+  "entrySha256": "d1c4d64f41f30753dfe9bf7e8ff9778fca406aaf34aa6c7aa85ed72863cf9ba6",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89216,
+      "sha256": "21aeff15b27198fa3bcdb4914d2ac6d1a262166bf1e556304dc6d71b4c7ce867",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204579,
+      "sha256": "f17eb139e1c446d32dd4800fbac9e47ac18dd84607a1cc43585e3f9ce2803d91",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195494,
+      "sha256": "323b5dd465340ab9f1ee7655fbfb95218cae1cdfd49802eb6f1b3f187d3b98b0",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 93512,
+      "sha256": "76c3882c0979a8507048821da7d72acfebc1b30a6fdefe3fbe1070edb23fc7c0",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93540,
+      "sha256": "f117337a2f1cf8a80d466459f67076918352c79fabc47a5349ccdcda2a249e96",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91532,
+      "sha256": "8bf87c3973656f5086cc2c278b686c3d00a9a4b658581d6dd95b4866a26c2b83",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "acceptance": "TESTED_LOCAL"
+}

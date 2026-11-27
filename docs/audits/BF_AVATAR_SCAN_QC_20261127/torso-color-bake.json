@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "scope": "Local high-pass scan photo transfer only; no calibrated albedo or artistic acceptance",
+  "source": "Body scan by Artec 3D https://www.artec3d.com/3d-models/body-scan",
+  "license": "ZIP CC BY 3.0; page CC BY 4.0; do not distribute until resolved",
+  "texelsChanged": 353443,
+  "protectedTexels": 2239538,
+  "meanLinearChange": 0.004891816060990095,
+  "maxWeight": 0.8999999761581421,
+  "outsideReloadMean": 0.0,
+  "outsideReloadMax": 0.0,
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "bytes": 3854848,
+  "sha256": "d36c1235f1adaf4bd5e32fadf641d2b225c38a27eaf147ac070000545208e364",
+  "previewSha256": "9663e011b147f7fdd1d84a2e7396dc6b70b7843c740ab116686aa955cf1bf911"
+}

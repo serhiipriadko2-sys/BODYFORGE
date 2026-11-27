@@ -1,0 +1,2 @@
+﻿src/lib/durableJournal.ts(106,24): error TS6133: 'value' is declared but its value is never read.
+src/lib/durableJournal.ts(107,39): error TS2448: Block-scoped variable 'value' used before its declaration.

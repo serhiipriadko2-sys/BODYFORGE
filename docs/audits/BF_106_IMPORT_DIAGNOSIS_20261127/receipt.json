@@ -1,0 +1,285 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "commands": {
+    "ready-0": {
+      "exit": 0,
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+      ]
+    },
+    "file-import": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/import-preview-e2e.mjs"
+      ]
+    },
+    "epoch": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/workout-epoch-e2e.mjs"
+      ]
+    },
+    "replacement": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/profile-replacement-e2e.mjs"
+      ]
+    },
+    "privacy": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/privacy-server-e2e.mjs"
+      ]
+    },
+    "dedup": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "unit": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ]
+    },
+    "build": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-file-recovery-final-1127\\dist"
+      ]
+    },
+    "bundle": {
+      "exit": 0,
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ]
+    },
+    "tower20": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/tower20-e2e.mjs"
+      ]
+    },
+    "mobile": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/mobile-e2e.mjs"
+      ]
+    }
+  },
+  "preview": {
+    "url": "http://127.0.0.1:50189",
+    "http": 200,
+    "entry": "/assets/index-D-PzVzr2.js",
+    "bytes": 383784,
+    "sha256": "9847fd8913ba3a0f1b8ce393eedc3366bb21909d850db1919a5396083d5c08c9"
+  },
+  "drift": [],
+  "diffCheck": 0,
+  "gitHeadAfter": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "files": {
+    "src/lib/profileReplacement.ts": {
+      "bytes": 20625,
+      "sha256": "537a22e17f2c3dda0cb4804aace978dd94e3569b302d203011c8159f66e507ed"
+    },
+    "src/lib/profileReplacementRecovery.ts": {
+      "bytes": 8695,
+      "sha256": "b8ca5311e7cd68ba2255aa2ccaf3fa20e498b1e6201412b08f019153ebfeec20"
+    },
+    "src/components/ProgressBackupPanel.tsx": {
+      "bytes": 31376,
+      "sha256": "b3cff6cdbfc159d18306d5aee0efac5edf0cafcb40a202f2589bf1c9b3e00edf"
+    },
+    "src/lib/profileReplacementRecovery.test.ts": {
+      "bytes": 9262,
+      "sha256": "0ae1fd2915f8adc81f7ba4d4726ab23b290b8cea333211f7b3613e3ef850aa15"
+    },
+    "qa/import-preview-e2e.mjs": {
+      "bytes": 24728,
+      "sha256": "0b20ee5d55e74589152b31c3a0fe98d0fea55f0b19ef26abe2936a397ba372d7"
+    },
+    "qa/mobile-e2e.mjs": {
+      "bytes": 56076,
+      "sha256": "f2954f65ad73453bac82965e36b3f9393a1188e339a3ffef95185e3e105be880"
+    },
+    "src/components/ReplacementRecoveryPanel.tsx": {
+      "bytes": 7399,
+      "sha256": "6bc4cf1087fe75dcef4a904c253cd2c8310d21d540d6cb2fde56b8d7933a0746"
+    }
+  },
+  "diff": {
+    "bytes": 25941,
+    "sha256": "ee93334df36ef7c40a21a58b75805631fac08ca70178189ce80ac68531464ffa"
+  },
+  "reverseCheck": 0,
+  "scope": "Replacement eligibility messages from the existing plan guards. Recovery resumes its read when the startup write guard unblocks.",
+  "references": [
+    "https://www.w3.org/WAI/WCAG22/Understanding/error-identification",
+    "https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA22.html"
+  ],
+  "limits": "Local desktop Chrome and disposable data only. ADB devices returned an empty list. Cross-device migration with different journals remains outside this flow.",
+  "evidence": {
+    "bf106-file-recovery-final-1127/build.log": {
+      "bytes": 4489,
+      "sha256": "b21725b1c3e623d7335984f66773d4f9571bf5ea75b29ec942324ce82d177b79",
+      "summary": []
+    },
+    "bf106-file-recovery-final-1127/bundle.log": {
+      "bytes": 281,
+      "sha256": "80dfe8107a0794642b9f4886d46dcac066269987802c85d7338a34e754407bab",
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":383784,\"entryGzipBytes\":117795,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":112977,\"entryReductionPercent\":22.7,\"entryName\":\"index-D-PzVzr2.js\",\"poseName\":\"vision_bundle-DJAZCXX7.js\"}"
+      ]
+    },
+    "bf106-file-recovery-final-1127/dedup.log": {
+      "bytes": 3067,
+      "sha256": "b56d2c65beccb5baeb25ffb43842f20ba8fd9a84af89b507c53077f7edab2a52",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":34,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-final-1127/epoch.log": {
+      "bytes": 1749,
+      "sha256": "6cb33c1ec0172569d1d54a6733f0ec11cb53e68e3fa973faee69ce92377267e5",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-final-1127/file-import.log": {
+      "bytes": 2972,
+      "sha256": "f70f523f38899dd5a8d11f6d96cbd4beb089ca5b79f0a394aac5dee229618646",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=50",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-final-1127/mobile.log": {
+      "bytes": 10259,
+      "sha256": "d82fdf98089ea21a1e341819ecc186c14ea993eabb81a1c4234df7dc1ecb7e5e",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "bf106-file-recovery-final-1127/privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "bf106-file-recovery-final-1127/production-file.log": {
+      "bytes": 943,
+      "sha256": "2779245544d4635eaf9f2bac912b0bf45058993716030621832405160e128d08",
+      "summary": [
+        "PASS mismatched paid history blocks confirmation in production",
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=13",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-final-1127/ready-0.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "bf106-file-recovery-final-1127/replacement.log": {
+      "bytes": 4005,
+      "sha256": "212d9a8201d1829c01f6bb00b3082c78079a2a13963dd7571521e97a6d6199d5",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-final-1127/tower20.log": {
+      "bytes": 1876,
+      "sha256": "28b1f3eece215f03f3a145f5e390a8cfdca9a23748f2ca5a6e313aa6b3824cd9",
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "bf106-file-recovery-final-1127/unit.log": {
+      "bytes": 491,
+      "sha256": "d391f5ffc06b1ccca5742e82166180e531aa0b534331592df3217b98845eba62",
+      "summary": [
+        "Tests  1175 passed (1175)"
+      ]
+    },
+    "bf106-file-red-reasons-1127/file-import.log": {
+      "bytes": 1565,
+      "sha256": "e213f38b1894e903b174b811d0ea6715d287bfa084c73ad6a60bcf98cc62e940",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_FAIL Error: TIMEOUT visible import block incoming-pending",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-reasons-1127/file-import.log": {
+      "bytes": 2884,
+      "sha256": "7c30ae25f8d58802dcbe7a29cc333d11067a8cd18fa0cd6dc0344bf1138b6244",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_FAIL Error: TIMEOUT same paid file in gzip can be selected again",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-red-recovery-1127/file-import.log": {
+      "bytes": 2758,
+      "sha256": "547530c87cfa0ef170e6e1f5ea6a59a64882c9c839ce319c01528e7a18fee4ad",
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_FAIL Error: TIMEOUT recovery reads staged copy automatically after startup unlocks",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-reasons-retry-1127/production-file.log": {
+      "bytes": 952,
+      "sha256": "363b40460a50d724d58fbd453219819243d9c66031b6fb272dee39c1c756d141",
+      "summary": [
+        "PASS mismatched paid history blocks confirmation in production",
+        "BODYFORGE_IMPORT_PREVIEW_E2E_FAIL Error: TIMEOUT recovery from staged file",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-reasons-retry-1127/mobile.log": {
+      "bytes": 8931,
+      "sha256": "6c09cd362736ed2b83738a447ce49510fdaddae4f3959fbf61e5a6b77ebb2367",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_FAIL Error: FAIL daily login reward once"
+      ]
+    }
+  },
+  "productionSmoke": "Production Chrome verified mismatched paid history blocks confirmation, then complete acceptance and reload of a compatible file.",
+  "mobileFirstFailure": "The initial mobile test read localStorage immediately after a daily login click. UI already displayed 10 coins. The revised test waits for the actual persistent wallet and claim date before inspecting the snapshot.",
+  "recoveryRed": "Owned second tab held the profile lock across reload. Original panel stayed in checking after lock release. The final test requires an enabled keep button and an exact retained marker before any decision.",
+  "screenshot": {
+    "bytes": 139209,
+    "sha256": "a7286fe9ea28a3d77a9bf4b557079edace94c76009d550fe0b5355ca3c5a2285"
+  }
+}

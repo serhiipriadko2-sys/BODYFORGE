@@ -1,0 +1,117 @@
+
+type Match = 'match' | 'stale' | 'unavailable';
+function matchesProofRow(proof: JournalActivationProof, row: DurableJournalEntry): boolean {
+  const expected = proof.rows.get(row.key);
+  return !!expected && sameRow(row,expected);
+}
+
+/** Open only the existing legacy database. A missing DB must not be created
+ * by an ostensibly read-only preflight, even if its open arrives late. */
+function matchLegacyJournal(proof: JournalActivationProof, signal?: AbortSignal): Promise<Match> {
+  return new Promise(resolve => {
+    if (signal?.aborted || typeof indexedDB === 'undefined') { resolve('unavailable'); return; }
+    let done = false, db: IDBDatabase | undefined, tx: IDBTransaction | undefined;
+    const finish = (status: Match) => {
+      if (done) return;
+      done = true; clearTimeout(timer); signal?.removeEventListener('abort',cancel); db?.close(); resolve(status);
+    };
+    const cancel = () => { try { tx?.abort(); } catch { /* readonly */ } finish('unavailable'); };
+    const timer = setTimeout(cancel,TX_TIMEOUT);
+    signal?.addEventListener('abort',cancel,{once:true});
+    try {
+      const request = indexedDB.open(DURABLE_JOURNAL_DATABASE);
+      request.onblocked = () => finish('unavailable');
+      request.onerror = () => finish('unavailable');
+      request.onupgradeneeded = () => { request.transaction?.abort(); finish('unavailable'); };
+      request.onsuccess = () => {
+        db = request.result;
+        db.onversionchange = () => db?.close();
+        if (done) { db.close(); return; }
+        try {
+          if (signal?.aborted) { finish('unavailable'); return; }
+          if (db.version !== 1 || db.objectStoreNames.length !== 1 || !db.objectStoreNames.contains(DURABLE_RESULT_STORE)) {
+            finish('stale'); return;
+          }
+          tx = db.transaction(DURABLE_RESULT_STORE,'readonly');
+          const store = tx.objectStore(DURABLE_RESULT_STORE);
+          if (!storeShape(store)) { tx.abort(); finish('stale'); return; }
+          let count = 0, matched = false;
+          tx.onabort = tx.onerror = () => finish('unavailable');
+          tx.oncomplete = () => finish(signal?.aborted ? 'unavailable' : matched && proof.matchesLocal() ? 'match' : 'stale');
+          const cursor = store.openCursor();
+          cursor.onsuccess = () => {
+            try {
+              if (done || signal?.aborted) { cancel(); return; }
+              const next = cursor.result;
+              if (!next) { matched = count === proof.rows.size; return; }
+              const row = original(next.value);
+              if (!row || !matchesProofRow(proof,row)) return;
+              count++; next.continue();
+            } catch { cancel(); }
+          };
+        } catch { cancel(); }
+      };
+    } catch { cancel(); }
+  });
+}
+
+export interface JournalActivationPlan {
+  readonly kind: 'bodyforge-journal-v2-plan';
+  readonly version: 1;
+  readonly records: number;
+  readonly backupBytes: number;
+}
+export type JournalActivationPreparation =
+  {status:'ready';plan:JournalActivationPlan} |
+  {status:'blocked';reason:'local-not-quiet'|'backup-invalid'|'backup-differs'|'paid-history-unproven'|'stale'|'unavailable'};
+export type JournalActivationResult =
+  {status:'prepared'|'already-prepared';versionConfirmed:2} |
+  {status:'cancelled'|'stale'|'unavailable'|'unverified';versionConfirmed:null};
+const activationPlans = new WeakMap<JournalActivationPlan,JournalActivationProof>();
+const activationFailure = (status: Extract<JournalActivationResult,{versionConfirmed:null}>['status']): JournalActivationResult =>
+  ({status,versionConfirmed:null});
+
+/** No UI caller until field acceptance. The input is the JSON of an explicitly
+ * selected, bounded backup. Never infer that a download reached disk. */
+export async function planJournalActivation(json: string, signal?: AbortSignal): Promise<JournalActivationPreparation> {
+  const result = await withProfileWriteLock(() => withDurableJournalGate('exclusive',async(): Promise<JournalActivationPreparation> => {
+    if (signal?.aborted) return {status:'blocked',reason:'unavailable'};
+    const verified = await proveJournalActivation(json,signal);
+    if (verified.status !== 'ready') return verified;
+    const proof = verified.proof;
+    const match = await matchLegacyJournal(proof,signal);
+    if (match !== 'match') return {status:'blocked',reason:match};
+    if (signal?.aborted || !proof.matchesLocal()) return {status:'blocked',reason:'stale'};
+    const plan: JournalActivationPlan = Object.freeze({kind:'bodyforge-journal-v2-plan',version:1,
+      records:proof.rows.size,backupBytes:proof.bytes});
+    activationPlans.set(plan,proof);
+    return {status:'ready',plan};
+  },{signal}),{signal});
+  return result.status==='completed' && result.value.status==='completed' ? result.value.value :
+    {status:'blocked',reason:'unavailable'};
+}
+
+/** Single-use in-memory plan, explicit decision, ordered locks and exact
+ * original comparison INSIDE versionchange. A stale plan never writes.
+ * A committed but unconfirmed change is unverified, not "rolled back".
+ * The caller must be quiescent (no RAM-only workout), and must obtain field
+ * approval before exposing this irreversible version change to owner data. */
+export async function activateJournalFromBackup(plan: JournalActivationPlan, decision: 'activate'|'cancel',
+  signal?: AbortSignal): Promise<JournalActivationResult> {
+  const proof = activationPlans.get(plan);
+  if (!proof) return activationFailure('stale');
+  activationPlans.delete(plan);
+  if (decision !== 'activate' || signal?.aborted) return activationFailure('cancelled');
+  const result = await withProfileWriteLock(() => withDurableJournalGate('exclusive',async(): Promise<JournalActivationResult> => {
+    if (signal?.aborted) return activationFailure('cancelled');
+    if (!proof.matchesLocal()) return activationFailure('stale');
+    const match = await matchLegacyJournal(proof,signal);
+    if (match !== 'match') return activationFailure(signal?.aborted?'cancelled':match);
+    if (signal?.aborted) return activationFailure('cancelled');
+    if (!proof.matchesLocal()) return activationFailure('stale');
+    const upgraded = await upgrade(signal,proof);
+    return upgraded.status==='invalid' ? activationFailure('stale') : upgraded;
+  },{signal}),{signal});
+  return result.status==='completed' && result.value.status==='completed' ? result.value.value :
+    activationFailure(signal?.aborted?'cancelled':'unavailable');
+}

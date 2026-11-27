@@ -1,0 +1,377 @@
+[
+    {
+        "path":  ".gitignore",
+        "bytes":  635,
+        "sha256":  "fe4762b5edb38bd4f89a79b7e7f4e304160d50f65c20f924076c0ecc552f116e"
+    },
+    {
+        "path":  "src\\lib\\avatarPhysique.ts",
+        "bytes":  5564,
+        "sha256":  "e8d8f7b25b55596edf580edc9c74bccab5ce87a0420cbe2cb5e0a2f2d20f34e1"
+    },
+    {
+        "path":  "src\\lib\\avatarScanTorsoRelief.test.ts",
+        "bytes":  7173,
+        "sha256":  "e141448f295912ad4a06015d99e3d5bb80f449de6691effb330bf9e088d79841"
+    },
+    {
+        "path":  "src\\components\\Avatar3D.tsx",
+        "bytes":  65050,
+        "sha256":  "282ea555e2f882d70f161fb1ab44cc27a1a9c2cb329e965957da1a62dda7d09f"
+    },
+    {
+        "path":  "qa\\avatar-quality-e2e.mjs",
+        "bytes":  118667,
+        "sha256":  "16db0f508f83cf6882ba967fa1d82467c3c46bc442428d85c53e10bec31c1884"
+    },
+    {
+        "path":  "qa\\avatar-scan-torso-field-qc.mjs",
+        "bytes":  4731,
+        "sha256":  "2e6f8bac0e4be2e8969dd4a80820ce03442aeec791fc78028a7f2c967241c3f1"
+    },
+    {
+        "path":  "scripts\\bake-avatar-torso-photo-review.py",
+        "bytes":  10661,
+        "sha256":  "313e5e5ec1fdc24db6d5db9e1c9664199d92a43dee48e685369a9f3aa1dcabe7"
+    },
+    {
+        "path":  "scripts\\bake-avatar-torso-normal-review.py",
+        "bytes":  9627,
+        "sha256":  "76971706f50a048db01302031c7655a2b86b21c1a64c2dac77574552eef6854c"
+    },
+    {
+        "path":  "src\\lib\\athlete-torso-color-review.png",
+        "bytes":  3854848,
+        "sha256":  "d36c1235f1adaf4bd5e32fadf641d2b225c38a27eaf147ac070000545208e364"
+    },
+    {
+        "path":  "src\\lib\\athlete-torso-normal-review.png",
+        "bytes":  298089,
+        "sha256":  "a0f81449d6c17b57047b6da5da7143711ece49c960ab09004c54ff4b49f8e159"
+    },
+    {
+        "path":  "public\\assets\\bodyforge-athlete-efficient.glb",
+        "bytes":  4639184,
+        "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+        "path":  ".bodyforge-qa\\scan-torso-textured-review.blend",
+        "bytes":  13093268,
+        "sha256":  "9057d807f671e24b45b5676f376dd05108dbe388efc6da0d05c7028638c10b8a"
+    },
+    {
+        "path":  ".bodyforge-qa\\scan-reference-artec\\ATTRIBUTION.txt",
+        "bytes":  679,
+        "sha256":  "8f7785fe96a783d7095b10826aefb1f5d3c22d719d0106f919446c75169f90fd"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-max.log",
+        "bytes":  2949,
+        "sha256":  "31df6903de046602268220b1f1fa97c8eac1a9ea5461a684e9210a8171c3348a"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-neutral.log",
+        "bytes":  3017,
+        "sha256":  "4f03d10bd2fce879832eb08222944c0fafaadf143224ab51645eb56db91fe516"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\blender-reopen.log",
+        "bytes":  572,
+        "sha256":  "3d136ea4c98df7c246f16350bb30046e56bd469dfd8100d240c5025eb7d49543"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\build-final.log",
+        "bytes":  3100,
+        "sha256":  "cf8a6bbc28e2a3575cb0ce6c29f186d53582b4bc66b1d1f0ebe1d619c3e027db"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\build-photo.log",
+        "bytes":  2690,
+        "sha256":  "66ae6ca78b05f8201719fefd1524a55c31a795ffa983d54a34013ac2b7970c8a"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\build.log",
+        "bytes":  2690,
+        "sha256":  "72bac7c518843a1fc9b3165a048dd48edb74f3d0794461b2395734bb6217fbf7"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\comparison-complete.png",
+        "bytes":  1302944,
+        "sha256":  "a9b987af34f44745eea5f2973dbb1186d6b5fb0a0e69b71aae1d9a00b88c76aa"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-fallback.log",
+        "bytes":  3122,
+        "sha256":  "aa7f39e3151e8097253758122c96f00e925f7d656915a37ac81895f99dc7f4c4"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-max.log",
+        "bytes":  2983,
+        "sha256":  "2899b440328a664439bcfc86545e779b2f7e2304de0e0db438f7a5e92942b393"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-neutral.log",
+        "bytes":  3051,
+        "sha256":  "1bde2ee3264ca043c91870e0e7ee2f5b742cae6af8a0a23d92c4b7a6df0b4687"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\field-qc.json",
+        "bytes":  4024,
+        "sha256":  "bda94f2a406c6be2e7ad2c21746c5013e52a5757c012a0c0798da0c94a5fb5bc"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\field-qc.log",
+        "bytes":  4524,
+        "sha256":  "ee9d3bae97063b7d1915bd36946a662b295375f236bcc2cafcfef3b392e4e293"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\full-final-vitest.log",
+        "bytes":  29531,
+        "sha256":  "4355a80c9b67c482a3dc39bd02d256ac5512e588ca38bf066fcf43fbb2d22c3a"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\full-vitest.log",
+        "bytes":  28373,
+        "sha256":  "f49e5cfe1f29d4c5ad4a29171b631ac4aeacb5b53941f9943a697f453868e1b8"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\normal-atlas-qc.json",
+        "bytes":  350,
+        "sha256":  "00cd12aec1067c076662670d74438207cf1bee74161750986b46b8e263ec5a98"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\normal-atlas-qc.log",
+        "bytes":  846,
+        "sha256":  "1a8649f2908dc7de2491506596ec623abfd5ed8abed4849b9788102e0af3e35a"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\normal-before.log",
+        "bytes":  2823,
+        "sha256":  "873539887480be60c1d9d5305c0f17793d881c0cdad9e5dc1af9fb8f748cf2d4"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\report.md",
+        "bytes":  3818,
+        "sha256":  "f43a4cc4f38e196315822c1a35dd97a5b1da0ca086d58bae719d5e0cd8670c8e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-fallback.log",
+        "bytes":  3035,
+        "sha256":  "811c93e9245c1dcda842147bc68c18c798f0b3eb664ebcc7c61f22c617d11039"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-max.log",
+        "bytes":  2905,
+        "sha256":  "5788b2ccc9e9a8a11de8cf5eeded09b4b118329150ee49c16aa2affd0a7eaafc"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-neutral.log",
+        "bytes":  2973,
+        "sha256":  "9ae263943f38fdc0c43073e3d348d7e2bd4251a1887be3ff6ea3ffe5656e58a0"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\server-final.out.log",
+        "bytes":  288,
+        "sha256":  "1efe40a5441115eb26ccbc92466a78c92c52eba9ed6ff44817aebe36f0a6dad3"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\server.out.log",
+        "bytes":  397,
+        "sha256":  "7d5403bb92151fd25c95d87d9741a79540ffcdcc2d8304d715c01474533f300f"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\targeted-vitest.log",
+        "bytes":  6507,
+        "sha256":  "826ee83c929bfa9cd8c560cfd8dafc7ed13b86437ffbf7210c6561c7d5faa351"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\textured-blender-reopen.log",
+        "bytes":  554,
+        "sha256":  "b55ee612a46d4d139b3c5013d04385c5be549b40e2f963af5e4e7426ed861455"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\torso-color-bake.json",
+        "bytes":  721,
+        "sha256":  "04a62f6bc8871811544b64ede8a8bc94421980e26c59415fd33982aed39cc0bb"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\torso-color-bake.log",
+        "bytes":  4220,
+        "sha256":  "05a78ccf2c1f1d53060233e7ec8d5f61ad74ee188f52a359acaf3746bd28b05d"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\torso-color-projection.png",
+        "bytes":  568318,
+        "sha256":  "9663e011b147f7fdd1d84a2e7396dc6b70b7843c740ab116686aa955cf1bf911"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\torso-normal-bake.json",
+        "bytes":  933,
+        "sha256":  "6957e26f55f99dc623dde0e3ec20a4d4d292d9de0b7dec6c5ca892c3a7794a1d"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\torso-normal-bake.log",
+        "bytes":  5560,
+        "sha256":  "72698129114b5f2bc2091a47d67caa92aa1dca258d3bd1c178b1ec86041162db"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-max\\wardrobe-max-bare-front.png",
+        "bytes":  620567,
+        "sha256":  "60920439aa2df2503dd24dbbcb977dd8e95f9a828ab33d9373497560135acb72"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-max\\wardrobe-max-bare-rear.png",
+        "bytes":  617394,
+        "sha256":  "a12cbce798fef29dbe7d0da3eb19e9fb9189dad7f73733723f020d0d75d23371"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-max\\wardrobe-max-shirt-front.png",
+        "bytes":  592454,
+        "sha256":  "a09a31a60269934a799ef962aa4d0905abca072a96da46590c0ef7563d55a62d"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-max\\wardrobe-max-shirt-rear.png",
+        "bytes":  570196,
+        "sha256":  "5a9bd08da7d9c9db0e5530b02d34a90feb8907941ec97974ed2f5da1e716b1c5"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-neutral\\wardrobe-neutral-bare-front.png",
+        "bytes":  619840,
+        "sha256":  "f3267267d608f40da5091dff3507b27d8e160f4a4fc817352e18ac11c5569b93"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-neutral\\wardrobe-neutral-bare-rear.png",
+        "bytes":  618121,
+        "sha256":  "b6e73997a0d655b6699fca7805206c2f4b65317aec910d9b36dc76243e718387"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-neutral\\wardrobe-neutral-shirt-front.png",
+        "bytes":  592582,
+        "sha256":  "ec74a7ff5c9bc4d452c15b29896cd0c619c94f711bedfe391d5377eadd2c0797"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\base-neutral\\wardrobe-neutral-shirt-rear.png",
+        "bytes":  573142,
+        "sha256":  "7d5598a8f4dc4967fa8d3e17f0106c30edc0a63523e7b594c46f95127878a115"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-fallback\\wardrobe-neutral-bare-front.png",
+        "bytes":  619987,
+        "sha256":  "58851e80f58d1a360db36279525e483050c27fce2bda4dee601f751674b96546"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-fallback\\wardrobe-neutral-bare-rear.png",
+        "bytes":  618116,
+        "sha256":  "2f67fe84b89681b66d001c7dbfea2b3b603c9a62791918f4d04b02d2929c44f8"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-fallback\\wardrobe-neutral-shirt-front.png",
+        "bytes":  593055,
+        "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-fallback\\wardrobe-neutral-shirt-rear.png",
+        "bytes":  572626,
+        "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-max\\wardrobe-max-bare-front.png",
+        "bytes":  623681,
+        "sha256":  "08d0e459bf3c9d003b1a0e2135fa023ad166586937c3867976ea2527695f6951"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-max\\wardrobe-max-bare-rear.png",
+        "bytes":  622643,
+        "sha256":  "99a380b26e6539814a712ba924b79b09325c97b862ee8d63a45e8e9454a108fc"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-max\\wardrobe-max-shirt-front.png",
+        "bytes":  594303,
+        "sha256":  "3f0eb396d9fad772b422b2ae6126c7862402e801781d653f42a783885cf52081"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-max\\wardrobe-max-shirt-rear.png",
+        "bytes":  572041,
+        "sha256":  "b26c452f68dc3db54c467e73a8fc5cfea0096602b4cc06e289285c1fdd4a8c47"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-neutral\\wardrobe-neutral-bare-front.png",
+        "bytes":  621833,
+        "sha256":  "3618b85900b39b20e2dbfdebcb6085fbf85c67df5899a358b5ec4ff56f599ca2"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-neutral\\wardrobe-neutral-bare-rear.png",
+        "bytes":  621504,
+        "sha256":  "9086ceda01d1db8edd5eb485ce28a7497571dddd1e5cca0acdcefbf6aa76f129"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-neutral\\wardrobe-neutral-shirt-front.png",
+        "bytes":  593055,
+        "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\complete-neutral\\wardrobe-neutral-shirt-rear.png",
+        "bytes":  572626,
+        "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-fallback\\wardrobe-neutral-bare-front.png",
+        "bytes":  619987,
+        "sha256":  "58851e80f58d1a360db36279525e483050c27fce2bda4dee601f751674b96546"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-fallback\\wardrobe-neutral-bare-rear.png",
+        "bytes":  618116,
+        "sha256":  "2f67fe84b89681b66d001c7dbfea2b3b603c9a62791918f4d04b02d2929c44f8"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-fallback\\wardrobe-neutral-shirt-front.png",
+        "bytes":  593055,
+        "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-fallback\\wardrobe-neutral-shirt-rear.png",
+        "bytes":  572626,
+        "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-max\\wardrobe-max-bare-front.png",
+        "bytes":  623701,
+        "sha256":  "c3274e89e7370c6735b8d1d5ac6928ef793f667c576ec8b43f4d6feaf4bcec9f"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-max\\wardrobe-max-bare-rear.png",
+        "bytes":  622601,
+        "sha256":  "e8ab8634c143f15b6784be8f26f117365dd4912054d664cec1324d6d504dc368"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-max\\wardrobe-max-shirt-front.png",
+        "bytes":  594303,
+        "sha256":  "3f0eb396d9fad772b422b2ae6126c7862402e801781d653f42a783885cf52081"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-max\\wardrobe-max-shirt-rear.png",
+        "bytes":  572041,
+        "sha256":  "b26c452f68dc3db54c467e73a8fc5cfea0096602b4cc06e289285c1fdd4a8c47"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-neutral\\wardrobe-neutral-bare-front.png",
+        "bytes":  621699,
+        "sha256":  "bc9a04420203e773de79174558adfea0235baf584cbee64e82e212360509a009"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-neutral\\wardrobe-neutral-bare-rear.png",
+        "bytes":  621330,
+        "sha256":  "f7ff0ab338ed506a604c30d7442c25a9d8c00a5fa2bfa1e82583e20771d4a80a"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-neutral\\wardrobe-neutral-shirt-front.png",
+        "bytes":  593055,
+        "sha256":  "ccf220f374668483932e7b88a4338efdbe5d829bc3da4835d946b70fadf2268e"
+    },
+    {
+        "path":  "docs\\audits\\BF_AVATAR_SCAN_QC_20261127\\scan-neutral\\wardrobe-neutral-shirt-rear.png",
+        "bytes":  572626,
+        "sha256":  "a41de6a3796bee0509e38386c243b3f6a31cbf4af07a4f51568ea26fd650d21e"
+    }
+]

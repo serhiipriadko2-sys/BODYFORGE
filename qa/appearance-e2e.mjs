@@ -231,9 +231,23 @@ async function mobileGraphics(tab, initialGame) {
   await tab.js(stage + '.scrollIntoView({block:"center",behavior:"instant"});true');
   await tab.until(canvas + '?.dataset.renderScale==="1.5"', 'balanced high-DPI drawing buffer');
   const before = await tab.js(`(()=>{const c=${canvas};window.__graphicsCanvas=c;return {width:c.width,height:c.height}})()`);
-  // Keep the scene visible while testing its event handler. Opening a dialog
-  // can scroll the stage away and legitimately dispose it via IntersectionObserver.
-  await tab.js('(async()=>{const m=await import("/src/lib/appearance.ts");m.applyAppearance({...m.loadAppearance().settings,graphics:"economy"});return true})()');
+  // A same-origin document can deliver a real storage event without scrolling
+  // the visible stage away. The actual settings controls are exercised below.
+  const previous = await stored(tab);
+  const defaults = { version: 1, palette: 'mint', customAccent: '#65ead0', material: 'glass', highContrast: false };
+  const economy = JSON.stringify({ ...JSON.parse(previous ?? JSON.stringify(defaults)), graphics: 'economy' });
+  const writeFromFrame = (raw) => tab.js(`(() => {
+    const frame = document.createElement('iframe');
+    frame.hidden = true;
+    document.body.append(frame);
+    try {
+      const storage = frame.contentWindow.localStorage;
+      if (${JSON.stringify(raw)} === null) storage.removeItem(${JSON.stringify(key)});
+      else storage.setItem(${JSON.stringify(key)}, ${JSON.stringify(raw)});
+      return true;
+    } finally { frame.remove(); }
+  })()`);
+  await writeFromFrame(economy);
   await tab.until(canvas + '?.dataset.renderScale==="1"', 'economy changes the live drawing buffer');
   const after = await tab.js(`(()=>{const c=${canvas},r=c.getBoundingClientRect(),gl=c.getContext('webgl2');return {same:c===window.__graphicsCanvas,width:c.width,height:c.height,cssWidth:r.width,cssHeight:r.height,gpuWidth:gl.drawingBufferWidth,gpuHeight:gl.drawingBufferHeight}})()`);
   console.log('GRAPHICS_BUFFERS', JSON.stringify({before,after}));
@@ -243,6 +257,8 @@ async function mobileGraphics(tab, initialGame) {
     'economy uses one framebuffer pixel per CSS pixel on a high-DPI screen');
   check(after.width * after.height < before.width * before.height * .46, 'economy reduces drawing-buffer area by more than half');
   observations.mobileGraphics = { emulatedDpr: 3, before, after, physicalDevice: 'NOT VERIFIED' };
+  await writeFromFrame(previous);
+  await tab.until(canvas + '?.dataset.renderScale==="1.5"', 'balanced drawing buffer restored before settings interaction');
   await open(tab); await tab.click('input[name="graphics"][value="economy"]');
   await tab.until('document.documentElement.dataset.bfGraphics==="economy"', 'economy selected');
   check(JSON.parse(await stored(tab)).graphics === 'economy', 'economy preference is independently read back');
@@ -526,7 +542,15 @@ try {
   await app(a);
   await settings(a, 'mint');
   check(await stored(a) === null, 'first view does not write optional appearance preferences');
-  await a.js('(async()=>{const mod=await import("/src/lib/progression.ts"),game=await import("/src/lib/game.ts");const fixture=mod.parseProfile({profileId:"qa-appearance-profile",xp:500,coins:245,workouts:[],game:{...game.freshGame(),created:true,nickname:"QA ATLAS",build:"solid"}});localStorage.setItem(' + JSON.stringify(gameKey) + ',JSON.stringify(fixture));localStorage.setItem(' + JSON.stringify(gameKey + ':backup') + ',JSON.stringify({...fixture,coins:200}));return true})()');
+  const fixture = {
+    profileId: 'qa-appearance-profile', xp: 500, coins: 245, workouts: [], creditedWorkoutIds: [],
+    game: { created: true, nickname: 'QA ATLAS', build: 'solid' },
+  };
+  await a.js(`(() => {
+    localStorage.setItem(${JSON.stringify(gameKey)}, ${JSON.stringify(JSON.stringify(fixture))});
+    localStorage.setItem(${JSON.stringify(gameKey + ':backup')}, ${JSON.stringify(JSON.stringify({ ...fixture, coins: 200 }))});
+    return true;
+  })()`);
   const initialGame = await gameBytes(a);
   await app(a, true);
   await a.until('document.querySelector(".dashboard-player")?.textContent.includes("QA ATLAS")', 'synthetic saved fighter displayed');

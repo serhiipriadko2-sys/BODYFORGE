@@ -1,0 +1,182 @@
+[
+  {
+    "path": "browser/bf-qa-mobile-360-premium.png",
+    "bytes": 89321,
+    "sha256": "2d30fb1e843eea877bc11891b2f7d988c463ae7cc8544a8a3ca3b9f55127d23f"
+  },
+  {
+    "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+    "bytes": 125126,
+    "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge-upgraded.png",
+    "bytes": 204652,
+    "sha256": "2fd700be83944f640cb0c2f400c7c807d8251a92e669ee8237920b594d84331a"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge.png",
+    "bytes": 195379,
+    "sha256": "494ce28341b98cde61b701dcaceb7a0d010061695aa887f6d27872a5a45ab235"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-360-premium.png",
+    "bytes": 197591,
+    "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-premium.png",
+    "bytes": 221114,
+    "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009"
+  },
+  {
+    "path": "browser/bf-qa-mobile-lenses.png",
+    "bytes": 93654,
+    "sha256": "9bc7ad9c58525d74436ca22e155db021b7b431589e281f3388924e03efbef598"
+  },
+  {
+    "path": "browser/bf-qa-mobile-performance-panel.png",
+    "bytes": 93656,
+    "sha256": "95e991dbcd7f6a56e4b470897a54949904e86fdcf4ff15df8783c5e267c35b29"
+  },
+  {
+    "path": "browser/bf-qa-mobile-setup.png",
+    "bytes": 151424,
+    "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6"
+  },
+  {
+    "path": "browser/bf-qa-mobile-tower.png",
+    "bytes": 91532,
+    "sha256": "6526ca096f803798081e58a43925d709af3c5839332c6fff073f6e7e5b2baeae"
+  },
+  {
+    "path": "build-manifest.json",
+    "bytes": 14226,
+    "sha256": "9cd44e31b11553271f7ba917a5d3995318e2bdf09942f8fe1531b790abe4d68b"
+  },
+  {
+    "path": "build.log",
+    "bytes": 3388,
+    "sha256": "4935ecf0b3a4396446336cce6ef6f7611b605376679f4ee27198ba3a6244573f"
+  },
+  {
+    "path": "bundle.log",
+    "bytes": 285,
+    "sha256": "58545d3f7c217e44f9f33258567f5dc65f6a21b6a8ded0568315073b1165d2e8"
+  },
+  {
+    "path": "dev-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "dev.log",
+    "bytes": 112,
+    "sha256": "d443c6011f1c2e25a4470b6d9ae484603328355bb9f954c72bc2a146badd9c17"
+  },
+  {
+    "path": "final-readback.json",
+    "bytes": 3689,
+    "sha256": "3c7e6ba2fecaa8f16421c3130d24f6cfa102c713984ac137a7df4b605b45b6cc"
+  },
+  {
+    "path": "finalize.py",
+    "bytes": 11226,
+    "sha256": "c381345ba5a193ace2c7b3ecb924fb599a3471501a251108adf6b5df09087328"
+  },
+  {
+    "path": "flow.stage",
+    "bytes": 13918,
+    "sha256": "2ca7c98ecc19f3597c59c8fafc590143a9f0a6dff670e943e5aba01cefbaa181"
+  },
+  {
+    "path": "gates.json",
+    "bytes": 1957,
+    "sha256": "1db3fb4afb5c9844b84f4a6df0de11327267bcd0d12a33ea1a995858323a38da"
+  },
+  {
+    "path": "head.txt",
+    "bytes": 42,
+    "sha256": "9482349760d8bf11bafc0b04ac65925821b321df5c397e62b1802c9a1fd0fb0a"
+  },
+  {
+    "path": "isolated-root.txt",
+    "bytes": 64,
+    "sha256": "cdb2f080e508decedda0aff1e4e5fe5c3fed240fe02e01858eb77d019050ad0d"
+  },
+  {
+    "path": "journal.log",
+    "bytes": 9470,
+    "sha256": "6f7eec55c2f5041a5543028220cf96d8c37debc84d6768cdadef9b6bb76c22bc"
+  },
+  {
+    "path": "mobile.log",
+    "bytes": 10377,
+    "sha256": "fada4ea1a02a6519ca95f2a57b294e692371cd3e82964cc12a8c14eeb288a2b5"
+  },
+  {
+    "path": "owned.json",
+    "bytes": 96,
+    "sha256": "21dd9422cb935e6ede70272e9ca91da296e387eccb8846fac00709d35a1edf70"
+  },
+  {
+    "path": "patch.py",
+    "bytes": 5616,
+    "sha256": "56fc72136f5df452ecf83048a2a902daaca0c70a94d23ab365c8c94733b95353"
+  },
+  {
+    "path": "preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "preview.log",
+    "bytes": 39,
+    "sha256": "404aca432f5839dda40c3089918d71a6a29db9a0ae09c03c6253e535cb5efa7d"
+  },
+  {
+    "path": "privacy.log",
+    "bytes": 777,
+    "sha256": "63ce23dcbb1ede906f06793262b1fed2438b26d83689f21c029ca9ba667faea3"
+  },
+  {
+    "path": "RECEIPT.md",
+    "bytes": 3553,
+    "sha256": "3667b3004a155487e03bd1b0c341863cab065b7a99680927024f4b2a8edb937e"
+  },
+  {
+    "path": "source.json",
+    "bytes": 56923,
+    "sha256": "727418956f880fdf4cb455becbf2e6802200a4191faef4f9b0d965bbdc8da67e"
+  },
+  {
+    "path": "tower-browser/bf-qa-tower-victory.png",
+    "bytes": 144363,
+    "sha256": "e7815e860e4c870d6af62efdab0ac7d47dfe844c2f1c4a0e5df9544f12c0d64d"
+  },
+  {
+    "path": "tower-v2.log",
+    "bytes": 5224,
+    "sha256": "2687a6e1bd3e97088e0e53da3002bc09a3f6389ac1862d968bca31afd6a9666b"
+  },
+  {
+    "path": "tower20-e2e.mjs.before",
+    "bytes": 23142,
+    "sha256": "de277f5dfd1fd13d4a9ff066e0c1cb501d8b235bb3086a3c97796183876cc3c5"
+  },
+  {
+    "path": "tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "unit.log",
+    "bytes": 20914,
+    "sha256": "ddf9b732ac0bb8c726e1259a2469a7a40d401c3cd38cd945802dd868469a4bdf"
+  },
+  {
+    "path": "verify.ps1",
+    "bytes": 7368,
+    "sha256": "9c60d7d11201e01f93afd98808dcf4c977b5289915ecd29d535dd02384345c4c"
+  }
+]

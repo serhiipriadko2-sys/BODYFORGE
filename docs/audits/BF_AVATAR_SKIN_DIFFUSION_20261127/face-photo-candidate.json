@@ -1,0 +1,23 @@
+{
+  "status": "OFFLINE_CANDIDATE_NOT_INTEGRATED",
+  "method": "Coarse manually anchored front projection; high-pass log-color residual only; existing topology, eyes, lips and base atlas untouched. Not calibrated albedo.",
+  "sourceSha256": "27120ec321e26433917662a55d1159f19c0000bc58616108b0abd1c1b4fa58fa",
+  "baseSha256": "d36c1235f1adaf4bd5e32fadf641d2b225c38a27eaf147ac070000545208e364",
+  "glbSha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+  "candidate": ".bodyforge-qa\\scan-reference-artec\\face-torso-photo-candidate-v1.png",
+  "candidateSha256": "01ea74a3c7daaff6ea26c19a618da01159d9fde70635bab45dc6fc388a18b4c9",
+  "candidateBytes": 3863925,
+  "comparison": ".bodyforge-qa\\scan-reference-artec\\face-photo-candidate-v1-comparison.png",
+  "comparisonSha256": "55efbf3403ada853615442e5bb5d443fd7fc73a4ef29ce439fea04490869d7c1",
+  "comparisonBytes": 127601,
+  "maskPixels": 53855,
+  "changedPixels": 40143,
+  "outsideChanged": 0,
+  "maxOutsideDifference": 0.0,
+  "protectedNames": [
+    "BODYFORGE_Lips",
+    "BODYFORGE_SkinEars"
+  ],
+  "maxWeight": 0.7799999713897705,
+  "meanAbsoluteLinearDelta": 0.007001492660492659
+}

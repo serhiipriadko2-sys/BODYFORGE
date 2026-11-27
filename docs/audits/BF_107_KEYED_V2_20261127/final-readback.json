@@ -1,0 +1,140 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "frozenHead": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "observed": "2026-11-27T14:49:32.216525+03:00",
+  "sourceCount": 355,
+  "buildCount": 79,
+  "sourceManifestSha256": "7e48897f62dde8069429b9837200dac63c27a5b799f3e5239a2910fa4b864b94",
+  "buildManifestSha256": "44b5c54514dd17e2a6a863acfb0ac665bad6c4d6dca0291e4cd6a6b69fb17e0e",
+  "ownedHashesMatch": true,
+  "liveChangedPaths": [
+    "qa/avatar-quality-e2e.mjs",
+    "qa/import-preview-e2e.mjs",
+    "src/components/Avatar3D.tsx"
+  ],
+  "liveNewPaths": [],
+  "ownedDiffCheck": 0,
+  "canon": 0,
+  "qaSyntax": 0,
+  "passLines": {
+    "journal.log": 110,
+    "mobile.log": 124,
+    "privacy.log": 13
+  },
+  "keyedV2": {
+    "absent": true,
+    "blocked": true,
+    "before": true,
+    "prepare": true,
+    "repeat": true,
+    "fence": true,
+    "compact": true,
+    "noRewrite": true,
+    "settle": true,
+    "stage": true,
+    "conflict": true,
+    "abort": true,
+    "quarantine": true,
+    "restore": true,
+    "projection": true,
+    "refuseMaintenance": true,
+    "readback": true,
+    "fallback": true,
+    "cas": true,
+    "invalidUpgrade": true
+  },
+  "keyedV2Large": {
+    "large": true,
+    "full": true,
+    "pages": true,
+    "drift": true,
+    "corrupt": true
+  },
+  "bundle": {
+    "entryBytes": 383784,
+    "entryGzipBytes": 117795,
+    "cameraChunkBytes": 154276,
+    "dailyPlanRemoved": true,
+    "baselineEntryBytes": 496761,
+    "entryBytesSaved": 112977,
+    "entryReductionPercent": 22.7,
+    "entryName": "index-BpPf33aX.js",
+    "poseName": "vision_bundle-B7OxvyGm.js"
+  },
+  "entrySha256": "412073bbcc614a6c21d4560e9131087803b53d152f7eec41e0a5c21230335504",
+  "screenshots": [
+    {
+      "path": "browser/bf-qa-mobile-360-premium.png",
+      "bytes": 89072,
+      "sha256": "968e7a8c69e83d667304ea0248e17e4a1fb0d87424161b5af269a101c4c470a1",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+      "bytes": 125126,
+      "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab",
+      "width": 320,
+      "height": 740
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge-upgraded.png",
+      "bytes": 204590,
+      "sha256": "8ea0a3f513c2a80e4eb985f5625781b3fdfb1d78c16f339bbd5790af1826fe8f",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-forge.png",
+      "bytes": 195576,
+      "sha256": "72c1c4ccefd0dbbf7e872069b1acae768e646ab6731fa9a9888d25f057885615",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-360-premium.png",
+      "bytes": 197591,
+      "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f",
+      "width": 360,
+      "height": 800
+    },
+    {
+      "path": "browser/bf-qa-mobile-home-premium.png",
+      "bytes": 221114,
+      "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-lenses.png",
+      "bytes": 94859,
+      "sha256": "f76b473330be094fdcd737df8f9604aa93571fc623a620cb5667d7878dbe0d2f",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-performance-panel.png",
+      "bytes": 93393,
+      "sha256": "5ca2362fff381911c14d1ed9e5db5703a1d805f1b748a7ad2bfef5f95370c2f2",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-setup.png",
+      "bytes": 151424,
+      "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "browser/bf-qa-mobile-tower.png",
+      "bytes": 91541,
+      "sha256": "aa5422c060902d7747633da35e0e4b0e298c62620f4801b2dde3af1cfa0c7aca",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "isolatedDependencyJunctionRemoved": true,
+  "acceptance": "TESTED_LOCAL",
+  "ownerActivation": "NOT_RUN"
+}

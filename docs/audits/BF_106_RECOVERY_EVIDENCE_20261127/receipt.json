@@ -1,0 +1,325 @@
+{
+  "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "commands": {
+    "ready-0": {
+      "exit": 0,
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+      ]
+    },
+    "recovery-export": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "recovery-export-v2": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only",
+        "--journal-v2"
+      ]
+    },
+    "finish-save": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/finish-save-e2e.mjs"
+      ]
+    },
+    "epoch": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/workout-epoch-e2e.mjs"
+      ]
+    },
+    "replacement": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/profile-replacement-e2e.mjs"
+      ]
+    },
+    "privacy": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/privacy-server-e2e.mjs"
+      ]
+    },
+    "dedup": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/journal-e2e.mjs",
+        "--dedup-only"
+      ]
+    },
+    "unit": {
+      "exit": 1,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "test",
+        "--",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ]
+    },
+    "build": {
+      "exit": 0,
+      "args": [
+        "cmd.exe",
+        "/d",
+        "/c",
+        "npm.cmd",
+        "run",
+        "build",
+        "--",
+        "--outDir",
+        "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-file-recovery-evidence-final-1127\\dist"
+      ]
+    },
+    "bundle": {
+      "exit": 0,
+      "args": [
+        "node",
+        "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+      ]
+    },
+    "tower20": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/tower20-e2e.mjs"
+      ]
+    },
+    "mobile": {
+      "exit": 0,
+      "args": [
+        "node",
+        "qa/mobile-e2e.mjs"
+      ]
+    }
+  },
+  "preview": {
+    "url": "http://127.0.0.1:57671",
+    "http": 200,
+    "entry": "/assets/index-3S6QdxcD.js",
+    "bytes": 383794,
+    "sha256": "c9215a02b2e9ae16385d80eed8f94efb6894b62fee85ca5f278cb87c9c631b06"
+  },
+  "drift": [
+    "src/lib/avatarAthleticReview.test.ts",
+    "src/lib/avatarAthleticReview.ts",
+    "qa/export-avatar-taper-authoring.mjs",
+    "qa/release-artifact-boundary.mjs",
+    "qa/public-artifact-allowlist.json",
+    "qa/avatar-quality-e2e.mjs",
+    "qa/release-artifact-boundary.test.mjs"
+  ],
+  "diffCheck": 0,
+  "gitHeadAfter": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+  "scope": "Recovery uses the common read-only backup collector. Download is a second synchronous user action. Profile quarantines and evidence-only format are included.",
+  "baseline": "Browser QA exited 16 at exact profile quarantine: old recovery file omitted that raw profile.",
+  "limits": "Files and backing stores tested on disposable desktop Chrome. Safari download behavior and Android hardware remain unverified.",
+  "files": {
+    "src/lib/progressBackup.ts": {
+      "bytes": 4932,
+      "sha256": "c03a9e8d61889c6bd1e7d90be4ab554d6f91e63fa9b389173b0e5b22bfb37f44"
+    },
+    "src/components/RecoveryExportButton.tsx": {
+      "bytes": 3039,
+      "sha256": "03c74afa0f5431bbe59c552b67779000d6794191383e2490254c2c6fb8bcf86e"
+    },
+    "src/components/StorageRecovery.tsx": {
+      "bytes": 11485,
+      "sha256": "84f574e3b32d309acb876b7ce5171cdae29414f2735aa0d8f2233f300de557f3"
+    },
+    "src/components/ReplacementRecoveryPanel.tsx": {
+      "bytes": 7272,
+      "sha256": "36a3313cdc03807e08b1738d2f67f78f4e5d4f9705ec70e63fdf030efdc85187"
+    },
+    "qa/finish-save-e2e.mjs": {
+      "bytes": 17755,
+      "sha256": "3c8d166d04039befb8227477d33039308554f8fa107a9c10a894a5c76e7d785d"
+    },
+    "qa/journal-e2e.mjs": {
+      "bytes": 61664,
+      "sha256": "e159cb87872adc60776a2b7531d019af2e5b4ea45fbf720f990e3d767ca0c5bb"
+    }
+  },
+  "diff": {
+    "bytes": 16088,
+    "sha256": "8ab96f51f58400a97c47c74530d1ff29de91560961cc6c873bfadeeda863ebe6"
+  },
+  "reverseCheck": 0,
+  "logs": {
+    "bf106-file-recovery-evidence-final-1127/build.log": {
+      "bytes": 4768,
+      "sha256": "984476a8a65565510812596c71e4a7720587e870b896d19162c25faeae5adc5a",
+      "summary": []
+    },
+    "bf106-file-recovery-evidence-final-1127/bundle.log": {
+      "bytes": 281,
+      "sha256": "b69d60e4eb9a08155e4c87365f81f5eca393f354a6c810dfb55b34aa8f2cac30",
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":383794,\"entryGzipBytes\":117800,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":112967,\"entryReductionPercent\":22.7,\"entryName\":\"index-3S6QdxcD.js\",\"poseName\":\"vision_bundle-Ds8omXS0.js\"}"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/dedup.log": {
+      "bytes": 3475,
+      "sha256": "944250d8a58b7f734dd6ed3b083e861a4cfff7b02857638a6473c01571968e54",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":42,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/epoch.log": {
+      "bytes": 1749,
+      "sha256": "f2bb60275b36c89e907385c1b4138e2d9217b375de5e6ba564fb06a241c75369",
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/finish-save.log": {
+      "bytes": 2128,
+      "sha256": "108c2f24e24b12a231ba09fa5e343e50d17a0e4d4cc76730890d752a1f267271",
+      "summary": [
+        "BODYFORGE_FINISH_SAVE_PASS {\"assertions\":29,\"observations\":{\"race\":{\"profile\":{\"xp\":500,\"coins\":900,\"workouts\":[],\"game\":{\"created\":true,\"nickname\":\"OTHER TAB\",\"build\":\"lean\",\"muscles\":{\"arms\":0,\"core\":0,\"legs\":0,\"back\":0},\"outfit\":\"base\",\"ownedOutfits\":[\"base\"],\"lastLoginDay\":null,\"lastQuestClaimDay\":null,\"highestClearedFloor\":1,\"bestGhost\":null}},\"status\":\"conflict\"},\"quota\":{\"xp\":185,\"coins\":65,\"workouts\":1,\"id\":\"0826c427-b205-4c31-8410-f3d2c5c2e0c3\"},\"conflict\":{\"exportedResults\":1,\"durableCoins\":900}}}"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/mobile.log": {
+      "bytes": 10354,
+      "sha256": "242befcfdcbd6e108c34cf36db2340dabb1cb6d159968b97d23a7c48028ec7dc",
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/production-file.log": {
+      "bytes": 669,
+      "sha256": "955f9a31b70e904b09274a302142e5c5339906e73429d719720ccd0d810a8fc6",
+      "summary": [
+        "PASS download is requested inside user activation",
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=10",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/ready-0.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "bf106-file-recovery-evidence-final-1127/recovery-export-v2.log": {
+      "bytes": 3611,
+      "sha256": "128a3b7353768b1a94ec1a14fb922d0c90308074940c21090af9bdf47506cdae",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":44,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/recovery-export.log": {
+      "bytes": 3475,
+      "sha256": "002ca2283b16a821c04455f6d369fb39711225e96f63bd12ea5f08257fbc124e",
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":42,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/replacement.log": {
+      "bytes": 4005,
+      "sha256": "66531e45b2224db1ac7b6afa242f304cb17b72262f660f7744748bf828c4acb6",
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/tower20.log": {
+      "bytes": 1898,
+      "sha256": "1f4d4ccbc19e7d75d42f68e5cdccf9ea3f09b431ed2223c1378c722e7280927c",
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/unit-repeat.log": {
+      "bytes": 10355,
+      "sha256": "964b6ea87080e0708ae1105fe3edab9c8fb48254403395ec7ddd14161c4db895",
+      "summary": [
+        "Tests  1169 passed (1187)"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/unit-threads.log": {
+      "bytes": 506,
+      "sha256": "2bea8833905cf3e079e51d7f5414d1abd4e8724ebb859e14acd45ce9dac7ed32",
+      "summary": [
+        "Tests  1187 passed (1187)"
+      ]
+    },
+    "bf106-file-recovery-evidence-final-1127/unit.log": {
+      "bytes": 1539,
+      "sha256": "838b0b3a59b1e3b0db04d4faebd956797a236b57f6b1bef9f41ab91bdf8127b7",
+      "summary": []
+    },
+    "bf106-file-red-recovery-evidence-1127/recovery-export.log": {
+      "bytes": 29551,
+      "sha256": "486a32f0738e74a582b39a458858ad0234224555e5d1011474a735e27605192f",
+      "summary": [
+        "BODYFORGE_JOURNAL_FAIL Error: FAIL recovery download includes exact quarantined profile",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    }
+  },
+  "screenshot": {
+    "bytes": 65020,
+    "sha256": "66b065d0e8b3b701106258ff1d49a5900692400a04d04379487830e37ed4cb83"
+  },
+  "productionRecoveryExportExit": 0,
+  "unitRepeat": {
+    "command": [
+      "cmd.exe",
+      "/d",
+      "/c",
+      "npm.cmd",
+      "test",
+      "--",
+      "--maxWorkers=1",
+      "--no-file-parallelism"
+    ],
+    "exit": 1,
+    "drift": []
+  },
+  "unitThreads": {
+    "command": [
+      "cmd.exe",
+      "/d",
+      "/c",
+      "npm.cmd",
+      "test",
+      "--",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--pool=threads"
+    ],
+    "exit": 0,
+    "drift": []
+  }
+}

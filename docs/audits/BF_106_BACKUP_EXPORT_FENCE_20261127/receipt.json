@@ -1,0 +1,376 @@
+{
+  "scope": "Backups remain partial while a replacement marker is present, if lineage cannot be read or if the lineage changes during IndexedDB read. Raw profiles and journal rows are retained in the file as evidence.",
+  "red": "Before fix 5/15 tests failed with complete=true on pending replacement or unreadable/changed epoch.",
+  "protocol": "Reuse the existing marker and epoch readers on both sides of the asynchronous journal snapshot. Do not add fields to the backup format or write any profile keys.",
+  "v2": "Explicit upgrade only in disposable Chromium fixtures, then the same App, locks, backup/import and recovery code as usual.",
+  "limits": "Physical realme and owner v2 activation require separate evidence. The tested flow never migrates a user database.",
+  "runs": {
+    "bf106-file-export-fence-1127": {
+      "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+      "commands": {
+        "ready-0": {
+          "exit": 0,
+          "args": [
+            "node",
+            "--input-type=module",
+            "-e",
+            "import { requireDevOrigin } from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN)"
+          ]
+        },
+        "focused": {
+          "exit": 0,
+          "args": [
+            "cmd.exe",
+            "/d",
+            "/c",
+            "npm.cmd",
+            "test",
+            "--",
+            "src/lib/progressBackup.test.ts",
+            "src/lib/profileReplacementRecovery.test.ts",
+            "--maxWorkers=1",
+            "--no-file-parallelism"
+          ]
+        },
+        "file-import": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/import-preview-e2e.mjs"
+          ]
+        },
+        "file-import-v2": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/import-preview-e2e.mjs",
+            "--journal-v2"
+          ]
+        },
+        "epoch": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/workout-epoch-e2e.mjs"
+          ]
+        },
+        "replacement": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/profile-replacement-e2e.mjs"
+          ]
+        },
+        "privacy": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/privacy-server-e2e.mjs"
+          ]
+        },
+        "dedup": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/journal-e2e.mjs",
+            "--dedup-only"
+          ]
+        },
+        "unit": {
+          "exit": 0,
+          "args": [
+            "cmd.exe",
+            "/d",
+            "/c",
+            "npm.cmd",
+            "test",
+            "--",
+            "--maxWorkers=1",
+            "--no-file-parallelism"
+          ]
+        },
+        "build": {
+          "exit": 0,
+          "args": [
+            "cmd.exe",
+            "/d",
+            "/c",
+            "npm.cmd",
+            "run",
+            "build",
+            "--",
+            "--outDir",
+            "E:\\github\\BODYFORGE\\.bodyforge-qa\\bf106-file-export-fence-1127\\dist"
+          ]
+        },
+        "bundle": {
+          "exit": 0,
+          "args": [
+            "node",
+            "E:\\github\\BODYFORGE\\qa\\bundle-on-demand.mjs"
+          ]
+        },
+        "tower20": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/tower20-e2e.mjs"
+          ]
+        },
+        "mobile": {
+          "exit": 12,
+          "args": [
+            "node",
+            "qa/mobile-e2e.mjs"
+          ]
+        }
+      },
+      "preview": {
+        "url": "http://127.0.0.1:51982",
+        "http": 200,
+        "entry": "/assets/index-I-LySMG8.js",
+        "bytes": 383784,
+        "sha256": "42f65464402becf89dea02c7c73b52a907851b6511af308ccc44cb7704148b05"
+      },
+      "drift": [
+        "qa/journal-e2e.mjs",
+        "qa/tower20-e2e.mjs",
+        "src/components/Avatar3D.tsx",
+        "src/lib/avatarAthleticReview.test.ts",
+        "src/lib/avatarPhysique.ts",
+        "src/lib/avatarAthleticReview.ts",
+        "qa/avatar-quality-e2e.mjs"
+      ],
+      "diffCheck": 0,
+      "gitHeadAfter": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e"
+    },
+    "bf107-v2-application-1127": {
+      "head": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+      "commands": {
+        "ready-0": {
+          "exit": 0,
+          "args": [
+            "node",
+            "--input-type=module",
+            "-e",
+            "import {requireDevOrigin} from './qa/owned-chrome.mjs'; await requireDevOrigin(process.env.BODYFORGE_QA_ORIGIN);"
+          ]
+        },
+        "v2-queue": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/journal-e2e.mjs",
+            "--queue-only",
+            "--journal-v2"
+          ]
+        },
+        "v2-crash": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/journal-e2e.mjs",
+            "--seeded-crash-only",
+            "--journal-v2"
+          ]
+        },
+        "v2-dedup": {
+          "exit": 0,
+          "args": [
+            "node",
+            "qa/journal-e2e.mjs",
+            "--dedup-only",
+            "--journal-v2"
+          ]
+        }
+      },
+      "drift": [
+        "qa/avatar-quality-e2e.mjs",
+        "qa/tower20-e2e.mjs",
+        "src/components/Avatar3D.tsx",
+        "src/lib/avatarAthleticReview.test.ts",
+        "src/lib/avatarPhysique.ts"
+      ],
+      "diffCheck": 0,
+      "gitHeadAfter": "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e"
+    }
+  },
+  "logs": {
+    "bf106-file-export-fence-1127/build.log": {
+      "bytes": 4427,
+      "sha256": "e631f04695347485900052df031373a5d46f47e85fb9fbbe1550c2f7792dd250",
+      "assertionsReported": 0,
+      "summary": []
+    },
+    "bf106-file-export-fence-1127/bundle.log": {
+      "bytes": 281,
+      "sha256": "04c634d123cc083a751117be83377b614e3b75de4b8a121874ec7e40a0ebe027",
+      "assertionsReported": 0,
+      "summary": [
+        "BODYFORGE_BUNDLE_ON_DEMAND_PASS {\"entryBytes\":383784,\"entryGzipBytes\":117795,\"cameraChunkBytes\":154276,\"dailyPlanRemoved\":true,\"baselineEntryBytes\":496761,\"entryBytesSaved\":112977,\"entryReductionPercent\":22.7,\"entryName\":\"index-I-LySMG8.js\",\"poseName\":\"vision_bundle-CdEgUImF.js\"}"
+      ]
+    },
+    "bf106-file-export-fence-1127/dedup.log": {
+      "bytes": 3067,
+      "sha256": "e3fe37be2b7d93954dad1095f05d8c38a8a2ca953de98b2afb9ea253d9ed8cff",
+      "assertionsReported": 34,
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":34,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-export-fence-1127/epoch.log": {
+      "bytes": 1749,
+      "sha256": "be20ebb91194985d1f46092dfa98106da11bd8c6120239f0ed64b44074b3f9c0",
+      "assertionsReported": 31,
+      "summary": [
+        "BODYFORGE_WORKOUT_EPOCH_E2E_PASS assertions=31",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-export-fence-1127/file-import-v2.log": {
+      "bytes": 3116,
+      "sha256": "6b9b5e90e074cc4b7797e3d07ef3f6c06a404ac9a9798bf343957613bfb28a29",
+      "assertionsReported": 52,
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=52",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-export-fence-1127/file-import.log": {
+      "bytes": 3070,
+      "sha256": "61d0da654a93f9f2e76fa32d534c2e339adbaee150508e077fa52c7bb69d4f7e",
+      "assertionsReported": 51,
+      "summary": [
+        "BODYFORGE_IMPORT_PREVIEW_E2E_PASS assertions=51",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-export-fence-1127/focused.log": {
+      "bytes": 355,
+      "sha256": "a32bf0790abacbe98fff325bd104d5e6ca93632da874a06a48455e070fd7046f",
+      "assertionsReported": 0,
+      "summary": [
+        "Tests  29 passed (29)"
+      ]
+    },
+    "bf106-file-export-fence-1127/mobile-retry.log": {
+      "bytes": 10368,
+      "sha256": "cc11236993ed1e66d42c38aed78a3814f4a4a8fd99b58a23017cb23874c17b7d",
+      "assertionsReported": 124,
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_PASS"
+      ]
+    },
+    "bf106-file-export-fence-1127/mobile.log": {
+      "bytes": 11573,
+      "sha256": "60fa25ae668bfc469412a049a7ff75e2d1d40f00bf465ad471593af4454b5824",
+      "assertionsReported": 100,
+      "summary": [
+        "BODYFORGE_MOBILE_E2E_FAIL Error: FAIL phone screen wake lock stays held during camera startup"
+      ]
+    },
+    "bf106-file-export-fence-1127/privacy.log": {
+      "bytes": 760,
+      "sha256": "b445a97e97fa48d2cffde1531d245c7212dd9ce64a15b7021b7e07f34dcfc53b",
+      "assertionsReported": 13,
+      "summary": [
+        "BODYFORGE_PRIVATE_DEV_PATHS_PASS=12"
+      ]
+    },
+    "bf106-file-export-fence-1127/ready-0.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "assertionsReported": 0,
+      "summary": []
+    },
+    "bf106-file-export-fence-1127/replacement.log": {
+      "bytes": 4005,
+      "sha256": "2b2fa6a9a2b708113ebe30642017fcd11a146987d0dbb62db3017b7bde0386d9",
+      "assertionsReported": 73,
+      "summary": [
+        "BODYFORGE_REPLACE_CORE_E2E_PASS assertions=73 crashes=3",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf106-file-export-fence-1127/tower20.log": {
+      "bytes": 1887,
+      "sha256": "6e0c6ef4731269593104299d78c6baa3dd96a64075ce1c56fe13dd7e2d275430",
+      "assertionsReported": 26,
+      "summary": [
+        "BODYFORGE_TOWER_20REPS_E2E_PASS assertions=26",
+        "QA_OWNED_CLEANUP PASS"
+      ]
+    },
+    "bf106-file-export-fence-1127/unit.log": {
+      "bytes": 491,
+      "sha256": "a7210fc1b9785bcfee13ce6078cd4c03fd3300ce7143275f6df3e760134e846c",
+      "assertionsReported": 0,
+      "summary": [
+        "Tests  1180 passed (1180)"
+      ]
+    },
+    "bf107-v2-application-1127/ready-0.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "assertionsReported": 0,
+      "summary": []
+    },
+    "bf107-v2-application-1127/v2-crash.log": {
+      "bytes": 1485,
+      "sha256": "df0afa0fbd1a6748bf92d06b6e0c19fd58c6b79706d80c82e8543e6c1b721037",
+      "assertionsReported": 20,
+      "summary": [
+        "BODYFORGE_SEEDED_CRASH_PASS {\"assertions\":20,\"crashes\":2,\"queueOnly\":false,\"observations\":{\"seeded-journal\":{\"sessionId\":\"seeded-crash-journal\",\"actualRendererCrash\":true,\"settled\":true,\"exactReload\":true},\"seeded-primary\":{\"sessionId\":\"seeded-crash-primary\",\"actualRendererCrash\":true,\"settled\":true,\"exactReload\":true}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf107-v2-application-1127/v2-dedup.log": {
+      "bytes": 3203,
+      "sha256": "5e15a033d5c50f6cdbfd15cc1ed22b9f9fd79ae4fc7d03f06d96ae31871929dc",
+      "assertionsReported": 36,
+      "summary": [
+        "BODYFORGE_DEDUP_RECOVERY_PASS {\"assertions\":36,\"crashes\":0,\"queueOnly\":false,\"observations\":{\"dedupRecovery\":{\"fixtureWorkouts\":65,\"visibleHistory\":60,\"xp\":7800,\"coins\":2275,\"actualIndexedDB\":true,\"actualReloads\":2,\"explicitBackupRestore\":true,\"cameraInvoked\":false},\"hotDedupRecovery\":{\"nativeStorageEvent\":true,\"emptyJournals\":true,\"recoveredView\":{\"status\":\"recovery-required\",\"reason\":\"reward-identities\",\"xp\":\"240\",\"coins\":\"70\"}}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    },
+    "bf107-v2-application-1127/v2-queue.log": {
+      "bytes": 6297,
+      "sha256": "35298bff7c588541f46092b0e5919c07b139ad7f4ea76b8f2773188c7bea818b",
+      "assertionsReported": 81,
+      "summary": [
+        "BODYFORGE_JOURNAL_PASS {\"assertions\":81,\"crashes\":1,\"queueOnly\":true,\"observations\":{\"identityRecovery\":{\"originals\":4,\"distinct\":true,\"walletUnchanged\":true,\"reload\":true,\"mirrorReplay\":true},\"queue\":{\"xp\":185,\"coins\":65,\"workouts\":1,\"sessionId\":\"7905f17c-0187-4e89-9e05-e25e78a36544\"},\"prelock-reload\":{\"sessionId\":\"98c84911-dbd0-4dfc-8b24-d5990ac37204\",\"profileId\":\"qa-player-journal\",\"floor\":1,\"holderSurvived\":true},\"prelock-close\":{\"sessionId\":\"c2dafeb8-cf53-4ae5-bb4b-f535ccd8d208\",\"profileId\":\"qa-player-journal\",\"floor\":1,\"holderSurvived\":true},\"prelock-crash\":{\"sessionId\":\"a0c69353-96a2-4d8c-b23d-aae23d74ad2a\",\"profileId\":\"qa-player-journal\",\"floor\":1,\"holderSurvived\":true}}}",
+        "QA_OWNED_CLEANUP PASS attempts=1"
+      ]
+    }
+  },
+  "files": {
+    "src/lib/progressBackup.ts": {
+      "bytes": 4808,
+      "sha256": "ad9a835011ef0c32ef0fe205f94d56a8c5b2c899ba161a70158f4e1b756261db"
+    },
+    "src/lib/progressBackup.test.ts": {
+      "bytes": 12601,
+      "sha256": "582713fff736f522144a966208db943dfd5af7c30f877d4067d3f1199499dbf1"
+    },
+    "qa/import-preview-e2e.mjs": {
+      "bytes": 26003,
+      "sha256": "2a4c2d33301bc851e4bd15ec883a344b22e52369d12267889eeb82a81682cb76"
+    },
+    "qa/journal-e2e.mjs": {
+      "bytes": 59985,
+      "sha256": "d44e0c2e7fad5ba4d6aae1f422853009b0aa0a55a3a9349b8180d2b5a95695ca"
+    }
+  },
+  "diff": {
+    "bytes": 9868,
+    "sha256": "28da78a567efe918203827700c382f71defdc872c61d59c0ced87f804ef364fa"
+  },
+  "reverseCheck": 0,
+  "mobileRetry": {
+    "exit": 0,
+    "entry": "/assets/index-I-LySMG8.js",
+    "sha256": "42f65464402becf89dea02c7c73b52a907851b6511af308ccc44cb7704148b05",
+    "testSha256": "f2954f65ad73453bac82965e36b3f9393a1188e339a3ffef95185e3e105be880"
+  }
+}

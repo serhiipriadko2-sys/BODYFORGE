@@ -3,9 +3,99 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import net from 'node:net';
+import { ChildProcess } from 'node:child_process';
+import { recoverWindowsChrome } from './owned-chrome-windows.mjs';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 class OwnershipError extends Error {}
+const launches = new WeakMap();
+const samePath = (a,b) => process.platform==='win32'
+  ? path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase()
+  : path.resolve(a)===path.resolve(b);
+function present(filename) {
+  try { fs.lstatSync(filename); return true; }
+  catch (error) { if (error.code==='ENOENT') return false; throw error; }
+}
+function profileKey(profile) {
+  const stat=fs.lstatSync(profile,{bigint:true});
+  if (stat.isSymbolicLink()||!stat.isDirectory()) throw new OwnershipError('Disposable profile link or type mismatch');
+  return [stat.dev,stat.ino,stat.birthtimeNs].map(String).join(':');
+}
+function bindLaunch(profile,prefix,chrome) {
+  if (typeof profile!=='string'||!path.isAbsolute(profile)||!samePath(path.dirname(profile),os.tmpdir())||
+      typeof prefix!=='string'||!/^bf-[a-z0-9-]+-$/.test(prefix)||
+      !path.basename(profile).startsWith(prefix)||!/^[a-zA-Z0-9]{6}$/.test(path.basename(profile).slice(prefix.length)))
+    throw new OwnershipError('Unexpected disposable profile');
+  const key=profileKey(profile);
+  const canonical=fs.realpathSync.native(profile);
+  if (!samePath(canonical,path.join(fs.realpathSync.native(os.tmpdir()),path.basename(profile))))
+    throw new OwnershipError('Noncanonical disposable profile');
+  const args=chrome?.spawnargs?.slice(1);
+  const exactly=(name,value)=>Array.isArray(args)&&args.filter(x=>typeof x==='string'&&(x===name||x.startsWith(name+'='))).length===1&&args.includes(name+'='+value);
+  if (!(chrome instanceof ChildProcess)||typeof chrome.spawnfile!=='string'||
+      !path.isAbsolute(chrome.spawnfile)||!['chrome.exe','chromium.exe','chrome','chromium','chromium-browser','google-chrome','google-chrome-stable'].includes(path.basename(chrome.spawnfile).toLowerCase())||
+      !exactly('--user-data-dir',profile)||!exactly('--remote-debugging-address','127.0.0.1')||!exactly('--remote-debugging-port','0'))
+    throw new OwnershipError('Launcher profile or debug arguments mismatch');
+  const old=launches.get(chrome);
+  if(old){
+    if (!samePath(old.profile,canonical)||old.key!==key||!samePath(old.executable,chrome.spawnfile)||old.pid!==chrome.pid)
+      throw new OwnershipError('Disposable launcher or profile changed');
+    return old;
+  }
+  const proof={profile:canonical,key,executable:chrome.spawnfile,pid:chrome.pid,identity:null};
+  launches.set(chrome,proof);
+  return proof;
+}
+function assertProfile(proof) {
+  if (profileKey(proof.profile)!==proof.key||!samePath(fs.realpathSync.native(proof.profile),proof.profile))
+    throw new OwnershipError('Disposable profile changed');
+}
+function readIdentity(proof) {
+  assertProfile(proof);
+  const file=path.join(proof.profile,'DevToolsActivePort');
+  if(!present(file))return null;
+  const stat=fs.lstatSync(file);
+  if(stat.isSymbolicLink()||!stat.isFile()||stat.nlink!==1||stat.size>256)
+    throw new OwnershipError('Invalid disposable identity file');
+  return parseDevToolsIdentity(fs.readFileSync(file,'utf8'));
+}
+function sameIdentity(a,b) { return a?.port===b?.port&&a?.browserPath===b?.browserPath; }
+function cleanupIdentity(proof,supplied) {
+  const disk=readIdentity(proof);
+  const prior=proof.identity;
+  if(supplied){
+    const checked=parseDevToolsIdentity(String(supplied.port)+'\n'+String(supplied.browserPath));
+    if(!sameIdentity(supplied,checked)||(!disk&&!prior)||
+      (disk&&!sameIdentity(disk,supplied))||(prior&&!sameIdentity(prior,supplied)))
+      throw new OwnershipError('Disposable identity mismatch');
+  }
+  if(disk&&prior&&!sameIdentity(disk,prior))throw new OwnershipError('Disposable identity mismatch');
+  return {identity:prior||disk||null,disk};
+}
+function exited(chrome) { return chrome.pid===undefined||chrome.exitCode!==null||chrome.signalCode!==null; }
+async function waitExit(chrome,ms) {
+  const until=Date.now()+ms;
+  while(!exited(chrome)&&Date.now()<until)await sleep(100);
+  return exited(chrome);
+}
+async function closedPort(port) {
+  const until=Date.now()+2000;
+  do {
+    const closed=await new Promise(resolve=>{
+      const socket=net.createConnection({host:'127.0.0.1',port});
+      const done=value=>{socket.destroy();resolve(value)};
+      socket.setTimeout(600);
+      socket.once('connect',()=>done(false));
+      socket.once('timeout',()=>done(false));
+      socket.once('error',error=>done(error.code==='ECONNREFUSED'));
+    });
+    if(closed)return true;
+    await sleep(100);
+  }while(Date.now()<until);
+  return false;
+}
+
 export function parseDevToolsIdentity(raw) {
   const [text, browserPath, ...extra] = raw.trim().split(/\r?\n/);
   const port = Number(text);
@@ -16,7 +106,8 @@ export function parseDevToolsIdentity(raw) {
   return { port, browserPath };
 }
 export function checkedEndpoint(value, identity, pageId) {
-  const url = new URL(value);
+  let url;
+  try { url = new URL(value); } catch { throw new OwnershipError('Invalid CDP endpoint'); }
   const expected = pageId === undefined ? identity.browserPath : '/devtools/page/' + pageId;
   if (url.protocol !== 'ws:' || url.hostname !== '127.0.0.1' ||
       url.port !== String(identity.port) || url.pathname !== expected ||
@@ -68,20 +159,27 @@ async function confirmBrowser(identity) {
 }
 export async function waitForOwnedBrowser(profile, chrome) {
   let launchError;
-  chrome.on('error', error => { launchError = error; });
+  if(chrome instanceof ChildProcess)chrome.on('error', error => { launchError = error; });
+  const proof=bindLaunch(profile,path.basename(profile).slice(0,-6),chrome);
+  if(!Number.isInteger(chrome.pid)||chrome.pid<=0)throw new OwnershipError('Disposable launcher PID unavailable');
   const deadline = Date.now() + 15000;
   const file = path.join(profile, 'DevToolsActivePort');
   while (Date.now() < deadline) {
     if (launchError) throw launchError;
     if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Chrome launcher exit ' + chrome.exitCode);
-    if (fs.existsSync(file)) {
+    assertProfile(proof);
+    if (present(file)) {
+      const stat=fs.lstatSync(file);
+      if(stat.isSymbolicLink()||!stat.isFile()||stat.nlink!==1||stat.size>256)throw new OwnershipError('Invalid disposable identity file');
       const raw = fs.readFileSync(file, 'utf8');
       if (raw.trim().split(/\r?\n/).length === 2) {
         const identity = parseDevToolsIdentity(raw);
         try {
           await confirmBrowser(identity);
-          console.log('QA_OWNED_BROWSER', JSON.stringify(identity));
-          return identity;
+          if(!sameIdentity(readIdentity(proof),identity))throw new OwnershipError('Disposable identity mismatch');
+          proof.identity=Object.freeze({...identity});
+          console.log('QA_OWNED_BROWSER', JSON.stringify(proof.identity));
+          return proof.identity;
         } catch (error) {
           if (error instanceof OwnershipError) throw error;
           if (Date.now() >= deadline) throw error;
@@ -123,29 +221,49 @@ async function closeBrowser(identity) {
   } finally { socket.close(); }
 }
 export async function cleanupOwnedChrome(profile, prefix, chrome, identity) {
-  if (path.dirname(profile) !== os.tmpdir() || !path.basename(profile).startsWith(prefix)) throw new OwnershipError('Unexpected cleanup target');
-  let issue;
-  try {
-    if (!identity && fs.existsSync(path.join(profile, 'DevToolsActivePort'))) {
-      identity = parseDevToolsIdentity(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8'));
+  // All destructive paths depend on the exact launcher, directory and identity proof.
+  const proof=bindLaunch(profile,prefix,chrome);
+  const current=cleanupIdentity(proof,identity);
+  if((!Number.isInteger(chrome.pid)||chrome.pid<=0)&&current.identity)
+    throw new OwnershipError('Disposable launcher cannot authorize browser identity');
+  let issue,graceful=false,recovery=null;
+  if(current.disk&&current.identity){
+    try { await closeBrowser(current.identity); graceful=true; }
+    catch(error) {
+      if(error instanceof OwnershipError)throw error;
+      issue=error;
     }
-    if (identity) await closeBrowser(identity);
-  } catch (error) { issue = error; }
-  if (chrome.exitCode === null) {
-    const until = Date.now() + 3000;
-    while (chrome.exitCode === null && Date.now() < until) await sleep(100);
-    if (chrome.exitCode === null) chrome.kill();
   }
-  const deadline = Date.now() + 15000;
-  let lastError, attempts = 0;
+  await waitExit(chrome,3000);
+  assertProfile(proof);
+  // A missing file after a recorded close is normal; a changed identity is not.
+  const after=readIdentity(proof);
+  if(after&&current.identity&&!sameIdentity(after,current.identity))throw new OwnershipError('Disposable identity mismatch');
+  if(process.platform==='win32'&&chrome.pid!==undefined){
+    recovery=await recoverWindowsChrome(proof.profile,proof.executable);
+  }else if(chrome.pid!==undefined&&!graceful){
+    // No unverified process-tree kill or directory deletion on other hosts.
+    throw Error('Disposable browser graceful close unconfirmed on this platform');
+  }
+  if(!await waitExit(chrome,2000))throw Error('Disposable launcher exit unconfirmed');
+  if(current.identity&&!await closedPort(current.identity.port))throw new OwnershipError('Disposable debugging port still listening or unverified');
+  // Do not touch a replaced or linked profile, including during removal retries.
+  const deadline=Date.now()+15000;
+  let attempts=0,lastCode;
   do {
     attempts++;
-    try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 0 }); lastError = undefined; }
-    catch (error) { lastError = error; if (!['EPERM', 'EBUSY', 'ENOTEMPTY', 'EACCES'].includes(error.code)) break; }
-    if (!fs.existsSync(profile)) break;
+    if(!present(proof.profile))break;
+    assertProfile(proof);
+    try {fs.rmSync(proof.profile,{recursive:true,force:true,maxRetries:0});lastCode=undefined;}
+    catch(error){lastCode=error.code;if(!['EPERM','EBUSY','ENOTEMPTY','EACCES'].includes(error.code))break;}
+    if(!present(proof.profile))break;
     await sleep(350);
-  } while (Date.now() < deadline);
-  if (fs.existsSync(profile)) throw lastError || Error('Disposable profile still exists');
-  if (issue) throw issue;
-  console.log('QA_OWNED_CLEANUP PASS attempts=' + attempts);
+  }while(Date.now()<deadline);
+  if(present(proof.profile))throw Error('Disposable profile removal unconfirmed'+(lastCode?' ('+lastCode+')':''));
+  launches.delete(chrome);
+  const mode=recovery?(issue||!graceful||recovery.terminated?'verified-windows-recovery':'graceful-windows-verified'):'graceful-or-no-spawn';
+  const suffix=recovery?' exactProfileBefore='+recovery.before+' terminated='+recovery.terminated+' remaining='+recovery.remaining:'';
+  console.log('QA_OWNED_CLEANUP PASS attempts='+attempts+' mode='+mode+suffix);
+  return {mode,attempts,profileRemoved:true,launcherExited:true,portClosed:current.identity?true:null,
+    exactProfileBefore:recovery?.before??null,terminated:recovery?.terminated??null,remaining:recovery?.remaining??null};
 }

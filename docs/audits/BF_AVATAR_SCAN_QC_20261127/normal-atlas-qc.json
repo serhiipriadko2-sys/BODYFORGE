@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "changedTexels": 67214,
+  "unchangedTexels": 981362,
+  "minChangedZ": 0.9607843137254901,
+  "maxEncodedLengthError": 0.00460885220878382,
+  "maxDecodedAngleDegrees": 16.75508281463,
+  "meanDecodedAngleDegrees": 2.3793175189397524,
+  "sourceSha256": "a0f81449d6c17b57047b6da5da7143711ece49c960ab09004c54ff4b49f8e159"
+}

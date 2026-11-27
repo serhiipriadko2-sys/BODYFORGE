@@ -1,0 +1,202 @@
+[
+  {
+    "path": "activation.stage",
+    "bytes": 6453,
+    "sha256": "645898f1455279b3e4766f48bfba9204ad90bb015b899c966b1e67f64181dcbb"
+  },
+  {
+    "path": "ADR.md",
+    "bytes": 2160,
+    "sha256": "88aa6ca141d9e0cdbe9b5a6992c9d5c4e2e0e27ca0deedf4f69a143e213ac594"
+  },
+  {
+    "path": "browser/bf-qa-mobile-360-premium.png",
+    "bytes": 89552,
+    "sha256": "6230575cb00acda96cff00027284bc65281d8e0d8ac9d36863a2865e7b35ce59"
+  },
+  {
+    "path": "browser/bf-qa-mobile-backup-json-inspection.png",
+    "bytes": 125126,
+    "sha256": "849bd1ff6ae19ff8f6359591c5ac1479efb455e31da164d5d05be864308605ab"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge-upgraded.png",
+    "bytes": 204635,
+    "sha256": "9ade2fee1d252a71a50f8fea5accbcf6c2b13833fc909d966050bc9c1f56c4f6"
+  },
+  {
+    "path": "browser/bf-qa-mobile-forge.png",
+    "bytes": 195334,
+    "sha256": "8eecacc524d9b0678ccd15ea40a3b2c9fb3a80dcfcd0289076afcc6a44610101"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-360-premium.png",
+    "bytes": 197591,
+    "sha256": "6b36873462cc9165ad64ffb19828ba9ebe3f695c85804bc65cb6d847d2ac5b6f"
+  },
+  {
+    "path": "browser/bf-qa-mobile-home-premium.png",
+    "bytes": 221114,
+    "sha256": "1098fe96d8ea9962b2630406fe0e7b299b101534503bb1f6c416298758ff0009"
+  },
+  {
+    "path": "browser/bf-qa-mobile-lenses.png",
+    "bytes": 93728,
+    "sha256": "41141bc8a4128832155ef86f041d2b066db41c265e7468cae2505a0eda2295df"
+  },
+  {
+    "path": "browser/bf-qa-mobile-performance-panel.png",
+    "bytes": 93136,
+    "sha256": "f4f122b8c465dc0e2696c308cb62fbdf7bda116d25b0a2108f5bfdc0de1be5ba"
+  },
+  {
+    "path": "browser/bf-qa-mobile-setup.png",
+    "bytes": 151424,
+    "sha256": "7930ee37836fcfea7ef6e3e8e17f51d5cfcbcbff15ed089dddbbdd54308866a6"
+  },
+  {
+    "path": "browser/bf-qa-mobile-tower.png",
+    "bytes": 91532,
+    "sha256": "5f5ff9459dcd1169dc2414d5cbca16f7c08f9ba1335785c82540682d970cfca5"
+  },
+  {
+    "path": "build-manifest.json",
+    "bytes": 14234,
+    "sha256": "ef2e56fd472435b4e7f2cb70d56b9b1a3b7a7331be3593ec4271a7cf0b01f10b"
+  },
+  {
+    "path": "build.log",
+    "bytes": 3392,
+    "sha256": "8f65c13fe05839124a8b29d2d8daa4eec6d574eab99001b39ac978ac5d78fb6a"
+  },
+  {
+    "path": "bundle.log",
+    "bytes": 285,
+    "sha256": "51035c0d05f21aeba12930ac3c39abd77a2ff4c9c120878ce422d2574d2441d2"
+  },
+  {
+    "path": "dev-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "dev.log",
+    "bytes": 50,
+    "sha256": "d386d2006a9f2a3e2111eeefcbd9c13b03afae4566cb0c63c96231fd48a0dff6"
+  },
+  {
+    "path": "durable-journal-e2e.mjs.before",
+    "bytes": 72901,
+    "sha256": "ad488ff4f9a39bc719f8adc40cff1c521e897d769a680b1073c22e86c487597a"
+  },
+  {
+    "path": "durableJournalV2.ts.before",
+    "bytes": 18436,
+    "sha256": "8e4cb526cae1545cd18dd613a1b0c931434d9411dd19892c774784d81d386834"
+  },
+  {
+    "path": "final-readback.json",
+    "bytes": 4422,
+    "sha256": "31942d364bebf4ab4a18c8edac12d6f2b6448baae759dec77edc41450814518c"
+  },
+  {
+    "path": "finalize.py",
+    "bytes": 11195,
+    "sha256": "f33fbb17c2ce54277ff8a4a3422beb94ed255e282b74c36978036de255b95f63"
+  },
+  {
+    "path": "gates.json",
+    "bytes": 1957,
+    "sha256": "3672c1bfb3bd7744fa201d5ed91f525c0f2fc298a30e1326f43162065ef5eab7"
+  },
+  {
+    "path": "head.txt",
+    "bytes": 42,
+    "sha256": "9482349760d8bf11bafc0b04ac65925821b321df5c397e62b1802c9a1fd0fb0a"
+  },
+  {
+    "path": "isolated-root.txt",
+    "bytes": 64,
+    "sha256": "f21b2875782e29083c4e944d657d73f53b9dcc92dceb39252bb5aeed4c458701"
+  },
+  {
+    "path": "journal.log",
+    "bytes": 10894,
+    "sha256": "a5b86ada09c7f5410a2b6fcb4ca091a66a8002c38c000a8185a25bb77d2b8c2d"
+  },
+  {
+    "path": "mobile.log",
+    "bytes": 10418,
+    "sha256": "da60fbd496da5a7211ed736d9cb136b95187514e5964a135628061054a7cc7f0"
+  },
+  {
+    "path": "owned.json",
+    "bytes": 314,
+    "sha256": "379767d8cfdc145eebfc38581de8e86b66679a9f90070c95cbedac05b3d42d2e"
+  },
+  {
+    "path": "patch.py",
+    "bytes": 8323,
+    "sha256": "331d8597804fff2a329dfb2afbfd05ac6ae84d8f64c2e9456624b2019d56e251"
+  },
+  {
+    "path": "preview-err.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "preview.log",
+    "bytes": 39,
+    "sha256": "404aca432f5839dda40c3089918d71a6a29db9a0ae09c03c6253e535cb5efa7d"
+  },
+  {
+    "path": "privacy.log",
+    "bytes": 777,
+    "sha256": "63ce23dcbb1ede906f06793262b1fed2438b26d83689f21c029ca9ba667faea3"
+  },
+  {
+    "path": "proof.stage",
+    "bytes": 4576,
+    "sha256": "2e9d5992a394accaee133bebb372920594cd69d0ae5f9362c0d1458411e29d09"
+  },
+  {
+    "path": "qa.stage",
+    "bytes": 9891,
+    "sha256": "304d22f2c2edbef000adedc3958a22cc1947d7ac68be6fd8fad27db42bc31211"
+  },
+  {
+    "path": "RECEIPT.md",
+    "bytes": 3845,
+    "sha256": "ae8e659001feadac7256959db63250bda5d6fa5d0e346579683c8772177031de"
+  },
+  {
+    "path": "source.json",
+    "bytes": 57255,
+    "sha256": "12e4a230a2823b9c0dd673fdccea73e094615e197d31ec7467e0db27fdc2363d"
+  },
+  {
+    "path": "tower-browser/bf-qa-tower-victory.png",
+    "bytes": 144295,
+    "sha256": "198e3ae5593394b8e4c50a95705f17fa564efe587b236fbe0a7d7f48a71d7905"
+  },
+  {
+    "path": "tower-v2.log",
+    "bytes": 5218,
+    "sha256": "0d11af99e26aaf5f44743b733a103799ccf79bbbeca4a97c62eda43afbe135e5"
+  },
+  {
+    "path": "tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "unit.log",
+    "bytes": 19944,
+    "sha256": "c9f5ac2763d1de5d34e5e4fe9a54b7654a82ec7f428a5820cc689bdb53ed12e6"
+  },
+  {
+    "path": "verify.ps1",
+    "bytes": 7372,
+    "sha256": "374e1c67c210d195248770d2f69a2ae5b4fe5cdc0cde760db85f235d88e8f308"
+  }
+]

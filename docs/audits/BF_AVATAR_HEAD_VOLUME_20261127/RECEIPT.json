@@ -1,0 +1,128 @@
+{
+    "status":  "PARTIAL",
+    "scope":  "local head volume V4 experiment",
+    "targetedTests":  "17/17",
+    "endpointChecks":  "9/9",
+    "browserEnabled":  "21/21",
+    "browserOff":  "FAIL_TIMEOUT",
+    "browserFallback":  "NOT_RUN",
+    "build":  "PASS",
+    "privateMarkersInProductionJs":  0,
+    "files":  [
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/artec-reference.blend",
+                      "bytes":  70511550,
+                      "sha256":  "55ee5fafccc58322f7c348c716f25365151a38e1234cf3ff0e77b358d0f6f602"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/head-volume-comparison-v4.png",
+                      "bytes":  184440,
+                      "sha256":  "00120bcfdde9671faaea628ecba1414e1a2a79fbfaad1eefa17b2c80ebbb78db"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/head-volume-review-v4.blend",
+                      "bytes":  7533074,
+                      "sha256":  "7d59b1ed54a8552059c3d59fb19d555d7bc2a2608b19ca7c41173deb30e6e7bc"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/head-volume-review-v4.json",
+                      "bytes":  9284,
+                      "sha256":  "185ec8ce1c6cc0e9c77de12dd5c7bfeeffc274bb7af816a8fc4ba81b0c4cc0b6"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/blender-readback.json",
+                      "bytes":  648,
+                      "sha256":  "4055b7be8bfa4f711716af934abd79a50483dde6635c54ecfd095226685cabdf"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/build-final.log",
+                      "bytes":  6980,
+                      "sha256":  "089e8692f18a01d66de7296fe5a3a0f9dea29f0e1cb9ea92de505f4c3e1272f8"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/endpoint-verified.json",
+                      "bytes":  636,
+                      "sha256":  "19803f667e25db29e276118499fa16dd708951f093c8ec3041a3b0f2f383635c"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/REPORT.md",
+                      "bytes":  4136,
+                      "sha256":  "b1727010a49eda24e49155a1119d1f879a6758f93b70a0f6a9f6f09736316223"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/targeted-final.log",
+                      "bytes":  5354,
+                      "sha256":  "d000d65e0546d1dfd950594864cc4f23cd4a17e6ba93cc65b082dbe908fbfcd9"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-off.log",
+                      "bytes":  516,
+                      "sha256":  "7d2d8db67f4f41186fe4858bd1f119114cb8354649aeaa042de583cbb257102e"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-on.log",
+                      "bytes":  2050,
+                      "sha256":  "c49352a224718b4e00cedb3d8f9cf8f176157c4b81fa45b744c87bdbdda79353"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-on/head-on-deep.png",
+                      "bytes":  611785,
+                      "sha256":  "f240d2d37b4a5a20c06c1f03d2cd2faafc79f4ad7f4e12be938906dd6fd291d4"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-on/head-on-front.png",
+                      "bytes":  619789,
+                      "sha256":  "688be7e575bf0ac7057a5ff57a78eba59a8066ff8aa3beb6b92fd6f2c648cc5c"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-on/head-on-torso.png",
+                      "bytes":  640355,
+                      "sha256":  "07a645e7262c2d941b7c4cb181b55f378b66c7298769380df09a8a1656f21238"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_HEAD_VOLUME_20261127/verified-on/head-on-turned.png",
+                      "bytes":  627428,
+                      "sha256":  "19756642049631bf8f55a2a887fdda0972854d8af304822d21ee2c01b074068f"
+                  },
+                  {
+                      "path":  "public/assets/bodyforge-athlete-efficient.glb",
+                      "bytes":  4639184,
+                      "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+                  },
+                  {
+                      "path":  "qa/avatar-quality-e2e.mjs",
+                      "bytes":  126650,
+                      "sha256":  "dc2423c8e00cb611ce6003baa07128fbb7d4221cee73ba24e39a9f16b340e25c"
+                  },
+                  {
+                      "path":  "qa/head-volume-endpoint-qc.mjs",
+                      "bytes":  2350,
+                      "sha256":  "68c2b7429d7da5908c98bb4455cde7a0dc28a890708686908ae15b62b1af3aca"
+                  },
+                  {
+                      "path":  "qa/local-avatar-head-review.ts",
+                      "bytes":  2307,
+                      "sha256":  "3e83c8a142d861cb4d51bbafb3836b34735aba0823550501037dde7f0c50969a"
+                  },
+                  {
+                      "path":  "src/components/Avatar3D.tsx",
+                      "bytes":  67381,
+                      "sha256":  "dabd755caae3e811e1b39c4561093fab6758820924df836b94f208638b5b5402"
+                  },
+                  {
+                      "path":  "src/lib/avatarHeadVolumeReview.test.ts",
+                      "bytes":  7954,
+                      "sha256":  "9b07fb600a06d13e5f3f735cdf2734fd82d71471e2bdb6eb207114bd26332e82"
+                  },
+                  {
+                      "path":  "src/lib/avatarHeadVolumeReview.ts",
+                      "bytes":  7243,
+                      "sha256":  "4adb28b43aeca96af2974a742579b3f1b090147348118ea89af8953fa717d030"
+                  },
+                  {
+                      "path":  "vite.config.ts",
+                      "bytes":  3333,
+                      "sha256":  "f175cd3a4d3ce4cb888044a2f1399dde65c3a00656097b7e6966222cb36b0638"
+                  }
+              ]
+}

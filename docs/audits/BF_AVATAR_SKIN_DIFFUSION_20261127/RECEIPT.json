@@ -1,0 +1,239 @@
+{
+    "status":  "PARTIAL_AAA_SCOPE_PASS",
+    "head":  "5ef0bb170cfa411e5c9bf8be95739c6e85104d1e",
+    "localOnly":  true,
+    "productionDeployment":  false,
+    "tests":  {
+                  "build":  "PASS",
+                  "files":  112,
+                  "browserAssertions":  59,
+                  "unitFailed":  0,
+                  "browserFrames":  12,
+                  "unit":  1191,
+                  "physicalAndroid":  "NOT_RUN"
+              },
+    "faceCandidate":  "OFFLINE_NOT_PROMOTED",
+    "count":  44,
+    "files":  [
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/artec-reference.blend",
+                      "bytes":  70511550,
+                      "sha256":  "55ee5fafccc58322f7c348c716f25365151a38e1234cf3ff0e77b358d0f6f602"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/bake-face-photo-candidate-v1.py",
+                      "bytes":  9865,
+                      "sha256":  "523eff1f068c7cba75714bd965d1d01f8a18a1477d8929067e512af4d446aa31"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/face-photo-candidate-v1-comparison.png",
+                      "bytes":  127601,
+                      "sha256":  "55efbf3403ada853615442e5bb5d443fd7fc73a4ef29ce439fea04490869d7c1"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/face-torso-photo-candidate-v1.png",
+                      "bytes":  3863925,
+                      "sha256":  "01ea74a3c7daaff6ea26c19a618da01159d9fde70635bab45dc6fc388a18b4c9"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/head-feasibility-v1.png",
+                      "bytes":  509935,
+                      "sha256":  "27120ec321e26433917662a55d1159f19c0000bc58616108b0abd1c1b4fa58fa"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/scan-reference-artec/inspect-head-feasibility-v1.py",
+                      "bytes":  5675,
+                      "sha256":  "41909056427185aecb14ff87fea38b74e1cd8fefd6c6ca039fbf04f5aeee5274"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/Avatar3D.tsx.before.txt",
+                      "bytes":  65632,
+                      "sha256":  "6637d93374870f9cc9852b4602a4528aff4c7cbfcea9eb7458ddf3ac7487f7ca"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/avatar-quality-e2e.mjs.before.txt",
+                      "bytes":  121103,
+                      "sha256":  "ee892f1995ae5cf6a4dc62e26805aab0cde5d31fdf45f175a801c3ddc99e2934"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/avatarSkinLighting.ts.before.txt",
+                      "bytes":  4151,
+                      "sha256":  "696cea45569eec3f5bf848e3d76bacd8df98844f388045b7955d9b6c449ed6fb"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/build.log",
+                      "bytes":  3100,
+                      "sha256":  "76f7d80f6122a08c1316e1c359e48a2c70b04aae5dc0db1d30635056120bdd90"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/compare-browser-frames.py",
+                      "bytes":  1866,
+                      "sha256":  "5a02375600562ec1942f5032039dc232cca32a9eb78b5853e06cfaf097a0b95b"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/diffusion-comparison.png",
+                      "bytes":  1058664,
+                      "sha256":  "c3b57b1e43baeb45b3fd5940204601d483824c3fd8c2e5b80d27ceaf79387bca"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/face-photo-candidate.json",
+                      "bytes":  1181,
+                      "sha256":  "90927236b0147d271e9e7d015317f46b85d224bff795e98939929b34a0bed277"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/face-photo-candidate.log",
+                      "bytes":  4710,
+                      "sha256":  "3002aae8ba16e91d138436e788aa21480fd13a4e7de3a932e52510279183dfb7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/fallback.log",
+                      "bytes":  2077,
+                      "sha256":  "c1d91e494aa59bc399a1172321738108225d3ae5109cab69a5b0a482dd30e397"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/fallback/diffusion-fallback-deep.png",
+                      "bytes":  600884,
+                      "sha256":  "42a0e96b43ae12d3ac39a21024c0511897a4effd3c2198a2f2737cf14e72d43f"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/fallback/diffusion-fallback-front.png",
+                      "bytes":  616681,
+                      "sha256":  "73c0d01ba4ca4180fb9e765185e4722ff999d2699eef83acbbc1a002eb8ed951"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/fallback/diffusion-fallback-torso.png",
+                      "bytes":  636199,
+                      "sha256":  "3e1aa16fc3830cb458b339f8fdfee94710676489068482a52f7241fa132721a6"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/fallback/diffusion-fallback-turned.png",
+                      "bytes":  621452,
+                      "sha256":  "5914706a0193007b210bf9e8f9b0fb19da4949857372af67de46443764bb06a0"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/full-vitest.log",
+                      "bytes":  29203,
+                      "sha256":  "7cf87c0b8ea3e15edbdb62b2246db56c68d73d8e6f2809f5f626d9da53e58c18"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/head-feasibility.json",
+                      "bytes":  1211,
+                      "sha256":  "4b1fa229c31bdeec7f030124ded88f26eb55f5731ee255ecdfb372038005bc5e"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/head-feasibility.log",
+                      "bytes":  4586,
+                      "sha256":  "892de0c2bb26b1eba0408d9472b5c8d2cabae0d8cdb049afa1bf4383fa2e22b3"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/off.log",
+                      "bytes":  1987,
+                      "sha256":  "ec5fa3d604f7f521e74981a355565063d769aababbe15d97894c169700b74971"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/off/diffusion-off-deep.png",
+                      "bytes":  613073,
+                      "sha256":  "a9b37f597cc450f42ab325770144ca1908daee4f8eb0f048f11d3b882cde3607"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/off/diffusion-off-front.png",
+                      "bytes":  620980,
+                      "sha256":  "5b6ce35b36797ac3b10594ffd6fbcd1a0724fe63b6d8ade0c7bf3a1635aa9d3f"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/off/diffusion-off-torso.png",
+                      "bytes":  642215,
+                      "sha256":  "9892c9a156c769f8fb4823b835452cd4297b4b2231058e4d0553eeb5d58133cc"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/off/diffusion-off-turned.png",
+                      "bytes":  629078,
+                      "sha256":  "7897f576cf5f81c9118347e018eb42b095392c5ee6b52ecbb573110265c97d88"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/on.log",
+                      "bytes":  1930,
+                      "sha256":  "f08ee070a699068ed1269a6aa9e2dca64681d981efa13f1ad01470fd586909ff"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/on/diffusion-on-deep.png",
+                      "bytes":  611752,
+                      "sha256":  "36ecfd52ff337776a871b718c4d7a1cdac40c28f1af006c1ebfeb022051ac028"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/on/diffusion-on-front.png",
+                      "bytes":  619865,
+                      "sha256":  "bbd8136127f5e0ac9ef785eac296724a1c2be4cd8c4fbabe6a6dd4115cc0e7b3"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/on/diffusion-on-torso.png",
+                      "bytes":  640465,
+                      "sha256":  "7b30578c435f7b8f77c6924a8e4b79ebc1f5dc28fe0b5ab6c22d22262ae155d5"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/on/diffusion-on-turned.png",
+                      "bytes":  627555,
+                      "sha256":  "a0f3c555fee24531b7d635f01b6408ac0fd2feebeb310dc79199a387eae9f6bc"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/pixel-comparison.json",
+                      "bytes":  1681,
+                      "sha256":  "48f272a5be5262ec5c8da62e0f975ef129a54d3f0fddf334fa0b77d36e35966e"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/REPORT.md",
+                      "bytes":  4117,
+                      "sha256":  "e0670d56de656faa6a0b40a34791f261c9d198d8d2b82e8c6bee8e4d5a28a3bc"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/server.out.log",
+                      "bytes":  48,
+                      "sha256":  "157c4df98f469f9cf9d650d7c07d312ee3193116541282f02cf5db42eed32b9f"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_SKIN_DIFFUSION_20261127/targeted-vitest.log",
+                      "bytes":  5528,
+                      "sha256":  "6a93a5e47e67cfb00db79c8a8bcc87b2a3e54129b26f168a2d00ccc3c3bc61c5"
+                  },
+                  {
+                      "path":  "public/assets/bodyforge-athlete-efficient.glb",
+                      "bytes":  4639184,
+                      "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+                  },
+                  {
+                      "path":  "qa/avatar-quality-e2e.mjs",
+                      "bytes":  125661,
+                      "sha256":  "c6cdc241c902808094cba99758f458041c8e8dc3f053c71a76c1d12644512793"
+                  },
+                  {
+                      "path":  "src/components/Avatar3D.tsx",
+                      "bytes":  66048,
+                      "sha256":  "a2d1a4f12489cc103a79cdefa755a455980d321ef09a0ab11be8d63275efb5b1"
+                  },
+                  {
+                      "path":  "src/lib/athlete-torso-color-review.png",
+                      "bytes":  3854848,
+                      "sha256":  "d36c1235f1adaf4bd5e32fadf641d2b225c38a27eaf147ac070000545208e364"
+                  },
+                  {
+                      "path":  "src/lib/athlete-torso-normal-review.png",
+                      "bytes":  298089,
+                      "sha256":  "a0f81449d6c17b57047b6da5da7143711ece49c960ab09004c54ff4b49f8e159"
+                  },
+                  {
+                      "path":  "src/lib/avatarSkinDiffusion.test.ts",
+                      "bytes":  5326,
+                      "sha256":  "25b8e7b0e56deb3e28b353a9b8d02300228f444726e133c91910cb2c3b70b63a"
+                  },
+                  {
+                      "path":  "src/lib/avatarSkinDiffusion.ts",
+                      "bytes":  5602,
+                      "sha256":  "7c3dba2cae258f27ad226533d169239b70341d1f1213dc196314cae7d9672cd1"
+                  },
+                  {
+                      "path":  "src/lib/avatarSkinLighting.ts",
+                      "bytes":  4681,
+                      "sha256":  "c595b33a44e0177938f086366e1867d1dbe3b254d6ef8cfb3e5a3010ba2d8e30"
+                  }
+              ]
+}

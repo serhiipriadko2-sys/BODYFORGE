@@ -1,0 +1,48 @@
+{
+  "assetSha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+  "extensions": [
+    "KHR_mesh_quantization"
+  ],
+  "meshes": [
+    {
+      "name": "BODYFORGE_Body",
+      "vertices": 65895,
+      "triangles": 96224,
+      "topologySha256": "d0eb21e3d86a9a08666b5a47ba3a8466bac2a945b500258a6bb25f3b14885fe8",
+      "positionComponentType": 5126,
+      "normalized": false
+    },
+    {
+      "name": "BODYFORGE_Shirt",
+      "vertices": 4415,
+      "triangles": 8274,
+      "topologySha256": "ad0813dc63c60a68e2af2166631334b9599b55b6bca691f44d33f4c7f0e1f6cf",
+      "positionComponentType": 5126,
+      "normalized": false
+    },
+    {
+      "name": "BODYFORGE_Shorts",
+      "vertices": 1568,
+      "triangles": 2849,
+      "topologySha256": "21b9c830f2998edb871d44ba6ad752db277fd850ce642f349635bbf907f8a480",
+      "positionComponentType": 5126,
+      "normalized": false
+    },
+    {
+      "name": "BODYFORGE_SkinNipples",
+      "vertices": 458,
+      "triangles": 624,
+      "topologySha256": "e1c1b0c71755f8692c479284759b932afba5fecf91686e980668014ff7e48c6a",
+      "positionComponentType": 5126,
+      "normalized": false
+    },
+    {
+      "name": "BODYFORGE_ChestMark",
+      "vertices": 8,
+      "triangles": 4,
+      "topologySha256": "3453402f24129562cac7e50e183c433fc84499c9ca80e117a831e784708801e8",
+      "positionComponentType": 5126,
+      "normalized": false
+    }
+  ]
+}

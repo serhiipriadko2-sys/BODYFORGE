@@ -1,0 +1,16 @@
+{
+  "first_freeze": "ABORTED_BEFORE_WRITES",
+  "previous_root": {
+    "package.json": "d12b1c4980345a8b05fbc50023cd9548aebc28bbc392b782c182047a9dd61963",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "current_root": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "candidate_dependency_fields_match": true,
+  "added_scripts": [
+    "qa:release"
+  ],
+  "scope": "Copy latest scripts; only reviewed Vite version change in candidate. No root adoption."
+}

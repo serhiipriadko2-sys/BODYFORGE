@@ -1,0 +1,13 @@
+{
+  "owned": {
+    "qa/release-artifact-boundary.mjs": "3e3fadfe468634ee421524b82f83f93be745274d0a5644e8364a7f0d7c6e8900",
+    "qa/release-artifact-boundary.test.mjs": "75629933264b1997ca4ea77948b466c2f49195b99f3f2325918578621ab63ad6",
+    "qa/public-artifact-allowlist.json": "fdfdd10e9670377d90e3bd45371be0c2b4b4c4a3878d60d97b296059468655d6"
+  },
+  "commands": {
+    "syntax": 0,
+    "syntax-tests": 0,
+    "unit": 0,
+    "public": 0
+  }
+}

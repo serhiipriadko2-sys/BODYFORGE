@@ -46,6 +46,39 @@ describe('scan-informed local torso relief',()=>{
       expect([...evaluate(p[0],p[1],p[2]).d]).toEqual([0,0,0]);
     console.info('SCAN_TORSO_DERIVATIVES',JSON.stringify({active,maxError}));
   });
+
+  it('transforms the normal at a zero-displacement crossing with nonzero slope',()=>{
+    // Minimal synthetic geometry, but use the real physique entry point and
+    // the exact mesh contract. Coordinates are binary-exact for a true zero.
+    const geometry = new THREE.BufferGeometry();
+    const points = new Float32Array(65895 * 3);
+    const normals = new Float32Array(points.length);
+    points.set([0, 1.25, .125]);
+    for(let i=2;i<normals.length;i+=3)normals[i]=1;
+    geometry.setAttribute('position', new THREE.BufferAttribute(points,3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals,3));
+    const material = new THREE.MeshBasicMaterial();
+    const body = new THREE.SkinnedMesh(geometry,material);
+    body.name='BODYFORGE_Body';body.userData.BODYFORGE_groom='v2';
+    const root=new THREE.Group();root.add(body);
+    const front=Array<number>(49).fill(0);
+    front[2*7+1]=-6000;front[2*7+3]=6000;
+    const field={id:'zero-crossing',x0:-.125,y0:1.125,step:.0625,width:7,height:7,front,back:Array<number>(49).fill(0)};
+    const d=new Float64Array(3),j=new Float64Array([1,0,0,0,1,0,0,0,1]);
+    addAvatarScanTorsoRelief(field,0,1.25,.125,0,0,d,j);
+    expect(d[2]).toBe(0);
+    expect(Math.abs(j[6])).toBeGreaterThan(.01);
+    try{
+      createAvatarPhysique(root,false,false,field)({});
+      const p=body.geometry.getAttribute('position'),n=body.geometry.getAttribute('normal');
+      const expected=new THREE.Vector3(0,0,1).applyMatrix3(new THREE.Matrix3().set(j[0],j[1],j[2],j[3],j[4],j[5],j[6],j[7],j[8]).invert().transpose()).normalize();
+      expect([p.getX(0),p.getY(0),p.getZ(0)]).toEqual([0,1.25,.125]);
+      expect(n.getX(0)).toBeCloseTo(expected.x,6);
+      expect(n.getY(0)).toBeCloseTo(expected.y,6);
+      expect(n.getZ(0)).toBeCloseTo(expected.z,6);
+    }finally{geometry.dispose();material.dispose();}
+  });
+
   it('checks the actual athlete mesh, combined field orientation, independent paid levels and exact reset',async()=>{
     const {scene}=await new GLTFLoader().parseAsync(Uint8Array.from(readFileSync('public/assets/bodyforge-athlete-efficient.glb')).buffer,'');
     try{

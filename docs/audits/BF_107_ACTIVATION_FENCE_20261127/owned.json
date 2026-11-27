@@ -1,0 +1,5 @@
+{
+  "src/lib/durableJournalV2.ts": "2f5686d31951b2ef640633a245fc14e7491a2e684624dd83d9933099d6341c75",
+  "qa/durable-journal-e2e.mjs": "fc0754dcd0988e0e8a86db8d68ce087f3ddefc08fbba17632ff8560e8d684ef9",
+  "src/lib/journalActivationProof.ts": "2e9d5992a394accaee133bebb372920594cd69d0ae5f9362c0d1458411e29d09"
+}

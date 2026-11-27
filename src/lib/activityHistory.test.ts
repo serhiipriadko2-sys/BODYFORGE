@@ -40,6 +40,13 @@ describe('BF-107 full activity projection',()=>{
     expect(JSON.stringify(f)).toBe(before);
     expect(view.records.every(r=>!('xp' in r)&&!('coins' in r))).toBe(true);
   });
+  it('projects the same complete history from receipt-only records without checkpoints',()=>{
+    const f=fixture();
+    const entries=f.archived.map(({key,raw,state})=>({key,raw,state}));
+    expect(indexActivityHistory(f.raw,parseProfile(JSON.parse(f.raw)),{status:'ready',entries}))
+      .toEqual(index(f));
+    expect(entries.every(r=>!('baseProfileRaw' in r))).toBe(true);
+  });
   it('does not fabricate a missing paid date or count active, foreign, unpaid or quarantined rows',()=>{
     const f=fixture(), rows=f.archived.slice(5);
     rows.push(row('id-0',previous,'active'),row('id-1',old,'quarantined'),
@@ -84,7 +91,7 @@ describe('BF-107 full activity projection',()=>{
     const entry=resultJournalEntry({schemaVersion:1,profileId:'fighter',sessionId:'plank-old',
       mode:'training',floor:null,exerciseId:'plank',durationMs:31000,finishedAt:old.toISOString(),repetitions:0,holdSeconds:30})!;
     const raw=JSON.stringify(p);
-    const view=indexActivityHistory(raw,parseProfile(JSON.parse(raw)),{status:'ready',entries:[{key:entry.key,raw:entry.raw,state:'settled',baseProfileRaw:null}]});
+    const view=indexActivityHistory(raw,parseProfile(JSON.parse(raw)),{status:'ready',entries:[{key:entry.key,raw:entry.raw,state:'settled'}]});
     expect(view.complete).toBe(true);
     expect(comparePulsePeriods(view.records,now,7,61,'complete').current).toMatchObject({sessions:61,reps:1200,holdSeconds:30});
   });

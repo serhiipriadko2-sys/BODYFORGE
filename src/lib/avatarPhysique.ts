@@ -3,6 +3,7 @@ import type { Muscle } from './game';
 import { createGarmentFoldProfile, sampleGarmentFold, type GarmentFoldProfile } from './avatarGarmentFolds';
 
 import { MUSCLE_LOBES, addMuscleLobe } from './avatarMuscleAnatomy';
+import { ATHLETIC_REVIEW_ID, addAvatarAthleticReviewGrowth } from './avatarAthleticReview';
 import { createAvatarChestMarkFit } from './avatarChestMarkFit';
 import { addTorsoLandmarks } from './avatarTorsoLandmarks';
 import { addAvatarScanTorsoRelief, type ScanTorsoReviewField } from './avatarScanTorsoRelief';
@@ -11,11 +12,13 @@ const groups = Object.keys(MUSCLE_LOBES) as Muscle[];
 const fitted = new Set(['BODYFORGE_Body', 'BODYFORGE_SkinNipples', 'BODYFORGE_Shirt', 'BODYFORGE_Shorts', 'BODYFORGE_ChestMark']);
 type Surface = { positions: THREE.BufferAttribute; normals: THREE.BufferAttribute; rest: Float32Array; normalsAtRest: Float32Array; folds?: GarmentFoldProfile };
 
-export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, landmarks = false, scanTorso?: ScanTorsoReviewField): (muscles: Partial<Record<Muscle, number>>) => void {
+export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, landmarks = false, scanTorso?: ScanTorsoReviewField, athleticReview = false): (muscles: Partial<Record<Muscle, number>>) => void {
   const body = root.getObjectByName('BODYFORGE_Body');
   const knownAthlete = body instanceof THREE.SkinnedMesh &&
     body.userData.BODYFORGE_groom === 'v2' && body.geometry.getAttribute('position')?.count === 65895;
   const scanField = knownAthlete ? scanTorso : undefined;
+  const athletic = import.meta.env.DEV && Boolean(scanField) && athleticReview;
+  if (athletic) root.userData.BODYFORGE_athleticReview = ATHLETIC_REVIEW_ID;
   const landmarksEnabled = landmarks && knownAthlete && !scanField;
   if (scanField) root.userData.BODYFORGE_scanTorsoRelief = scanField.id;
   const surfaces: Surface[] = [];
@@ -57,7 +60,8 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, l
     const signature = levels.join(',');
     if (signature === previous) return;
     previous = signature;
-    const active = groups.flatMap((group, i) => levels[i] === 0 ? [] : MUSCLE_LOBES[group].map(lobe => ({ lobe, weight: levels[i] })));
+    const active = athletic ? [] : groups.flatMap((group, i) => levels[i] === 0 ? [] : MUSCLE_LOBES[group].map(lobe => ({ lobe, weight: levels[i] })));
+    const activeReview = athletic ? groups.flatMap((group, i) => levels[i] === 0 ? [] : [{ group, weight: levels[i] }]) : [];
     for (const { positions, normals, rest, normalsAtRest, folds } of surfaces) {
       for (let i = 0; i < positions.count; i++) {
         const offset = i * 3;
@@ -69,9 +73,17 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, l
         for (const { lobe, weight } of active) {
           addMuscleLobe(lobe, weight, x, y, z, displacement, j);
         }
+        if (athletic) for (const { group, weight } of activeReview) {
+          addAvatarAthleticReviewGrowth(group, weight, x, y, z, displacement, j);
+        }
         const [dx, dy, dz] = displacement;
         normal.fromArray(normalsAtRest, offset);
-        if (dx !== 0 || dy !== 0 || dz !== 0) {
+        // A displacement can be zero where its spatial derivative is not.
+        // The normal transforms with the Jacobian, never with displacement.
+        const deformed = j[0] !== 1 || j[4] !== 1 || j[8] !== 1 ||
+          j[1] !== 0 || j[2] !== 0 || j[3] !== 0 ||
+          j[5] !== 0 || j[6] !== 0 || j[7] !== 0;
+        if (deformed) {
           // Transform the original normal instead of welding or averaging UV
           // seams. Identical bind positions get identical displacement.
           normalMatrix.set(j[0], j[1], j[2], j[3], j[4], j[5], j[6], j[7], j[8]).invert().transpose();
@@ -80,7 +92,7 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, l
         const height = folds ? sampleGarmentFold(folds, i, muscles, foldGradient) : 0;
         positions.setXYZ(i, x + dx + normal.x * height, y + dy + normal.y * height, z + dz + normal.z * height);
         if (height > 0) {
-          if (dx !== 0 || dy !== 0 || dz !== 0) foldGradient.applyMatrix3(normalMatrix);
+          if (deformed) foldGradient.applyMatrix3(normalMatrix);
           foldGradient.addScaledVector(normal, -foldGradient.dot(normal));
           normal.sub(foldGradient).normalize();
         }
