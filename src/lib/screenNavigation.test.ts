@@ -49,4 +49,29 @@ describe('Forge screen responsibilities', () => {
     expect(app).toContain("section === 'settings' && <Suspense");
     expect(css).toContain('.app-shell:not([data-screen="settings"]) .content > #settings');
   });
+
+  it('uses the same screen isolation on either side of the mobile breakpoint', () => {
+    const world = readFileSync(new URL('../world.css', import.meta.url), 'utf8');
+    const start = world.indexOf('/* Screen ownership:');
+    const end = world.indexOf('/* Phone camera preflight:', start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const routing = world.slice(start, end);
+    const shared = routing.split('@media')[0];
+    expect(shared).toContain('.app-shell[data-screen="dashboard"] .content > #forge');
+    expect(shared).toContain('.app-shell[data-screen="dashboard"] .cards-grid > #challenge');
+    expect(shared).toContain('.app-shell[data-screen="challenge"] .cards-grid > .character-card');
+    expect(shared).toContain('.app-shell[data-screen="dashboard"][data-fighter-created="false"] .content > .cards-grid');
+    expect(shared).toContain(':not(.cards-grid,#pulse-progress,#step-log,.result-quarantine-notice)');
+    expect(app).not.toContain("window.matchMedia('(min-width: 741px)').matches");
+    expect(app).toContain("window.scrollTo({ top: 0, behavior: 'instant' });");
+  });
+
+  it('does not gate Camera statistics or steps on fighter creation, including loading placeholders', () => {
+    expect(app).toContain("const showProgressPanels = profile.game.created || section === 'challenge';");
+    expect(app).toContain('{showProgressPanels && <Suspense fallback={<div id="step-log"');
+    expect(app).toContain('{showProgressPanels && <Suspense fallback={<div id="pulse-progress"');
+    expect(app.match(/<StepsBoard now=/g)).toHaveLength(1);
+    expect(app.match(/<ProgressPulseBoard profile=/g)).toHaveLength(1);
+  });
 });

@@ -393,10 +393,6 @@
   background:linear-gradient(180deg,#0a1b2cf7,#07131ffb);
   box-shadow:0 -8px 34px #0008;
 }
-.app-shell .mobile-nav button.active {
-  color:var(--aurora-lime);
-  text-shadow:0 0 12px #bbff334e;
-}
 .app-shell .mobile-nav button:focus-visible,
 .app-shell .nav-item:focus-visible {outline:2px solid #baff3e;outline-offset:1px;}
 

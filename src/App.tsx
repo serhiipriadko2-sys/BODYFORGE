@@ -8,10 +8,10 @@ import {
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
 import GameAvatar from './components/GameAvatar';
 import FighterLevelProgress from './components/FighterLevelProgress';
+import ForgeQuickDeck from './components/ForgeQuickDeck';
 import SettingsFaqBoundary from './components/SettingsFaqBoundary';
 
 const ProgressPulseBoard = lazy(() => import('./components/ProgressPulseBoard'));
-const ForgeQuickDeck = lazy(() => import('./components/ForgeQuickDeck'));
 const SettingsFaq = lazy(() => import('./components/SettingsFaq'));
 const StepsBoard = lazy(() => import('./components/StepsBoard'));
 import { useAvatarLook } from './hooks/useAvatarLook';
@@ -895,12 +895,8 @@ function App() {
       setMode('idle');
     }
     setSection(destination);
-    if (window.matchMedia('(max-width: 740px)').matches) {
-      // True mobile tabs: reveal the selected screen, then return to its top.
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // The sidebar and bottom navigation select the same real screens at every width.
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   function goTraining(requestedMode: WorkoutMode = 'training', explicitExercise?: ExerciseId) {
@@ -922,8 +918,9 @@ function App() {
       ? ghostRepetitions(profile.game.bestGhost.splitsMs, elapsedMs) : 0;
   const canNavigate = mode !== 'active' && mode !== 'loading';
   const homeAvatarOnly = profile.game.created && section === 'dashboard';
-  const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading' ||
-    window.matchMedia('(min-width: 741px)').matches;
+  const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading';
+  // Training history and steps belong to the saved activity, not fighter creation.
+  const showProgressPanels = profile.game.created || section === 'challenge';
 
   if (storageStatus !== 'ready') return <Suspense fallback={<main className="storage-recovery" role="status">Проверяем сохранение…</main>}>
     <StorageRecovery status={storageStatus} backupAvailable={backupAvailable}
@@ -1166,27 +1163,32 @@ function App() {
               setProfile((previous) => claimDailyQuest(previous, now));
             }}
             onTraining={() => goTraining('training', 'squat')}/>
-          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем шаги за день…</div>}>
+          {showProgressPanels && <Suspense fallback={<div id="step-log" className="pulse-lazy-placeholder" role="status">Загружаем шаги за день…</div>}>
             <StepsBoard now={today} busy={!canNavigate || isSaving}/>
           </Suspense>}
-          {profile.game.created && <Suspense fallback={<div className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
+          {showProgressPanels && <Suspense fallback={<div id="pulse-progress" className="pulse-lazy-placeholder" role="status">Загружаем сохранённую статистику…</div>}>
             <ProgressPulseBoard profile={profile} now={today} activityVisible={section === 'challenge'}
               actionsDisabled={!canNavigate || isSaving} onTraining={() => goTraining('training', 'squat')}
               onAvatar={() => navigate('forge')}/>
           </Suspense>}
-          {profile.game.created && <Suspense fallback={<section id="forge-quick-deck" className="forge-quick-deck" role="status">Загружаем быстрые действия…</section>}>
-            <ForgeQuickDeck profile={profile} disabled={!canNavigate}
-              onTraining={() => goTraining('training', 'squat')} onAvatar={() => navigate('forge')}
-              onTower={() => navigate('tower')}
-              onDaily={() => {
-                navigate('dashboard');
-                // Missions stay mounted on Forge; scroll after the tab state settles.
-                requestAnimationFrame(() => document.getElementById('quests')?.scrollIntoView({
-                  behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-                  block: 'start',
-                }));
-              }}/>
-          </Suspense>}
+          {/* Navigation is core UI: available even before fighter creation, without a lazy chunk. */}
+          {section === 'dashboard' && <ForgeQuickDeck profile={profile} disabled={!canNavigate}
+            onTraining={() => {
+              if (profile.game.created) goTraining('training', 'squat');
+              else {
+                setPreviewExercise('squat');
+                navigate('challenge');
+              }
+            }} onAvatar={() => navigate('forge')}
+            onTower={() => navigate('tower')}
+            onDaily={() => {
+              navigate('dashboard');
+              // Missions stay mounted on Forge; scroll after the tab state settles.
+              requestAnimationFrame(() => document.getElementById('quests')?.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+                block: 'start',
+              }));
+            }}/>}
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
             look={avatarLook} onLookChange={updateAvatarLook} lookStatus={avatarLookStatus} lookMessage={avatarLookMessage}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}

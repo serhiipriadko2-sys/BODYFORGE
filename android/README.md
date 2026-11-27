@@ -18,4 +18,7 @@ Before production: physical Android permission deny/grant/revoke, correct aggreg
 no data/zero, midnight/timezone, camera and WebView integration, accessibility, privacy and Play review.
 
 ## Live steps (test.3)
-On Camera after fighter creation, native bar shows Health Connect's daily total (foreground 60-second reads) and an independent foreground step-detector session count. No addition or cross-source dedup guess. ACTIVITY_RECOGNITION is requested only from explicit native settings; no background counting or health values in JS/storage. Update from r2 using the same test app id/signature. Physical sensor and native layout still require device QA.
+On the visible Camera screen, including before fighter creation, the native bar shows Health Connect's daily total (foreground 60-second reads) and an independent foreground step-detector session count. No addition or cross-source dedup guess. ACTIVITY_RECOGNITION is requested only from explicit native settings; no background counting or health values in JS/storage. Update from r2 using the same test app id/signature. Physical sensor and native layout still require device QA.
+
+## Source-only release checks
+The release runner requires a local JDK 17+ via JAVA_HOME. It compiles and runs the two pure Java step policies and the embedded screen-probe tests without an Android SDK or APK. Use node qa/native-policy-gate.mjs for a standalone policy check. A pass does not certify native layout, actual step accuracy, permission dialogs or a packaged Android release.

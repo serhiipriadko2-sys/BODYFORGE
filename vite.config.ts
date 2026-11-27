@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { posix } from 'node:path';
 import { localAvatarHeadReview } from './qa/local-avatar-head-review.ts';
+import { localAvatarGroomReview } from './qa/local-avatar-groom-review.ts';
 
 // Vite is accessible over Wi-Fi on port 5174. Never allow the browser to read
 // project-level Codex instructions, canon mirrors or local automation policy.
@@ -51,7 +52,7 @@ function blockPrivateAgentFiles() {
 }
 
 export default defineConfig({
-  plugins: [blockPrivateAgentFiles(), localAvatarHeadReview(), react()],
+  plugins: [blockPrivateAgentFiles(), localAvatarHeadReview(), localAvatarGroomReview(), react()],
   // Only the live SPA entry, not frozen HTML copies under .bodyforge-qa.
   optimizeDeps: {
     noDiscovery: true,

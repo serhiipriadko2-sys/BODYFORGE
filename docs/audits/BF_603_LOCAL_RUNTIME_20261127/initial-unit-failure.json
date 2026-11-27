@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "observed": 40825735,
+  "incorrect_expected": 40669596,
+  "omitted_sdk_bytes": 156139,
+  "raw_log_sha256": "708e5b224ecc53852b3fb08c9bb489e0afd293771e5110549a2ac9fcf6904f40"
+}

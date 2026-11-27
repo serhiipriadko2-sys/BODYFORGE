@@ -110,7 +110,8 @@ try{
   `});
   await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
   await cdp('Page.navigate',{url:origin+'/'});
-  await sleep(3400);
+  await cdp('Page.bringToFront');
+  await until("document.visibilityState==='visible'", 'owned onboarding tab visible');
   // A cold lazy chunk can take longer than a fixed sleep under CPU/GPU load.
   // Wait for a terminal 3D status; fallback still fails the active-WebGL check.
   await until("!!document.querySelector('#onboarding [data-3d-status]')",'initial 3D character');
@@ -129,7 +130,16 @@ try{
     await sleep(200);
   }
   check(photoHuman,'licensed anatomical CC0 human 3D loaded instead of procedural fallback');
-  check(await js("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='on-demand'"),
+  // Model readiness and IntersectionObserver's visibility notification are independent.
+  const onboardingCanvas = "document.querySelector('#onboarding canvas')";
+  await until(`(() => {
+    const bounds = ${onboardingCanvas}?.getBoundingClientRect();
+    return !document.hidden && bounds?.width > 0 && bounds.height > 0 &&
+      bounds.top < innerHeight && bounds.bottom > 0 &&
+      bounds.left < innerWidth && bounds.right > 0;
+  })()`, 'onboarding canvas intersects the visible viewport', 6000);
+  await until(onboardingCanvas + "?.dataset.renderLoop==='on-demand'", 'visible onboarding 3D renderer in on-demand mode', 6000);
+  check(await js(onboardingCanvas + "?.dataset.renderLoop==='on-demand'"),
     'visible static 3D hero uses on-demand GPU rendering without an idle animation loop');
   await js("document.querySelector('#onboarding canvas').style.display='none'");
   await until("document.querySelector('#onboarding canvas')?.dataset.renderLoop==='paused'", 'hidden 3D rendering suspended', 4500);

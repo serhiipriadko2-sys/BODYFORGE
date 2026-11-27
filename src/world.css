@@ -531,38 +531,49 @@ background:linear-gradient(160deg,#9d6335,#4e2818);box-shadow:inset 0 2px #ffdca
   .forge-solid-button,.mobile-quickstart>button {transition:none;}
 }
 
-/* Mobile navigation is a real five-screen flow, not a scroll-to-top illusion.
-   Desktop intentionally retains the long dashboard and scroll-to-section navigation. */
+/* Screen ownership: one selected section on desktop and mobile alike.
+   Keep the shared activity board mounted for created fighters so its range is preserved.
+   Never hide a pending-result/quarantine warning just because a tab changed. */
+.app-shell[data-screen="dashboard"] .content > #forge,
+.app-shell[data-screen="dashboard"] .content > #tower,
+.app-shell[data-screen="dashboard"] .content > #online,
+.app-shell[data-screen="dashboard"] .cards-grid > #challenge,
+.app-shell[data-screen="dashboard"][data-fighter-created="false"] .content > .cards-grid {
+  display: none;
+}
+
+.app-shell[data-screen="dashboard"] .cards-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-shell[data-screen="challenge"] .content > :not(.cards-grid,#pulse-progress,#step-log,.result-quarantine-notice),
+.app-shell[data-screen="forge"] .content > :not(#forge,.result-quarantine-notice),
+.app-shell[data-screen="tower"] .content > :not(#tower,.result-quarantine-notice),
+.app-shell[data-screen="online"] .content > :not(#online,.result-quarantine-notice) {
+  display: none;
+}
+
+.app-shell[data-screen="challenge"] .cards-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin-top: 0;
+}
+
+.app-shell[data-screen="challenge"] .cards-grid > .character-card {
+  display: none;
+}
+
+/* Desktop also opens only the selected screen. Use the existing compact Camera
+   width on large displays rather than stretching the portrait feed across the page. */
+@media (min-width: 741px) {
+  .app-shell[data-screen="challenge"] .content > :is(.cards-grid,#step-log,#pulse-progress) {
+    max-width: 950px;
+    width: 100%;
+    margin-inline: auto;
+  }
+}
 @media (max-width: 740px) {
-  .app-shell[data-screen="dashboard"] .content > #forge,
-  .app-shell[data-screen="dashboard"] .content > #tower,
-  .app-shell[data-screen="dashboard"] .content > #online,
-  .app-shell[data-screen="dashboard"] .cards-grid > #challenge {
-    display: none;
-  }
-
-  .app-shell[data-screen="dashboard"] .cards-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .app-shell[data-screen="challenge"] .content > :not(.cards-grid),
-  .app-shell[data-screen="forge"] .content > :not(#forge),
-  .app-shell[data-screen="tower"] .content > :not(#tower),
-  .app-shell[data-screen="online"] .content > :not(#online) {
-    display: none;
-  }
-
-  .app-shell[data-screen="challenge"] .cards-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    margin-top: 0;
-  }
-
-  .app-shell[data-screen="challenge"] .cards-grid > .character-card {
-    display: none;
-  }
-
   .app-shell[data-screen="challenge"] #challenge,
   .app-shell[data-screen="forge"] #forge,
   .app-shell[data-screen="tower"] #tower,

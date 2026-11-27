@@ -1,0 +1,514 @@
+{
+  "stage": "narrow-athletic-pose-corrective",
+  "date": "2026-11-27",
+  "status": "PASS_LOCAL_TECHNICAL_PARTIAL_VISUAL",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "tests": {
+    "files": 121,
+    "passed": 1228,
+    "failed": 0,
+    "skippedOptIn": 1
+  },
+  "browser": {
+    "checks": 264,
+    "frames": 32,
+    "draws": 893,
+    "scenarios": [
+      {
+        "mode": "on",
+        "level": "max",
+        "checks": 66,
+        "frames": 8,
+        "draws": 215,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "on",
+        "level": "neutral",
+        "checks": 66,
+        "frames": 8,
+        "draws": 227,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "max",
+        "checks": 66,
+        "frames": 8,
+        "draws": 224,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "neutral",
+        "checks": 66,
+        "frames": 8,
+        "draws": 227,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    ]
+  },
+  "sampledGeometry": {
+    "states": 18,
+    "shoulderTriangles": 5994,
+    "comp": {
+      "baseline": 2070,
+      "candidate": 1388
+    },
+    "severe": {
+      "baseline": 362,
+      "candidate": 219
+    },
+    "overlap": {
+      "baseline": 4296,
+      "candidate": 2772
+    },
+    "expandedComp": {
+      "baseline": 2070,
+      "candidate": 1388
+    },
+    "expandedOverlap": {
+      "baseline": 5136,
+      "candidate": 2772
+    },
+    "shirt2": {
+      "baseline": 698,
+      "candidate": 338
+    },
+    "shirt5": {
+      "baseline": 53,
+      "candidate": 8
+    }
+  },
+  "seams": {
+    "body": {
+      "maxIncreaseMm": 0,
+      "candidateMaxMm": 0
+    },
+    "shirt": {
+      "maxIncreaseMm": 0,
+      "candidateMaxMm": 0
+    },
+    "nippleRim": {
+      "maxIncreaseMm": 0,
+      "candidateMaxMm": 0
+    }
+  },
+  "productionMarkerHits": 0,
+  "credentialPatternHits": 0,
+  "android": "UNVERIFIED_NO_AUTHORIZED_DEVICE",
+  "artifactCount": 82,
+  "artifactBytes": 101053795,
+  "entries": [
+    {
+      "path": ".bodyforge-qa/pose-corrective-20261127/local-target-sweep.npz",
+      "bytes": 7692021,
+      "sha256": "431abaae1fbabb860629eae8d2c1083c097c6f362e3fad15160e210306a23256"
+    },
+    {
+      "path": ".bodyforge-qa/pose-corrective-20261127/runtime.bin",
+      "bytes": 36496656,
+      "sha256": "ffae5ef86be158145737c87791879f57aae9e8af238ab0e6f9ebf3186bd87e47"
+    },
+    {
+      "path": ".bodyforge-qa/pose-corrective-build-20261127/assets/Avatar3D-CaxFXPiG.js",
+      "bytes": 842240,
+      "sha256": "9506443981ebd6677be9499b5f185d4ad0c74ff26078f097d636749462ab4500"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/final-candidate.bin",
+      "bytes": 22907664,
+      "sha256": "b6813d80aaaa99e6b4daa526ffc2f70f9959420e3fb6b5cd69169129204ba084"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/Avatar3D.tsx.before.txt",
+      "bytes": 73374,
+      "sha256": "ba04efbfafc475cb2137c3b790e28de3fb0032d1d5b333b7589fa5cf8b1e50a9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/REPORT.md",
+      "bytes": 6370,
+      "sha256": "64646039470ce0ed7ad726e48f4d3e7f650cc05e51850eadda242bdbc3cc6b11"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/avatar-quality-e2e.mjs.before.txt",
+      "bytes": 150131,
+      "sha256": "fc4ab8fcda0f7be6a59402ae9f4422a27c98624683be6f9ca1d8189a0ff1b503"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max.log",
+      "bytes": 6517,
+      "sha256": "3f65b69807e1cfb7273d75608f9097376fcf34319a6e9d116933ecb264b34479"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-legs-front.png",
+      "bytes": 604069,
+      "sha256": "b85814adb79af99d572156986cf4cedc71ded3d046b3c33285ee21932dac3000"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-legs-rear.png",
+      "bytes": 597811,
+      "sha256": "6102d4a23745f902e92d32ded5e7bfd7798c16a687236638e219a821c100aff8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-portrait-front.png",
+      "bytes": 628260,
+      "sha256": "f6a234f645101e4b2b9f9472f39843fffaaa2063018651d596d3ed4d47d5a5e9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-portrait-turned.png",
+      "bytes": 637666,
+      "sha256": "2ef3789584b7a0387e38f10bb0d4f6edc692545be7062b071ae4b164e19a932b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-shirt-front.png",
+      "bytes": 590093,
+      "sha256": "37b037cc2831e3543ad07fe4d8d767d5795857af05ec45c683e5bbf85b507041"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-shirt-rear.png",
+      "bytes": 566035,
+      "sha256": "76af67d2f8dfaced16e53272bafdc85938aa530da86cd9b2a13b14effd91e8f4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-torso-front.png",
+      "bytes": 623796,
+      "sha256": "24dff4c32c41a6f90a207bfdbcc7deb8669682885924e7f7535a5172cc46c2cc"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-max/metric-torso-rear.png",
+      "bytes": 616926,
+      "sha256": "09c6f7052dff6d1df04357d5c53e8d7d8224a8aa49e10a424e5bc4ab685e4c9f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral.log",
+      "bytes": 6582,
+      "sha256": "200becd48db220810abac879b6ae433634283fdeaa6db886a16ac5ecc2bff25a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-legs-front.png",
+      "bytes": 602492,
+      "sha256": "ac344c471948997fa915c8454eced87697c031428dd4938cafddfbcd87f6a3fc"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-legs-rear.png",
+      "bytes": 598307,
+      "sha256": "a28b5941834b7b9b798c715241f7cb3626b57dcee10aedd69aa52d426bfdb892"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-portrait-front.png",
+      "bytes": 627712,
+      "sha256": "4ad56c7523aebf38a985c1723e8074a26115e23d4ef350f7988e744a94480dd1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-portrait-turned.png",
+      "bytes": 636277,
+      "sha256": "fa7f6b664798e1d3a2b1c925e98979a14139c981dbe4d5bd72a5480676f5d37d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-shirt-front.png",
+      "bytes": 591909,
+      "sha256": "4a71c80ab15f9216a4337503c8cf81167392a42d4fe3bfe8844eafa7343a8b72"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-shirt-rear.png",
+      "bytes": 570957,
+      "sha256": "c7a7a7e444ac20046e80e65f636f2139fab8ded715dd161ea5b662a1fdf7ae41"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-torso-front.png",
+      "bytes": 623733,
+      "sha256": "0ed12f9a912fb9a061ded3655b1d10af0ca64a39a6037f9714904fa679479c1d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-off-neutral/metric-torso-rear.png",
+      "bytes": 616869,
+      "sha256": "961ef23c664a28f3b2545ae1e6c310b97bf00d2f4342bdfb284c952710587e8c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max.log",
+      "bytes": 6500,
+      "sha256": "6ef40d48a379cd86cd7b6a57badd116503d1c592c86040cfd2fe22bbe51c9be5"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-legs-front.png",
+      "bytes": 603432,
+      "sha256": "0efe333f4b009e436949520702b301616d49dff1f7cb6a1c7f71a78d5a9691bb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-legs-rear.png",
+      "bytes": 597337,
+      "sha256": "e1b60542f0f533b9ab1402dd1f31124c6ce87dbdd3913ac0da3a1b42a507c44d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-portrait-front.png",
+      "bytes": 628875,
+      "sha256": "002d18dd7cf5da33e0343a632cdd830c3ec310f2df9ef681af98735691b21417"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-portrait-turned.png",
+      "bytes": 638018,
+      "sha256": "be44b6436db81442dcf33e3e7725db1244a6f9cc6a8062488a27d26cfeace41f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-shirt-front.png",
+      "bytes": 589954,
+      "sha256": "dbe81922617086bc1b1b591763323ad65095c9afa166fd7bfd0d2f2d93420453"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-shirt-rear.png",
+      "bytes": 565739,
+      "sha256": "36c2dae4566d0e119db72bb682564d71c5d274842236129660d7e47f6d26e059"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-torso-front.png",
+      "bytes": 624119,
+      "sha256": "26a3b232d5b504ca9d633b45b19005ab5771e178ce2e997d0b6f4ff52dc1ab96"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-max/metric-torso-rear.png",
+      "bytes": 617382,
+      "sha256": "b98cc50736e0afe7ce0a7df6cff2cb60c651e20b778d44ff0ce5f052819d435a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral.log",
+      "bytes": 6565,
+      "sha256": "2fabb2f9330ac94dc893a592cb83e46fda217df056fe283ec6f047bfdcc12f25"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-legs-front.png",
+      "bytes": 601487,
+      "sha256": "01710ecaa620b8e5186425f2ee76e57966edfea44d6e965508d48bcc646d0912"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-legs-rear.png",
+      "bytes": 597674,
+      "sha256": "4dcc4e532e12c88c2c9a993d01cfd83ab96fadc12dae7c4f42b0d2a2807fa81e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-portrait-front.png",
+      "bytes": 629038,
+      "sha256": "e1869447af5040fd4a561201eed5c2701f57a9ee32a7dcecf07e77dbec6b461c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-portrait-turned.png",
+      "bytes": 636155,
+      "sha256": "cd834bed64afcb7f8308a3d2f869bdac706fe0256c9f8b8d13cac7edc780e941"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-shirt-front.png",
+      "bytes": 591894,
+      "sha256": "3cc566f03ab46bb3ade0399a57c471b11af980d52133b907b96cd4da2fbaec0d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-shirt-rear.png",
+      "bytes": 572499,
+      "sha256": "25ef9811ce3513e0d34214fcdb648c6389d3d4ee07ce97a2c4de6b7e170e3eca"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-torso-front.png",
+      "bytes": 624052,
+      "sha256": "b9ebe55a34733b787aff92adbb8b3b979dfb05f9b09406098a7ce511a08d85d0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/browser-on-neutral/metric-torso-rear.png",
+      "bytes": 618441,
+      "sha256": "a01ef8b3ab1ed5fed6d479c1324bae32799c015c2b79d9f51a2234102b9af9e3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/build.log",
+      "bytes": 3988,
+      "sha256": "80421eb9640fcec206e80502bca11c182ff77fbec6ffb68111f58499d4c573da"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/compare-corrective.py",
+      "bytes": 2539,
+      "sha256": "1d5ad70c930e8153530dbbe7fcaf82f2a2ba5971b5f888b2da915f8efea0dc82"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/comparison.json",
+      "bytes": 12155,
+      "sha256": "acc958f995ed5b13be961169d66e333bdd0c11d7b6c57a5c127a3f5e18452727"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/comparison.log",
+      "bytes": 230,
+      "sha256": "b94086a29e0862ece99724c8d1981a3a27c512c7eb2a185752be6d296f388c10"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/full-vitest.log",
+      "bytes": 64448,
+      "sha256": "fae2b40e48ac0401f73b5e9a77a08cac75781e25f063fe898e57f0a4dfa4b16b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/local-target-refine.json",
+      "bytes": 36733,
+      "sha256": "9d8d018b0c5b5155a9a516a76805d1d43616f81669e0c35b42f3b251b0497afa"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/local-target-refine.log",
+      "bytes": 3970,
+      "sha256": "384554b00c045b1d8e34c154178f764b83013b138c35d9663f4b565bca20362c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/local-target-sweep.json",
+      "bytes": 32609,
+      "sha256": "b37dff0a568478f6c2e0aa20eaef257ee4e71d709228aad3da02bf3906f1624f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/local-target-sweep.log",
+      "bytes": 3618,
+      "sha256": "65a557e7127080c592f1c6dd4d9811c771931a6d2ac4c58dfa32a61e844a46b9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-max-legs.png",
+      "bytes": 953533,
+      "sha256": "f89b60b6fb369b63cbeb3a324b54f7f5d90bfd824fc4700fc9bfcf017d6db7de"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-max-portrait.png",
+      "bytes": 1057441,
+      "sha256": "beb14e1f9b792850a4057277ce840b49c9fc8db701bea9ce1fd139456287f417"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-max-shirt.png",
+      "bytes": 1055431,
+      "sha256": "26ef276cbe5a22d2613624acadf853534d4cd59f8c7d89686b834a2d0004747d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-max-torso.png",
+      "bytes": 1093184,
+      "sha256": "7c36a736ce32101006fd174888882a4b2c8cdb3c4b338e5c784624f67a08a095"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-neutral-legs.png",
+      "bytes": 950142,
+      "sha256": "e804572d514f338a4ccd46c0899d2d0436226d86ba443ad689702c80e855c735"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-neutral-portrait.png",
+      "bytes": 1050804,
+      "sha256": "af9be5fce0b5cb7b0255f3348b7287a1983ddeed75fa32ee5326ad574999307a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-neutral-shirt.png",
+      "bytes": 986293,
+      "sha256": "c59f724f79878c9dddfe6a5270585d627766643d19f02a864885b44d1f277c93"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/matched-corrective-neutral-torso.png",
+      "bytes": 1090486,
+      "sha256": "dc27d23b87547ac9be9f7eb7fa53f0b88b0464549595003daa906ae1c89fcaac"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/measure-runtime.py",
+      "bytes": 4063,
+      "sha256": "3c114079fe8d9d8838b6cdac12a72ba1b29e2ca6a2291b7cb8e1f90058d9952c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/measure-seams.py",
+      "bytes": 2334,
+      "sha256": "86daee641f5d92311202c0c638b431a7dc8a2471390104a7c9eb0240ca7864b8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/probe-local-refine.py",
+      "bytes": 5115,
+      "sha256": "19702793be94fac872dabb764ab279f038fc2973593938c6cf104cadef0ebcb0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/probe-local-target.py",
+      "bytes": 4527,
+      "sha256": "16ede6e4c4638d0ff003d9e3ef76fda6090059e7bea017b74ca6f1ad4522faca"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/production-gate.log",
+      "bytes": 37,
+      "sha256": "bb90839d17855e9b9a8e42ebb01a612071aadd6c6231fc974c30bdd98877176c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime-clearance.json",
+      "bytes": 12858,
+      "sha256": "c3d2ac877d86a389d679db477f5886e202d1cc162344d9254dd7e80fdc486c2b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime-clearance.log",
+      "bytes": 4410,
+      "sha256": "39ef46e2b4976972f8255dbaea33f4785755d37d3b458ce38e24eed4f267df1e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime-first.log",
+      "bytes": 2122,
+      "sha256": "bad5a08dbfa084c1e24c0e6f7aea6da9c872ec25c2368f8469054a90537118f5"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime.json",
+      "bytes": 28179,
+      "sha256": "39f7c164758d543aa3954c0a410865f76f30d4bb38ad136313c2e05e4c61fba1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime.log",
+      "bytes": 667,
+      "sha256": "a5554bbef3ad32ec3dba23f08b3dc0e6d726ebaabcabd45f9b98a7bec5920b87"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/seam-clearance.json",
+      "bytes": 9504,
+      "sha256": "dfab8ed0896c7479c378c630836014b04289177af601fafbe8d1b912e7019893"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/seam-clearance.log",
+      "bytes": 544,
+      "sha256": "18cab84a8b1640a3936c75cb1fbda3eeb9e5278f601a884a874238b4da0ce427"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/verify-receipt.mjs",
+      "bytes": 8895,
+      "sha256": "db677581303fccd4c399b6229547af08aaa5ede698ef090ad8869582d208c4a4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/final-candidate.json",
+      "bytes": 10578,
+      "sha256": "02f943fbd7c0ffba413ba50e66a7adf4e5a70df03a904715c550b71c96361d8a"
+    },
+    {
+      "path": "public/assets/bodyforge-athlete-efficient.glb",
+      "bytes": 4639184,
+      "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+      "path": "qa/avatar-quality-e2e.mjs",
+      "bytes": 150486,
+      "sha256": "e5491b6ebadbba511d745de7ec17c0cb50c72764c26852f0f2231b360ec8725c"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 74644,
+      "sha256": "7bf48452ce771b9b751b12f28dfa68ec5411e36204528bfc2caf710ad4ca571a"
+    },
+    {
+      "path": "src/lib/avatarPhysique.ts",
+      "bytes": 6497,
+      "sha256": "2fcf4a0f8aaf75d9fe26a26eb4d991b983709ab3a15f6dcb1a493b9076524c15"
+    },
+    {
+      "path": "src/lib/avatarPose.ts",
+      "bytes": 1924,
+      "sha256": "4b84069276e4eff8d6b85da2ef67c87b2e0c68fbf37f02d7ff8fe9e72d77bc09"
+    },
+    {
+      "path": "src/lib/avatarPoseCorrectiveReview.test.ts",
+      "bytes": 8292,
+      "sha256": "5da0061c00a2d63f32e5abd6e5a602cbc43330c83efcb2342bc8bc6273c3728a"
+    },
+    {
+      "path": "src/lib/avatarPoseCorrectiveReview.ts",
+      "bytes": 9469,
+      "sha256": "8f07052d9d863664aaf88a3ff1749033b34275adfaf681b3151aa169a7a1dc62"
+    },
+    {
+      "path": "src/lib/avatarShoulderTransitionReview.ts",
+      "bytes": 8234,
+      "sha256": "56abe1d0d989ea0e741108e62c75a73563352c584920c77f0d3b257e654f74c2"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "owned": {
+    "qa/offline-pose-pack.mjs": "97e55fd2be790c2d25ad027d49f4f4bc3edec9f5a9f3c32358f18227fe0f7985",
+    "qa/offline-pose-pack.test.mjs": "fe3f86d2fab18590597596e6d71cecf7881894383c043e63d217059d9c2e667b",
+    "qa/offline-pose-runtime-e2e.mjs": "47e8b162c51975f50876e83c738bad42089171255fad0008b5f501ef272bc495"
+  },
+  "commands": {
+    "unit-corrected": 0,
+    "installed": 0,
+    "browser-syntax": 0,
+    "browser": 16
+  }
+}

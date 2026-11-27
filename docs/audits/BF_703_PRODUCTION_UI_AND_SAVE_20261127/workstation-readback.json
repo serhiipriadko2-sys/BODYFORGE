@@ -1,0 +1,19 @@
+{
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "status": "below-observed-release-floor",
+  "gateSha256": "7b13f63a38fbb9867aa931ff892368e930a1bc9424c2aaadcda6a19aef6ac7bb",
+  "currentGateMinimumMiB": {
+    "physical": 2048,
+    "virtual": 4096
+  },
+  "win32OperatingSystem": {
+    "physicalMiB": 9220,
+    "virtualMiB": 1745
+  },
+  "getPerformanceInfo": {
+    "availablePhysicalMiB": 9245,
+    "commitHeadroomMiB": 1810
+  },
+  "scope": "system measurements taken sequentially; the readings have distinct definitions",
+  "previousTimeoutCause": "not established"
+}

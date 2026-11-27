@@ -1,0 +1,56 @@
+{
+  "status": "TESTED_LOCAL",
+  "original_run_sha256": "c115095e64f87d1c78164c3ea9513964a7bb268a6c44f3fc182136d79d6473e8",
+  "owned": {
+    "src/App.tsx": "f402404c4e4dafd5f36e4ccf49f12a5823b1566c364c05952015fbd741cd08ba",
+    "src/world.css": "aa6d165070a02bca544f5d7ddc3690efbe752bb2566b993c41bb900df7ab3d8d",
+    "src/lib/screenNavigation.test.ts": "8b617fa42e6103a906a952a56edac24eec84dcccd5cd44de4eee2eb466f9d967",
+    "qa/screen-ownership-e2e.mjs": "90ba82ecb4b5152cbef2a47c3a5226abfb83180e497bdb252c9eea5e8bd56c42",
+    "qa/screen-content-e2e.mjs": "342f075dbc6187f89f19e6a0a78dce697d417b061a88b5d675ac2c252c915972"
+  },
+  "commands": {
+    "content-syntax": 0,
+    "screen-content": 0,
+    "workout-hud": 0,
+    "scoped-diff": 0,
+    "canon": 0
+  },
+  "resources": [
+    {
+      "before": "content-syntax",
+      "status": "pass",
+      "physicalMiB": 19022,
+      "virtualMiB": 27547,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "screen-content",
+      "status": "pass",
+      "physicalMiB": 18991,
+      "virtualMiB": 27323,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "workout-hud",
+      "status": "pass",
+      "physicalMiB": 18983,
+      "virtualMiB": 27308,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    }
+  ],
+  "started": "2026-11-27T19:12:06.098744+03:00",
+  "preview_exact_bytes": true,
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "owned_match": true,
+  "root_package_unchanged": true,
+  "root_drift": [
+    "qa/avatar-quality-e2e.mjs"
+  ],
+  "profiles_remaining": 0,
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T19:12:25.891345+03:00"
+}

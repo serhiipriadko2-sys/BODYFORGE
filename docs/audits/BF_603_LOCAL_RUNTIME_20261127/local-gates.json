@@ -1,0 +1,10 @@
+{
+  "owned": {
+    "qa/offline-pose-pack.mjs": "97e55fd2be790c2d25ad027d49f4f4bc3edec9f5a9f3c32358f18227fe0f7985",
+    "qa/offline-pose-pack.test.mjs": "a77bce89a2a85b822eb29de173d03a1a1197d5a44b9befa7742d4d4d31033479"
+  },
+  "commands": {
+    "syntax": 0,
+    "unit": 1
+  }
+}

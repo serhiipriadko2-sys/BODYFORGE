@@ -1,0 +1,14 @@
+{
+  "owned": {
+    "qa/release-gates.mjs": "a89c283f026749731972b7bfd15992309fe2d1d3fc3623f6e0e39da2b6f2bc34",
+    "qa/tower20-e2e.mjs": "cc94ff56dc6e8de658fb2375617d5c5b4443e1e8f056501978032561e0de98e2",
+    "qa/release-resource-gate.mjs": "7b13f63a38fbb9867aa931ff892368e930a1bc9424c2aaadcda6a19aef6ac7bb",
+    "qa/release-resource-gate.test.mjs": "7db364a2745b741885a93400e7513bd04ac8552a2e0ef95afa6c6dc62b11dbb8"
+  },
+  "commands": {
+    "syntax-runner": 0,
+    "syntax-tower": 0,
+    "syntax-resource": 0,
+    "unit": 0
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "owned": {
+    "android/src/java/ru/bodyforge/healthqa/MainActivity.java": "64a571d9bddd82347ee758744189be182864bfe96a5e1869519c07a987d94c95",
+    "android/README.md": "898dae9359b8c79083592a8e96a7531ce6e7c9a1dcacb2f90e75d621ea34d7a5",
+    "android/tests/nativeScreenProbe.test.mjs": "df75b683a0f41a5fc6bf7dc6464fadb99e669ee2661539bb01ec67aeaa24b3c1"
+  },
+  "red": 1,
+  "commands": {
+    "probe": 0,
+    "web-unit": 0,
+    "diff": 0
+  },
+  "unchanged_dependencies": {
+    "src/App.tsx": "62f007ab1cb691a9a97c410929100242d206522471592a5715d811ca93bc600d",
+    "src/components/StepsBoard.tsx": "7f8fea23724563ff5156e0893e9015ca1309d93bfa17d3e1dbf921e5f4df6425",
+    "android/src/AndroidManifest.xml": "fd761a892591cf5b5bfe7d0162c4b01124c71a71dade8112dbccbc42c3c0dab5"
+  }
+}

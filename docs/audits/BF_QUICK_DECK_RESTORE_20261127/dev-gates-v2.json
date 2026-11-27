@@ -1,0 +1,22 @@
+{
+  "owned": {
+    "src/App.tsx": "62f007ab1cb691a9a97c410929100242d206522471592a5715d811ca93bc600d",
+    "src/lib/forgeQuickDeck.test.ts": "81297db6457410020381177edfca0b364ae2d3bf02a7297b6cfa1b5fc98e6e4f",
+    "qa/screen-ownership-e2e.mjs": "6077c87492eb813be41f2dfccbc08f832574d0c17d76443a32f003ac2154e9c9"
+  },
+  "unchanged_deck": "1e195e59f320b06d0112769c46cbe755c24a0cfe8513c6bd729bdf5b5dcc2905",
+  "red_corrected": 1,
+  "commands": {
+    "unit": 0,
+    "syntax": 0,
+    "diff": 0,
+    "dev-browser": 16,
+    "dev-browser-v2": 16
+  },
+  "dev_cleanup": true,
+  "owned_match": true,
+  "start": "2026-11-27T19:25:25.513334+03:00",
+  "end": "2026-11-27T19:26:23.563872+03:00",
+  "dev_cleanup_v2": true,
+  "retry_reason": "exercise selector is inside collapsed catalog; open it before asserting selected exercise"
+}

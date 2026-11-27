@@ -1,0 +1,86 @@
+[
+  {
+    "level": "max",
+    "view": "metric-legs-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "max",
+    "view": "metric-legs-rear.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "max",
+    "view": "metric-portrait-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "max",
+    "view": "metric-portrait-turned.png",
+    "identicalBytes": false,
+    "changedPixels": 3,
+    "maxChannelDelta8bit": 1
+  },
+  {
+    "level": "max",
+    "view": "metric-torso-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "max",
+    "view": "metric-torso-rear.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "neutral",
+    "view": "metric-legs-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "neutral",
+    "view": "metric-legs-rear.png",
+    "identicalBytes": false,
+    "changedPixels": 1,
+    "maxChannelDelta8bit": 1
+  },
+  {
+    "level": "neutral",
+    "view": "metric-portrait-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "neutral",
+    "view": "metric-portrait-turned.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "neutral",
+    "view": "metric-torso-front.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  },
+  {
+    "level": "neutral",
+    "view": "metric-torso-rear.png",
+    "identicalBytes": true,
+    "changedPixels": 0,
+    "maxChannelDelta8bit": 0
+  }
+]

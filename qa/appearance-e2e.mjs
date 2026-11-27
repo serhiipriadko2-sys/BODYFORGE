@@ -495,6 +495,18 @@ async function integrationExperience(tab, initialGame) {
     for (const width of [390, 360, 320]) {
       await tab.viewport(width, width === 390 ? 844 : 800);
       await trainingScreen(tab);
+      const current = await tab.js(`(() => {
+        const active = document.querySelector('.mobile-nav button.active');
+        return {
+          count: document.querySelectorAll('.mobile-nav button[aria-current="page"]').length,
+          announced: active.getAttribute('aria-current') === 'page',
+          ink: getComputedStyle(active.querySelector('span')).color,
+          background: getComputedStyle(active).backgroundColor,
+        };
+      })()`);
+      const contrast = measuredContrast(current.ink, current.background);
+      check(current.announced && current.count === 1, variant + ' ' + width + ' one current page announced');
+      check(contrast >= 4.5, variant + ' ' + width + ' active navigation text contrast >=4.5 (' + contrast.toFixed(2) + ')');
       await integrationBounds(tab, ['#step-log', '.bf-step-input-row'],
         variant + ' ' + width + ' Camera steps');
       if (width === 390) {

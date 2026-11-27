@@ -1,0 +1,518 @@
+{
+  "binaryBytes": 22907664,
+  "binarySha256": "df73bba1ba834ba4cf5296317fb7fd1ca5554d67f7e132745c1c891a45673fe0",
+  "report": {
+    "baseline": {
+      "stats": [
+        {
+          "mesh": "BODYFORGE_Body",
+          "changed": 0,
+          "vertices": 65895,
+          "bind": {
+            "offset": 0,
+            "bytes": 790740
+          },
+          "indices": {
+            "offset": 790740,
+            "bytes": 1154688
+          }
+        },
+        {
+          "mesh": "BODYFORGE_Shirt",
+          "changed": 0,
+          "vertices": 4415,
+          "bind": {
+            "offset": 1945428,
+            "bytes": 52980
+          },
+          "indices": {
+            "offset": 1998408,
+            "bytes": 99864
+          }
+        },
+        {
+          "mesh": "BODYFORGE_ChestMark",
+          "changed": 0,
+          "vertices": 8,
+          "bind": {
+            "offset": 2098272,
+            "bytes": 96
+          },
+          "indices": {
+            "offset": 2098368,
+            "bytes": 48
+          }
+        },
+        {
+          "mesh": "BODYFORGE_SkinNipples",
+          "changed": 0,
+          "vertices": 458,
+          "bind": {
+            "offset": 2098416,
+            "bytes": 5496
+          },
+          "indices": {
+            "offset": 2103912,
+            "bytes": 7488
+          }
+        }
+      ],
+      "samples": {
+        "neutral": [
+          {
+            "offset": 2111400,
+            "bytes": 790740
+          },
+          {
+            "offset": 2902140,
+            "bytes": 52980
+          },
+          {
+            "offset": 2955120,
+            "bytes": 96
+          },
+          {
+            "offset": 2955216,
+            "bytes": 5496
+          }
+        ],
+        "arms": [
+          {
+            "offset": 2960712,
+            "bytes": 790740
+          },
+          {
+            "offset": 3751452,
+            "bytes": 52980
+          },
+          {
+            "offset": 3804432,
+            "bytes": 96
+          },
+          {
+            "offset": 3804528,
+            "bytes": 5496
+          }
+        ],
+        "core": [
+          {
+            "offset": 3810024,
+            "bytes": 790740
+          },
+          {
+            "offset": 4600764,
+            "bytes": 52980
+          },
+          {
+            "offset": 4653744,
+            "bytes": 96
+          },
+          {
+            "offset": 4653840,
+            "bytes": 5496
+          }
+        ],
+        "legs": [
+          {
+            "offset": 4659336,
+            "bytes": 790740
+          },
+          {
+            "offset": 5450076,
+            "bytes": 52980
+          },
+          {
+            "offset": 5503056,
+            "bytes": 96
+          },
+          {
+            "offset": 5503152,
+            "bytes": 5496
+          }
+        ],
+        "back": [
+          {
+            "offset": 5508648,
+            "bytes": 790740
+          },
+          {
+            "offset": 6299388,
+            "bytes": 52980
+          },
+          {
+            "offset": 6352368,
+            "bytes": 96
+          },
+          {
+            "offset": 6352464,
+            "bytes": 5496
+          }
+        ],
+        "mixed": [
+          {
+            "offset": 6357960,
+            "bytes": 790740
+          },
+          {
+            "offset": 7148700,
+            "bytes": 52980
+          },
+          {
+            "offset": 7201680,
+            "bytes": 96
+          },
+          {
+            "offset": 7201776,
+            "bytes": 5496
+          }
+        ],
+        "max": [
+          {
+            "offset": 7207272,
+            "bytes": 790740
+          },
+          {
+            "offset": 7998012,
+            "bytes": 52980
+          },
+          {
+            "offset": 8050992,
+            "bytes": 96
+          },
+          {
+            "offset": 8051088,
+            "bytes": 5496
+          }
+        ],
+        "idle0.8": [
+          {
+            "offset": 8056584,
+            "bytes": 790740
+          },
+          {
+            "offset": 8847324,
+            "bytes": 52980
+          },
+          {
+            "offset": 8900304,
+            "bytes": 96
+          },
+          {
+            "offset": 8900400,
+            "bytes": 5496
+          }
+        ],
+        "idle2.1": [
+          {
+            "offset": 8905896,
+            "bytes": 790740
+          },
+          {
+            "offset": 9696636,
+            "bytes": 52980
+          },
+          {
+            "offset": 9749616,
+            "bytes": 96
+          },
+          {
+            "offset": 9749712,
+            "bytes": 5496
+          }
+        ],
+        "idle4.2": [
+          {
+            "offset": 9755208,
+            "bytes": 790740
+          },
+          {
+            "offset": 10545948,
+            "bytes": 52980
+          },
+          {
+            "offset": 10598928,
+            "bytes": 96
+          },
+          {
+            "offset": 10599024,
+            "bytes": 5496
+          }
+        ],
+        "reset": [
+          {
+            "offset": 10604520,
+            "bytes": 790740
+          },
+          {
+            "offset": 11395260,
+            "bytes": 52980
+          },
+          {
+            "offset": 11448240,
+            "bytes": 96
+          },
+          {
+            "offset": 11448336,
+            "bytes": 5496
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "stats": [
+        {
+          "mesh": "BODYFORGE_Body",
+          "changed": 4175,
+          "vertices": 65895,
+          "bind": {
+            "offset": 11453832,
+            "bytes": 790740
+          },
+          "indices": {
+            "offset": 12244572,
+            "bytes": 1154688
+          }
+        },
+        {
+          "mesh": "BODYFORGE_Shirt",
+          "changed": 1923,
+          "vertices": 4415,
+          "bind": {
+            "offset": 13399260,
+            "bytes": 52980
+          },
+          "indices": {
+            "offset": 13452240,
+            "bytes": 99864
+          }
+        },
+        {
+          "mesh": "BODYFORGE_ChestMark",
+          "changed": 0,
+          "vertices": 8,
+          "bind": {
+            "offset": 13552104,
+            "bytes": 96
+          },
+          "indices": {
+            "offset": 13552200,
+            "bytes": 48
+          }
+        },
+        {
+          "mesh": "BODYFORGE_SkinNipples",
+          "changed": 0,
+          "vertices": 458,
+          "bind": {
+            "offset": 13552248,
+            "bytes": 5496
+          },
+          "indices": {
+            "offset": 13557744,
+            "bytes": 7488
+          }
+        }
+      ],
+      "samples": {
+        "neutral": [
+          {
+            "offset": 13565232,
+            "bytes": 790740
+          },
+          {
+            "offset": 14355972,
+            "bytes": 52980
+          },
+          {
+            "offset": 14408952,
+            "bytes": 96
+          },
+          {
+            "offset": 14409048,
+            "bytes": 5496
+          }
+        ],
+        "arms": [
+          {
+            "offset": 14414544,
+            "bytes": 790740
+          },
+          {
+            "offset": 15205284,
+            "bytes": 52980
+          },
+          {
+            "offset": 15258264,
+            "bytes": 96
+          },
+          {
+            "offset": 15258360,
+            "bytes": 5496
+          }
+        ],
+        "core": [
+          {
+            "offset": 15263856,
+            "bytes": 790740
+          },
+          {
+            "offset": 16054596,
+            "bytes": 52980
+          },
+          {
+            "offset": 16107576,
+            "bytes": 96
+          },
+          {
+            "offset": 16107672,
+            "bytes": 5496
+          }
+        ],
+        "legs": [
+          {
+            "offset": 16113168,
+            "bytes": 790740
+          },
+          {
+            "offset": 16903908,
+            "bytes": 52980
+          },
+          {
+            "offset": 16956888,
+            "bytes": 96
+          },
+          {
+            "offset": 16956984,
+            "bytes": 5496
+          }
+        ],
+        "back": [
+          {
+            "offset": 16962480,
+            "bytes": 790740
+          },
+          {
+            "offset": 17753220,
+            "bytes": 52980
+          },
+          {
+            "offset": 17806200,
+            "bytes": 96
+          },
+          {
+            "offset": 17806296,
+            "bytes": 5496
+          }
+        ],
+        "mixed": [
+          {
+            "offset": 17811792,
+            "bytes": 790740
+          },
+          {
+            "offset": 18602532,
+            "bytes": 52980
+          },
+          {
+            "offset": 18655512,
+            "bytes": 96
+          },
+          {
+            "offset": 18655608,
+            "bytes": 5496
+          }
+        ],
+        "max": [
+          {
+            "offset": 18661104,
+            "bytes": 790740
+          },
+          {
+            "offset": 19451844,
+            "bytes": 52980
+          },
+          {
+            "offset": 19504824,
+            "bytes": 96
+          },
+          {
+            "offset": 19504920,
+            "bytes": 5496
+          }
+        ],
+        "idle0.8": [
+          {
+            "offset": 19510416,
+            "bytes": 790740
+          },
+          {
+            "offset": 20301156,
+            "bytes": 52980
+          },
+          {
+            "offset": 20354136,
+            "bytes": 96
+          },
+          {
+            "offset": 20354232,
+            "bytes": 5496
+          }
+        ],
+        "idle2.1": [
+          {
+            "offset": 20359728,
+            "bytes": 790740
+          },
+          {
+            "offset": 21150468,
+            "bytes": 52980
+          },
+          {
+            "offset": 21203448,
+            "bytes": 96
+          },
+          {
+            "offset": 21203544,
+            "bytes": 5496
+          }
+        ],
+        "idle4.2": [
+          {
+            "offset": 21209040,
+            "bytes": 790740
+          },
+          {
+            "offset": 21999780,
+            "bytes": 52980
+          },
+          {
+            "offset": 22052760,
+            "bytes": 96
+          },
+          {
+            "offset": 22052856,
+            "bytes": 5496
+          }
+        ],
+        "reset": [
+          {
+            "offset": 22058352,
+            "bytes": 790740
+          },
+          {
+            "offset": 22849092,
+            "bytes": 52980
+          },
+          {
+            "offset": 22902072,
+            "bytes": 96
+          },
+          {
+            "offset": 22902168,
+            "bytes": 5496
+          }
+        ]
+      }
+    }
+  }
+}

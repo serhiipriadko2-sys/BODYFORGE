@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { regionalDermalShaders } from './avatarDermalRegions';
 import { scalpDensityShaders, scalpDensityState } from './avatarScalpDensity';
 import { angularDiffusionShader, skinDiffusionTexture } from './avatarSkinDiffusion';
+import { buzzSurfaceShaders, buzzSurfaceState } from './avatarBuzzReview';
+import { createMetricSkinTile, metricSkinShaders, METRIC_SKIN_ID } from './avatarMetricSkinReview';
+import { regionalMicroShaders, REGIONAL_MICRO_ID } from './avatarRegionalMicroReview';
 
 const diffuseLine = 'reflectedLight.directDiffuse += irradiance * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );';
 
@@ -40,8 +43,14 @@ export function avatarSkinShader(fragment: string, scanDetail = false): string {
 export function installAvatarSkinLighting(material: THREE.MeshPhysicalMaterial, scanDetail = false): void {
   const regional = material.userData.BODYFORGE_regionalDermal === true;
   const scalp = scalpDensityState(material);
+  const buzz = import.meta.env.DEV && scalp ? buzzSurfaceState(material) : undefined;
   const diffusion = import.meta.env.DEV && regional && material.userData.BODYFORGE_diffusionReview === true;
   const lut = diffusion ? skinDiffusionTexture(material) : undefined;
+  const metric = import.meta.env.DEV && scanDetail && regional &&
+    material.bumpMap?.userData.BODYFORGE_metricSkin === METRIC_SKIN_ID &&
+    Number.isFinite(material.userData.BODYFORGE_metricSkinScale);
+  const regionalMicro = import.meta.env.DEV && metric &&
+    material.userData.BODYFORGE_regionalMicro === REGIONAL_MICRO_ID;
   material.onBeforeCompile = shader => {
     shader.fragmentShader = avatarSkinShader(shader.fragmentShader, scanDetail);
     if (regional) {
@@ -60,6 +69,23 @@ export function installAvatarSkinLighting(material: THREE.MeshPhysicalMaterial, 
         shader.uniforms.bfScalpColor = scalp.color;
       }
     }
+    if (buzz) {
+      const patched = buzzSurfaceShaders(shader.vertexShader, shader.fragmentShader);
+      if (patched) {
+        shader.vertexShader = patched.vertex;
+        shader.fragmentShader = patched.fragment;
+        shader.uniforms.bfBuzzEnabled = buzz.enabled;
+        shader.uniforms.bfBuzzAtlas = { value: buzz.texture };
+      }
+    }
+    if (metric) {
+      const patched = metricSkinShaders(shader.vertexShader, shader.fragmentShader);
+      if (patched) {
+        shader.vertexShader = patched.vertex;
+        shader.fragmentShader = patched.fragment;
+        shader.uniforms.bfMetricSceneScale = { value: material.userData.BODYFORGE_metricSkinScale };
+      }
+    }
     if (lut) {
       const patched = angularDiffusionShader(shader.fragmentShader);
       if (patched) {
@@ -67,14 +93,30 @@ export function installAvatarSkinLighting(material: THREE.MeshPhysicalMaterial, 
         shader.uniforms.bfDiffusionLut = { value: lut };
       }
     }
+    if (regionalMicro) {
+      const patched = regionalMicroShaders(shader.vertexShader, shader.fragmentShader);
+      if (patched) {
+        shader.vertexShader = patched.vertex;
+        shader.fragmentShader = patched.fragment;
+      }
+    }
   };
-  material.customProgramCacheKey = () => (scanDetail ? 'bodyforge-scan-micro-v2' : 'bodyforge-dermal-wrap-v1') + (regional ? '-regions-v3' : '') + (scalp ? '-scalp-density-v1' : '') + (diffusion ? '-angular-diffusion-v1' : '');
+  material.customProgramCacheKey = () => (scanDetail ? 'bodyforge-scan-micro-v2' : 'bodyforge-dermal-wrap-v1') + (regional ? '-regions-v3' : '') + (scalp ? '-scalp-density-v1' : '') + (diffusion ? '-angular-diffusion-v1' : '') + (buzz ? '-buzz-surface-v1' : '') + (metric ? '-metric-skin-gradient-v1' : '') + (regionalMicro ? '-regional-micro-v1' : '');
 }
 
 /** Transfer ownership only for this scene's skin material. The previous
  * procedural texture must not be shared by clothing or other live scenes. */
 export function installAvatarScanDetail(material: THREE.MeshPhysicalMaterial, texture: THREE.Texture): void {
-  texture.name = 'BODYFORGE scan-derived cheek microrelief';
+  const source = texture;
+  const metric = import.meta.env.DEV && Number.isFinite(material.userData.BODYFORGE_metricSkinScale) &&
+    texture.userData.BODYFORGE_metricSkin !== METRIC_SKIN_ID ? createMetricSkinTile(texture) : undefined;
+  texture = metric ?? texture;
+  if (metric) {
+    texture.premultiplyAlpha = false;
+    texture.unpackAlignment = 1;
+    texture.anisotropy = source.anisotropy;
+  }
+  texture.name = metric ? 'BODYFORGE metric skin gradient moments' : 'BODYFORGE scan-derived cheek microrelief';
   texture.colorSpace = THREE.NoColorSpace;
   texture.flipY = false;
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -91,4 +133,5 @@ export function installAvatarScanDetail(material: THREE.MeshPhysicalMaterial, te
   installAvatarSkinLighting(material, true);
   material.needsUpdate = true;
   if (previous !== texture) previous?.dispose();
+  if (metric && source !== previous) source.dispose();
 }

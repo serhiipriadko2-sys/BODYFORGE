@@ -1,0 +1,31 @@
+{
+  "status": "BLOCKED",
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate\\native-runtime-release-20261127",
+  "head_at_freeze": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "source_count": 417,
+  "owned": {
+    "android/src/java/ru/bodyforge/healthqa/StepsPolicy.java": "dc72bb3cb78598fb4b3673994b1b2a2195aaee54c5fdd673fea6a5cae114f44e",
+    "android/src/java/ru/bodyforge/healthqa/HealthStepsActivity.java": "40fc45f8f5c083c8f8aeb37537e72e2c9656f6f838ce7d222d6fe92a47a67678",
+    "android/src/java/ru/bodyforge/healthqa/LiveStepsPanel.java": "65b332d211697eca2ff91c998b86ce75a6faca3e13d3166e1283fc3c9fd00f57",
+    "android/tests/StepsPolicyTest.java": "be263a8a106a4db3f23a0f7163cae170d449e43cc97eb576679268641e626f7c",
+    "qa/release-gates.mjs": "9e76bcf4923e41340e54f4a89b34190d5c3586d53c4bdf46cbf7b044b8e9e74e",
+    "android/README.md": "54b0373e8eed32a33defc6ef304d701a76610aec774005f705670405282d6bf3",
+    "qa/native-policy-gate.mjs": "1ccf26025fd0ba78e032178d7525c1091848295d4d5eec90de6ebd66760e5c01",
+    "qa/native-policy-gate.test.mjs": "b109f5882a4525d87dce0e04feb14606724ab1a3e8edf067350f40a44e074230"
+  },
+  "commands": {
+    "offline-install": 1
+  },
+  "started": "2026-11-27T20:52:57.949733+03:00",
+  "root_packages_before": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "candidate_packages": {
+    "package.json": "ba4e8e3bd4eceda98cba384df1e53d600149ad281970a3bbf10256ebf4b4a50a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "failureType": "AssertionError",
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T20:52:58.415978+03:00"
+}

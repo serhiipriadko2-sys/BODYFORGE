@@ -1,0 +1,26 @@
+{
+  "status": "TESTED_LOCAL",
+  "artifactEntrySha256": "a2ce722eb22fe99bed30766e4b37a9ce3671b227cc402d1aba140e3c4c4b4a14",
+  "distributionReadBackBeforeAndAfter": "pass",
+  "qaSource": {
+    "qa/avatar-quality-e2e.mjs": {
+      "bytes": 128401,
+      "sha256": "571f78fda60aa6f9967b257b5a3f8861878a6a9c5305a7356ff0a9e948b9f54f"
+    }
+  },
+  "baseline": {
+    "exits": {
+      "tower": 0,
+      "mobile": 0,
+      "avatar-quality": 18
+    },
+    "failure": "test did not block preferred normal map, so reserve normal map was never requested"
+  },
+  "candidate": {
+    "exits": {
+      "avatar-quality-current": 0
+    },
+    "printedPassChecks": 99
+  },
+  "fieldDevice": "not-run"
+}

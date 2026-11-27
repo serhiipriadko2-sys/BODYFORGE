@@ -224,11 +224,12 @@ final class LiveStepsPanel extends LinearLayout {
 
     private void tick() {
         tickSensor();
-        if (!HealthStepsActivity.available(activity) || !granted(HealthStepsActivity.READ_STEPS)) {
+        StepsPolicy.DailyAccess access = HealthStepsActivity.dailyAccess(activity);
+        if (access != StepsPolicy.DailyAccess.READY) {
             if (healthGranted) refresh.reset();
             healthGranted = false;
             queryWindow = displayedWindow = null;
-            showToday("—", "Нет доступа к HC");
+            showToday("—", access == StepsPolicy.DailyAccess.UNAVAILABLE ? "HC недоступен" : "Нет доступа к HC");
             return;
         }
         if (!healthGranted) { healthGranted = true; refresh.reset(); }
@@ -289,10 +290,10 @@ final class LiveStepsPanel extends LinearLayout {
         }
         refresh.finish();
         queryWindow = null;
-        if (!granted(HealthStepsActivity.READ_STEPS) ||
-            !window.isCurrent(Instant.now(), ZoneId.systemDefault())) {
+        StepsPolicy.DailyAccess access = HealthStepsActivity.dailyAccess(activity);
+        if (!StepsPolicy.canDisplayDaily(access, window, Instant.now(), ZoneId.systemDefault())) {
             displayedWindow = null;
-            showToday("—", "Дата / доступ изменились");
+            showToday("—", access == StepsPolicy.DailyAccess.UNAVAILABLE ? "HC недоступен" : "Дата / доступ изменились");
             return;
         }
         if (StepsPolicy.validCount(value)) {

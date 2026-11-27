@@ -1,0 +1,165 @@
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { describe, expect, it } from 'vitest';
+import type { Muscle } from './game';
+import { MUSCLE_RELIEF_CONTROLS, MUSCLE_RELIEF_REVIEW_ID, addAvatarMuscleRelief } from './avatarMuscleReliefReview';
+import { createAvatarPhysique } from './avatarPhysique';
+import { SCAN_TORSO_REVIEW_DATA } from './avatarScanTorsoReviewData';
+import { applyAthleticPose } from './avatarPose';
+import { applyAvatarGrowth } from './avatarGrowth';
+import { createAvatarGarmentSeams } from './avatarGarmentSeams';
+import { applyAvatarGarmentFit } from './avatarGarmentFit';
+import { repairAvatarSleeve } from './avatarSleeveRepair';
+import { disposeThreeTree } from './threeResources';
+
+const groups:Muscle[]=['arms','core','legs','back'];
+const names=['BODYFORGE_Body','BODYFORGE_Shirt','BODYFORGE_Shorts','BODYFORGE_SkinNipples','BODYFORGE_ChestMark'];
+const field=(g:Muscle,w:number,p:readonly number[])=>{
+  const d=new Float64Array(3),j=new Float64Array(9);
+  addAvatarMuscleRelief(g,w,p[0],p[1],p[2],d,j);return {d,j};
+};
+async function load(){
+  const bytes=readFileSync('public/assets/bodyforge-athlete-efficient.glb');
+  expect(createHash('sha256').update(bytes).digest('hex')).toBe('df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e');
+  return (await new GLTFLoader().parseAsync(Uint8Array.from(bytes).buffer,'')).scene;
+}
+function prepare(root:THREE.Object3D,enabled:boolean){
+  applyAthleticPose(root);
+  const clothes=names.slice(1,3).map(n=>root.getObjectByName(n) as THREE.SkinnedMesh);
+  const seams=createAvatarGarmentSeams(clothes);
+  expect(seams?.loopCount).toBe(7);
+  expect(applyAvatarGarmentFit(clothes)).toBe(4466);
+  expect(repairAvatarSleeve(clothes)).toBe(14);
+  return createAvatarPhysique(root,true,false,SCAN_TORSO_REVIEW_DATA,true,enabled);
+}
+const attr=(root:THREE.Object3D,name:string,attribute:string)=>
+  (root.getObjectByName(name) as THREE.SkinnedMesh).geometry.getAttribute(attribute);
+
+describe('paid anatomical muscle relief review',()=>{
+  it('uses 34 finite oriented controls, preserves reflection and computes the exact spatial derivative',()=>{
+    expect(Object.values(MUSCLE_RELIEF_CONTROLS).flat()).toHaveLength(34);
+    const h=1e-6;
+    let worst=0,probes=0;
+    for(const g of groups){
+      for(const c of MUSCLE_RELIEF_CONTROLS[g]){
+        expect(c.amplitude!==0&&Math.abs(c.amplitude)<=.0045).toBe(true);
+        for(const [a,b,e] of [[0,0,0],[.008,.012,-.008],[-.015,.009,.007],[.021,-.013,-.009]]){
+          const p=[c.center[0]+a,c.center[1]+b,c.center[2]+e],r=field(g,1,p);
+          const mirrored=field(g,1,[-p[0],p[1],p[2]]);
+          expect(mirrored.d[0]).toBeCloseTo(-r.d[0],10);
+          expect(mirrored.d[1]).toBeCloseTo(r.d[1],10);
+          expect(mirrored.d[2]).toBeCloseTo(r.d[2],10);
+          expect(Array.from(field(g,0,p).d)).toEqual([0,0,0]);
+          expect(Array.from(field(g,NaN,p).j)).toEqual(Array(9).fill(0));
+          expect(Array.from(field(g,2,p).d)).toEqual(Array.from(r.d));
+          for(let k=0;k<3;k++){
+            const l=p.slice(),m=p.slice();l[k]+=h;m[k]-=h;
+            const u=field(g,1,l).d,v=field(g,1,m).d;
+            for(let i=0;i<3;i++)worst=Math.max(worst,Math.abs((u[i]-v[i])/(2*h)-r.j[i*3+k]));
+            probes++;
+          }
+        }
+      }
+      for(const p of [[0,1.64,.12],[.2,.09,.04],[.58,1.04,.34]]){
+        expect(Array.from(field(g,1,p).d)).toEqual([0,0,0]);
+        expect(Array.from(field(g,1,p).j)).toEqual(Array(9).fill(0));
+      }
+    }
+    expect(worst).toBeLessThan(2e-6);
+    console.info('RELIEF_DERIVATIVE',JSON.stringify({controls:34,probes,worst}));
+  });
+
+  it('preserves the unmodified production growth and applies no review without the pinned athletic profile',async()=>{
+    const root=await load();
+    try{
+      const sculpt=createAvatarPhysique(root,false,false,undefined,false,true);
+      sculpt({arms:5,core:5,legs:5,back:5});
+      expect(root.userData.BODYFORGE_muscleReliefReview).toBeUndefined();
+    }finally{disposeThreeTree(root);}
+  });
+
+  it('keeps skin, fitted clothing, paid levels and local triangle orientation on the real rig',async()=>{
+    const baseline=await load(),candidate=await load();
+    const oldGrow=prepare(baseline,false),newGrow=prepare(candidate,true);
+    const body=candidate.getObjectByName('BODYFORGE_Body') as THREE.SkinnedMesh;
+    const g=body.geometry,idx=g.index,uv=g.getAttribute('uv'),weights=g.getAttribute('skinWeight');
+    const fixed=['BODYFORGE_Eyes','BODYFORGE_Lips','BODYFORGE_Shoes','BODYFORGE_NailsHands'].map(n=>[n,attr(candidate,n,'position')] as const);
+    const old=new THREE.Vector3(),next=new THREE.Vector3(),a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+    const crossAt=(p:THREE.BufferAttribute|THREE.InterleavedBufferAttribute,i:number,j:number,k:number,out:THREE.Vector3)=>{
+      a.fromBufferAttribute(p,i);b.fromBufferAttribute(p,j);c.fromBufferAttribute(p,k);
+      return out.crossVectors(b.sub(a),c.sub(a));
+    };
+    try{
+      expect(candidate.userData.BODYFORGE_muscleReliefReview).toBe(MUSCLE_RELIEF_REVIEW_ID);
+      oldGrow({});newGrow({});
+      const rest=new Map(names.map(n=>[n,Float32Array.from(attr(candidate,n,'position').array)]));
+      for(const n of names)expect(Float32Array.from(attr(baseline,n,'position').array)).toEqual(rest.get(n));
+      let minRatio=Infinity,checked=0,worst={mesh:'',levels:{},triangle:0,ratio:0};
+      const check=(levels:Partial<Record<Muscle,number>>)=>{
+        oldGrow(levels);newGrow(levels);
+        applyAvatarGrowth(baseline,levels);applyAvatarGrowth(candidate,levels);
+        candidate.updateWorldMatrix(true,true);baseline.updateWorldMatrix(true,true);
+        const metrics:Record<string,{changed:number;peakMm:number;protected:number}>={};
+        for(const n of names){
+          const mesh=candidate.getObjectByName(n) as THREE.SkinnedMesh;
+          const p=attr(baseline,n,'position'),q=attr(candidate,n,'position'),normal=attr(candidate,n,'normal'),indices=mesh.geometry.index!;
+          const changed=new Uint8Array(p.count);
+          let peak=0,count=0,protectedCount=0;
+          for(let i=0;i<p.count;i++){
+            const d=Math.hypot(p.getX(i)-q.getX(i),p.getY(i)-q.getY(i),p.getZ(i)-q.getZ(i));
+            if(!Number.isFinite(d))throw Error('Nonfinite displacement '+n);
+            if(d>.0001){count++;changed[i]=1;}
+            if(d>peak)peak=d;
+            if(p.getY(i)>1.55||p.getY(i)<.17||Math.abs(p.getX(i))>.54){
+              if(d!==0)throw Error('Protected vertex changed '+n+' '+i);
+              protectedCount++;
+            }
+            if(!Number.isFinite(normal.getX(i)+normal.getY(i)+normal.getZ(i)))throw Error('Nonfinite normal');
+          }
+          for(let i=0;i<indices.count;i+=3){
+            const u=indices.getX(i),v=indices.getX(i+1),w=indices.getX(i+2);
+            if(!changed[u]&&!changed[v]&&!changed[w])continue;
+            crossAt(p,u,v,w,old);crossAt(q,u,v,w,next);
+            const area=old.lengthSq();
+            if(area<=1e-16)continue;
+            const ratio=old.dot(next)/area;
+            checked++;
+            if(ratio<minRatio){minRatio=ratio;worst={mesh:n,levels:{...levels},triangle:i/3,ratio};}
+          }
+          if(peak>.012)throw Error('Correction exceeds 12mm '+n);
+          metrics[n]={changed:count,peakMm:peak*1000,protected:protectedCount};
+        }
+        return metrics;
+      };
+      for(const group of groups){
+        let prior=0;
+        for(let l=1;l<=5;l++){
+          const r=check({[group]:l});
+          const peak=r.BODYFORGE_Body.peakMm;
+          expect(peak).toBeGreaterThan(prior+.2);
+          prior=peak;
+          if(l===5){
+            expect(r.BODYFORGE_Body.changed).toBeGreaterThan(100);
+            expect(peak).toBeGreaterThan(2);
+            console.info('RELIEF_PAID_GROUP',JSON.stringify({group,...r}));
+          }
+        }
+      }
+      const max={arms:5,core:5,legs:5,back:5};
+      const combined=check(max);
+      const full=Float32Array.from(g.getAttribute('position').array);
+      newGrow(max);
+      expect(Float32Array.from(g.getAttribute('position').array)).toEqual(full);
+      check({arms:2,core:4,legs:3,back:1});
+      newGrow({});oldGrow({});applyAvatarGrowth(candidate,{});
+      for(const n of names)expect(Float32Array.from(attr(candidate,n,'position').array)).toEqual(rest.get(n));
+      expect(g.index).toBe(idx);expect(g.getAttribute('uv')).toBe(uv);expect(g.getAttribute('skinWeight')).toBe(weights);
+      for(const [n,p] of fixed)expect(attr(candidate,n,'position')).toBe(p);
+      console.info('RELIEF_TRIANGLES',JSON.stringify({checked,minRatio,worst,combined}));
+      expect(checked).toBeGreaterThan(10000);
+      expect(minRatio).toBeGreaterThan(.60);
+    }finally{disposeThreeTree(baseline);disposeThreeTree(candidate);}
+  },90000);
+});

@@ -1,0 +1,168 @@
+{
+  "status": "TESTED_LOCAL",
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate\\release-diagnostics-20261127",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "source_count": 381,
+  "owned": {
+    "qa/release-gates.mjs": "011b7d17a60e37ac18191e91b242fbf86d99e3e85f071e31275f59f575a651f3",
+    "qa/tower20-e2e.mjs": "cc94ff56dc6e8de658fb2375617d5c5b4443e1e8f056501978032561e0de98e2",
+    "qa/release-resource-gate.mjs": "7b13f63a38fbb9867aa931ff892368e930a1bc9424c2aaadcda6a19aef6ac7bb",
+    "qa/release-resource-gate.test.mjs": "7db364a2745b741885a93400e7513bd04ac8552a2e0ef95afa6c6dc62b11dbb8",
+    "qa/owned-chrome-cleanup-e2e.mjs": "b7afbfad8c2e7aacac64daaf4a255516752a7e025800e41852f160c2dc12e766",
+    "qa/release-gate-diagnostics.mjs": "a1932793bda66ab372bc29bb2dd979610dc2ef629214c5c77146e79cb9f2d74b",
+    "qa/release-gate-diagnostics.test.mjs": "08550ad129dfd933b630572c68e689a470ad378c3c9c67f0de05eb36f50b413b"
+  },
+  "candidate_package": {
+    "package.json": "ba4e8e3bd4eceda98cba384df1e53d600149ad281970a3bbf10256ebf4b4a50a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "root_package_before": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "commands": {
+    "final-offline-ci": 0,
+    "qa-release": 0,
+    "final-scoped-diff": 0,
+    "final-canon": 0
+  },
+  "first_preflight": {
+    "status": "pass",
+    "physicalMiB": 13148,
+    "virtualMiB": 23248,
+    "totalPhysicalMiB": 32619,
+    "totalVirtualMiB": 48619
+  },
+  "started": "2026-11-27T17:51:05.928390+03:00",
+  "prior_run_sha256": "9c7f7172e038118ea9c45a807510387f9b6d80235fde06c943b2f9a3ac57aac5",
+  "recovery_diagnostic_sha256": "7a27ef635efaa29f731f70f265a60397745187c3e10302469b22ef8f895b7eeb",
+  "install_preflight": {
+    "status": "pass",
+    "physicalMiB": 13025,
+    "virtualMiB": 23161,
+    "totalPhysicalMiB": 32619,
+    "totalVirtualMiB": 48619
+  },
+  "installed": {
+    "vite": {
+      "version": "8.3.7",
+      "package_sha256": "e257b73faf6731ada0b3faf2fb728c23d5a76afd8563918cee157c27e71aa0a1"
+    },
+    "rolldown": {
+      "version": "1.2.19",
+      "package_sha256": "73ea5ca898ac22574e23d66e54dc9c5b3714f9d8c1be934412824d62f25e21fc"
+    },
+    "@rolldown/binding-win32-x64-msvc": {
+      "version": "1.2.19",
+      "package_sha256": "f7f54af48c8268c4401471b4a0c6e9947671cb6f232b319c01ef15d0fc2d5d8c"
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "package_sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    "vitest": {
+      "version": "5.0.5",
+      "package_sha256": "d00333f3a13ed44fedc77184c8675bae45246534f06684d94cff5e4f8a9f7c10"
+    },
+    "@mediapipe/tasks-vision": {
+      "version": "1.1.1",
+      "package_sha256": "ed8a115ed6a703014465111bfe5f7321a94769dc19f6eb7936ece7ae6a8c8c1e"
+    }
+  },
+  "release": {
+    "status": "tested-local",
+    "stage": "read-back",
+    "checks": {
+      "resource-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "artifact-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "owned-browser-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "field-metrics-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "owned-browser-recovery": {
+        "exit": 0,
+        "pass": true,
+        "diagnostics": {
+          "stage": "verify-final",
+          "cleanupUnverified": false
+        }
+      },
+      "unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "types": {
+        "exit": 0,
+        "pass": true
+      },
+      "artifact": {
+        "exit": 0,
+        "pass": true
+      },
+      "bundle": {
+        "exit": 0,
+        "pass": true
+      },
+      "pwa-install": {
+        "exit": 0,
+        "pass": true
+      },
+      "private-path-fixtures": {
+        "exit": 0,
+        "pass": true
+      },
+      "preview": {
+        "exit": 0,
+        "pass": true
+      },
+      "privacy": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-tower": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-mobile": {
+        "exit": 0,
+        "pass": true
+      },
+      "read-back": {
+        "exit": 0,
+        "pass": true
+      }
+    },
+    "resourceSamples": 16,
+    "fieldDevice": "not-run"
+  },
+  "frozen_final_match": true,
+  "distribution": {
+    "count": 79,
+    "bytes": 35917577,
+    "verified": true
+  },
+  "owned_match": true,
+  "root_package_unchanged": true,
+  "root_drift": [
+    "qa/avatar-quality-e2e.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarSkinLighting.ts"
+  ],
+  "root_new": [
+    "src/lib/avatarBuzzReview.test.ts",
+    "src/lib/avatarBuzzReview.ts"
+  ],
+  "recovery_profiles_remaining": 0,
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T17:55:39.498684+03:00"
+}

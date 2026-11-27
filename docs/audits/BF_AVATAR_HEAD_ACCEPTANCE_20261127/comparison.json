@@ -1,0 +1,93 @@
+{
+  "scope": "Matched browser frame crops. Descriptive decoded channel differences, not photorealism score. No calibrated linear-light interpretation.",
+  "columns": "baseline, V4, fallback",
+  "rows": "front, turned, deep",
+  "results": [
+    {
+      "view": "front",
+      "crop": [
+        275,
+        630,
+        550,
+        956
+      ],
+      "enabledVsOff": {
+        "pixels": 89650,
+        "changedPixels": 10596,
+        "meanAbsoluteDecodedChannelDelta": 0.002858947031199932,
+        "maxDecodedChannelDelta": 0.4901961088180542
+      },
+      "fallbackVsOff": {
+        "pixels": 89650,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "turned",
+      "crop": [
+        275,
+        630,
+        550,
+        956
+      ],
+      "enabledVsOff": {
+        "pixels": 89650,
+        "changedPixels": 11512,
+        "meanAbsoluteDecodedChannelDelta": 0.002230518963187933,
+        "maxDecodedChannelDelta": 0.4549019932746887
+      },
+      "fallbackVsOff": {
+        "pixels": 89650,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "deep",
+      "crop": [
+        275,
+        630,
+        550,
+        956
+      ],
+      "enabledVsOff": {
+        "pixels": 89650,
+        "changedPixels": 11423,
+        "meanAbsoluteDecodedChannelDelta": 0.001612968510016799,
+        "maxDecodedChannelDelta": 0.1568627655506134
+      },
+      "fallbackVsOff": {
+        "pixels": 89650,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "torso",
+      "crop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "enabledVsOff": {
+        "pixels": 335692,
+        "changedPixels": 22,
+        "meanAbsoluteDecodedChannelDelta": 1.1682043066230108e-07,
+        "maxDecodedChannelDelta": 0.00784313678741455
+      },
+      "fallbackVsOff": {
+        "pixels": 335692,
+        "changedPixels": 4,
+        "meanAbsoluteDecodedChannelDelta": 1.557605777691151e-08,
+        "maxDecodedChannelDelta": 0.003921568393707275
+      }
+    }
+  ],
+  "comparisonBytes": 437826,
+  "comparisonSha256": "f569765a6dab47f8da500ccbc1b247444a2d3b31021121c5775c10c5db65f492"
+}

@@ -40,7 +40,7 @@ public final class MainActivity extends Activity {
     private static final String SCREEN_PROBE =
         "(function(){var a=document.querySelector('.app-shell'),s=document.querySelector('[data-native-live-panel]');"
         + "if(location.origin!=='https://appassets.androidplatform.net'||document.visibilityState!=='visible'"
-        + "||!a||a.dataset.screen!=='challenge'||a.dataset.fighterCreated!=='true'||!s)return 'off';"
+        + "||!a||a.dataset.screen!=='challenge'||!s)return 'off';"
         + "return s.dataset.nativeLivePanel==='ready'?'ready':s.dataset.nativeLivePanel==='busy'?'busy':'off';})()";
     private final Runnable screenPoll = new Runnable() {
         @Override public void run() {

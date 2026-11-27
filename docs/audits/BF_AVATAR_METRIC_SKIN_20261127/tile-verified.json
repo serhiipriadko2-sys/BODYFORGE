@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "source": "public/assets/athlete-scan-pores.png",
+  "sourceSha256": "56628fec1902669f0cabb7b2dcda7f5bc7837d042db81f068805aa2a3cae0685",
+  "pngChunks": [
+    "IHDR",
+    "sRGB",
+    "gAMA",
+    "cHRM",
+    "eXIf",
+    "oFFs",
+    "pHYs",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IDAT",
+    "IEND"
+  ],
+  "channels": 3,
+  "texels": 65536,
+  "bytes": 262144,
+  "packedSha256": "4bccf6e5a656428e263f1ca92615352a5a3ce74b500e8375877a10d1bf7860cf",
+  "fnv1a": "624768ed",
+  "clipped": 50,
+  "rmsSlope": 0.2364881985780965,
+  "maxSlope": 0.9049981425634398,
+  "maxQuantError": 0.003935978590911424,
+  "meanSlope": [
+    0.0000016820712352365912,
+    -0.0000064879890501966136
+  ],
+  "scope": "Exact raw PNG bytes, packed gradient/moment tile; no calibrated biological height."
+}

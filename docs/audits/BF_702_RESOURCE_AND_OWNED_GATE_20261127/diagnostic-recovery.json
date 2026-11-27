@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "exit": 0,
+  "stages": [
+    "launch-first",
+    "launch-second",
+    "verify-distinct",
+    "recover-first",
+    "verify-recovery",
+    "verify-second",
+    "close-second",
+    "verify-final"
+  ],
+  "failure": null,
+  "cleanupUnverified": false,
+  "passResult": {
+    "checks": 11,
+    "first": {
+      "mode": "verified-windows-recovery",
+      "attempts": 1,
+      "profileRemoved": true,
+      "launcherExited": true,
+      "portClosed": true,
+      "exactProfileBefore": 11,
+      "terminated": 2,
+      "remaining": 0
+    },
+    "second": {
+      "mode": "graceful-windows-verified",
+      "attempts": 1,
+      "profileRemoved": true,
+      "launcherExited": true,
+      "portClosed": true,
+      "exactProfileBefore": 0,
+      "terminated": 0,
+      "remaining": 0
+    }
+  },
+  "remainingDisposableProfiles": 0,
+  "rawOutputSha256": "4b4343bc18310b92b6527b65c8bd72d07e99675a16dad34eb66cb26a80c39765",
+  "resourceSample": {
+    "status": "pass",
+    "physicalMiB": 12995,
+    "virtualMiB": 23080,
+    "totalPhysicalMiB": 32619,
+    "totalVirtualMiB": 48619
+  },
+  "start": "2026-11-27T17:50:23.339945+03:00",
+  "end": "2026-11-27T17:50:25.863496+03:00",
+  "sourceMatch": true
+}

@@ -12,7 +12,9 @@ const artifactDir = process.env.BODYFORGE_QA_ARTIFACT_DIR || fs.mkdtempSync(path
 fs.mkdirSync(artifactDir, { recursive: true });
 const key = 'bodyforge:appearance:v1', gameKey = 'bodyforge:pilot:v1';
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
-  '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
+  '--headless=new', ...(process.env.BODYFORGE_QA_REGIONAL_HARDWARE==='1' ?
+    ['--enable-gpu','--use-gl=angle','--use-angle=d3d11','--disable-software-rasterizer'] :
+    ['--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']),
   '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
   '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profile,
   'about:blank',
@@ -133,6 +135,11 @@ async function newTab() {
     window.__scalpQa = { draws: new WeakMap(), disable: false };
     window.__layeredGroomDraws = new WeakMap();
     const layeredPrograms = new WeakSet();
+    const directionalPrograms = new WeakSet();
+    window.__directionalGroomDraws = new WeakMap();
+    const buzzPrograms = new WeakMap();
+    window.__buzzSurfaceDraws = new WeakMap();
+    window.__legacyBuzzDraws = new WeakMap();
     window.__garmentDraws = new WeakMap();
     window.__lightQa = new WeakMap();
     const shadowPrograms = new WeakSet(), depthPrograms = new WeakSet(), iblPrograms = new WeakSet();
@@ -142,8 +149,54 @@ async function newTab() {
     window.__hipDraws = new WeakMap();
     const wardrobeQaEnabled = ${Boolean(process.env.BODYFORGE_QA_WARDROBE)};
     window.__wardrobeQa = new WeakMap();
+    const metricQa = ${Boolean(process.env.BODYFORGE_QA_METRIC_SKIN)};
+    const metricPrograms = new WeakMap(), metricTextures = new WeakMap(), metricMips = new WeakSet();
+    window.__metricSkinQa = {draws:new WeakMap(),uploads:new Set()};
+    const regionalMicroQa = ${Boolean(process.env.BODYFORGE_QA_REGIONAL_MICRO)};
+    const regionalBuffers = new WeakMap();
     for (const type of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
       if (!type) continue;
+      if(regionalMicroQa){
+        const original=type.prototype.bufferData;
+        type.prototype.bufferData=function(...args){
+          const result=original.apply(this,args);
+          const data=args[1];
+          if(args[0]===this.ARRAY_BUFFER&&data instanceof Uint8Array&&[131790,7036,916].includes(data.byteLength)){
+            let h=2166136261,min=255,max=0,minFilter=255,maxFilter=0;
+            for(let i=0;i<data.length;i++){
+              h=Math.imul(h^data[i],16777619)>>>0;
+              if(i%2===0){min=Math.min(min,data[i]);max=Math.max(max,data[i]);}
+              else{minFilter=Math.min(minFilter,data[i]);maxFilter=Math.max(maxFilter,data[i]);}
+            }
+            const b=this.getParameter(this.ARRAY_BUFFER_BINDING);
+            if(b)regionalBuffers.set(b,{hash:h.toString(16).padStart(8,'0'),bytes:data.byteLength,min,max,minFilter,maxFilter});
+          }
+          return result;
+        };
+      }
+      if(metricQa){
+        for(const name of ['texImage2D','texSubImage2D']){
+          const original=type.prototype[name];
+          if(!original)continue;
+          type.prototype[name]=function(...args){
+            const result=original.apply(this,args);
+            const bytes=args.find(a=>ArrayBuffer.isView(a)&&a.BYTES_PER_ELEMENT===1&&a.byteLength===262144);
+            if(args[0]===this.TEXTURE_2D&&bytes){
+              let h=2166136261;
+              for(const x of bytes)h=Math.imul(h^x,16777619)>>>0;
+              const hash=h.toString(16).padStart(8,'0'),t=this.getParameter(this.TEXTURE_BINDING_2D);
+              if(t){metricTextures.set(t,hash);window.__metricSkinQa.uploads.add(hash);}
+            }
+            return result;
+          };
+        }
+        const original=type.prototype.generateMipmap;
+        type.prototype.generateMipmap=function(target){
+          const result=original.call(this,target);
+          if(target===this.TEXTURE_2D){const t=this.getParameter(this.TEXTURE_BINDING_2D);if(t&&metricTextures.has(t))metricMips.add(t);}
+          return result;
+        };
+      }
       for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced']) {
         const original = type.prototype[name];
         if (!original) continue;
@@ -176,9 +229,20 @@ async function newTab() {
             if (sources.includes('BODYFORGE_DERMAL_WRAP_V1') && this.getProgramParameter(program, this.LINK_STATUS)) dermalPrograms.add(program);
             if (this.getProgramParameter(program, this.LINK_STATUS)) {
               if (enabled('USE_SKINNING')) skinPrograms.add(program);
+              if (enabled('USE_SKINNING') && sources.includes('BF_BUZZ_SURFACE_V1')) {
+                const state=this.getUniformLocation(program,'bfBuzzEnabled');
+                const atlas=this.getUniformLocation(program,'bfBuzzAtlas');
+                if(state!==null&&atlas!==null)buzzPrograms.set(program,state);
+              }
               if (enabled('USE_SKINNING') && sources.includes('BF_SKIN_ANGULAR_DIFFUSION_V1') &&
                 this.getUniformLocation(program, 'bfDiffusionLut') !== null) diffusionPrograms.add(program);
               if (enabled('USE_SKINNING') && sources.includes('BODYFORGE_DERMAL_REGIONS_V3')) regionalSkinPrograms.add(program);
+              if(metricQa&&enabled('USE_SKINNING')&&enabled('USE_NORMALMAP_TANGENTSPACE')&&enabled('USE_BUMPMAP')&&sources.includes('BF_METRIC_SKIN_GRADIENT_V1')){
+                const scale=this.getUniformLocation(program,'bfMetricSceneScale'),bump=this.getUniformLocation(program,'bumpMap');
+                const regionalMarker=regionalMicroQa&&sources.includes('BF_REGIONAL_MICRO_V1');
+                const profile=regionalMarker?this.getAttribLocation(program,'bfRegionalMicro'):-1;
+                if(scale!==null&&bump!==null)metricPrograms.set(program,{scale,bump,regionalMarker,profile});
+              }
               if (scalpQaEnabled && enabled('USE_SKINNING') && sources.includes('BODYFORGE_SCALP_DENSITY_V1')) {
                 const a=this.getUniformLocation(program,'bfScalpEnabled'), b=this.getUniformLocation(program,'bfScalpColor');
                 if(a!==null&&b!==null)scalpPrograms.set(program,{enabled:a,color:b});
@@ -187,6 +251,9 @@ async function newTab() {
                 enabled('USE_BUMPMAP') && enabled('USE_ROUGHNESSMAP') &&
                 /^#define BUMPMAP_UV uv1$/m.test(sources) && /^#define ROUGHNESSMAP_UV uv1$/m.test(sources)) lipResponsePrograms.add(program);
               if (sources.includes('BODYFORGE_LAYERED_GROOM_V2')) layeredPrograms.add(program);
+              if (sources.includes('BODYFORGE_DIRECTIONAL_GROOM_V3') && enabled('USE_ANISOTROPY') &&
+                enabled('USE_TANGENT') && enabled('USE_MAP') && enabled('USE_ALPHATEST') &&
+                enabled('DOUBLE_SIDED')) directionalPrograms.add(program);
               if (enabled('USE_SHADOWMAP') && enabled('SHADOWMAP_TYPE_PCF')) shadowPrograms.add(program);
               if (/^#define DEPTH_PACKING [0-9]+/m.test(sources) && enabled('USE_SKINNING')) depthPrograms.add(program);
               if (enabled('USE_ENVMAP') && enabled('ENVMAP_TYPE_CUBE_UV') && enabled('USE_SKINNING')) iblPrograms.add(program);
@@ -208,6 +275,18 @@ async function newTab() {
             if (iblPrograms.has(program)) counts.ibl++;
             window.__lightQa.set(this.canvas, counts);
           }
+          if (program && buzzPrograms.has(program)) {
+            const enabled=this.getUniform(program,buzzPrograms.get(program))>0.5;
+            const prev=window.__buzzSurfaceDraws.get(this.canvas)||{active:0,inactive:0};
+            prev[enabled?'active':'inactive']++;
+            window.__buzzSurfaceDraws.set(this.canvas,prev);
+          }
+          if (program && skinPrograms.has(program) && name.startsWith('drawElements') && args[1]===5376) {
+            window.__legacyBuzzDraws.set(this.canvas,(window.__legacyBuzzDraws.get(this.canvas)||0)+1);
+          }
+          if (program && directionalPrograms.has(program) && name.startsWith('drawElements') && args[1]===35040) {
+            window.__directionalGroomDraws.set(this.canvas,(window.__directionalGroomDraws.get(this.canvas)||0)+1);
+          }
           if (program && layeredPrograms.has(program) && name.startsWith('drawElements') && args[1]===35562) {
             window.__layeredGroomDraws.set(this.canvas,(window.__layeredGroomDraws.get(this.canvas)||0)+1);
           }
@@ -223,6 +302,33 @@ async function newTab() {
               if(args[1]===8547)counts.shorts++;
             }
             window.__wardrobeQa.set(this.canvas,counts);
+          }
+          if(metricQa&&program&&metricPrograms.has(program)){
+            const u=metricPrograms.get(program),scale=this.getUniform(program,u.scale),unit=this.getUniform(program,u.bump);
+            const active=this.getParameter(this.ACTIVE_TEXTURE);
+            this.activeTexture(this.TEXTURE0+unit);
+            const t=this.getParameter(this.TEXTURE_BINDING_2D),hash=t?metricTextures.get(t):undefined;
+            const filtered=t&&this.getTexParameter(this.TEXTURE_2D,this.TEXTURE_MIN_FILTER)===this.LINEAR_MIPMAP_LINEAR;
+            const repeated=t&&this.getTexParameter(this.TEXTURE_2D,this.TEXTURE_WRAP_S)===this.REPEAT&&this.getTexParameter(this.TEXTURE_2D,this.TEXTURE_WRAP_T)===this.REPEAT;
+            this.activeTexture(active);
+            const r=window.__metricSkinQa.draws.get(this.canvas)||{count:0,matched:0,mismatch:0,scale:0};
+            r.count++;r.scale=scale;
+            if(hash==='624768ed'&&filtered&&repeated&&metricMips.has(t)&&scale>=.5&&scale<=5)r.matched++;
+            else{r.mismatch++;r.lastMismatch={hash,filtered:!!filtered,repeated:!!repeated,mip:!!(t&&metricMips.has(t)),scale};}
+            if(regionalMicroQa&&u.regionalMarker){
+              const region=r.regional||(r.regional={count:0,matched:0,mismatch:0,buffers:{}});
+              region.count++;
+              const location=u.profile;
+              const info=location>=0?regionalBuffers.get(this.getVertexAttrib(location,this.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING)):undefined;
+              const valid=location>=0&&this.getVertexAttrib(location,this.VERTEX_ATTRIB_ARRAY_ENABLED)&&
+                this.getVertexAttrib(location,this.VERTEX_ATTRIB_ARRAY_SIZE)===2&&
+                this.getVertexAttrib(location,this.VERTEX_ATTRIB_ARRAY_TYPE)===this.UNSIGNED_BYTE&&
+                this.getVertexAttrib(location,this.VERTEX_ATTRIB_ARRAY_NORMALIZED)&&info&&
+                info.min>=30&&info.max<=199&&info.minFilter>=0&&info.maxFilter<=255;
+              if(valid){region.matched++;region.buffers[info.bytes]=info;}
+              else{region.mismatch++;region.lastMismatch={location,info};}
+            }
+            window.__metricSkinQa.draws.set(this.canvas,r);
           }
           if (program && regionalSkinPrograms.has(program)) window.__regionalSkinDraws.set(this.canvas,(window.__regionalSkinDraws.get(this.canvas)||0)+1);
           if (program && lipResponsePrograms.has(program)) window.__lipResponseDraws.set(this.canvas,(window.__lipResponseDraws.get(this.canvas)||0)+1);
@@ -268,7 +374,7 @@ async function app(tab, reload = false) {
   const loads = tab.loads;
   if (reload) await tab.cdp('Page.reload', { ignoreCache: true });
   else await tab.cdp('Page.navigate', { url: origin + '/' + (['geometry','color','fallback','complete','complete-fallback'].includes(process.env.BODYFORGE_QA_SCAN_TORSO)
-    ? '?avatarScanTorso=1'+(process.env.BODYFORGE_QA_SCAN_TORSO==='geometry'?'':'&avatarScanTorsoColor=1')+(['complete','complete-fallback'].includes(process.env.BODYFORGE_QA_SCAN_TORSO)?'&avatarScanTorsoNormal=1':'')+(process.env.BODYFORGE_QA_ATHLETIC==='on'?'&avatarAthletic=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_DIFFUSION)?'&avatarSkinDiffusion=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_HEAD_VOLUME)?'&avatarHeadVolume=1':'')
+    ? '?avatarScanTorso=1'+(process.env.BODYFORGE_QA_SCAN_TORSO==='geometry'?'':'&avatarScanTorsoColor=1')+(['complete','complete-fallback'].includes(process.env.BODYFORGE_QA_SCAN_TORSO)?'&avatarScanTorsoNormal=1':'')+(process.env.BODYFORGE_QA_ATHLETIC==='on'?'&avatarAthletic=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_DIFFUSION)?'&avatarSkinDiffusion=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_HEAD_VOLUME)?'&avatarHeadVolume=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_GROOM_V3)?'&avatarGroomV3=1':'')+(process.env.BODYFORGE_QA_BUZZ_SURFACE==='on'?'&avatarBuzzSurface=1':'')+(process.env.BODYFORGE_QA_MUSCLE_RELIEF==='on'?'&avatarMuscleRelief=1':'')+(['on','fallback'].includes(process.env.BODYFORGE_QA_METRIC_SKIN)?'&avatarMetricSkin=1':'')+(process.env.BODYFORGE_QA_REGIONAL_MICRO==='on'?'&avatarRegionalMicro=1':'')+(process.env.BODYFORGE_QA_SHOULDER_TRANSITION==='on'?'&avatarShoulderTransition=1':'')+(process.env.BODYFORGE_QA_POSE_CORRECTIVE==='on'?'&avatarPoseCorrective=1':'')+(process.env.BODYFORGE_QA_ARM_TAPER==='contour'?'&avatarArmTaper=2':process.env.BODYFORGE_QA_ARM_TAPER==='on'?'&avatarArmTaper=1':'')
     : ['filmic','neutral'].includes(process.env.BODYFORGE_QA_LOOK_DEV) ? '?avatarLookDev='+process.env.BODYFORGE_QA_LOOK_DEV : process.env.BODYFORGE_QA_BODY_DERMAL==='base' ? '?avatarBodyDermal=base' :
     process.env.BODYFORGE_QA_SCAN_REVIEW==='on' ? '?avatarScanReview=1'+(['on','fallback'].includes(process.env.BODYFORGE_QA_SCAN_COLOR)?'&avatarScanColor=1':'') : '') });
   // Shader-heavy development bundles can share CPU with another local build.
@@ -292,7 +398,7 @@ try {
   await tab.until('!!document.querySelector(".dashboard-player")','synthetic fighter created');
   await tab.until('JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')||"null")?.game?.created===true','fighter creation acknowledged in storage');
   let gameBefore=await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')');
-  if(process.env.BODYFORGE_QA_DIFFUSION||process.env.BODYFORGE_QA_GROOM_V2==='max'||process.env.BODYFORGE_QA_DERMAL_V3==='max'||process.env.BODYFORGE_QA_TAILOR||process.env.BODYFORGE_QA_SLEEVE==='max'||process.env.BODYFORGE_QA_HIPS==='max'||process.env.BODYFORGE_QA_WARDROBE==='max'||process.env.BODYFORGE_QA_BODY_DERMAL||process.env.BODYFORGE_QA_FACE_BAKE||process.env.BODYFORGE_QA_SCALP_DENSITY==='max'||process.env.BODYFORGE_QA_PERIORAL||(process.env.BODYFORGE_QA_BROWS_V3&&process.env.BODYFORGE_QA_BROWS_V3!=='neutral')){
+  if((process.env.BODYFORGE_QA_DIFFUSION&&!process.env.BODYFORGE_QA_MUSCLE_RELIEF)||process.env.BODYFORGE_QA_GROOM_V2==='max'||process.env.BODYFORGE_QA_DERMAL_V3==='max'||process.env.BODYFORGE_QA_TAILOR||process.env.BODYFORGE_QA_SLEEVE==='max'||process.env.BODYFORGE_QA_HIPS==='max'||process.env.BODYFORGE_QA_WARDROBE==='max'||process.env.BODYFORGE_QA_BODY_DERMAL||process.env.BODYFORGE_QA_FACE_BAKE||process.env.BODYFORGE_QA_SCALP_DENSITY==='max'||process.env.BODYFORGE_QA_PERIORAL||(process.env.BODYFORGE_QA_BROWS_V3&&process.env.BODYFORGE_QA_BROWS_V3!=='neutral')){
     const maximum=JSON.parse(gameBefore);
     maximum.game.muscles=process.env.BODYFORGE_QA_HIPS==='max'?{arms:0,core:0,legs:5,back:0}:{arms:5,core:5,legs:5,back:5};
     gameBefore=JSON.stringify(maximum);
@@ -319,11 +425,17 @@ try {
   if(process.env.BODYFORGE_QA_FACE_BAKE==='fallback'){
     await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-face-relief-normal.png*']});
   }
+  if(process.env.BODYFORGE_QA_GROOM_V3==='fallback'){
+    await tab.cdp('Network.setBlockedURLs',{urls:['*/_bodyforge/review/groom-v3.glb*']});
+  }
   if(process.env.BODYFORGE_QA_HEAD_VOLUME==='fallback'){
     await tab.cdp('Network.setBlockedURLs',{urls:['*/_bodyforge/review/head-volume-v4.json*']});
   }
   if(process.env.BODYFORGE_QA_DIFFUSION==='fallback'||process.env.BODYFORGE_QA_DERMAL_V3==='fallback'){
     await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-lip-response.png*','*athlete-scan-pores.png*']});
+  }
+  if(process.env.BODYFORGE_QA_METRIC_SKIN==='fallback'){
+    await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-scan-pores.png*']});
   }
   if(process.env.BODYFORGE_QA_GROOM_V2==='fallback'){
     await tab.cdp('Network.setBlockedURLs',{urls:['*bodyforge-strand-groom-v2.glb*']});
@@ -351,14 +463,16 @@ try {
     await tab.until('document.querySelector(".studio-preview canvas")?.dataset.shirtState==="on"','explicitly dress for clothing QA');
   }
 
-  if(process.env.BODYFORGE_QA_DIFFUSION){
+  if(process.env.BODYFORGE_QA_DIFFUSION&&!process.env.BODYFORGE_QA_MUSCLE_RELIEF){
     const mode=process.env.BODYFORGE_QA_DIFFUSION;
     const enabled=mode==='on'||mode==='fallback';
     const fallback=mode==='fallback';
     const canvas='document.querySelector(".studio-preview canvas")';
     const draws='(window.__regionalSkinDraws.get('+canvas+')||0)';
     const diffusion='(window.__diffusionDraws.get('+canvas+')||0)';
-    await tab.until(canvas+'?.dataset.athleticReview==="BF_ATHLETIC_TAPER_REVIEW_V2"&&'+canvas+'?.dataset.skinSurface==="athlete-torso-color-review.png"&&'+canvas+'?.dataset.normalSurface==="scan-torso-bake-v1"&&'+canvas+'?.dataset.ocularDetail==="fitted-pbr"&&'+canvas+'?.dataset.groomRevision==="layered-v2"&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+draws+'>0','matched complete athlete, skin, eyes, hair and environment',35000);
+    const groomMode=process.env.BODYFORGE_QA_GROOM_V3;
+    const groomRevision=groomMode==='on'?'directional-v3':'layered-v2';
+    await tab.until(canvas+'?.dataset.athleticReview==="BF_ATHLETIC_TAPER_REVIEW_V2"&&'+canvas+'?.dataset.skinSurface==="athlete-torso-color-review.png"&&'+canvas+'?.dataset.normalSurface==="scan-torso-bake-v1"&&'+canvas+'?.dataset.ocularDetail==="fitted-pbr"&&'+canvas+'?.dataset.groomRevision==='+JSON.stringify(groomRevision)+'&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+draws+'>0','matched complete athlete, skin, eyes, hair and environment',35000);
     check(await tab.js(canvas+'?.dataset.skinDiffusion')===(enabled?'angular-lut-v1':undefined),'expected diffusion mode requested');
     const headMode=process.env.BODYFORGE_QA_HEAD_VOLUME;
     if(headMode){
@@ -368,6 +482,17 @@ try {
       }else{
         check(await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/_bodyforge/review/head-volume-v4.json'))") === (headMode==='on'),'head recipe requested only in opt-in mode');
       }
+    }
+    if(groomMode){
+      const on=groomMode==='on';
+      const rev=on?'directional-v3':'layered-v2';
+      check(await tab.js(canvas+'?.dataset.groomRevision')===rev,'expected groom revision');
+      if(groomMode==='fallback'){
+        await waitFor(()=>tab.failedUrls.some(url=>url?.endsWith('/_bodyforge/review/groom-v3.glb')),'new groom request blocked');
+      }else check(await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/_bodyforge/review/groom-v3.glb'))")===on,'optional groom fetched only when requested');
+      const groomDraws='(window.'+(on?'__directionalGroomDraws':'__layeredGroomDraws')+'.get('+canvas+')||0)';
+      await tab.until(groomDraws+'>0','actual linked expected groom program draws',35000);
+      if(!on)check(await tab.js('(window.__directionalGroomDraws.get('+canvas+')||0)===0'),'no new groom program in baseline or fallback');
     }
     if(enabled)await tab.until(diffusion+'>0','actual linked skinned diffusion LUT program draws',35000);
     else check(await tab.js(diffusion+'===0'),'baseline has no diffusion LUT draws');
@@ -385,12 +510,53 @@ try {
       await tab.js('window.dispatchEvent(new Event("bodyforge:graphics-change"));true');
       await tab.until((enabled?diffusion:draws)+'>'+count,'actual selected skin shader redrawn');
     };
-    const shot=async n=>{await redraw();await tab.js('window.scrollTo(0,0);true');await sleep(250);await tab.screenshot(headMode?'head-'+headMode+'-'+n:'diffusion-'+mode+'-'+n);};
+    const shot=async n=>{await redraw();await tab.js('window.scrollTo(0,0);true');await sleep(250);await tab.screenshot(groomMode?'groom-'+groomMode+'-'+n:headMode?'head-'+headMode+'-'+n:'diffusion-'+mode+'-'+n);};
     await tab.click('[data-avatar-view="portrait"]');
     await tab.until(canvas+'?.dataset.avatarView==="portrait"&&'+canvas+'?.dataset.renderLoop==="on-demand"','matched static portrait camera');
     await shot('front');
     for(let i=0;i<3;i++)await tab.click('.armory-yaw-controls button:last-child');
     await shot('turned');
+    if(groomMode){
+      const count='(window.'+(groomMode==='on'?'__directionalGroomDraws':'__layeredGroomDraws')+'.get('+canvas+')||0)';
+      const selectStyle=async id=>{
+        const old=await tab.js(count);
+        await tab.click('[data-hair-style="'+id+'"]');
+        const ready='document.querySelector(".studio-preview [data-look-hair-style]")?.dataset.lookHairStyle==='+JSON.stringify(id);
+        await tab.until(ready+(id==='buzz'?'':'&&'+count+'>'+old),'hair style '+id+' draws');
+      };
+      await selectStyle('swept');await shot('swept');
+      const buzzReview=process.env.BODYFORGE_QA_BUZZ_SURFACE==='on';
+      const expectBuzz=buzzReview&&groomMode==='on';
+      const buzzStats='(window.__buzzSurfaceDraws.get('+canvas+')||{active:0,inactive:0})';
+      const oldBuzz='(window.__legacyBuzzDraws.get('+canvas+')||0)';
+      const legacyBefore=await tab.js(oldBuzz),activeBefore=await tab.js(buzzStats+'.active');
+      await selectStyle('buzz');
+      await shot('buzz');
+      if(buzzReview){
+        if(expectBuzz){
+          await tab.until(buzzStats+'.active>'+activeBefore,'actual linked surface stubble shader draws');
+          check(await tab.js(oldBuzz+'==='+legacyBefore),'old opaque buzz cap not drawn');
+        }else{
+          check(await tab.js(buzzStats+'.active==='+activeBefore),'surface stubble remains off in fallback');
+          await tab.until(oldBuzz+'>'+legacyBefore,'original buzz cap drawn in fallback');
+        }
+      }
+      await selectStyle('crop');
+      if(buzzReview){
+        const prior=await tab.js(buzzStats+'.active');
+        await redraw();
+        check(await tab.js(buzzStats+'.active==='+prior),'surface stubble disabled after leaving buzz');
+        observations.buzzSurface=await tab.js(buzzStats);
+        observations.legacyBuzzDraws=await tab.js(oldBuzz);
+      }
+      await tab.click('[data-hair="silver"]');
+      await tab.until('document.querySelector(".studio-preview [data-look-hair]")?.dataset.lookHair==="silver"','silver dye applied');
+      await shot('silver');
+      await tab.click('[data-hair="ink"]');
+      await tab.until('document.querySelector(".studio-preview [data-look-hair]")?.dataset.lookHair==="ink"','original dye restored');
+      observations.directionalGroomDraws=await tab.js('(window.__directionalGroomDraws.get('+canvas+')||0)');
+      observations.layeredGroomDraws=await tab.js('(window.__layeredGroomDraws.get('+canvas+')||0)');
+    }
     await tab.click('[data-skin="deep"]');
     await tab.until('document.querySelector(".studio-preview [data-look-skin]")?.dataset.lookSkin==="deep"','deep skin tone selected');
     await shot('deep');
@@ -403,9 +569,118 @@ try {
     check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'exact synthetic game bytes unchanged');
     check(tab.errors.length===0,'no uncaught browser exceptions');
     observations.diffusionDraws=await tab.js(diffusion);
-    console.log(headMode?'ATHLETE_HEAD_VOLUME_PASS':'ATHLETE_DIFFUSION_PASS',JSON.stringify({mode,headMode,assertions,...observations}));
+    console.log(groomMode?'ATHLETE_GROOM_V3_PASS':headMode?'ATHLETE_HEAD_VOLUME_PASS':'ATHLETE_DIFFUSION_PASS',JSON.stringify({mode,headMode,groomMode,assertions,...observations}));
+  } else if(process.env.BODYFORGE_QA_METRIC_SKIN){
+    const mode=process.env.BODYFORGE_QA_METRIC_SKIN;
+    const maximum=process.env.BODYFORGE_QA_WARDROBE==='max';
+    const canvas='document.querySelector(".studio-preview canvas")';
+    const metric='window.__metricSkinQa.draws.get('+canvas+')';
+    const regional='(window.__regionalSkinDraws.get('+canvas+')||0)';
+    const expected=mode==='on';
+    const regionalMode=process.env.BODYFORGE_QA_REGIONAL_MICRO;
+    const expectedRegion=expected&&regionalMode==='on';
+    const shoulderMode=process.env.BODYFORGE_QA_SHOULDER_TRANSITION;
+    const poseMode=process.env.BODYFORGE_QA_POSE_CORRECTIVE;
+    const armTaperMode=process.env.BODYFORGE_QA_ARM_TAPER;
+    const assertShoulder=async()=>{
+      if(shoulderMode)check(await tab.js(canvas+'?.dataset.shoulderTransitionReview')===(shoulderMode==='on'?'BF_SHOULDER_TRANSITION_REVIEW_V1':undefined),'expected shoulder transition revision');
+      if(poseMode)check(await tab.js(canvas+'?.dataset.poseCorrectiveReview')===(poseMode==='on'?(armTaperMode==='contour'?'BF_ARM_CONTOUR_REVIEW_V1':armTaperMode==='on'?'BF_ARM_TAPER_REVIEW_V1':'BF_POSE_CORRECTIVE_REVIEW_V1'):undefined),'expected narrow pose corrective revision');
+    };
+    const assertMode=async()=>{
+      await tab.until(canvas+'?.dataset.athleticReview==="BF_ATHLETIC_TAPER_REVIEW_V2"&&'+canvas+'?.dataset.muscleReliefReview==="BF_MUSCLE_RELIEF_REVIEW_V1"&&'+canvas+'?.dataset.headVolumeReview==="BF_HEAD_VOLUME_REVIEW_V4"&&'+canvas+'?.dataset.skinDiffusion==="angular-lut-v1"&&'+canvas+'?.dataset.normalSurface==="scan-torso-bake-v1"&&'+canvas+'?.dataset.skinSurface==="athlete-torso-color-review.png"&&'+canvas+'?.dataset.groomRevision==="directional-v3"&&'+canvas+'?.dataset.ocularDetail==="fitted-pbr"&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&(window.__diffusionDraws.get('+canvas+')||0)>0&&(window.__directionalGroomDraws.get('+canvas+')||0)>0&&'+regional+'>0','matched complete current rig, diffuse lighting, groom and actual skin draws',35000);
+      if(mode==='fallback'){
+        await waitFor(()=>tab.failedUrls.some(url=>url?.endsWith('/athlete-scan-pores.png')),'source tile request actually blocked');
+        check(await tab.js(canvas+'?.dataset.scanDetail===undefined'),'scan height fallback selected');
+      }else{
+        await tab.until(canvas+'?.dataset.scanDetail==="scan-microrelief"&&window.__scanDraws.has('+canvas+')','source scan tile and linked skin program actually draw',35000);
+      }
+      if(expected){
+        await tab.until(canvas+'?.dataset.metricSkinReview==="BF_METRIC_SKIN_GRADIENT_V1"&&'+metric+'?.matched>0','exact packed tile bound to linked metric skin program with generated mipmaps',35000);
+        const info=await tab.js(metric);
+        check(info.count===info.matched&&info.mismatch===0,'all observed metric draws used pinned packed tile and valid scale');
+        check(await tab.js('window.__metricSkinQa.uploads.has("624768ed")'),'source tile packed bytes match independent CPU reference');
+      }else{
+        check(await tab.js(canvas+'?.dataset.metricSkinReview===undefined&&'+metric+'===undefined&&!window.__metricSkinQa.uploads.has("624768ed")'),'no metric draw or packed upload when disabled or unavailable');
+      }
+      if(regionalMode){
+        if(expectedRegion){
+          await tab.until(canvas+'?.dataset.regionalMicroReview==="BF_REGIONAL_MICRO_V1"&&'+metric+'?.regional?.matched>0','linked regional shader uses normalized two-byte bind profile',35000);
+          const info=await tab.js(metric);
+          check(info.count===info.regional.count&&info.regional.count===info.regional.matched&&info.regional.mismatch===0,'every observed metric draw binds the regional profile');
+          const body=info.regional.buffers['131790'];
+          check(!!body&&body.max-body.min>70&&body.maxFilter-body.minFilter>100,'actual body profile buffer has regional contrast');
+        }else check(await tab.js(canvas+'?.dataset.regionalMicroReview===undefined&&!('+metric+'?.regional)'),'no regional shader draw when disabled or texture missing');
+      }
+    };
+    await assertMode();await assertShoulder();
+    if(process.env.BODYFORGE_QA_REGIONAL_HARDWARE==='1'){
+      observations.webglRenderer=await tab.js('(()=>{const gl='+canvas+'?.getContext("webgl2");const e=gl?.getExtension("WEBGL_debug_renderer_info");return e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):null})()');
+      check(typeof observations.webglRenderer==='string'&&/RTX 3070/i.test(observations.webglRenderer)&&!/SwiftShader|WARP|Basic Render/i.test(observations.webglRenderer),'actual RTX 3070, no software fallback');
+    }
+    check(await tab.js('Object.values(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles).every(v=>v==='+ (maximum?5:0)+')'),'intended four growth levels in synthetic state');
+    await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+    await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
+    if(await tab.js('document.querySelector("[data-avatar-motion]")?.getAttribute("aria-pressed")==="true"'))await tab.click('[data-avatar-motion]');
+    const view=async name=>{
+      await tab.click('[data-avatar-view="'+name+'"]');
+      await tab.until(canvas+'?.dataset.avatarView==='+JSON.stringify(name)+'&&'+canvas+'?.dataset.renderLoop==="on-demand"','static '+name+' camera');
+    };
+    const frame=async name=>{
+      const before=await tab.js(regional);
+      const old=expected?await tab.js(metric+'?.matched||0'):0;
+      await tab.js('window.dispatchEvent(new Event("bodyforge:graphics-change"));window.scrollTo(0,0);true');
+      await tab.until(regional+'>'+before+(expected?'&&'+metric+'?.matched>'+old:''),'actual new skin draw for '+name);
+      await sleep(250);await tab.screenshot('metric-'+name);
+    };
+    const rotate=async(n,direction)=>{for(let i=0;i<n;i++)await tab.click('.armory-yaw-controls button:'+direction+'-child');};
+    await view('portrait');
+    const yaw='Number('+canvas+'?.dataset.avatarYaw)';
+    const originYaw=await tab.js(yaw);
+    check(Number.isFinite(originYaw),'actual initial yaw measured');
+    const yawDelta='Math.abs(Math.atan2(Math.sin('+yaw+'-('+originYaw+')),Math.cos('+yaw+'-('+originYaw+'))))';
+    await frame('portrait-front');
+    await rotate(3,'last');await tab.until(yawDelta+'>.68','three-quarter portrait');
+    await frame('portrait-turned');await rotate(3,'first');
+    await tab.until(yawDelta+'<.05','front restored');
+    await view('torso');await frame('torso-front');
+    const shoulderWardrobeShot=async(name)=>{
+      const stats='window.__wardrobeQa.get('+canvas+')';
+      await tab.click('button[data-shirt="off"]');
+      await tab.until(canvas+'?.dataset.shirtState==="on"&&'+stats+'?.shirt>0&&'+stats+'?.clothed>0','actual shoulder cloth draw');
+      const old=await tab.js(stats);
+      await frame(name);
+      const next=await tab.js(stats);
+      check(next.shirt>old.shirt&&next.bare===old.bare&&next.nipples===old.nipples,'actual clothed draw is exclusive');
+      await tab.click('button[data-shirt="on"]');
+      await tab.until(canvas+'?.dataset.shirtState==="off"','bare shoulder restored');
+    };
+    if(shoulderMode||poseMode)await shoulderWardrobeShot('shirt-front');
+    await rotate(11,'last');await tab.until(yawDelta+'>2.8','rear torso');
+    await frame('torso-rear');if(shoulderMode||poseMode)await shoulderWardrobeShot('shirt-rear');
+    await view('legs');await frame('legs-rear');
+    await rotate(11,'first');await tab.until(yawDelta+'<.05','front legs');
+    await frame('legs-front');
+    check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'cosmetic skin changes preserve exact synthetic game bytes');
+    observations.metricDraws=await tab.js(metric+'||null');
+    observations.textureHashes=await tab.js('Array.from(window.__metricSkinQa.uploads)');
+    if(expectedRegion){
+      const region=observations.metricDraws.regional;
+      check(region.count===observations.metricDraws.count&&region.count===region.matched&&region.mismatch===0,'all captured views use the exact regional buffer contract');
+    }
+    if(expected){
+      check(observations.metricDraws.count===observations.metricDraws.matched&&observations.metricDraws.mismatch===0,'all review frames sampled the expected packed tile');
+      await app(tab,true);await tab.click('.mobile-nav button:nth-child(3)');
+      await assertMode();await assertShoulder();
+      check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'reload preserves synthetic game bytes');
+      observations.reloadedMetricDraws=await tab.js(metric);
+    }
+    check(tab.errors.length===0,'no uncaught browser exceptions');
+    console.log('ATHLETE_METRIC_SKIN_PASS',JSON.stringify({mode,regionalMode,shoulderMode,poseMode,armTaperMode,maximum,assertions,...observations}));
   } else if(process.env.BODYFORGE_QA_WARDROBE){
     const mode=process.env.BODYFORGE_QA_WARDROBE;
+    const relief=process.env.BODYFORGE_QA_MUSCLE_RELIEF;
+    const groomRevision=relief&&process.env.BODYFORGE_QA_GROOM_V3==='on'?'directional-v3':'layered-v2';
+    const expectedRelief=relief==='on'?'BF_MUSCLE_RELIEF_REVIEW_V1':undefined;
     const scanTorso=process.env.BODYFORGE_QA_SCAN_TORSO;
     const athletic=process.env.BODYFORGE_QA_ATHLETIC;
     const athleticMarker=athletic==='on'?'BF_ATHLETIC_TAPER_REVIEW_V2':undefined;
@@ -422,7 +697,12 @@ try {
     const stats='window.__wardrobeQa.get('+canvas+')';
     const lookKey='bodyforge:avatar-look:v1';
     const revision=process.env.BODYFORGE_QA_LOOK_DEV||'base';
-    await tab.until(canvas+'?.dataset.shirtState==="off"&&'+canvas+'?.dataset.lookDev==='+JSON.stringify(revision)+'&&'+canvas+'?.dataset.fabricMaps==="2"&&'+canvas+'?.dataset.sleeveRepair==="14"&&'+canvas+'?.dataset.skinSurface==='+JSON.stringify(skinFile)+'&&'+canvas+'?.dataset.normalSurface==='+JSON.stringify(normalSurface)+'&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+canvas+'?.dataset.groomRevision==="layered-v2"&&'+stats+'?.bare>0&&'+stats+'?.nipples>0&&'+stats+'?.shorts>0','actual restored skin and shorts drawn with full materials',35000);
+    await tab.until(canvas+'?.dataset.shirtState==="off"&&'+canvas+'?.dataset.lookDev==='+JSON.stringify(revision)+'&&'+canvas+'?.dataset.fabricMaps==="2"&&'+canvas+'?.dataset.sleeveRepair==="14"&&'+canvas+'?.dataset.skinSurface==='+JSON.stringify(skinFile)+'&&'+canvas+'?.dataset.normalSurface==='+JSON.stringify(normalSurface)+'&&'+canvas+'?.dataset.studioIbl==="measured-hdr"&&'+canvas+'?.dataset.groomRevision==='+JSON.stringify(groomRevision)+'&&'+stats+'?.bare>0&&'+stats+'?.nipples>0&&'+stats+'?.shorts>0','actual restored skin and shorts drawn with full materials',35000);
+    if(relief){
+      check(await tab.js(canvas+'?.dataset.muscleReliefReview')===expectedRelief,'expected oriented muscle relief revision');
+      await tab.until(canvas+'?.dataset.headVolumeReview==="BF_HEAD_VOLUME_REVIEW_V4"&&'+canvas+'?.dataset.skinDiffusion==="angular-lut-v1"&&'+canvas+'?.dataset.ocularDetail==="fitted-pbr"&&window.__scanDraws.has('+canvas+')&&(window.__diffusionDraws.get('+canvas+')||0)>0&&(window.__directionalGroomDraws.get('+canvas+')||0)>0','matched current face, skin, groom and actual GPU draws',35000);
+      check(await tab.js('Object.values(JSON.parse(localStorage.getItem('+JSON.stringify(gameKey)+')).game.muscles).every(v=>v==='+ (mode==='max'?5:0)+')'),'intended growth levels in current fixture');
+    }
     if(scanTorso==='complete')check(await tab.js("performance.getEntriesByType('resource').some(e=>e.name.endsWith('/athlete-torso-normal-review.png'))"),'real scan-derived normal atlas requested');
     check(await tab.js('document.querySelector(\'button[data-shirt="off"]\')?.getAttribute("aria-pressed")==="false"'),'shirt is off by default');
     await tab.cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
@@ -467,6 +747,10 @@ try {
     }
     if(athletic){
       check(await tab.js(canvas+'?.dataset.athleticReview')===athleticMarker,'same athletic growth revision after reload');
+      if(relief){
+        check(await tab.js(canvas+'?.dataset.muscleReliefReview')===expectedRelief,'same muscle relief revision after reload');
+        await tab.until(canvas+'?.dataset.groomRevision==='+JSON.stringify(groomRevision)+'&&'+canvas+'?.dataset.headVolumeReview==="BF_HEAD_VOLUME_REVIEW_V4"&&'+canvas+'?.dataset.skinDiffusion==="angular-lut-v1"&&(window.__diffusionDraws.get('+canvas+')||0)>0','matched full current rig after reload',35000);
+      }
       await tab.js('document.querySelector(\'details[data-studio-panel="appearance"]\').open=true;true');
       if(await tab.js('document.querySelector("[data-avatar-motion]")?.getAttribute("aria-pressed")==="true"'))await tab.click('[data-avatar-motion]');
       await tab.click('[data-avatar-view="legs"]');
@@ -487,7 +771,7 @@ try {
       await redrawLegs();await shot('legs-rear');
     }
     check(tab.errors.length===0,'no uncaught browser exceptions');
-    console.log('ATHLETE_WARDROBE_PASS',JSON.stringify({mode,revision,assertions,...observations}));
+    console.log(relief?'ATHLETE_MUSCLE_RELIEF_PASS':'ATHLETE_WARDROBE_PASS',JSON.stringify({mode,revision,relief,assertions,...observations}));
   } else if(process.env.BODYFORGE_QA_BROWS_V3){
     const mode=process.env.BODYFORGE_QA_BROWS_V3;
     const fallback=mode==='fallback';
@@ -1341,11 +1625,18 @@ try {
   await waitFor(()=>tab.blockedFailures>blockedBefore,'skin texture failure observed by browser');
   check(await tab.js('document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="basic"'),'missing skin texture retains a usable basic material');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'network fallback paths preserve game bytes');
-  const detailsBlockedBefore=tab.blockedFailures;
-  await tab.cdp('Network.setBlockedURLs',{urls:['*athlete-normal.png*','*athlete-orm.png*','*bodyforge-ocular-detail.glb*','*athlete-eyes.jpg*']});
+  const detailAssets = [
+    'athlete-face-relief-normal.png', 'athlete-normal.png',
+    'athlete-orm.png', 'bodyforge-ocular-detail.glb', 'athlete-eyes.jpg',
+  ];
+  const detailFailuresBefore = tab.failedUrls.length;
+  await tab.cdp('Network.setBlockedURLs', { urls: detailAssets.map(file => '*/assets/' + file) });
   await app(tab,true); await tab.click('.mobile-nav button:nth-child(3)');
   await tab.until('document.querySelector(".studio-preview [data-avatar-revision]")?.dataset.avatarRevision==="detail-v2" && document.querySelector(".studio-preview [data-skin-map]")?.dataset.skinMap==="ready"','refined geometry survives missing optional detail maps',35000);
-  await waitFor(()=>tab.blockedFailures>=detailsBlockedBefore+4,'all optional detail-map failures observed');
+  await waitFor(() => {
+    const failures = tab.failedUrls.slice(detailFailuresBefore);
+    return detailAssets.every(file => failures.includes(origin + '/assets/' + file));
+  }, 'all optional detail assets and both normal-map tiers failed');
   check(await tab.js('document.querySelector(".studio-preview [data-detail-maps]")?.dataset.detailMaps==="0"'),'missing detail maps retain the usable base materials');
   check(await tab.js('localStorage.getItem('+JSON.stringify(gameKey)+')')===gameBefore,'missing optional maps preserve game bytes');
   observations.hairFallbacks = [];

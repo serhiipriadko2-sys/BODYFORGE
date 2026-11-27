@@ -1,0 +1,22 @@
+{
+  "before": {
+    "qa/release-gates.mjs": "1539492089b1c9ffb030dab61a7e6b7f98f0d4da6d6d0082eed4d92c29a7bb99",
+    "android/README.md": "898dae9359b8c79083592a8e96a7531ce6e7c9a1dcacb2f90e75d621ea34d7a5"
+  },
+  "commands": {
+    "red": 1,
+    "unit": 0,
+    "native": 0,
+    "pins": 0,
+    "syntax": 0,
+    "diff": 0
+  },
+  "owned": {
+    "qa/release-gates.mjs": "9e76bcf4923e41340e54f4a89b34190d5c3586d53c4bdf46cbf7b044b8e9e74e",
+    "android/README.md": "54b0373e8eed32a33defc6ef304d701a76610aec774005f705670405282d6bf3",
+    "qa/native-policy-gate.mjs": "1ccf26025fd0ba78e032178d7525c1091848295d4d5eec90de6ebd66760e5c01",
+    "qa/native-policy-gate.test.mjs": "b109f5882a4525d87dce0e04feb14606724ab1a3e8edf067350f40a44e074230"
+  },
+  "status": "WIRED_AND_TARGETED_TESTED",
+  "observed": "2026-11-27T20:52:07.658011+03:00"
+}

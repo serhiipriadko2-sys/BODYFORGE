@@ -1,0 +1,307 @@
+{
+  "scope": "Actual matched browser frame crops. Descriptive decoded differences only, not a calibrated visual or clinical score.",
+  "columns": "V2 growth only, V2 plus V1 oriented relief",
+  "rows": "front torso, rear torso, front legs, rear legs",
+  "results": [
+    {
+      "level": "max",
+      "view": "bare-front",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 67298,
+        "changedAbove2Over255": 28431,
+        "meanAbsoluteDecodedChannelDelta": 0.0025602332316339016,
+        "maxDecodedChannelDelta": 0.41960787773132324
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 67613,
+        "changedAbove2Over255": 28550,
+        "meanAbsoluteDecodedChannelDelta": 0.0004982538521289825,
+        "maxDecodedChannelDelta": 0.41960787773132324
+      }
+    },
+    {
+      "level": "max",
+      "view": "bare-rear",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 64058,
+        "changedAbove2Over255": 23757,
+        "meanAbsoluteDecodedChannelDelta": 0.0022971262224018574,
+        "maxDecodedChannelDelta": 0.27843135595321655
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 97852,
+        "changedAbove2Over255": 23758,
+        "meanAbsoluteDecodedChannelDelta": 0.0004857065505348146,
+        "maxDecodedChannelDelta": 0.27843135595321655
+      }
+    },
+    {
+      "level": "max",
+      "view": "shirt-front",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 60509,
+        "changedAbove2Over255": 10467,
+        "meanAbsoluteDecodedChannelDelta": 0.0013000981416553259,
+        "maxDecodedChannelDelta": 0.41960787773132324
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 60824,
+        "changedAbove2Over255": 10586,
+        "meanAbsoluteDecodedChannelDelta": 0.00025391034432686865,
+        "maxDecodedChannelDelta": 0.41960787773132324
+      }
+    },
+    {
+      "level": "max",
+      "view": "shirt-rear",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 42407,
+        "changedAbove2Over255": 5253,
+        "meanAbsoluteDecodedChannelDelta": 0.0007501158397644758,
+        "maxDecodedChannelDelta": 0.46666669845581055
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 42408,
+        "changedAbove2Over255": 5253,
+        "meanAbsoluteDecodedChannelDelta": 0.00014545046724379063,
+        "maxDecodedChannelDelta": 0.46666669845581055
+      }
+    },
+    {
+      "level": "max",
+      "view": "legs-front",
+      "crop": [
+        160,
+        545,
+        620,
+        1100
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 23275,
+        "changedAbove2Over255": 7203,
+        "meanAbsoluteDecodedChannelDelta": 0.0006169136031530797,
+        "maxDecodedChannelDelta": 0.22745099663734436
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 29561,
+        "changedAbove2Over255": 9395,
+        "meanAbsoluteDecodedChannelDelta": 0.00015525358321610838,
+        "maxDecodedChannelDelta": 0.22745099663734436
+      }
+    },
+    {
+      "level": "max",
+      "view": "legs-rear",
+      "crop": [
+        160,
+        545,
+        620,
+        1100
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 11873,
+        "changedAbove2Over255": 4559,
+        "meanAbsoluteDecodedChannelDelta": 0.00034726285957731307,
+        "maxDecodedChannelDelta": 0.12156865000724792
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 12072,
+        "changedAbove2Over255": 4559,
+        "meanAbsoluteDecodedChannelDelta": 6.764694262528792e-05,
+        "maxDecodedChannelDelta": 0.12156865000724792
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "bare-front",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "bare-rear",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "shirt-front",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "shirt-rear",
+      "crop": [
+        160,
+        575,
+        620,
+        1130
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "legs-front",
+      "crop": [
+        160,
+        545,
+        620,
+        1100
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "level": "neutral",
+      "view": "legs-rear",
+      "crop": [
+        160,
+        545,
+        620,
+        1100
+      ],
+      "avatarCrop": {
+        "pixels": 255300,
+        "changedPixels": 0,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fullFrame": {
+        "pixels": 1316640,
+        "changedPixels": 1,
+        "changedAbove2Over255": 0,
+        "meanAbsoluteDecodedChannelDelta": 9.928222688415644e-10,
+        "maxDecodedChannelDelta": 0.003921568393707275
+      }
+    }
+  ],
+  "sheets": [
+    {
+      "path": "matched-relief-max.png",
+      "bytes": 1431286,
+      "sha256": "e318182ac45bdc716dc096c81ad75f12f0fe954ddc51769234537fff4d642144"
+    },
+    {
+      "path": "matched-relief-neutral.png",
+      "bytes": 1209131,
+      "sha256": "fcc710374a6e4f80d0ce01aefa6b8ffccc19c7dc3a8fab13dad59f9b01651a64"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# BODYFORGE — Head V4 acceptance and directional groom V3 candidate
+Status: PARTIAL toward AAA; head V4 browser acceptance PASS; groom V3 offline authoring PASS / runtime NOT RUN.
+Scope: local development only. No commit, push, release, OS configuration change or real player-save mutation.
+
+## Head V4 matched browser acceptance
+The previously incomplete off/on/fallback suite ran successfully on loopback 5173. Off: 21 assertions; on: 21; missing recipe fallback: 20. Total 62 assertions, 12 actual frames, all four growth groups at maximum in synthetic state, exact synthetic game bytes unchanged, no uncaught browser exceptions. Each scenario reported 96 skin diffusion draws. The preserved local V4 route and protected geometry were used.
+Matched comparison: matched-head-comparison.png, 437826 bytes, SHA256 f569765a6dab47f8da500ccbc1b247444a2d3b31021121c5775c10c5db65f492 (observed when created).
+Comparison scope: portrait crop (275,630)-(550,956), 89650 pixels each; torso crop (75,600)-(706,1132). V4 changed 10596 / 11512 / 11423 pixels in front / turned / deep portraits respectively. Fallback differs from off by zero pixels in all three portrait crops; torso crop has 4 changed pixels. V4 torso crop has 22 changed pixels. These are descriptive decoded screenshot differences, not a calibrated photorealism score. Visual inspection: modest facial contour change; insufficient to claim AAA acceptance. Keep V4 opt-in.
+
+## Directional groom V3
+Authoring: scripts/author-strand-groom-v3.py, Blender 5.2, deterministic procedural geometry based on pinned CC0 athlete. Two styles, crop and swept. Each: 800 cards (480 scalp + 320 edge), 11762 vertices, 11680 triangles versus 11854 in V2. Minimum triangle area positive. Maximum nearest scalp distance of root centers: crop 1.920856 mm, swept 2.267013 mm. This is a geometric proximity bound, not a proof of all mesh collisions.
+Export: .bodyforge-qa/groom-review-v3/bodyforge-strand-groom-v3.glb, 1083452 bytes, SHA256 37fd6ca23f50d666dfbe64b81ae8746b049cec64998e4770cb7466945a54b8d5 (observed when exported). GLTFLoader successfully parsed both meshes and computed 23524 tangent frames; invalid frames 0; maximum absolute tangent-normal dot 2.021e-7.
+Draft runtime material: 256 x 256 RGBA8 generated atlas, 9 tapered fiber lanes, anisotropic PBR, mipmaps, alpha test and alpha-to-coverage. This is a proposed material, not measured hair scattering, not GPU validated.
+Draft module, test and local route were written but not integrated. Test launch produced an empty log. Windows system commit headroom fell to 49168 KiB then 22120 KiB; PowerShell reported OutOfMemoryException. To protect the working application, moved only these three newly authored unintegrated files to .bodyforge-qa/groom-review-v3 using filesystem moves. Verified destination directory listing. Existing Avatar3D, Vite and browser QA were not edited by this groom experiment. Other concurrent worktree changes are not attributed to this task.
+Draft files: avatarDirectionalGroomReview.ts (7346 bytes), avatarDirectionalGroomReview.test.ts (4282 bytes), local-avatar-groom-review.ts (2255 bytes); restore to src/lib, src/lib and qa respectively only when ready to test. No production integration, no new browser screenshots, no new full build claim, no performance claim. The draft must be tested and visually compared before adoption.
+
+## Next gate
+Require sufficient system commit headroom before restoring and running draft tests. Then verify endpoint and actual linked anisotropic draw, two styles, dyes, fallback and matched comparisons. Do not equate geometry counts with hair realism. No physical Android performance test completed.

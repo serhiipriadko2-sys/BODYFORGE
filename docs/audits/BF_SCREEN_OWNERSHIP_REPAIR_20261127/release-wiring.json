@@ -1,0 +1,18 @@
+{
+  "owned": {
+    "src/App.tsx": "f402404c4e4dafd5f36e4ccf49f12a5823b1566c364c05952015fbd741cd08ba",
+    "src/world.css": "aa6d165070a02bca544f5d7ddc3690efbe752bb2566b993c41bb900df7ab3d8d",
+    "src/lib/screenNavigation.test.ts": "8b617fa42e6103a906a952a56edac24eec84dcccd5cd44de4eee2eb466f9d967",
+    "qa/screen-ownership-e2e.mjs": "90ba82ecb4b5152cbef2a47c3a5226abfb83180e497bdb252c9eea5e8bd56c42",
+    "qa/screen-content-e2e.mjs": "342f075dbc6187f89f19e6a0a78dce697d417b061a88b5d675ac2c252c915972",
+    "qa/release-gates.mjs": "1539492089b1c9ffb030dab61a7e6b7f98f0d4da6d6d0082eed4d92c29a7bb99"
+  },
+  "commands": {
+    "release-wiring-syntax": 0,
+    "release-wiring-unit": 0,
+    "release-wiring-diff": 0
+  },
+  "status": "WIRED_AND_SYNTAX_TESTED",
+  "full_release_rerun": "NOT_RUN",
+  "exact_gate_commands_previously_passed": true
+}

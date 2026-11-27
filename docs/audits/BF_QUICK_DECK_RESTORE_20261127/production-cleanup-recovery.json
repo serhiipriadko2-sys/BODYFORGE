@@ -1,0 +1,15 @@
+{
+  "status": "VERIFIED_SEPARATE_CLEANUP",
+  "profile": "bf-screen-ownership-JSEoNf",
+  "identityMatched": true,
+  "creationInRun": true,
+  "recovery": {
+    "before": 0,
+    "terminated": 0,
+    "remaining": 0
+  },
+  "debuggingPortClosed": true,
+  "profileRemoved": true,
+  "remaining": 0,
+  "observedAt": "2026-11-27T16:30:34.194Z"
+}

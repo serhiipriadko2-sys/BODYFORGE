@@ -1,0 +1,15 @@
+{
+  "owned": {
+    "src/App.tsx": "f402404c4e4dafd5f36e4ccf49f12a5823b1566c364c05952015fbd741cd08ba",
+    "src/world.css": "aa6d165070a02bca544f5d7ddc3690efbe752bb2566b993c41bb900df7ab3d8d",
+    "src/lib/screenNavigation.test.ts": "8b617fa42e6103a906a952a56edac24eec84dcccd5cd44de4eee2eb466f9d967",
+    "qa/screen-ownership-e2e.mjs": "fdffde4e96e0dd96cf3c54d987dce27cd1c5e4badf9bdbfec00284f8c725599e"
+  },
+  "red": 1,
+  "commands": {
+    "unit": 0,
+    "diff": 0,
+    "e2e-syntax": 0,
+    "dev-browser": 16
+  }
+}

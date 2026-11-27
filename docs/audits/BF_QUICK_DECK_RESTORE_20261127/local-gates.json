@@ -1,0 +1,14 @@
+{
+  "owned": {
+    "src/App.tsx": "62f007ab1cb691a9a97c410929100242d206522471592a5715d811ca93bc600d",
+    "src/lib/forgeQuickDeck.test.ts": "81297db6457410020381177edfca0b364ae2d3bf02a7297b6cfa1b5fc98e6e4f",
+    "qa/screen-ownership-e2e.mjs": "f95b661796a1e93f0a82efb9fd27c3d60e643fd199de0205b2ddc58ad52249a0"
+  },
+  "unchanged_deck": "1e195e59f320b06d0112769c46cbe755c24a0cfe8513c6bd729bdf5b5dcc2905",
+  "red_corrected": 1,
+  "commands": {
+    "unit": 0,
+    "syntax": 0,
+    "diff": 0
+  }
+}

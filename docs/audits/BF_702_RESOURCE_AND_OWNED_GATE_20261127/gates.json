@@ -1,0 +1,21 @@
+{
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate\\release-resource-20261127",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "source_count": 376,
+  "owned": {
+    "qa/release-gates.mjs": "a89c283f026749731972b7bfd15992309fe2d1d3fc3623f6e0e39da2b6f2bc34",
+    "qa/tower20-e2e.mjs": "cc94ff56dc6e8de658fb2375617d5c5b4443e1e8f056501978032561e0de98e2",
+    "qa/release-resource-gate.mjs": "7b13f63a38fbb9867aa931ff892368e930a1bc9424c2aaadcda6a19aef6ac7bb",
+    "qa/release-resource-gate.test.mjs": "7db364a2745b741885a93400e7513bd04ac8552a2e0ef95afa6c6dc62b11dbb8"
+  },
+  "candidate_package": {
+    "package.json": "ba4e8e3bd4eceda98cba384df1e53d600149ad281970a3bbf10256ebf4b4a50a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "root_package_before": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "commands": {},
+  "started": "2026-11-27T17:35:19.628804+03:00"
+}

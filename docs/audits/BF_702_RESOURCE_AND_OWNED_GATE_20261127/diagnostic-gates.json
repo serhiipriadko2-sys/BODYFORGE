@@ -1,0 +1,13 @@
+{
+  "owned": {
+    "qa/release-gates.mjs": "011b7d17a60e37ac18191e91b242fbf86d99e3e85f071e31275f59f575a651f3",
+    "qa/owned-chrome-cleanup-e2e.mjs": "b7afbfad8c2e7aacac64daaf4a255516752a7e025800e41852f160c2dc12e766",
+    "qa/release-gate-diagnostics.mjs": "a1932793bda66ab372bc29bb2dd979610dc2ef629214c5c77146e79cb9f2d74b",
+    "qa/release-gate-diagnostics.test.mjs": "08550ad129dfd933b630572c68e689a470ad378c3c9c67f0de05eb36f50b413b"
+  },
+  "commands": {
+    "syntax-runner-v2": 0,
+    "syntax-recovery-v2": 0,
+    "diagnostic-unit": 0
+  }
+}

@@ -54,6 +54,26 @@ final class StepsPolicy {
         }
     }
 
+    // Aggregate access and the newer built-in phone counting capability are separate.
+    enum DailyAccess { UNAVAILABLE, NEEDS_PERMISSION, READY }
+    enum SystemSteps { UNAVAILABLE, UNKNOWN, REQUIRES_EXTENSION, SUPPORTED }
+
+    static DailyAccess dailyAccess(boolean serviceAvailable, boolean permissionGranted) {
+        return !serviceAvailable ? DailyAccess.UNAVAILABLE
+            : permissionGranted ? DailyAccess.READY : DailyAccess.NEEDS_PERMISSION;
+    }
+
+    static SystemSteps systemSteps(int sdk, Integer extension, boolean serviceAvailable) {
+        if (sdk < 34 || !serviceAvailable) return SystemSteps.UNAVAILABLE;
+        if (extension == null || extension < 0) return SystemSteps.UNKNOWN;
+        return extension >= 20 ? SystemSteps.SUPPORTED : SystemSteps.REQUIRES_EXTENSION;
+    }
+
+    static boolean canDisplayDaily(DailyAccess access, DayWindow window, Instant now, ZoneId zone) {
+        return access == DailyAccess.READY && window != null && window.valid()
+            && now != null && zone != null && window.isCurrent(now, zone);
+    }
+
     static boolean validCount(Long count) {
         return count != null && count >= 0L;
     }

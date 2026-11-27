@@ -1,0 +1,295 @@
+{
+  "status": "PARTIAL",
+  "scope": "BF-703 local production UI and synthetic completion regressions; field and hosted release remain separate gates",
+  "headAtReadBack": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "pinned": {
+    "sourceSha256": "207288b361cdd5cc4e7ef8dac1de2e43ff5f14d37e366ac7bd0cdf32c4cdf20f",
+    "inputCount": 376,
+    "indexSha256": "af7750c2ad0da6276fb9288159c5c71af3e081da8bb0148474b42ed2048182c5",
+    "entrySha256": "a2ce722eb22fe99bed30766e4b37a9ce3671b227cc402d1aba140e3c4c4b4a14",
+    "distributionCount": 79,
+    "distributionReadBack": "pass",
+    "previewOwnerExit": 0
+  },
+  "files": {
+    "src/appearance.css": {
+      "bytes": 27109,
+      "sha256": "fd4b02183bb3215f291190b702ab563d8040e8a74786a4ac8a2a61f8bb97c20f"
+    },
+    "src/neonPulseV2.css": {
+      "bytes": 35203,
+      "sha256": "2b40ca66904e05826c45e13c21a2201b8e64729be85699b14387141302c2ce72"
+    },
+    "qa/appearance-e2e.mjs": {
+      "bytes": 52493,
+      "sha256": "e40cdefdc3cc9370f895a63956474adc3aa5c12cbba61f4f79af38f678ecbc47"
+    },
+    "qa/finish-save-e2e.mjs": {
+      "bytes": 18807,
+      "sha256": "f26de88104255ef20555970d74b9be02dd11f7292f1026bf957b73266c4f648d"
+    },
+    "qa/mobile-e2e.mjs": {
+      "bytes": 55524,
+      "sha256": "736f08e9411dfc0ce4485ec14cf438bfa6651a0393257ffb02c89ef89acdcd56"
+    }
+  },
+  "integratedRun": {
+    "command": "node qa/release-gates.mjs",
+    "status": "failed",
+    "failure": "synthetic-mobile",
+    "checks": {
+      "artifact-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "types": {
+        "exit": 0,
+        "pass": true
+      },
+      "artifact": {
+        "exit": 0,
+        "pass": true
+      },
+      "bundle": {
+        "exit": 0,
+        "pass": true
+      },
+      "preview": {
+        "exit": 0,
+        "pass": true
+      },
+      "privacy": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-tower": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-mobile": {
+        "exit": 12,
+        "pass": false,
+        "location": "mobile-e2e.mjs:419:3"
+      }
+    }
+  },
+  "priorIntegratedRun": {
+    "status": "failed",
+    "stage": "synthetic-tower",
+    "checks": {
+      "artifact-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "types": {
+        "exit": 0,
+        "pass": true
+      },
+      "artifact": {
+        "exit": 0,
+        "pass": true
+      },
+      "bundle": {
+        "exit": 0,
+        "pass": true
+      },
+      "preview": {
+        "exit": 0,
+        "pass": true
+      },
+      "privacy": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-tower": {
+        "exit": 14,
+        "pass": false,
+        "location": "tower20-e2e.mjs:116:70"
+      }
+    }
+  },
+  "priorMobileRun": {
+    "status": "failed",
+    "stage": "synthetic-mobile-replay",
+    "checks": {
+      "artifact-unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "unit": {
+        "exit": 0,
+        "pass": true
+      },
+      "types": {
+        "exit": 0,
+        "pass": true
+      },
+      "artifact": {
+        "exit": 0,
+        "pass": true
+      },
+      "bundle": {
+        "exit": 0,
+        "pass": true
+      },
+      "preview": {
+        "exit": 0,
+        "pass": true
+      },
+      "privacy": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-tower": {
+        "exit": 0,
+        "pass": true
+      },
+      "synthetic-mobile": {
+        "exit": 12,
+        "pass": false,
+        "location": "mobile-e2e.mjs:34:28"
+      },
+      "synthetic-mobile-replay": {
+        "exit": 12,
+        "pass": false,
+        "location": "mobile-e2e.mjs:132:3"
+      }
+    }
+  },
+  "separateProductionTestsSameBuild": {
+    "materials-probe": {
+      "exit": 0,
+      "printedPassChecks": 15
+    },
+    "mobile": {
+      "exit": 0,
+      "printedPassChecks": 124
+    },
+    "finish-save-preview": {
+      "exit": 0,
+      "printedPassChecks": 29
+    },
+    "tower-journal-v2": {
+      "exit": 0,
+      "printedPassChecks": 77
+    },
+    "camera-runtime": {
+      "exit": 0,
+      "printedPassChecks": 26
+    }
+  },
+  "appearanceSameDistribution": {
+    "exit": 0,
+    "printedPassChecks": 706
+  },
+  "earlierProductionTests": {
+    "graphics": {
+      "exit": 0,
+      "printedPassChecks": 16
+    },
+    "camera-runtime": {
+      "exit": 0,
+      "printedPassChecks": 26
+    },
+    "pulse-armory": {
+      "exit": 0,
+      "printedPassChecks": 58
+    }
+  },
+  "browserComputedMaterials": {
+    "beforeSolid": [
+      {
+        "selector": ".topbar",
+        "filter": "blur(18px)",
+        "background": "rgba(0, 0, 0, 0)",
+        "transition": "none"
+      },
+      {
+        "selector": ".mobile-nav",
+        "filter": "blur(16px)",
+        "background": "rgba(0, 0, 0, 0)",
+        "transition": "none"
+      },
+      {
+        "selector": "dialog.appearance-dialog",
+        "filter": "none",
+        "background": "rgb(22, 30, 41)",
+        "transition": "none"
+      }
+    ],
+    "afterSolid": [
+      {
+        "selector": ".topbar",
+        "filter": "none",
+        "background": "rgb(22, 30, 41)",
+        "transition": "none"
+      },
+      {
+        "selector": ".mobile-nav",
+        "filter": "none",
+        "background": "rgb(22, 30, 41)",
+        "transition": "none"
+      },
+      {
+        "selector": "dialog.appearance-dialog",
+        "filter": "none",
+        "background": "rgb(22, 30, 41)",
+        "transition": "none"
+      }
+    ],
+    "afterGlass": [
+      {
+        "selector": ".topbar",
+        "filter": "blur(16px) saturate(1.15)",
+        "background": "rgba(16, 24, 35, 0.88)",
+        "transition": "none"
+      },
+      {
+        "selector": ".mobile-nav",
+        "filter": "blur(16px) saturate(1.15)",
+        "background": "rgba(16, 24, 35, 0.88)",
+        "transition": "none"
+      },
+      {
+        "selector": "dialog.appearance-dialog",
+        "filter": "blur(16px) saturate(1.15)",
+        "background": "rgba(16, 24, 35, 0.88)",
+        "transition": "none"
+      }
+    ]
+  },
+  "violetActiveNav": {
+    "before": {
+      "ink": "rgb(190, 255, 61)",
+      "background": "rgb(188, 165, 255)",
+      "ratio": 1.7623683923197613
+    },
+    "after": {
+      "ink": "rgb(0, 0, 0)",
+      "background": "rgb(188, 165, 255)",
+      "ratio": 9.964326626816408
+    }
+  },
+  "field": {
+    "physicalAndroid": "NOT VERIFIED",
+    "adbDevices": "no device rows"
+  },
+  "findings": [
+    "Appearance and finish-save fixture setup used dev source URLs and failed on production. The browser tests now execute with the built app.",
+    "The older production stylesheet retained only the prefixed declaration for these selectors. Solid also required an explicit opaque selector to take precedence over later decorative rules.",
+    "An intermediate local runner selected the older snapshot explicitly reported by its SHA rather than the intended updated artifact. This receipt uses the separately pinned new artifact and complete file read-back."
+  ],
+  "screenshot": {
+    "path": ".bodyforge-qa/bf703-vertical-1127-r9/appearance/integration-violet-manual-steps.png",
+    "bytes": 120491,
+    "sha256": "9975fe6bbb82f082ee6cecda697a053a28f86349a28701c1340f6fc5caf2b27a"
+  }
+}

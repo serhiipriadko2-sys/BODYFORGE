@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.OutcomeReceiver;
+import android.os.ext.SdkExtensions;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -46,18 +47,19 @@ public final class HealthStepsActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private TextView status, count, updated;
     private Button refresh, livePermission;
-    private TextView liveStatus;
+    private TextView liveStatus, systemStepsStatus;
     private boolean resumed, permissionPending, readOnResume;
     private int generation;
     private Runnable timeout;
-    private StepsPolicy.DayWindow displayedWindow;
+    private StepsPolicy.DayWindow queryWindow, displayedWindow;
     // A visible total must never silently become yesterday's value. This timer
-    // checks only permission and the clock; it does not query Health Connect.
+    // checks service availability, permission and the clock; it does not read step records.
     private final Runnable validityWatcher = new Runnable() {
         @Override public void run() {
             if (!resumed || isFinishing() || isDestroyed()) return;
-            if (displayedWindow != null &&
-                (!granted() || !displayedWindow.isCurrent(Instant.now(), ZoneId.systemDefault()))) {
+            StepsPolicy.DayWindow activeWindow = queryWindow != null ? queryWindow : displayedWindow;
+            if (activeWindow != null && !StepsPolicy.canDisplayDaily(
+                dailyAccess(HealthStepsActivity.this), activeWindow, Instant.now(), ZoneId.systemDefault())) {
                 invalidateRead();
                 showIdle();
                 status.setText("Дата или доступ изменились. Обнови шаги.");
@@ -71,6 +73,37 @@ public final class HealthStepsActivity extends Activity {
         try { return context.getSystemService(HealthConnectManager.class) != null; }
         catch (RuntimeException | LinkageError e) { return false; }
     }
+    static StepsPolicy.DailyAccess dailyAccess(Context context) {
+        boolean supported = available(context);
+        return StepsPolicy.dailyAccess(supported,
+            supported && context.checkSelfPermission(READ_STEPS) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    private static StepsPolicy.SystemSteps systemStepsSupport(boolean supported) {
+        Integer extension = null;
+        if (supported && Build.VERSION.SDK_INT >= 34) {
+            try { extension = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.UPSIDE_DOWN_CAKE); }
+            catch (RuntimeException | LinkageError ignored) { }
+        }
+        return StepsPolicy.systemSteps(Build.VERSION.SDK_INT, extension, supported);
+    }
+
+    private void updateSystemStepsStatus(boolean supported) {
+        switch (systemStepsSupport(supported)) {
+            case SUPPORTED:
+                systemStepsStatus.setText("Система поддерживает встроенный подсчёт Health Connect. Наличие шагов зависит от датчика, настроек и разрешения.");
+                break;
+            case REQUIRES_EXTENSION:
+                systemStepsStatus.setText("Для встроенного подсчёта Health Connect нужно расширение SDK 20 или выше. При наличии разрешения можно читать сумму из других источников.");
+                break;
+            case UNKNOWN:
+                systemStepsStatus.setText("Поддержка встроенного подсчёта Health Connect не определена. Дневная сумма может включать данные других источников.");
+                break;
+            default:
+                systemStepsStatus.setText("Health Connect недоступен.");
+        }
+    }
+
     private boolean granted() {
         return checkSelfPermission(READ_STEPS) == PackageManager.PERMISSION_GRANTED;
     }
@@ -111,6 +144,7 @@ public final class HealthStepsActivity extends Activity {
         status = text(root, "", 16, 0xffeaf4fb);
         status.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
         updated = text(root, "", 13, 0xffaab9c8);
+        systemStepsStatus = text(root, "", 13, 0xffaab9c8);
         refresh = button(root, "Синхронизировать", this::requestOrRead);
         button(root, "Настройки Health Connect", this::openSettings);
         text(root, "Живой счётчик · шаги за открытый сеанс Камеры", 16, 0xff63e3d8);
@@ -131,13 +165,15 @@ public final class HealthStepsActivity extends Activity {
         generation++;
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = null;
-        displayedWindow = null;
+        queryWindow = displayedWindow = null;
         count.setText("—");
         updated.setText("");
     }
     private void showIdle() {
-        boolean supported = available(this);
-        boolean permitted = supported && granted();
+        StepsPolicy.DailyAccess access = dailyAccess(this);
+        boolean supported = access != StepsPolicy.DailyAccess.UNAVAILABLE;
+        boolean permitted = access == StepsPolicy.DailyAccess.READY;
+        updateSystemStepsStatus(supported);
         refresh.setEnabled(supported && !permissionPending);
         refresh.setText(permitted ? "Обновить шаги" : "Разрешить чтение шагов");
         status.setText(!supported ? "Health Connect недоступен на этом устройстве."
@@ -182,9 +218,11 @@ public final class HealthStepsActivity extends Activity {
         }
     }
     private void requestOrRead() {
-        if (!resumed || permissionPending || !available(this)) return;
-        if (granted()) { readToday(); return; }
+        if (!resumed || permissionPending) return;
+        StepsPolicy.DailyAccess access = dailyAccess(this);
+        if (access == StepsPolicy.DailyAccess.READY) { readToday(); return; }
         invalidateRead();
+        if (access == StepsPolicy.DailyAccess.UNAVAILABLE) { showIdle(); return; }
         permissionPending = true;
         refresh.setEnabled(false);
         try {
@@ -249,11 +287,16 @@ public final class HealthStepsActivity extends Activity {
         if (!active(ticket)) return;
         invalidateRead();
         showIdle();
-        if (!granted()) {
+        StepsPolicy.DailyAccess access = dailyAccess(this);
+        if (access == StepsPolicy.DailyAccess.UNAVAILABLE) {
+            status.setText("Health Connect недоступен.");
+            return;
+        }
+        if (access != StepsPolicy.DailyAccess.READY) {
             status.setText("Доступ отозван. Число шагов скрыто.");
             return;
         }
-        if (!window.isCurrent(Instant.now(), ZoneId.systemDefault())) {
+        if (!StepsPolicy.canDisplayDaily(access, window, Instant.now(), ZoneId.systemDefault())) {
             status.setText("Дата, время или часовой пояс изменились. Обнови шаги.");
             return;
         }
@@ -266,11 +309,13 @@ public final class HealthStepsActivity extends Activity {
         }
     }
     private void readToday() {
-        if (!resumed || !available(this) || !granted()) { showIdle(); return; }
+        if (!resumed) return;
         invalidateRead();
+        if (dailyAccess(this) != StepsPolicy.DailyAccess.READY) { showIdle(); return; }
         StepsPolicy.DayWindow window = new StepsPolicy.DayWindow(Instant.now(), ZoneId.systemDefault());
         if (!window.valid()) { showIdle(); status.setText("Сегодняшний интервал ещё пуст."); return; }
         final int ticket = generation;
+        queryWindow = window;
         refresh.setEnabled(false);
         status.setText("Получаю шаги из Health Connect…");
         timeout = () -> complete(ticket, "Источник не ответил. Попробуй ещё раз.", null, window);

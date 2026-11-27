@@ -19,12 +19,16 @@ import { SCAN_TORSO_REVIEW_DATA } from '../lib/avatarScanTorsoReviewData';
 import { applyAvatarFabricMap, createAvatarFabric, createAvatarTextileMaterial, isAvatarTextile, tintAvatarTextile } from '../lib/avatarFabric';
 import { installAvatarScanDetail, installAvatarSkinLighting } from '../lib/avatarSkinLighting';
 import { installDermalRegions } from '../lib/avatarDermalRegions';
+import { installMetricSkinCoordinates, METRIC_SKIN_ID } from '../lib/avatarMetricSkinReview';
+import { installRegionalMicro, REGIONAL_MICRO_ID } from '../lib/avatarRegionalMicroReview';
 import { installAvatarLipResponse } from '../lib/avatarLipResponse';
 import { acceptsSkinAtlas, avatarSkinAtlases } from '../lib/avatarSkinAtlas';
 import { installAvatarTrainers } from '../lib/avatarTrainers';
 import { createAvatarGarmentSeams, type AvatarGarmentSeams } from '../lib/avatarGarmentSeams';
 import { applyAvatarGarmentFit } from '../lib/avatarGarmentFit';
 import { repairAvatarSleeve } from '../lib/avatarSleeveRepair';
+import { installShoulderTransition } from '../lib/avatarShoulderTransitionReview';
+import { createPoseCorrective, type PoseCorrective } from '../lib/avatarPoseCorrectiveReview';
 import { applyAvatarHairMap, createAvatarHairMaterial } from '../lib/avatarHairMaterial';
 import { createAthleteWardrobe, maskAthleteOcclusion, type AthleteWardrobe } from '../lib/avatarOcclusion';
 import { createAvatarStudio, createMeasuredAvatarStudio } from '../lib/avatarStudio';
@@ -39,6 +43,7 @@ import { installAvatarBrows } from '../lib/avatarBrows';
 import { createAvatarLashes } from '../lib/avatarLashes';
 import { createLayeredGroomMaterial, isLayeredAvatarGroom } from '../lib/avatarStrandGroom';
 import { installScalpDensity, setScalpDensityLook } from '../lib/avatarScalpDensity';
+import { installBuzzSurface, setBuzzSurface } from '../lib/avatarBuzzReview';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
 import { avatarPixelRatio, GRAPHICS_CHANGE_EVENT } from '../lib/mobileGraphics';
@@ -77,8 +82,9 @@ interface ImportedFigure {
   buzzHair: THREE.MeshStandardMaterial;
   hairStyles: Record<HairStyle, THREE.Object3D>;
   groomAnchor: THREE.Group;
-  strandGroom?: { crop: THREE.Mesh; swept: THREE.Mesh; material: THREE.MeshPhysicalMaterial; layered: boolean };
+  strandGroom?: { crop: THREE.Mesh; swept: THREE.Mesh; material: THREE.MeshPhysicalMaterial; layered: boolean; directional?: boolean };
   sculpt?: ReturnType<typeof createAvatarPhysique>;
+  poseCorrective?: PoseCorrective;
   seams?: AvatarGarmentSeams;
   idle?: AvatarIdleRig;
   idleBreath: number;
@@ -459,13 +465,34 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       // Licensed CC0 MakeHuman asset. Swapped in only when the complete scene,
       // clothing and materials are ready; procedural human remains the fallback.
       const glbStartedAt = performance.now();
-      const loadStrandGroom = (imported: ImportedFigure, onFallback: () => void, layered = true) => {
+      const loadStrandGroom = (imported: ImportedFigure, onFallback: () => void, layered = true, allowReview = true) => {
         const isCurrent = () => !disposed && currentRuntime.current === imported.root;
         const recover = () => {
           if (!isCurrent()) return;
           if (layered) loadStrandGroom(imported, onFallback, false);
           else onFallback();
         };
+        if (import.meta.env.DEV && layered && allowReview &&
+            (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+            new URLSearchParams(window.location.search).get('avatarGroomV3') === '1') {
+          void import('../lib/avatarDirectionalGroomReview')
+            .then(({ loadDirectionalGroomReview }) => loadDirectionalGroomReview())
+            .then(({ groom, crop, swept, material }) => {
+              if (!isCurrent()) {
+                disposeThreeTree(groom);
+                return;
+              }
+              imported.groomAnchor.add(groom);
+              imported.strandGroom = { crop, swept, material, layered: true, directional: true };
+              styleAvatarHair(imported, figureSettingsRef.current.look ?? DEFAULT_AVATAR_LOOK);
+              element.dataset.groomGeometry = 'strands';
+              element.dataset.groomRevision = 'directional-v3';
+              redraw();
+            }, () => {
+              if (isCurrent()) loadStrandGroom(imported, onFallback, true, false);
+            });
+          return;
+        }
         const url = layered ? '/assets/bodyforge-strand-groom-v2.glb' : '/assets/bodyforge-strand-groom.glb';
         new GLTFLoader().load(url, ({ scene: groom }) => {
           if (disposed || currentRuntime.current !== imported.root) {
@@ -561,6 +588,13 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             delete element.dataset.groomRevision;
             delete element.dataset.scanTorsoRelief;
             delete element.dataset.athleticReview;
+            delete element.dataset.muscleReliefReview;
+            if (import.meta.env.DEV && typeof imported.root.userData.BODYFORGE_shoulderTransitionReview === 'string') {
+              element.dataset.shoulderTransitionReview = imported.root.userData.BODYFORGE_shoulderTransitionReview;
+            } else if (import.meta.env.DEV) delete element.dataset.shoulderTransitionReview;
+            if (import.meta.env.DEV && typeof imported.root.userData.BODYFORGE_poseCorrectiveReview === 'string') {
+              element.dataset.poseCorrectiveReview = imported.root.userData.BODYFORGE_poseCorrectiveReview;
+            } else if (import.meta.env.DEV) delete element.dataset.poseCorrectiveReview;
             delete element.dataset.ocularDetail;
             delete element.dataset.scanDetail;
             delete element.dataset.normalSurface;
@@ -571,6 +605,8 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             } else delete element.dataset.skinDiffusion;
             element.dataset.bodyDermal = String(imported.face?.body.userData.bodyDermalRevision ?? 'base');
             delete element.dataset.lipResponse;
+            delete element.dataset.metricSkinReview;
+            delete element.dataset.regionalMicroReview;
             element.dataset.fabricMaps = '0';
             delete element.dataset.trainerDetail;
             element.dataset.garmentSeams = String(imported.seams?.loopCount ?? 0);
@@ -580,6 +616,9 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             }
             if (typeof imported.root.userData.BODYFORGE_athleticReview === 'string') {
               element.dataset.athleticReview = imported.root.userData.BODYFORGE_athleticReview;
+            }
+            if (typeof imported.root.userData.BODYFORGE_muscleReliefReview === 'string') {
+              element.dataset.muscleReliefReview = imported.root.userData.BODYFORGE_muscleReliefReview;
             }
             element.dataset.sleeveRepair = String(imported.sleeveRepair);
             element.dataset.garmentPatches = String(imported.seams?.patchTriangles ?? 0);
@@ -730,6 +769,12 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                     texture.anisotropy = Math.min(4, renderer?.capabilities.getMaxAnisotropy() ?? 1);
                     installAvatarScanDetail(imported.materials.body, texture);
                     element.dataset.scanDetail = 'scan-microrelief';
+                    if (import.meta.env.DEV && imported.materials.body.bumpMap?.userData.BODYFORGE_metricSkin === METRIC_SKIN_ID) {
+                      element.dataset.metricSkinReview = METRIC_SKIN_ID;
+                      if (imported.materials.body.userData.BODYFORGE_regionalMicro === REGIONAL_MICRO_ID) {
+                        element.dataset.regionalMicroReview = REGIONAL_MICRO_ID;
+                      }
+                    }
                     redraw();
                   }, undefined, () => { /* Keep the procedural fallback. */ });
                 }
@@ -981,6 +1026,14 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
     throw new Error('CC0 rig cannot provide skinned body and head anchor');
   }
   // Keep both torso states on one indexed mesh. Unknown rigs fail closed.
+  const poseCorrectiveRequested = preferred && import.meta.env.DEV &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+    new URLSearchParams(window.location.search).get('avatarPoseCorrective') === '1';
+  const shoulderReviewRequested = preferred && import.meta.env.DEV && !poseCorrectiveRequested &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+    new URLSearchParams(window.location.search).get('avatarShoulderTransition') === '1';
+  const originalShoulderIndex = shoulderReviewRequested || poseCorrectiveRequested
+    ? surfaces.find(surface => surface.name === 'BODYFORGE_Body')?.geometry.index : undefined;
   const wardrobe = createAthleteWardrobe(source);
   if (!wardrobe) maskAthleteOcclusion(source);
 
@@ -1056,10 +1109,21 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const regionalDermal = Boolean(face && installDermalRegions(surfaces, bodyDetail));
   if (regionalDermal) {
     materials.body.userData.BODYFORGE_regionalDermal = true;
+    if (import.meta.env.DEV &&
+        (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+        new URLSearchParams(window.location.search).get('avatarMetricSkin') === '1') {
+      if (installMetricSkinCoordinates(surfaces, materials.body, scale) &&
+          new URLSearchParams(window.location.search).get('avatarRegionalMicro') === '1') {
+        installRegionalMicro(surfaces, materials.body);
+      }
+    }
     if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarSkinDiffusion') === '1') {
       materials.body.userData.BODYFORGE_diffusionReview = true;
     }
     installScalpDensity(surfaces, materials.body);
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('avatarBuzzSurface') === '1') {
+      installBuzzSurface(materials.body);
+    }
     installAvatarSkinLighting(materials.body);
   }
   const lashBody = surfaces.find(surface => surface.name === 'BODYFORGE_Body');
@@ -1072,7 +1136,22 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
     ? SCAN_TORSO_REVIEW_DATA : undefined;
   const athleticReview = import.meta.env.DEV && Boolean(scanTorsoReview) &&
     new URLSearchParams(window.location.search).get('avatarAthletic') === '1';
-  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview, athleticReview) : undefined;
+  const reliefReview = athleticReview && import.meta.env.DEV &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+    new URLSearchParams(window.location.search).get('avatarMuscleRelief') === '1';
+  if (import.meta.env.DEV && shoulderReviewRequested && reliefReview && wardrobe &&
+      sleeveRepair === 14 && originalShoulderIndex && installShoulderTransition(source, originalShoulderIndex)) {
+    root.userData.BODYFORGE_shoulderTransitionReview = source.userData.BODYFORGE_shoulderTransitionReview;
+  }
+  const poseCorrective = import.meta.env.DEV && poseCorrectiveRequested && reliefReview && wardrobe &&
+      sleeveRepair === 14 && originalShoulderIndex
+    ? createPoseCorrective(source, originalShoulderIndex,
+      new URLSearchParams(window.location.search).get('avatarArmTaper') === '2' ? 'contour' :
+      new URLSearchParams(window.location.search).get('avatarArmTaper') === '1') : undefined;
+  const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview, athleticReview, reliefReview) : undefined;
+  if (typeof source.userData.BODYFORGE_muscleReliefReview === 'string') {
+    root.userData.BODYFORGE_muscleReliefReview = source.userData.BODYFORGE_muscleReliefReview;
+  }
   if (typeof source.userData.BODYFORGE_athleticReview === 'string') {
     root.userData.BODYFORGE_athleticReview = source.userData.BODYFORGE_athleticReview;
   }
@@ -1082,7 +1161,7 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const idle = preferred && seams ? createAvatarIdle(source) : undefined;
 
   const imported: ImportedFigure = {
-    root, surfaces, nailSurfaces, lipSurfaces, garments, wardrobe, materials, hair, buzzHair, hairStyles, realistic, groomed, groomAnchor, sculpt, seams, idle, idleBreath: 0,
+    root, surfaces, nailSurfaces, lipSurfaces, garments, wardrobe, materials, hair, buzzHair, hairStyles, realistic, groomed, groomAnchor, sculpt, poseCorrective, seams, idle, idleBreath: 0,
     eyes: eyeMeshes.length === 1 ? eyeMeshes[0] : undefined,
     face, lashes, regionalDermal, garmentFit, sleeveRepair,
     visor, visorMaterial, visorEdge, visorEdgeMaterial,
@@ -1094,17 +1173,19 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
 function styleAvatarHair(imported: ImportedFigure, look: AvatarLook) {
   const color = lookColors(look).hair;
   const selected = look.hairStyle ?? 'crop';
+  const buzzSurface = import.meta.env.DEV &&
+    setBuzzSurface(imported.materials.body, selected === 'buzz' && imported.strandGroom?.directional === true);
   imported.hair.color.set(color);
   imported.buzzHair.color.set(color);
   for (const style of HAIR_STYLES) {
-    imported.hairStyles[style.id].visible = style.id === selected && (!imported.strandGroom || selected === 'buzz');
+    imported.hairStyles[style.id].visible = style.id === selected && (!imported.strandGroom || selected === 'buzz') && !buzzSurface;
   }
   if (imported.strandGroom) {
     const { crop, swept, material } = imported.strandGroom;
     material.color.set(color).lerp(new THREE.Color('#6f6156'), .13);
     crop.visible = selected === 'crop';
     swept.visible = selected === 'swept';
-    setScalpDensityLook(imported.materials.body, material.color, imported.strandGroom.layered && selected !== 'buzz');
+    setScalpDensityLook(imported.materials.body, material.color, imported.strandGroom.layered && (selected !== 'buzz' || buzzSurface));
   }
 }
 
@@ -1154,6 +1235,10 @@ function styleImportedFigure(imported: ImportedFigure, { build, muscles, outfit,
   imported.root.scale.x = build === 'solid' ? 1.055 : 1;
   imported.sculpt?.(muscles);
   applyAvatarGrowth(imported.root, muscles, imported.idleBreath);
+  if (import.meta.env.DEV && imported.poseCorrective) {
+    if (imported.poseCorrective.apply(muscles)) imported.root.userData.BODYFORGE_poseCorrectiveReview = imported.poseCorrective.revision;
+    else delete imported.root.userData.BODYFORGE_poseCorrectiveReview;
+  }
   imported.seams?.update(imported.root);
 }
 

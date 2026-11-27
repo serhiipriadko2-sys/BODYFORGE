@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "runtime": "v24.18.1",
+  "checks": {
+    "resource-unit": {
+      "exit": 0,
+      "pass": true
+    },
+    "artifact-unit": {
+      "exit": 0,
+      "pass": true
+    },
+    "owned-browser-unit": {
+      "exit": 0,
+      "pass": true
+    },
+    "field-metrics-unit": {
+      "exit": 0,
+      "pass": true
+    },
+    "owned-browser-recovery": {
+      "exit": 16,
+      "pass": false
+    }
+  },
+  "resources": [
+    {
+      "before": "resource-unit",
+      "status": "pass",
+      "physicalMiB": 10374,
+      "virtualMiB": 20114,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "artifact-unit",
+      "status": "pass",
+      "physicalMiB": 10316,
+      "virtualMiB": 20056,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "owned-browser-unit",
+      "status": "pass",
+      "physicalMiB": 10161,
+      "virtualMiB": 19892,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "field-metrics-unit",
+      "status": "pass",
+      "physicalMiB": 9860,
+      "virtualMiB": 19602,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "owned-browser-recovery",
+      "status": "pass",
+      "physicalMiB": 8922,
+      "virtualMiB": 18560,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    }
+  ],
+  "resourceMinimumMiB": {
+    "physicalMiB": 2048,
+    "virtualMiB": 4096
+  },
+  "stage": "owned-browser-recovery",
+  "source": {
+    "kind": "local-snapshot",
+    "inputCount": 376,
+    "sha256": "d22ebef7d311dd6491f4de34dd3f74d4328a9a96d15495e88053d8b382052426"
+  }
+}

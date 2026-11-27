@@ -1,0 +1,126 @@
+import type { Muscle } from './game';
+
+type Vec3 = readonly [number, number, number];
+type ReliefControl = {
+  readonly name: string;
+  readonly center: Vec3;
+  /** Unit direction is derived from the sampled bind-surface normal. */
+  readonly normal: Vec3;
+  /** Approximate anatomical long axis, projected into the tangent plane. */
+  readonly along: Vec3;
+  /** Long, transverse and depth radii in bind-space metres. */
+  readonly radius: Vec3;
+  /** Signed displacement in metres at full paid level. */
+  readonly amplitude: number;
+  readonly midline?: boolean;
+};
+
+export const MUSCLE_RELIEF_REVIEW_ID = 'BF_MUSCLE_RELIEF_REVIEW_V1';
+
+/**
+ * Artist-authored meso-scale surface corrections on the pinned athlete.
+ * Centres/normals: actual Blender ray samples (surface-probes.json).
+ * Axes, radii, signed amplitudes: artistic choices, not clinical measurements.
+ * Positive muscle bellies and shallow negative connective-tissue transitions
+ * are evaluated in the SAME bind-space field for skin, garments and emblems.
+ * No assumed change of body fat, no painted shadows or exposed muscle fibres.
+ */
+export const MUSCLE_RELIEF_CONTROLS = {
+  arms: [
+    { name:'deltoid cap',center:[.253,1.399,.06768],normal:[.539,.159,.827],along:[-.73,1,-.15],radius:[.073,.046,.060],amplitude:.0035 },
+    { name:'deltoid insertion',center:[.294,1.345,.06083],normal:[.424,.432,.796],along:[1,.62,-.1],radius:[.042,.027,.049],amplitude:-.0030 },
+    { name:'biceps belly',center:[.316,1.313,.06739],normal:[.263,.359,.896],along:[-.86,1,-.1],radius:[.069,.043,.060],amplitude:.0045 },
+    { name:'biceps medial transition',center:[.279,1.302,.05819],normal:[-.554,-.462,.693],along:[-.86,1,-.1],radius:[.055,.029,.045],amplitude:-.0026 },
+    { name:'triceps lateral belly',center:[.325,1.314,-.02450],normal:[.558,.321,-.765],along:[-.86,1,-.05],radius:[.067,.041,.060],amplitude:.0040 },
+    { name:'triceps medial transition',center:[.287,1.309,-.03274],normal:[-.069,-.210,-.975],along:[-.86,1,-.05],radius:[.062,.026,.046],amplitude:-.0025 },
+    { name:'forearm proximal ridge',center:[.407,1.194,.12557],normal:[-.482,.379,.790],along:[.138,-.132,.197],radius:[.068,.030,.049],amplitude:.0018 },
+    { name:'forearm distal taper',center:[.462,1.144,.18890],normal:[-.475,.491,.730],along:[.138,-.132,.197],radius:[.063,.043,.057],amplitude:-.0035 },
+  ],
+  core: [
+    { name:'pectoral belly',center:[.102,1.350,.13813],normal:[.255,.231,.939],along:[1,.12,-.1],radius:[.083,.054,.072],amplitude:.0040 },
+    { name:'inferior pectoral margin',center:[.115,1.279,.12780],normal:[.651,-.212,.729],along:[1,-.08,-.2],radius:[.070,.025,.054],amplitude:-.0038 },
+    { name:'clavicular transition',center:[.135,1.394,.10991],normal:[.196,.382,.903],along:[1,.26,-.1],radius:[.066,.027,.049],amplitude:-.0018 },
+    { name:'sternal division',center:[0,1.320,.13109],normal:[0,.207,.972],along:[0,1,0],radius:[.075,.020,.052],amplitude:-.0026,midline:true },
+    { name:'upper rectus belly',center:[.047,1.237,.14023],normal:[.004,-.054,.999],along:[1,.12,0],radius:[.044,.027,.052],amplitude:.0038 },
+    { name:'middle rectus belly',center:[.047,1.183,.13805],normal:[.032,-.076,.997],along:[1,-.06,0],radius:[.043,.026,.052],amplitude:.0035 },
+    { name:'lower rectus belly',center:[.044,1.131,.13314],normal:[.132,-.098,.986],along:[1,.12,0],radius:[.039,.030,.049],amplitude:.0030 },
+    { name:'upper tendinous transition',center:[.046,1.209,.13904],normal:[.018,-.026,.999],along:[1,.12,0],radius:[.044,.018,.046],amplitude:-.0020 },
+    { name:'lower tendinous transition',center:[.044,1.157,.13583],normal:[.072,-.111,.991],along:[1,-.10,0],radius:[.040,.018,.046],amplitude:-.0018 },
+    { name:'linea alba',center:[0,1.178,.13667],normal:[0,-.093,.996],along:[0,1,0],radius:[.101,.018,.052],amplitude:-.0024,midline:true },
+    { name:'external oblique',center:[.121,1.175,.10911],normal:[.669,-.126,.733],along:[.47,1,-.25],radius:[.080,.044,.058],amplitude:.0028 },
+  ],
+  back: [
+    { name:'trapezius crest',center:[.074,1.435,-.07721],normal:[-.266,.302,-.915],along:[.70,-1,.1],radius:[.073,.045,.055],amplitude:.0034 },
+    { name:'medial scapular crest',center:[.064,1.372,-.08271],normal:[-.363,.024,-.931],along:[.15,1,0],radius:[.075,.030,.052],amplitude:.0033 },
+    { name:'lateral scapular transition',center:[.153,1.380,-.06802],normal:[.462,-.135,-.877],along:[.50,1,0],radius:[.060,.028,.052],amplitude:-.0026 },
+    { name:'latissimus belly',center:[.145,1.285,-.04491],normal:[.708,-.308,-.635],along:[.34,1,-.1],radius:[.099,.054,.064],amplitude:.0042 },
+    { name:'latissimus medial transition',center:[.102,1.272,-.06937],normal:[.373,-.247,-.895],along:[.25,1,0],radius:[.077,.030,.053],amplitude:-.0025 },
+    { name:'erector spinae belly',center:[.040,1.170,-.06038],normal:[.082,-.155,-.984],along:[.06,1,0],radius:[.096,.032,.054],amplitude:.0031 },
+    { name:'spinal midline',center:[0,1.310,-.07098],normal:[0,-.007,-.998],along:[0,1,0],radius:[.125,.023,.052],amplitude:-.0021,midline:true },
+  ],
+  legs: [
+    { name:'vastus medialis belly',center:[.102,.644,.08921],normal:[-.582,-.348,.735],along:[.38,1,-.12],radius:[.088,.043,.061],amplitude:.0040 },
+    { name:'rectus femoris belly',center:[.130,.755,.11853],normal:[.156,-.044,.987],along:[-.10,1,0],radius:[.126,.044,.068],amplitude:.0035 },
+    { name:'vastus lateralis belly',center:[.181,.751,.09677],normal:[.648,.019,.762],along:[-.13,1,-.1],radius:[.131,.051,.069],amplitude:.0040 },
+    { name:'quadriceps transition',center:[.155,.688,.10679],normal:[.245,-.174,.954],along:[-.20,1,-.1],radius:[.082,.025,.052],amplitude:-.0023 },
+    { name:'medial gastrocnemius belly',center:[.146,.400,-.05416],normal:[-.542,-.034,-.840],along:[.08,1,-.1],radius:[.096,.040,.060],amplitude:.0037 },
+    { name:'lateral gastrocnemius belly',center:[.206,.404,-.05736],normal:[.509,.049,-.859],along:[-.08,1,-.1],radius:[.084,.038,.057],amplitude:.0032 },
+    { name:'gastrocnemius inter-head transition',center:[.178,.385,-.06435],normal:[.002,-.032,-.999],along:[-.06,1,0],radius:[.077,.023,.052],amplitude:-.0031 },
+    { name:'tibialis anterior belly',center:[.187,.350,.05470],normal:[-.075,-.067,.995],along:[-.10,1,0],radius:[.107,.029,.046],amplitude:.0020 },
+  ],
+} as const satisfies Record<Muscle, readonly ReliefControl[]>;
+
+type Compiled = { readonly center:Vec3; readonly axis:readonly [Vec3,Vec3,Vec3]; readonly bounds:Vec3; readonly delta:Vec3 };
+const dot=(a:Vec3,b:Vec3)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const normalize=(a:Vec3):Vec3=>{
+  const l=Math.hypot(...a);
+  if(!Number.isFinite(l)||l<1e-8)throw Error('Invalid muscle relief axis');
+  return [a[0]/l,a[1]/l,a[2]/l];
+};
+const cross=(a:Vec3,b:Vec3):Vec3=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+function compile(c:ReliefControl,side:number):Compiled{
+  const mirror=(v:Vec3):Vec3=>[v[0]*side,v[1],v[2]];
+  const n=normalize(mirror(c.normal)),a=mirror(c.along),q=dot(n,a);
+  const u=normalize([a[0]-q*n[0],a[1]-q*n[1],a[2]-q*n[2]]);
+  const v=normalize(cross(n,u));
+
+  const scale=(x:Vec3,r:number):Vec3=>[x[0]/r,x[1]/r,x[2]/r];
+  const extent=(i:0|1|2)=>Math.hypot(u[i]*c.radius[0],v[i]*c.radius[1],n[i]*c.radius[2]);
+  return {center:mirror(c.center),axis:[scale(u,c.radius[0]),scale(v,c.radius[1]),scale(n,c.radius[2])],
+    bounds:[extent(0),extent(1),extent(2)],delta:[n[0]*c.amplitude,n[1]*c.amplitude,n[2]*c.amplitude]};
+}
+const compileGroup=(controls:readonly ReliefControl[])=>controls.flatMap(c=>c.midline?[compile(c,1)]:[compile(c,1),compile(c,-1)]);
+let compiledFields:Record<Muscle,readonly Compiled[]>|undefined;
+function getFields():Record<Muscle,readonly Compiled[]>{
+  // Lazy by design: no review controls or initialization side effects should
+  // survive dead-code elimination in the production build.
+  return compiledFields??={
+    arms:compileGroup(MUSCLE_RELIEF_CONTROLS.arms),core:compileGroup(MUSCLE_RELIEF_CONTROLS.core),
+    legs:compileGroup(MUSCLE_RELIEF_CONTROLS.legs),back:compileGroup(MUSCLE_RELIEF_CONTROLS.back),
+  };
+}
+
+/**
+ * F(p) = p + level * sum(delta * max(0,1-|A(p-c)|²)^3).
+ * Compact C2 support and exact derivative, with explicit mirrored controls
+ * (no abs(x) cusp or hard bilateral discontinuity). Pure, additive and
+ * allocation-free per point; zero levels preserve the entire base shape.
+ */
+export function addAvatarMuscleRelief(group:Muscle,weight:number,x:number,y:number,z:number,
+    d:Float64Array,j:Float64Array):void{
+  if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z))return;
+  const w=Math.min(weight,1);
+  for(const c of getFields()[group]){
+    const a=x-c.center[0],b=y-c.center[1],e=z-c.center[2];
+    if(Math.abs(a)>=c.bounds[0]||Math.abs(b)>=c.bounds[1]||Math.abs(e)>=c.bounds[2])continue;
+    const [U,V,N]=c.axis;
+    const u=a*U[0]+b*U[1]+e*U[2],v=a*V[0]+b*V[1]+e*V[2],n=a*N[0]+b*N[1]+e*N[2];
+    const q=1-u*u-v*v-n*n;if(q<=0)continue;
+    const [dx,dy,dz]=c.delta,k=w*q*q*q,g=-6*w*q*q;
+    const gx=g*(u*U[0]+v*V[0]+n*N[0]),gy=g*(u*U[1]+v*V[1]+n*N[1]),gz=g*(u*U[2]+v*V[2]+n*N[2]);
+    d[0]+=dx*k;d[1]+=dy*k;d[2]+=dz*k;
+    j[0]+=dx*gx;j[1]+=dx*gy;j[2]+=dx*gz;
+    j[3]+=dy*gx;j[4]+=dy*gy;j[5]+=dy*gz;
+    j[6]+=dz*gx;j[7]+=dz*gy;j[8]+=dz*gz;
+  }
+}

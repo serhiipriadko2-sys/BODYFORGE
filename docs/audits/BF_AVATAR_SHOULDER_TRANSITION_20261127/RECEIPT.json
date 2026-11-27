@@ -1,0 +1,633 @@
+{
+  "stage": "shoulder-transition-review",
+  "date": "2026-11-27",
+  "status": "PASS_LOCAL_TECHNICAL_PARTIAL_AAA",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "tests": {
+    "files": 120,
+    "passed": 1226,
+    "failed": 0,
+    "skippedOptIn": 1,
+    "optInExecutedSeparately": true
+  },
+  "browser": {
+    "checks": 256,
+    "frames": 32,
+    "draws": 884,
+    "scenarios": [
+      {
+        "mode": "on",
+        "level": "max",
+        "checks": 64,
+        "frames": 8,
+        "draws": 218,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "on",
+        "level": "neutral",
+        "checks": 64,
+        "frames": 8,
+        "draws": 218,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "max",
+        "checks": 64,
+        "frames": 8,
+        "draws": 215,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "neutral",
+        "checks": 64,
+        "frames": 8,
+        "draws": 233,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    ]
+  },
+  "sampledGeometry": {
+    "states": 10,
+    "triangles": 5994,
+    "compressed": {
+      "baseline": 1150,
+      "candidate": 709
+    },
+    "severe": {
+      "baseline": 192,
+      "candidate": 114
+    },
+    "overlap": {
+      "baseline": 2248,
+      "candidate": 1380
+    },
+    "cloth2": {
+      "baseline": 351,
+      "candidate": 173
+    },
+    "cloth5": {
+      "baseline": 30,
+      "candidate": 3
+    }
+  },
+  "productionMarkerHits": 0,
+  "credentialPatternHits": 0,
+  "android": "UNVERIFIED_NO_AUTHORIZED_DEVICE",
+  "artifactCount": 110,
+  "artifactBytes": 211421352,
+  "entries": [
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/candidate.bin",
+      "bytes": 22907664,
+      "sha256": "df73bba1ba834ba4cf5296317fb7fd1ca5554d67f7e132745c1c891a45673fe0"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/collision-sweep.bin",
+      "bytes": 114538320,
+      "sha256": "a6a6be383020fef6107a6a0f3c40896c3bf94d4f2f4ce6da3eda64860987c678"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/corrective-probe.npz",
+      "bytes": 4395799,
+      "sha256": "52f183a86c6476bf9bf1820fde6c03474d5eda1af5bcd8692f5a479e1e6f57ed"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/diagnostic.bin",
+      "bytes": 6689868,
+      "sha256": "545690e0a0c0d1eb68343a6f20bb7cb637be041c3b5fb285ef6f1d2338ded17c"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-20261127/final-candidate.bin",
+      "bytes": 22907664,
+      "sha256": "b6813d80aaaa99e6b4daa526ffc2f70f9959420e3fb6b5cd69169129204ba084"
+    },
+    {
+      "path": ".bodyforge-qa/shoulder-transition-build-20261127/assets/Avatar3D-TMm3pkmB.js",
+      "bytes": 842218,
+      "sha256": "a3c59115e718c585dedfcb7bece301fcfa29b9189ca770f2252ba2abdaf70b60"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/Avatar3D.tsx.before.txt",
+      "bytes": 70849,
+      "sha256": "7673d2f3bc1a79c49708cfc2a7b03f69a10f6b7907efa37bfabd8883d713ce16"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/REPORT.md",
+      "bytes": 6553,
+      "sha256": "bcbc807bfe9dff301af27581825c16cbd24f5e4fb3e68fbd70410b71b5f7464c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/angle-sweep.json",
+      "bytes": 14260,
+      "sha256": "e5b662f8de3561df9e94328041c0c92ec630fe1c53b35e88573408a808949781"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/avatar-quality-e2e.mjs.before.txt",
+      "bytes": 148647,
+      "sha256": "bbd7dd1bfe98363992b9d4a1a10de1d22df8f769908a33b453b3c20e3dfb6d33"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max.log",
+      "bytes": 6472,
+      "sha256": "c67a695441bb9ede2af55fd80135bd4b031f7c5b953b28abbda887c82ce91f17"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-legs-front.png",
+      "bytes": 604069,
+      "sha256": "b85814adb79af99d572156986cf4cedc71ded3d046b3c33285ee21932dac3000"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-legs-rear.png",
+      "bytes": 597811,
+      "sha256": "6102d4a23745f902e92d32ded5e7bfd7798c16a687236638e219a821c100aff8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-portrait-front.png",
+      "bytes": 627275,
+      "sha256": "a6fc1f9a85e1e0dadf456b5e10287196270f3fd0ae77b25cd1956ef3a9209af8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-portrait-turned.png",
+      "bytes": 637666,
+      "sha256": "2ef3789584b7a0387e38f10bb0d4f6edc692545be7062b071ae4b164e19a932b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-shirt-front.png",
+      "bytes": 590093,
+      "sha256": "37b037cc2831e3543ad07fe4d8d767d5795857af05ec45c683e5bbf85b507041"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-shirt-rear.png",
+      "bytes": 565807,
+      "sha256": "04d49564902d72264e8007ee3c74d86eb887718f7c4849aa31419b983df4629d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-torso-front.png",
+      "bytes": 623791,
+      "sha256": "fbf619372b62e8cf6936d996b03ea48a53a7a3e8c3621dda125cc055e3aa1239"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-max/metric-torso-rear.png",
+      "bytes": 616926,
+      "sha256": "09c6f7052dff6d1df04357d5c53e8d7d8224a8aa49e10a424e5bc4ab685e4c9f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral.log",
+      "bytes": 6537,
+      "sha256": "73bb4cf0963d962147f36b3889ed0d36b4bb7f6d291b24f61f134d735b6355d7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-legs-front.png",
+      "bytes": 602492,
+      "sha256": "ac344c471948997fa915c8454eced87697c031428dd4938cafddfbcd87f6a3fc"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-legs-rear.png",
+      "bytes": 598307,
+      "sha256": "a28b5941834b7b9b798c715241f7cb3626b57dcee10aedd69aa52d426bfdb892"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-portrait-front.png",
+      "bytes": 627712,
+      "sha256": "4ad56c7523aebf38a985c1723e8074a26115e23d4ef350f7988e744a94480dd1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-portrait-turned.png",
+      "bytes": 636277,
+      "sha256": "fa7f6b664798e1d3a2b1c925e98979a14139c981dbe4d5bd72a5480676f5d37d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-shirt-front.png",
+      "bytes": 591909,
+      "sha256": "4a71c80ab15f9216a4337503c8cf81167392a42d4fe3bfe8844eafa7343a8b72"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-shirt-rear.png",
+      "bytes": 570957,
+      "sha256": "c7a7a7e444ac20046e80e65f636f2139fab8ded715dd161ea5b662a1fdf7ae41"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-torso-front.png",
+      "bytes": 623733,
+      "sha256": "0ed12f9a912fb9a061ded3655b1d10af0ca64a39a6037f9714904fa679479c1d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-off-neutral/metric-torso-rear.png",
+      "bytes": 616869,
+      "sha256": "961ef23c664a28f3b2545ae1e6c310b97bf00d2f4342bdfb284c952710587e8c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max.log",
+      "bytes": 6455,
+      "sha256": "61769175484366e9eac9ba5a241881d0552b80d538d3b0b8c4c72dbf34d100b9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-legs-front.png",
+      "bytes": 606056,
+      "sha256": "abdebc4154343c8d160b7cd063243d257e0a2554f03ef364044676b18b2f7857"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-legs-rear.png",
+      "bytes": 603417,
+      "sha256": "22c6fa5a3901070ee963cd5a1c17ff6b98b75aa1088829bd3d2331aa14383457"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-portrait-front.png",
+      "bytes": 628408,
+      "sha256": "b3d6cea158c6271c40c916ff5231e019fdf4fd8c116876270260db7e680f2a55"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-portrait-turned.png",
+      "bytes": 637067,
+      "sha256": "2247435176e648a02c23c0915e207f22f8e038c223c32ec5f61c3f88513d1d20"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-shirt-front.png",
+      "bytes": 596632,
+      "sha256": "8d72a640e138cadd819fe01f46ef19a8b1d8393892fcff4481cb8fcaf0694c32"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-shirt-rear.png",
+      "bytes": 574296,
+      "sha256": "f25f0d45fb6a67106b07e0a237a23fe1ef9f2a8d88d3104d12a3e5a5d183aaca"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-torso-front.png",
+      "bytes": 631068,
+      "sha256": "f1a55f722dbe54ad36239143ba377a4dd0bedd024569b9824b7f53ab01358911"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-max/metric-torso-rear.png",
+      "bytes": 625932,
+      "sha256": "95c87bb2272a10cea7b3078dfbe299a8184a71d223fea232327a29e870e649f5"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral.log",
+      "bytes": 6520,
+      "sha256": "e668a7216b7b05d455a2aa9c149d7ee220777516c0cae2a8eddf5706c6ae4774"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-legs-front.png",
+      "bytes": 604931,
+      "sha256": "9d7119e271b4ff711590f27d87e5fdd50ff9a1368bc39834453dfaaea6ccdadb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-legs-rear.png",
+      "bytes": 603118,
+      "sha256": "e2460d0b23f56fc17bd9ab57f312a539f4f608c4be383a4a1805e2a2c8def1e9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-portrait-front.png",
+      "bytes": 628440,
+      "sha256": "e9916e6150aef38069ed6c0b6c9afaaee56c394c763450d28a33ea6772c96ee9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-portrait-turned.png",
+      "bytes": 635750,
+      "sha256": "ec770077e0dd112bb2dd4125bb2102ef457760d5338cfffb5171b89ef8c92cb3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-shirt-front.png",
+      "bytes": 600657,
+      "sha256": "9581677384ee3cd359730f839515c864d68e7c3409b19a960bcfc813c4165578"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-shirt-rear.png",
+      "bytes": 583130,
+      "sha256": "40238aebb15a92bc8eb497d57ef9976ff21159bedb87d05b80ce6fa0d45781db"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-torso-front.png",
+      "bytes": 633365,
+      "sha256": "72dcdc7c49d4d970c1e81e47db3021b08ca6738499cddc14f47d5baddf29734f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/browser-on-neutral/metric-torso-rear.png",
+      "bytes": 629508,
+      "sha256": "0826a7cc5fdc195c069834e9e38d22f25fbcf9ff654308914d019ba435ebc05e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/build.log",
+      "bytes": 4100,
+      "sha256": "3da5f99b2dfd15cb3e994366e6b90ff725dd09260745af4e92000e4b618f6df2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/candidate-clearance.json",
+      "bytes": 16569,
+      "sha256": "6317f1099d79a62da00847f074f0f7b804014493ab869f3bf879f55e04962fc2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/candidate.json",
+      "bytes": 10578,
+      "sha256": "5e63e06dde4e3df89c8613dcf3b29394cf0f8e681ddeeda86785621f3bd73d26"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/candidate.log",
+      "bytes": 5115,
+      "sha256": "efd2153694aee91099673739ed5f143baa1f94dfc8cfeac22a6c615910e2e5f0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-arms-front.png",
+      "bytes": 446343,
+      "sha256": "141dc2dca8ba010afda6b1a5e975399cde1c4b3c2a78c94a4e73f921befe04d3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-arms-rear.png",
+      "bytes": 428291,
+      "sha256": "668a0ded6f3400e5d9ac45ce3e0636101bd77d5fd10c70a1c977099ceee31c6b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-arms-turned.png",
+      "bytes": 440658,
+      "sha256": "6c7efec9c7b217cd20a9cb2743ea011f40ad45976f4117453a4536f5f8b1e2cb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-bind-front.png",
+      "bytes": 417661,
+      "sha256": "37fa2f5f753d517d294b46cacc565737563fb9e5dfc7c54163e9321f4733a6c2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-bind-rear.png",
+      "bytes": 405975,
+      "sha256": "c46001945a170cbc84a3471587307283eeb4b694b6e8f4cbc0ba839dfd63e10b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-bind-turned.png",
+      "bytes": 432113,
+      "sha256": "6d59ea235746bf82878e9e93a4bd7cffc1c96f33c3defb184358fcb0a1325b0b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-max-front.png",
+      "bytes": 463699,
+      "sha256": "cbebef175ffb9a1ac82560c895c77481055174e420e0f4c9ecede0d340e04c63"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-max-rear.png",
+      "bytes": 434212,
+      "sha256": "fa286a3d170b90e339202d05548ddfb282a20b8059d9a3c2fd14784c250b5ebf"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-max-turned.png",
+      "bytes": 451963,
+      "sha256": "1634abf2bf7cc5b88aeae574207741fe58e8ea0b0736d31b4c0a5b54c1ecabcb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-neutral-front.png",
+      "bytes": 437812,
+      "sha256": "e4f6fa1405c7fa4ee86c2f015573b1e1503106fed803809ffe0609aab0803cc3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-neutral-rear.png",
+      "bytes": 420880,
+      "sha256": "a1cd261594357127a123019fdd9c7c07c07cd0c4ebfc29d20ce8bb3a26a91544"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/clay-neutral-turned.png",
+      "bytes": 430377,
+      "sha256": "195280e9069c2c8aa572e6c512798eb11118962f0b9adf6be4475e1d5aab8863"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/collision-sweep-clearance.json",
+      "bytes": 82793,
+      "sha256": "4c0f9f059ddb4a0fe621a72516ff19413f77c895dffa56258045474cc8d9dd8b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/collision-sweep.json",
+      "bytes": 50589,
+      "sha256": "b1f3bd657803e37f09001b94c5eed31ef2da3ca1c67f14ce03a53eddaa1745e4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/collision-sweep.log",
+      "bytes": 623,
+      "sha256": "229880550514d7411b4b4394167dc96aabec78afb1c18062cbf967a6185b0208"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/compare-shoulder.py",
+      "bytes": 2518,
+      "sha256": "62a52eefa9912fb3cab6836ae8e9d02357f547b874c773745e6b13b430e63b3b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/comparison.json",
+      "bytes": 12114,
+      "sha256": "392d9fd636f0bf750aad4823f342ab20032d37e12727db41d1a307176ffd96d1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/comparison.log",
+      "bytes": 226,
+      "sha256": "e76c76e43956fb8897c2d9888939b8ac38ee244add2216ef28270abfcfe2132e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/corrective-probe.json",
+      "bytes": 12038,
+      "sha256": "daf87e6d3f31ddeae7ce1152cf650f2ba58f870d41c9be8bdd1666ae91f03eb4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/corrective-probe.log",
+      "bytes": 16412,
+      "sha256": "0e56f84821187dd78753686befbc17ffab41e31529d5e25ddfdd502abbc9859d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/diagnostic.json",
+      "bytes": 11629,
+      "sha256": "524687e2d2169f61633873319411c2b4f745a3e996a0b686555350f75a646da4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/diagnostic.log",
+      "bytes": 6629,
+      "sha256": "8b8860d0b77066d347929079530be9722016a7a290fd590ad9ca8036058cb7b6"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/final-candidate-clearance.json",
+      "bytes": 16561,
+      "sha256": "0b8a23ed35a74ba8ea5202c811a6666d75f4955ce80916a83533e63f1c8c26cd"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/final-candidate.json",
+      "bytes": 10578,
+      "sha256": "02f943fbd7c0ffba413ba50e66a7adf4e5a70df03a904715c550b71c96361d8a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/final-candidate.log",
+      "bytes": 5115,
+      "sha256": "2cf01d1716ec2c7769841ce987cae461f6bfa1a99258979289e909759972907c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/full-vitest.log",
+      "bytes": 61945,
+      "sha256": "6be18ec8f7a2ea8e0d7af09e6dd4babbb37513fd33d8a254d77a486a46b3ef1c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-max-legs.png",
+      "bytes": 1010490,
+      "sha256": "c75775c34c769c8acf4a92962baa6cb648e8f879d0e6ed8aaa8219b42dbf6425"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-max-portrait.png",
+      "bytes": 1144260,
+      "sha256": "dcd4d0fb91dae30e71729d60a67bb8d7bf2f1cab5608dd1c4d9f667f41cb7bfb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-max-shirt.png",
+      "bytes": 1091237,
+      "sha256": "49807d94e392e576d8d9a6e1720822873170cfbd5246605bf1532c6a116a0511"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-max-torso.png",
+      "bytes": 1203976,
+      "sha256": "267e3c8e1c1bd95ce8a10a96c20ff08e8129ef49e76baa4cd30debe01069614b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-neutral-legs.png",
+      "bytes": 1006586,
+      "sha256": "762d7d103874947f72766beb06d3f55f2b0337b1e5fade18a2444c5f3bbf3a13"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-neutral-portrait.png",
+      "bytes": 1045535,
+      "sha256": "d360972e178801073f8b94ae8b8069337489877f681f155fba62b40cb81e81bb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-neutral-shirt.png",
+      "bytes": 1085637,
+      "sha256": "43fee7556e19c83f11aaf4fed858386d9571eb6043dada7a9d0791efd35c0bbf"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/matched-shoulder-neutral-torso.png",
+      "bytes": 1199668,
+      "sha256": "025200e4b0c594a54dc0182a0798a3fbcd93ce500e9cd8b2b781edcc290a84df"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-candidate.log",
+      "bytes": 1952,
+      "sha256": "c39efe5620e83d22149398c4ec2694f272eaf245c7baae1a60cb254185510910"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-candidate.py",
+      "bytes": 3194,
+      "sha256": "a3da27ef0e17c719d3a9191fc507eeb6ed54d286789b02d34603a7ffd002f0aa"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-collision-sweep.log",
+      "bytes": 8188,
+      "sha256": "7adbc6591e4dba8edea0e64d34367c094245441ce3062f564bc1f8d77078bea1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-collision-sweep.py",
+      "bytes": 3212,
+      "sha256": "dbf537d9e61a3b44502175650aaede46590f5204310a8414e4b5548a38494bb7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-final-candidate.log",
+      "bytes": 1958,
+      "sha256": "19dbd9c434a7a7e9e23a638ee02501dc925a630451cf1f2f262363a5dc1e3125"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-final-candidate.py",
+      "bytes": 3212,
+      "sha256": "5098b6919cbab48377ac858eda8961a8cc6eb5006a5dd47fccaa717e945546c4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-splits.log",
+      "bytes": 13796,
+      "sha256": "0714b8e17fcbca2641d22e231d994c7f8baed00c7cbd08215c15060d048bbf87"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/measure-splits.py",
+      "bytes": 1288,
+      "sha256": "443ecd66698d6e5983207c4c10f7f00276a9ee8f6f3220910dedb7d6df88549e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/probe-corrective-smooth.py",
+      "bytes": 4246,
+      "sha256": "13591ea8756d7e224d95292d32f83b06f066087e47eea008b8ba1d294eecdd7f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/production-gate.log",
+      "bytes": 37,
+      "sha256": "bb90839d17855e9b9a8e42ebb01a612071aadd6c6231fc974c30bdd98877176c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/render-diagnostic-first.log",
+      "bytes": 1920,
+      "sha256": "184a47d2c77504573d1415888a36324e22523302cb98a8ae4584ed5d4451ca6b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/render-diagnostic.log",
+      "bytes": 3386,
+      "sha256": "8195a9e2df708235b075ee72d2d66d42bacfa583882ccfbd21a7c46657d13e85"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/render-diagnostic.py",
+      "bytes": 3157,
+      "sha256": "97d775eeddba6cf95f3d507aaef64cc0ec2442970e5297b60d0257f1e66e2cef"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/split-diagnostics.json",
+      "bytes": 12006,
+      "sha256": "81b142d3299690e161a06595b673b3dd388432f41028f275ffa698f313a0638a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/sweep-first-filter.log",
+      "bytes": 444,
+      "sha256": "fa9e573f11215a72605d3323187617f732fbe090504de83692f37650a0d5e505"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/sweep.log",
+      "bytes": 4675,
+      "sha256": "4fd2730adcb48a66c12e226e68eb3559950c41ae121b2e897cf363b903eb1840"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/verify-receipt.mjs",
+      "bytes": 8473,
+      "sha256": "5fbc3707cd8472515029b7240273ee28d53a77dd02d360e1fa44db700167ab04"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/weight-sweep.json",
+      "bytes": 13039,
+      "sha256": "8bd94e06cde327188c1411fcab846d2e112c602895c7daab8e28c06ce94e5147"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_SHOULDER_TRANSITION_20261127/weight-sweep.log",
+      "bytes": 9150,
+      "sha256": "0c5735e8a83215805d13684c14f24ceca29fa4dc45a6d2e2f3e3b1a5b1fb5621"
+    },
+    {
+      "path": "public/assets/bodyforge-athlete-efficient.glb",
+      "bytes": 4639184,
+      "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+      "path": "qa/avatar-quality-e2e.mjs",
+      "bytes": 150131,
+      "sha256": "fc4ab8fcda0f7be6a59402ae9f4422a27c98624683be6f9ca1d8189a0ff1b503"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 73374,
+      "sha256": "ba04efbfafc475cb2137c3b790e28de3fb0032d1d5b333b7589fa5cf8b1e50a9"
+    },
+    {
+      "path": "src/lib/avatarPhysique.ts",
+      "bytes": 6497,
+      "sha256": "2fcf4a0f8aaf75d9fe26a26eb4d991b983709ab3a15f6dcb1a493b9076524c15"
+    },
+    {
+      "path": "src/lib/avatarPose.ts",
+      "bytes": 1924,
+      "sha256": "4b84069276e4eff8d6b85da2ef67c87b2e0c68fbf37f02d7ff8fe9e72d77bc09"
+    },
+    {
+      "path": "src/lib/avatarShoulderTransitionReview.test.ts",
+      "bytes": 19875,
+      "sha256": "ad7446f561ed2e6761ed7e0cc62a01762f6cc3d9a9db45f61a645b7f8ec082f0"
+    },
+    {
+      "path": "src/lib/avatarShoulderTransitionReview.ts",
+      "bytes": 8234,
+      "sha256": "56abe1d0d989ea0e741108e62c75a73563352c584920c77f0d3b257e654f74c2"
+    }
+  ]
+}

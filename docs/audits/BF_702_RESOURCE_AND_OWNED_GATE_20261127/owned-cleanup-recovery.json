@@ -1,0 +1,15 @@
+{
+  "status": "OWNED_BROWSER_CLEANED",
+  "observedProcessCount": 8,
+  "matchingListener": true,
+  "gracefulClose": true,
+  "exactRecovery": {
+    "before": 0,
+    "terminated": 0,
+    "remaining": 0
+  },
+  "remainingProcesses": 0,
+  "portClosed": true,
+  "profileRemoved": true,
+  "scope": "single QA profile from failed release run"
+}

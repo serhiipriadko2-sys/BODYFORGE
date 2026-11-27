@@ -4,6 +4,7 @@ import { createGarmentFoldProfile, sampleGarmentFold, type GarmentFoldProfile } 
 
 import { MUSCLE_LOBES, addMuscleLobe } from './avatarMuscleAnatomy';
 import { ATHLETIC_REVIEW_ID, addAvatarAthleticReviewGrowth } from './avatarAthleticReview';
+import { MUSCLE_RELIEF_REVIEW_ID, addAvatarMuscleRelief } from './avatarMuscleReliefReview';
 import { createAvatarChestMarkFit } from './avatarChestMarkFit';
 import { addTorsoLandmarks } from './avatarTorsoLandmarks';
 import { addAvatarScanTorsoRelief, type ScanTorsoReviewField } from './avatarScanTorsoRelief';
@@ -12,13 +13,15 @@ const groups = Object.keys(MUSCLE_LOBES) as Muscle[];
 const fitted = new Set(['BODYFORGE_Body', 'BODYFORGE_SkinNipples', 'BODYFORGE_Shirt', 'BODYFORGE_Shorts', 'BODYFORGE_ChestMark']);
 type Surface = { positions: THREE.BufferAttribute; normals: THREE.BufferAttribute; rest: Float32Array; normalsAtRest: Float32Array; folds?: GarmentFoldProfile };
 
-export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, landmarks = false, scanTorso?: ScanTorsoReviewField, athleticReview = false): (muscles: Partial<Record<Muscle, number>>) => void {
+export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, landmarks = false, scanTorso?: ScanTorsoReviewField, athleticReview = false, reliefReview = false): (muscles: Partial<Record<Muscle, number>>) => void {
   const body = root.getObjectByName('BODYFORGE_Body');
   const knownAthlete = body instanceof THREE.SkinnedMesh &&
     body.userData.BODYFORGE_groom === 'v2' && body.geometry.getAttribute('position')?.count === 65895;
   const scanField = knownAthlete ? scanTorso : undefined;
   const athletic = import.meta.env.DEV && Boolean(scanField) && athleticReview;
   if (athletic) root.userData.BODYFORGE_athleticReview = ATHLETIC_REVIEW_ID;
+  const relief = import.meta.env.DEV && athletic && reliefReview;
+  if (relief) root.userData.BODYFORGE_muscleReliefReview = MUSCLE_RELIEF_REVIEW_ID;
   const landmarksEnabled = landmarks && knownAthlete && !scanField;
   if (scanField) root.userData.BODYFORGE_scanTorsoRelief = scanField.id;
   const surfaces: Surface[] = [];
@@ -75,6 +78,7 @@ export function createAvatarPhysique(root: THREE.Object3D, clothFolds = false, l
         }
         if (athletic) for (const { group, weight } of activeReview) {
           addAvatarAthleticReviewGrowth(group, weight, x, y, z, displacement, j);
+          if (relief) addAvatarMuscleRelief(group, weight, x, y, z, displacement, j);
         }
         const [dx, dy, dz] = displacement;
         normal.fromArray(normalsAtRest, offset);

@@ -1,0 +1,43 @@
+{
+  "status": "TESTED_LOCAL",
+  "original_run_sha256": "cbd37580f82505c7f4628e41bbb46908f1d65a6d3f4f8e1e9273158ff38899d8",
+  "cleanup_sha256": "233e8a64889b5c768a8a0b65107d938417cc3188d6767919a1e7725e22d17a78",
+  "commands": {
+    "production-screen-recheck": 0,
+    "production-content": 0,
+    "final-diff": 0,
+    "canon": 0
+  },
+  "resources": [
+    {
+      "before": "production-screen-recheck",
+      "status": "pass",
+      "physicalMiB": 18512,
+      "virtualMiB": 26806,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "production-content",
+      "status": "pass",
+      "physicalMiB": 18623,
+      "virtualMiB": 27036,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    }
+  ],
+  "started": "2026-11-27T19:30:58.587295+03:00",
+  "preview_exact_bytes": true,
+  "preview_stopped": true,
+  "frozen_final_match": true,
+  "distribution_final_match": true,
+  "owned_match": true,
+  "root_packages_unchanged": true,
+  "root_drift": [
+    "src/lib/avatarShoulderTransitionReview.test.ts",
+    "src/lib/avatarShoulderTransitionReview.ts"
+  ],
+  "profiles_remaining": 0,
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T19:31:28.972929+03:00"
+}

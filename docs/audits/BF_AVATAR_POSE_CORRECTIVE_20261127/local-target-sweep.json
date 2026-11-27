@@ -1,0 +1,1261 @@
+{
+  "baseline": {
+    "parameters": null,
+    "summary": {
+      "comp": 1150,
+      "severe": 192,
+      "overlap": 2248,
+      "expandedComp": 1150,
+      "expandedOverlap": 2682,
+      "shirt2": 360,
+      "shirt5": 30,
+      "minDepth": -5.83491416182369,
+      "peakBodyMm": 0.0
+    },
+    "states": {
+      "neutral": {
+        "comp": 124,
+        "severe": 18,
+        "overlap": 114,
+        "expandedComp": 124,
+        "expandedOverlap": 114,
+        "shirt2": 22,
+        "shirt5": 2,
+        "minDepth": -5.226826128819084,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 0.0
+      },
+      "arms": {
+        "comp": 154,
+        "severe": 18,
+        "overlap": 250,
+        "expandedComp": 154,
+        "expandedOverlap": 268,
+        "shirt2": 24,
+        "shirt5": 1,
+        "minDepth": -5.091443144920049,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 0.0
+      },
+      "core": {
+        "comp": 110,
+        "severe": 18,
+        "overlap": 194,
+        "expandedComp": 110,
+        "expandedOverlap": 194,
+        "shirt2": 21,
+        "shirt5": 0,
+        "minDepth": -4.978436860255897,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 0.0
+      },
+      "legs": {
+        "comp": 124,
+        "severe": 18,
+        "overlap": 114,
+        "expandedComp": 124,
+        "expandedOverlap": 114,
+        "shirt2": 22,
+        "shirt5": 2,
+        "minDepth": -5.226826128819084,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 0.0
+      },
+      "back": {
+        "comp": 126,
+        "severe": 20,
+        "overlap": 278,
+        "expandedComp": 126,
+        "expandedOverlap": 278,
+        "shirt2": 42,
+        "shirt5": 0,
+        "minDepth": -4.418853044626303,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 0.0
+      },
+      "mixed": {
+        "comp": 124,
+        "severe": 20,
+        "overlap": 250,
+        "expandedComp": 124,
+        "expandedOverlap": 290,
+        "shirt2": 41,
+        "shirt5": 2,
+        "minDepth": -5.83491416182369,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 0.0
+      },
+      "max": {
+        "comp": 98,
+        "severe": 20,
+        "overlap": 260,
+        "expandedComp": 98,
+        "expandedOverlap": 354,
+        "shirt2": 47,
+        "shirt5": 3,
+        "minDepth": -5.484072840772569,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 0.0
+      },
+      "idle0.8": {
+        "comp": 96,
+        "severe": 20,
+        "overlap": 262,
+        "expandedComp": 96,
+        "expandedOverlap": 356,
+        "shirt2": 48,
+        "shirt5": 8,
+        "minDepth": -5.507591493369546,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 0.0
+      },
+      "idle2.1": {
+        "comp": 98,
+        "severe": 20,
+        "overlap": 262,
+        "expandedComp": 98,
+        "expandedOverlap": 356,
+        "shirt2": 46,
+        "shirt5": 6,
+        "minDepth": -5.2512313995976,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 0.0
+      },
+      "idle4.2": {
+        "comp": 96,
+        "severe": 20,
+        "overlap": 264,
+        "expandedComp": 96,
+        "expandedOverlap": 358,
+        "shirt2": 47,
+        "shirt5": 6,
+        "minDepth": -5.571503279497847,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 0.0
+      }
+    }
+  },
+  "wide": {
+    "parameters": null,
+    "summary": {
+      "comp": 709,
+      "severe": 114,
+      "overlap": 1380,
+      "expandedComp": 717,
+      "expandedOverlap": 1380,
+      "shirt2": 173,
+      "shirt5": 3,
+      "minDepth": -5.829114199627838,
+      "peakBodyMm": 150.33041381835938
+    },
+    "states": {
+      "neutral": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 34,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.4085202042460878,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 150.33038330078125
+      },
+      "arms": {
+        "comp": 88,
+        "severe": 8,
+        "overlap": 38,
+        "expandedComp": 88,
+        "expandedOverlap": 38,
+        "shirt2": 17,
+        "shirt5": 0,
+        "minDepth": -3.3880168639370822,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 150.3303985595703
+      },
+      "core": {
+        "comp": 52,
+        "severe": 16,
+        "overlap": 14,
+        "expandedComp": 52,
+        "expandedOverlap": 14,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.7902296185638988,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 150.33038330078125
+      },
+      "legs": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 34,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.4085202042460878,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 150.33038330078125
+      },
+      "back": {
+        "comp": 100,
+        "severe": 20,
+        "overlap": 108,
+        "expandedComp": 104,
+        "expandedOverlap": 108,
+        "shirt2": 13,
+        "shirt5": 0,
+        "minDepth": -4.128616136817698,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 150.3303985595703
+      },
+      "mixed": {
+        "comp": 75,
+        "severe": 16,
+        "overlap": 188,
+        "expandedComp": 75,
+        "expandedOverlap": 188,
+        "shirt2": 17,
+        "shirt5": 0,
+        "minDepth": -3.2273346187139396,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 150.33038330078125
+      },
+      "max": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 258,
+        "expandedComp": 82,
+        "expandedOverlap": 258,
+        "shirt2": 31,
+        "shirt5": 1,
+        "minDepth": -5.829114199627838,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 150.33038330078125
+      },
+      "idle0.8": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 262,
+        "shirt2": 32,
+        "shirt5": 0,
+        "minDepth": -4.724600201015505,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 150.3303985595703
+      },
+      "idle2.1": {
+        "comp": 84,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 84,
+        "expandedOverlap": 258,
+        "shirt2": 29,
+        "shirt5": 1,
+        "minDepth": -5.181916400662345,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 150.33041381835938
+      },
+      "idle4.2": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 254,
+        "expandedComp": 82,
+        "expandedOverlap": 254,
+        "shirt2": 34,
+        "shirt5": 1,
+        "minDepth": -5.7670343903737376,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 150.33038330078125
+      }
+    }
+  },
+  "0": {
+    "parameters": [
+      0.1,
+      1.16,
+      0.41,
+      0.8
+    ],
+    "summary": {
+      "comp": 841,
+      "severe": 130,
+      "overlap": 1526,
+      "expandedComp": 841,
+      "expandedOverlap": 1606,
+      "shirt2": 242,
+      "shirt5": 14,
+      "minDepth": -6.7220165801700205,
+      "peakBodyMm": 25.000022888183594
+    },
+    "states": {
+      "neutral": {
+        "comp": 48,
+        "severe": 6,
+        "overlap": 0,
+        "expandedComp": 48,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.4588651411031606,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000009536743164
+      },
+      "arms": {
+        "comp": 108,
+        "severe": 12,
+        "overlap": 72,
+        "expandedComp": 108,
+        "expandedOverlap": 72,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -4.4295769885138725,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000017166137695
+      },
+      "core": {
+        "comp": 64,
+        "severe": 18,
+        "overlap": 44,
+        "expandedComp": 64,
+        "expandedOverlap": 44,
+        "shirt2": 14,
+        "shirt5": 0,
+        "minDepth": -3.390743008822028,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.000009536743164
+      },
+      "legs": {
+        "comp": 48,
+        "severe": 6,
+        "overlap": 0,
+        "expandedComp": 48,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.4588651411031606,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000009536743164
+      },
+      "back": {
+        "comp": 104,
+        "severe": 20,
+        "overlap": 176,
+        "expandedComp": 104,
+        "expandedOverlap": 176,
+        "shirt2": 16,
+        "shirt5": 0,
+        "minDepth": -3.877385752275586,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.000011444091797
+      },
+      "mixed": {
+        "comp": 86,
+        "severe": 12,
+        "overlap": 206,
+        "expandedComp": 86,
+        "expandedOverlap": 206,
+        "shirt2": 17,
+        "shirt5": 0,
+        "minDepth": -4.9720075621735305,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.000011444091797
+      },
+      "max": {
+        "comp": 98,
+        "severe": 14,
+        "overlap": 252,
+        "expandedComp": 98,
+        "expandedOverlap": 272,
+        "shirt2": 41,
+        "shirt5": 4,
+        "minDepth": -5.801200932182837,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000019073486328
+      },
+      "idle0.8": {
+        "comp": 96,
+        "severe": 14,
+        "overlap": 256,
+        "expandedComp": 96,
+        "expandedOverlap": 276,
+        "shirt2": 43,
+        "shirt5": 3,
+        "minDepth": -6.000171240884811,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.000019073486328
+      },
+      "idle2.1": {
+        "comp": 92,
+        "severe": 14,
+        "overlap": 260,
+        "expandedComp": 92,
+        "expandedOverlap": 280,
+        "shirt2": 47,
+        "shirt5": 4,
+        "minDepth": -6.7220165801700205,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.00001335144043
+      },
+      "idle4.2": {
+        "comp": 97,
+        "severe": 14,
+        "overlap": 260,
+        "expandedComp": 97,
+        "expandedOverlap": 280,
+        "shirt2": 44,
+        "shirt5": 3,
+        "minDepth": -6.143800026620738,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.000022888183594
+      }
+    }
+  },
+  "1": {
+    "parameters": [
+      0.1,
+      1.12,
+      0.46,
+      1
+    ],
+    "summary": {
+      "comp": 710,
+      "severe": 114,
+      "overlap": 1406,
+      "expandedComp": 710,
+      "expandedOverlap": 1486,
+      "shirt2": 216,
+      "shirt5": 12,
+      "minDepth": -5.879003222972301,
+      "peakBodyMm": 25.000051498413086
+    },
+    "states": {
+      "neutral": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "arms": {
+        "comp": 90,
+        "severe": 8,
+        "overlap": 38,
+        "expandedComp": 90,
+        "expandedOverlap": 38,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -3.5160099139375234,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000041961669922
+      },
+      "core": {
+        "comp": 52,
+        "severe": 16,
+        "overlap": 14,
+        "expandedComp": 52,
+        "expandedOverlap": 14,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.7902296185638988,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.000038146972656
+      },
+      "legs": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "back": {
+        "comp": 100,
+        "severe": 20,
+        "overlap": 108,
+        "expandedComp": 100,
+        "expandedOverlap": 108,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -4.5065175954732695,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.000038146972656
+      },
+      "mixed": {
+        "comp": 74,
+        "severe": 16,
+        "overlap": 202,
+        "expandedComp": 74,
+        "expandedOverlap": 202,
+        "shirt2": 20,
+        "shirt5": 1,
+        "minDepth": -5.133423590450548,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.000038146972656
+      },
+      "max": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 1,
+        "minDepth": -5.634872490105636,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000043869018555
+      },
+      "idle0.8": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 3,
+        "minDepth": -5.879003222972301,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.000043869018555
+      },
+      "idle2.1": {
+        "comp": 84,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 84,
+        "expandedOverlap": 278,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -5.258684558839377,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.000051498413086
+      },
+      "idle4.2": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 41,
+        "shirt5": 3,
+        "minDepth": -5.623796558367644,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.000043869018555
+      }
+    }
+  },
+  "2": {
+    "parameters": [
+      0.09,
+      1.12,
+      0.47,
+      1.25
+    ],
+    "summary": {
+      "comp": 606,
+      "severe": 89,
+      "overlap": 1410,
+      "expandedComp": 606,
+      "expandedOverlap": 1490,
+      "shirt2": 223,
+      "shirt5": 18,
+      "minDepth": -6.216822352143936,
+      "peakBodyMm": 25.00005340576172
+    },
+    "states": {
+      "neutral": {
+        "comp": 24,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 24,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.0288406538165873,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000036239624023
+      },
+      "arms": {
+        "comp": 58,
+        "severe": 2,
+        "overlap": 14,
+        "expandedComp": 58,
+        "expandedOverlap": 14,
+        "shirt2": 23,
+        "shirt5": 0,
+        "minDepth": -4.405576688441215,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000051498413086
+      },
+      "core": {
+        "comp": 36,
+        "severe": 8,
+        "overlap": 0,
+        "expandedComp": 36,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.6224185237661004,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.000038146972656
+      },
+      "legs": {
+        "comp": 24,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 24,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.0288406538165873,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000036239624023
+      },
+      "back": {
+        "comp": 96,
+        "severe": 18,
+        "overlap": 148,
+        "expandedComp": 96,
+        "expandedOverlap": 148,
+        "shirt2": 24,
+        "shirt5": 1,
+        "minDepth": -5.053827692321988,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.000043869018555
+      },
+      "mixed": {
+        "comp": 76,
+        "severe": 16,
+        "overlap": 200,
+        "expandedComp": 76,
+        "expandedOverlap": 200,
+        "shirt2": 26,
+        "shirt5": 1,
+        "minDepth": -5.317120150721166,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.00004005432129
+      },
+      "max": {
+        "comp": 74,
+        "severe": 12,
+        "overlap": 262,
+        "expandedComp": 74,
+        "expandedOverlap": 282,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -6.011214376485441,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000049591064453
+      },
+      "idle0.8": {
+        "comp": 72,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 72,
+        "expandedOverlap": 278,
+        "shirt2": 38,
+        "shirt5": 4,
+        "minDepth": -6.216822352143936,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.00005340576172
+      },
+      "idle2.1": {
+        "comp": 72,
+        "severe": 9,
+        "overlap": 268,
+        "expandedComp": 72,
+        "expandedOverlap": 288,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -5.723900074372068,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.000051498413086
+      },
+      "idle4.2": {
+        "comp": 74,
+        "severe": 12,
+        "overlap": 260,
+        "expandedComp": 74,
+        "expandedOverlap": 280,
+        "shirt2": 38,
+        "shirt5": 4,
+        "minDepth": -5.981597860227339,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.00005340576172
+      }
+    }
+  },
+  "3": {
+    "parameters": [
+      0.12,
+      1.18,
+      0.4,
+      1
+    ],
+    "summary": {
+      "comp": 710,
+      "severe": 114,
+      "overlap": 1402,
+      "expandedComp": 710,
+      "expandedOverlap": 1482,
+      "shirt2": 217,
+      "shirt5": 8,
+      "minDepth": -5.879003222972301,
+      "peakBodyMm": 25.000038146972656
+    },
+    "states": {
+      "neutral": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000015258789062
+      },
+      "arms": {
+        "comp": 90,
+        "severe": 8,
+        "overlap": 38,
+        "expandedComp": 90,
+        "expandedOverlap": 38,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -3.447949772521497,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "core": {
+        "comp": 52,
+        "severe": 16,
+        "overlap": 14,
+        "expandedComp": 52,
+        "expandedOverlap": 14,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.7902296185638988,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.00002098083496
+      },
+      "legs": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000015258789062
+      },
+      "back": {
+        "comp": 100,
+        "severe": 20,
+        "overlap": 108,
+        "expandedComp": 100,
+        "expandedOverlap": 108,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -4.5065175954732695,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.00002670288086
+      },
+      "mixed": {
+        "comp": 74,
+        "severe": 16,
+        "overlap": 198,
+        "expandedComp": 74,
+        "expandedOverlap": 198,
+        "shirt2": 20,
+        "shirt5": 1,
+        "minDepth": -5.047337122960016,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.000022888183594
+      },
+      "max": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 1,
+        "minDepth": -5.634872490105636,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000038146972656
+      },
+      "idle0.8": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 1,
+        "minDepth": -5.879003222972301,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.000038146972656
+      },
+      "idle2.1": {
+        "comp": 84,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 84,
+        "expandedOverlap": 278,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -5.129495514211158,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.000032424926758
+      },
+      "idle4.2": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 42,
+        "shirt5": 1,
+        "minDepth": -5.623796558367644,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.000030517578125
+      }
+    }
+  },
+  "4": {
+    "parameters": [
+      0.09,
+      1.14,
+      0.45,
+      0.6
+    ],
+    "summary": {
+      "comp": 902,
+      "severe": 140,
+      "overlap": 1741,
+      "expandedComp": 902,
+      "expandedOverlap": 1903,
+      "shirt2": 264,
+      "shirt5": 4,
+      "minDepth": -5.767188937170431,
+      "peakBodyMm": 20.018404006958008
+    },
+    "states": {
+      "neutral": {
+        "comp": 62,
+        "severe": 16,
+        "overlap": 18,
+        "expandedComp": 62,
+        "expandedOverlap": 18,
+        "shirt2": 5,
+        "shirt5": 0,
+        "minDepth": -3.0178400318163767,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 19.65760612487793
+      },
+      "arms": {
+        "comp": 112,
+        "severe": 14,
+        "overlap": 174,
+        "expandedComp": 112,
+        "expandedOverlap": 174,
+        "shirt2": 19,
+        "shirt5": 0,
+        "minDepth": -4.5234581187969525,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 20.018404006958008
+      },
+      "core": {
+        "comp": 74,
+        "severe": 20,
+        "overlap": 64,
+        "expandedComp": 74,
+        "expandedOverlap": 64,
+        "shirt2": 18,
+        "shirt5": 0,
+        "minDepth": -4.4679456477751955,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 19.65760612487793
+      },
+      "legs": {
+        "comp": 62,
+        "severe": 16,
+        "overlap": 18,
+        "expandedComp": 62,
+        "expandedOverlap": 18,
+        "shirt2": 5,
+        "shirt5": 0,
+        "minDepth": -3.0178400318163767,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 19.65760612487793
+      },
+      "back": {
+        "comp": 122,
+        "severe": 20,
+        "overlap": 198,
+        "expandedComp": 122,
+        "expandedOverlap": 198,
+        "shirt2": 21,
+        "shirt5": 0,
+        "minDepth": -4.75005607586354,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 19.657329559326172
+      },
+      "mixed": {
+        "comp": 92,
+        "severe": 12,
+        "overlap": 236,
+        "expandedComp": 92,
+        "expandedOverlap": 236,
+        "shirt2": 39,
+        "shirt5": 0,
+        "minDepth": -4.656768807763001,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 19.828960418701172
+      },
+      "max": {
+        "comp": 96,
+        "severe": 10,
+        "overlap": 268,
+        "expandedComp": 96,
+        "expandedOverlap": 306,
+        "shirt2": 40,
+        "shirt5": 1,
+        "minDepth": -5.767188937170431,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 20.018157958984375
+      },
+      "idle0.8": {
+        "comp": 95,
+        "severe": 10,
+        "overlap": 253,
+        "expandedComp": 95,
+        "expandedOverlap": 294,
+        "shirt2": 40,
+        "shirt5": 0,
+        "minDepth": -4.817748092136753,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 20.01807975769043
+      },
+      "idle2.1": {
+        "comp": 91,
+        "severe": 12,
+        "overlap": 252,
+        "expandedComp": 91,
+        "expandedOverlap": 294,
+        "shirt2": 38,
+        "shirt5": 2,
+        "minDepth": -5.085328216466678,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 20.017976760864258
+      },
+      "idle4.2": {
+        "comp": 96,
+        "severe": 10,
+        "overlap": 260,
+        "expandedComp": 96,
+        "expandedOverlap": 301,
+        "shirt2": 39,
+        "shirt5": 1,
+        "minDepth": -5.682210670784116,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 20.01814079284668
+      }
+    }
+  },
+  "5": {
+    "parameters": [
+      0.07,
+      1.1,
+      0.51,
+      1.0
+    ],
+    "summary": {
+      "comp": 709,
+      "severe": 114,
+      "overlap": 1410,
+      "expandedComp": 709,
+      "expandedOverlap": 1490,
+      "shirt2": 216,
+      "shirt5": 14,
+      "minDepth": -5.879003222972301,
+      "peakBodyMm": 25.000051498413086
+    },
+    "states": {
+      "neutral": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "arms": {
+        "comp": 88,
+        "severe": 8,
+        "overlap": 38,
+        "expandedComp": 88,
+        "expandedOverlap": 38,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -3.530483753763747,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000045776367188
+      },
+      "core": {
+        "comp": 52,
+        "severe": 16,
+        "overlap": 14,
+        "expandedComp": 52,
+        "expandedOverlap": 14,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.7902296185638988,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.000038146972656
+      },
+      "legs": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "back": {
+        "comp": 100,
+        "severe": 20,
+        "overlap": 108,
+        "expandedComp": 100,
+        "expandedOverlap": 108,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -4.5065175954732695,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.000038146972656
+      },
+      "mixed": {
+        "comp": 75,
+        "severe": 16,
+        "overlap": 206,
+        "expandedComp": 75,
+        "expandedOverlap": 206,
+        "shirt2": 20,
+        "shirt5": 1,
+        "minDepth": -5.16296389469062,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.000038146972656
+      },
+      "max": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 3,
+        "minDepth": -5.634872490105636,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000049591064453
+      },
+      "idle0.8": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 3,
+        "minDepth": -5.879003222972301,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.000043869018555
+      },
+      "idle2.1": {
+        "comp": 84,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 84,
+        "expandedOverlap": 278,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -5.3285368396700505,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.000051498413086
+      },
+      "idle4.2": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 41,
+        "shirt5": 3,
+        "minDepth": -5.623796558367644,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.000043869018555
+      }
+    }
+  },
+  "6": {
+    "parameters": [
+      0.09,
+      1.19,
+      0.47,
+      1.0
+    ],
+    "summary": {
+      "comp": 708,
+      "severe": 114,
+      "overlap": 1402,
+      "expandedComp": 708,
+      "expandedOverlap": 1482,
+      "shirt2": 217,
+      "shirt5": 12,
+      "minDepth": -5.879003222972301,
+      "peakBodyMm": 25.000051498413086
+    },
+    "states": {
+      "neutral": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "arms": {
+        "comp": 88,
+        "severe": 8,
+        "overlap": 38,
+        "expandedComp": 88,
+        "expandedOverlap": 38,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -3.4389167537938192,
+        "logoAbs": 1.0559678129311578,
+        "peakBodyMm": 25.000045776367188
+      },
+      "core": {
+        "comp": 52,
+        "severe": 16,
+        "overlap": 14,
+        "expandedComp": 52,
+        "expandedOverlap": 14,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -1.7902296185638988,
+        "logoAbs": 1.0199520688729535,
+        "peakBodyMm": 25.000038146972656
+      },
+      "legs": {
+        "comp": 32,
+        "severe": 0,
+        "overlap": 0,
+        "expandedComp": 32,
+        "expandedOverlap": 0,
+        "shirt2": 0,
+        "shirt5": 0,
+        "minDepth": -0.5819939369757776,
+        "logoAbs": 1.0502411024475578,
+        "peakBodyMm": 25.000038146972656
+      },
+      "back": {
+        "comp": 100,
+        "severe": 20,
+        "overlap": 108,
+        "expandedComp": 100,
+        "expandedOverlap": 108,
+        "shirt2": 20,
+        "shirt5": 0,
+        "minDepth": -4.5065175954732695,
+        "logoAbs": 1.175020237951685,
+        "peakBodyMm": 25.000038146972656
+      },
+      "mixed": {
+        "comp": 74,
+        "severe": 16,
+        "overlap": 198,
+        "expandedComp": 74,
+        "expandedOverlap": 198,
+        "shirt2": 20,
+        "shirt5": 1,
+        "minDepth": -5.067635578598129,
+        "logoAbs": 1.1472345568677156,
+        "peakBodyMm": 25.000038146972656
+      },
+      "max": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 1,
+        "minDepth": -5.634872490105636,
+        "logoAbs": 1.1000532260823093,
+        "peakBodyMm": 25.000043869018555
+      },
+      "idle0.8": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 39,
+        "shirt5": 3,
+        "minDepth": -5.879003222972301,
+        "logoAbs": 1.1051684289213881,
+        "peakBodyMm": 25.000043869018555
+      },
+      "idle2.1": {
+        "comp": 84,
+        "severe": 12,
+        "overlap": 258,
+        "expandedComp": 84,
+        "expandedOverlap": 278,
+        "shirt2": 37,
+        "shirt5": 4,
+        "minDepth": -5.214346711227336,
+        "logoAbs": 1.1115880761281005,
+        "peakBodyMm": 25.000051498413086
+      },
+      "idle4.2": {
+        "comp": 82,
+        "severe": 14,
+        "overlap": 262,
+        "expandedComp": 82,
+        "expandedOverlap": 282,
+        "shirt2": 42,
+        "shirt5": 3,
+        "minDepth": -5.623796558367644,
+        "logoAbs": 1.1057949400310463,
+        "peakBodyMm": 25.000043869018555
+      }
+    }
+  }
+}

@@ -41,6 +41,30 @@ public final class StepsPolicyTest {
         check(!new StepsPolicy.DayWindow(today.start,moscow).valid(), "exact midnight empty interval");
         check(!StepsPolicy.validCount(null) && !StepsPolicy.validCount(-1L), "no data never becomes zero");
         check(StepsPolicy.validCount(0L) && StepsPolicy.validCount(5123L), "actual nonnegative result accepted");
+        check(StepsPolicy.dailyAccess(false, false) == StepsPolicy.DailyAccess.UNAVAILABLE, "absent service is distinct from denial");
+        check(StepsPolicy.dailyAccess(false, true) == StepsPolicy.DailyAccess.UNAVAILABLE, "permission cannot substitute for service");
+        check(StepsPolicy.dailyAccess(true, false) == StepsPolicy.DailyAccess.NEEDS_PERMISSION, "available service without consent");
+        check(StepsPolicy.dailyAccess(true, true) == StepsPolicy.DailyAccess.READY, "aggregate read available");
+        check(StepsPolicy.systemSteps(33, 99, true) == StepsPolicy.SystemSteps.UNAVAILABLE, "Android below 14 unsupported for system tracking");
+        check(StepsPolicy.systemSteps(34, 20, false) == StepsPolicy.SystemSteps.UNAVAILABLE, "extension cannot substitute for service");
+        check(StepsPolicy.systemSteps(34, null, true) == StepsPolicy.SystemSteps.UNKNOWN, "missing extension is unknown");
+        check(StepsPolicy.systemSteps(34, -1, true) == StepsPolicy.SystemSteps.UNKNOWN, "invalid extension is unknown");
+        check(StepsPolicy.systemSteps(34, 19, true) == StepsPolicy.SystemSteps.REQUIRES_EXTENSION, "extension 19 lacks built-in tracking");
+        check(StepsPolicy.systemSteps(34, 20, true) == StepsPolicy.SystemSteps.SUPPORTED, "extension 20 supports built-in tracking");
+        check(StepsPolicy.systemSteps(36, 22, true) == StepsPolicy.SystemSteps.SUPPORTED, "newer Android with supported extension");
+        check(StepsPolicy.dailyAccess(true, true) == StepsPolicy.DailyAccess.READY &&
+            StepsPolicy.systemSteps(34, 19, true) == StepsPolicy.SystemSteps.REQUIRES_EXTENSION, "older extension does not block aggregate access");
+        check(StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, today.end, moscow), "current authorized daily result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.UNAVAILABLE, today, today.end, moscow), "service lost after query hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.NEEDS_PERMISSION, today, today.end, moscow), "revoked permission hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, today.end.minusSeconds(1), moscow), "backward clock hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, Instant.parse("2026-11-24T21:00:00Z"), moscow), "midnight invalidates pending result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, today.end, ZoneId.of("UTC")), "zone change invalidates pending result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, null, today.end, moscow), "missing interval hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, new StepsPolicy.DayWindow(today.start,moscow),today.end,moscow), "empty interval cannot authorize a value");
+        check(!StepsPolicy.canDisplayDaily(null, today, today.end, moscow), "unknown access hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, null, moscow), "missing clock hides result");
+        check(!StepsPolicy.canDisplayDaily(StepsPolicy.DailyAccess.READY, today, today.end, null), "missing zone hides result");
         System.out.println("BODYFORGE_NATIVE_POLICY_PASS checks="+checks);
     }
 }

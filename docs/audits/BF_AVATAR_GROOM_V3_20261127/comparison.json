@@ -1,0 +1,156 @@
+{
+  "scope": "Matched browser frame crops. Descriptive decoded channel differences, not photorealism score. No calibrated linear-light interpretation.",
+  "columns": "baseline V2, V3, fallback V2",
+  "rows": "front, turned, swept, silver, buzz",
+  "results": [
+    {
+      "view": "front",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 6097,
+        "meanAbsoluteDecodedChannelDelta": 0.002432285575196147,
+        "maxDecodedChannelDelta": 0.34117648005485535
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "turned",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 8194,
+        "meanAbsoluteDecodedChannelDelta": 0.003778957761824131,
+        "maxDecodedChannelDelta": 0.4431372582912445
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "swept",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 8555,
+        "meanAbsoluteDecodedChannelDelta": 0.004408258479088545,
+        "maxDecodedChannelDelta": 0.4588235318660736
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "silver",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 8203,
+        "meanAbsoluteDecodedChannelDelta": 0.003987408243119717,
+        "maxDecodedChannelDelta": 0.5372549295425415
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "buzz",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "deep",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOff": {
+        "pixels": 110250,
+        "changedPixels": 8138,
+        "meanAbsoluteDecodedChannelDelta": 0.0033806590363383293,
+        "maxDecodedChannelDelta": 0.3490196466445923
+      },
+      "fallbackVsOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "torso",
+      "crop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "enabledVsOff": {
+        "pixels": 335692,
+        "changedPixels": 23134,
+        "meanAbsoluteDecodedChannelDelta": 0.00010037211905000731,
+        "maxDecodedChannelDelta": 0.007843151688575745
+      },
+      "fallbackVsOff": {
+        "pixels": 335692,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    }
+  ],
+  "comparisonBytes": 849526,
+  "comparisonSha256": "ed3a19967927cd5d4c60006cde68d0670aaf25a5357b33d76b60f2e5d75ec635"
+}

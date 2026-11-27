@@ -1,0 +1,145 @@
+{
+  "status": "BLOCKED",
+  "snapshot": ".bodyforge-qa\\bf701-vite-patch-candidate\\screen-ownership-repair-20261127",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "source_count": 394,
+  "owned": {
+    "src/App.tsx": "f402404c4e4dafd5f36e4ccf49f12a5823b1566c364c05952015fbd741cd08ba",
+    "src/world.css": "aa6d165070a02bca544f5d7ddc3690efbe752bb2566b993c41bb900df7ab3d8d",
+    "src/lib/screenNavigation.test.ts": "8b617fa42e6103a906a952a56edac24eec84dcccd5cd44de4eee2eb466f9d967",
+    "qa/screen-ownership-e2e.mjs": "90ba82ecb4b5152cbef2a47c3a5226abfb83180e497bdb252c9eea5e8bd56c42"
+  },
+  "candidate_package": {
+    "package.json": "ba4e8e3bd4eceda98cba384df1e53d600149ad281970a3bbf10256ebf4b4a50a",
+    "package-lock.json": "bbe8f2caa0b6c125ea277993cad03b4512cc3897aa2faa895cf97865c65e56b9"
+  },
+  "root_package_before": {
+    "package.json": "865953915662f44a4cb59207fdca6743d0fde92e59f9b6c2ac5c24053c977d17",
+    "package-lock.json": "e0bc62dd6485c2ba320e7659d92547ce0fde86e6d7fb21d18cec019bafaab6eb"
+  },
+  "commands": {
+    "dev-functional": 0,
+    "module-resolution": 0,
+    "types": 0,
+    "build": 0,
+    "bundle": 0,
+    "pwa": 0,
+    "privacy": 0,
+    "full-unit": 0,
+    "production-screen": 0,
+    "steps-day": 21
+  },
+  "resources": [
+    {
+      "before": "freeze",
+      "status": "pass",
+      "physicalMiB": 16504,
+      "virtualMiB": 23911,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "dev-functional",
+      "status": "pass",
+      "physicalMiB": 14741,
+      "virtualMiB": 22108,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "types",
+      "status": "pass",
+      "physicalMiB": 12448,
+      "virtualMiB": 18232,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "build",
+      "status": "pass",
+      "physicalMiB": 12776,
+      "virtualMiB": 19192,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "bundle",
+      "status": "pass",
+      "physicalMiB": 12704,
+      "virtualMiB": 19137,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "pwa",
+      "status": "pass",
+      "physicalMiB": 12880,
+      "virtualMiB": 19328,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "privacy",
+      "status": "pass",
+      "physicalMiB": 12892,
+      "virtualMiB": 19335,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "full-unit",
+      "status": "pass",
+      "physicalMiB": 11980,
+      "virtualMiB": 18089,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "preview",
+      "status": "pass",
+      "physicalMiB": 18642,
+      "virtualMiB": 27029,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "production-screen",
+      "status": "pass",
+      "physicalMiB": 18575,
+      "virtualMiB": 26796,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    },
+    {
+      "before": "steps-day",
+      "status": "pass",
+      "physicalMiB": 18812,
+      "virtualMiB": 27123,
+      "totalPhysicalMiB": 32619,
+      "totalVirtualMiB": 48619
+    }
+  ],
+  "started": "2026-11-27T19:05:33.731055+03:00",
+  "prior_attempts_sha256": "7ff6fdb4c17ff757eee9b9b52035aaf8434d7f4029f7b19a70ee5938b9711a5c",
+  "screenshots_optional": false,
+  "distribution": {
+    "count": 79,
+    "bytes": 35918223,
+    "publicCount": 49,
+    "generatedCount": 30
+  },
+  "entry": {
+    "name": "/assets/index-Binxz6iQ.js",
+    "bytes": 383745,
+    "sha256": "b93b3ddceafffae036bf67492669a5329938b0a379eb3f380d51e8360ab527d3"
+  },
+  "preview": {
+    "origin": "http://127.0.0.1:55909",
+    "entry_sha256": "b93b3ddceafffae036bf67492669a5329938b0a379eb3f380d51e8360ab527d3",
+    "exact_bytes": true
+  },
+  "preview_stopped": true,
+  "failureType": "AssertionError",
+  "root_server_5173_running": true,
+  "finished": "2026-11-27T19:10:34.852733+03:00"
+}

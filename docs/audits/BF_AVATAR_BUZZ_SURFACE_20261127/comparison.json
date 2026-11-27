@@ -1,0 +1,156 @@
+{
+  "scope": "Matched browser frame crops. Descriptive decoded channel differences, not photorealism score.",
+  "columns": "V3 with old cap, V3 plus surface buzz, V2 fallback",
+  "rows": "front, buzz",
+  "results": [
+    {
+      "view": "front",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "turned",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "swept",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "silver",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "buzz",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 8514,
+        "meanAbsoluteDecodedChannelDelta": 0.023457646369934082,
+        "maxDecodedChannelDelta": 0.760784387588501
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "deep",
+      "crop": [
+        245,
+        610,
+        560,
+        960
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      },
+      "fallbackVsOldV2": {
+        "pixels": 110250,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    },
+    {
+      "view": "torso",
+      "crop": [
+        75,
+        600,
+        706,
+        1132
+      ],
+      "enabledVsOldBuzzOff": {
+        "pixels": 335692,
+        "changedPixels": 23134,
+        "meanAbsoluteDecodedChannelDelta": 0.00010037211905000731,
+        "maxDecodedChannelDelta": 0.007843151688575745
+      },
+      "fallbackVsOldV2": {
+        "pixels": 335692,
+        "changedPixels": 0,
+        "meanAbsoluteDecodedChannelDelta": 0.0,
+        "maxDecodedChannelDelta": 0.0
+      }
+    }
+  ],
+  "comparisonBytes": 337160,
+  "comparisonSha256": "5f15d9484746be1b97e25d104b31175a1758bd4be2a602333f3d4f82c440d36a"
+}

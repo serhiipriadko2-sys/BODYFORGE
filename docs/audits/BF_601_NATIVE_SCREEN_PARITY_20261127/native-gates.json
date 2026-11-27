@@ -1,0 +1,172 @@
+{
+  "owned": {
+    "android/src/java/ru/bodyforge/healthqa/MainActivity.java": "64a571d9bddd82347ee758744189be182864bfe96a5e1869519c07a987d94c95",
+    "android/README.md": "898dae9359b8c79083592a8e96a7531ce6e7c9a1dcacb2f90e75d621ea34d7a5",
+    "android/tests/nativeScreenProbe.test.mjs": "4ef1abe58b0bb956aa1953ddc7c40131e15b55f1a530ffae103ac2fa3db20cad"
+  },
+  "red": 1,
+  "commands": {
+    "probe": 0,
+    "web-unit": 0,
+    "diff": 0,
+    "probe-final": 0,
+    "java-policy-compile": 0,
+    "java-steps": 0,
+    "java-live-steps": 0,
+    "android-source-compile": 0
+  },
+  "unchanged_dependencies": {
+    "src/App.tsx": "62f007ab1cb691a9a97c410929100242d206522471592a5715d811ca93bc600d",
+    "src/components/StepsBoard.tsx": "7f8fea23724563ff5156e0893e9015ca1309d93bfa17d3e1dbf921e5f4df6425",
+    "android/src/AndroidManifest.xml": "fd761a892591cf5b5bfe7d0162c4b01124c71a71dade8112dbccbc42c3c0dab5"
+  },
+  "android_sources": {
+    "android/src/AndroidManifest.xml": {
+      "bytes": 1959,
+      "sha256": "fd761a892591cf5b5bfe7d0162c4b01124c71a71dade8112dbccbc42c3c0dab5"
+    },
+    "android/src/java/ru/bodyforge/healthqa/HealthStepsActivity.java": {
+      "bytes": 15750,
+      "sha256": "91bb0b2c4c3b31687ba94537a2d7302e6b9efad42ae4ed75a7f02d6847dd4856"
+    },
+    "android/src/java/ru/bodyforge/healthqa/LiveStepPolicy.java": {
+      "bytes": 1722,
+      "sha256": "80a2c200ac55d0f2014b87a68093209a6d4896e4a24f28ed603e7c74da6f2fd5"
+    },
+    "android/src/java/ru/bodyforge/healthqa/LiveStepsPanel.java": {
+      "bytes": 14108,
+      "sha256": "7cf6200a2225e5c2800b3a5655936fd9054169de7cfe75b9b907f75aeaf308cb"
+    },
+    "android/src/java/ru/bodyforge/healthqa/MainActivity.java": {
+      "bytes": 14575,
+      "sha256": "64a571d9bddd82347ee758744189be182864bfe96a5e1869519c07a987d94c95"
+    },
+    "android/src/java/ru/bodyforge/healthqa/PermissionsRationaleActivity.java": {
+      "bytes": 767,
+      "sha256": "35d97c5d4b9c4790ace7670b2163b4f38e5b47cfd1436652dfaec2fac8fe88bb"
+    },
+    "android/src/java/ru/bodyforge/healthqa/StepsPolicy.java": {
+      "bytes": 2153,
+      "sha256": "483f2557b71904f71e7570ead264af69aa75894d5c0aefaa0487336ed113ef78"
+    },
+    "android/tests/LiveStepPolicyTest.java": {
+      "bytes": 2557,
+      "sha256": "7eaac7751e12b15580247d5564c1ed879a2f6e3dd27bc592f89888b33ed0555e"
+    },
+    "android/tests/StepsPolicyTest.java": {
+      "bytes": 3493,
+      "sha256": "65ce3b5edcfd4465c4ad4d2b6a8b2e21fe062b9490be9e1a5e4605dd77dd6b92"
+    },
+    "android/tests/nativeScreenProbe.test.mjs": {
+      "bytes": 2543,
+      "sha256": "4ef1abe58b0bb956aa1953ddc7c40131e15b55f1a530ffae103ac2fa3db20cad"
+    }
+  },
+  "sdk_jar_sha256": "2981111371989ae7141868d6162070c89f0f1d505f66ac9dc7fdfd4d8c744264",
+  "compiled_classes": {
+    "policy/ru/bodyforge/healthqa/LiveStepPolicy$Refresh.class": {
+      "bytes": 1075,
+      "sha256": "0ddd8fba8441bcfd5d82f2e68df93f7215754c8ae24f9db46397d674ca056dde"
+    },
+    "policy/ru/bodyforge/healthqa/LiveStepPolicy$Screen.class": {
+      "bytes": 1211,
+      "sha256": "7e04def2b898047366c3b09ffa4ca83ae9b926797158f681410cd7ef785b3e17"
+    },
+    "policy/ru/bodyforge/healthqa/LiveStepPolicy$Session.class": {
+      "bytes": 652,
+      "sha256": "0547a93cbb264ac8b9922ffc05ba09585193ef5489459638a5bbd0c5b96fba63"
+    },
+    "policy/ru/bodyforge/healthqa/LiveStepPolicy.class": {
+      "bytes": 985,
+      "sha256": "99ae5eba555aa504a84f337136fd861ab51ab202a1b35b824fd667e988eca2d4"
+    },
+    "policy/ru/bodyforge/healthqa/LiveStepPolicyTest.class": {
+      "bytes": 3336,
+      "sha256": "7f7e6fcbcb648cabced5eecc7a3d38292670611df2e556c811b1078a89eb90e9"
+    },
+    "policy/ru/bodyforge/healthqa/StepsPolicy$DayWindow.class": {
+      "bytes": 1215,
+      "sha256": "e2fc038019260fd8c065d92ea78a4f2d7493c182b1c099c3446738024aa203c8"
+    },
+    "policy/ru/bodyforge/healthqa/StepsPolicy.class": {
+      "bytes": 1619,
+      "sha256": "581a2d27fc3ce2edb6d1ca1ab5080c8e0389bcb6eba93fca0a54ec4e4eb6c30a"
+    },
+    "policy/ru/bodyforge/healthqa/StepsPolicyTest.class": {
+      "bytes": 4036,
+      "sha256": "337be536dd57d67b187f84a3427f6fd66f0e5b87935d3e4d008a3d12b5f0e217"
+    },
+    "classes/ru/bodyforge/healthqa/HealthStepsActivity$1.class": {
+      "bytes": 1784,
+      "sha256": "fb19d35f99f310a63a110aa69050a50b23ebaf11ebbd8355963ba854090b552a"
+    },
+    "classes/ru/bodyforge/healthqa/HealthStepsActivity$2.class": {
+      "bytes": 2798,
+      "sha256": "30a940573e4521a69368c974e5ad0c53c112b1d1797f046535ae3edf05f561a2"
+    },
+    "classes/ru/bodyforge/healthqa/HealthStepsActivity.class": {
+      "bytes": 16388,
+      "sha256": "ba2579d4268ffb21d61f145ebb28864e65c93c85d06a388c4a9945157cffacfa"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepPolicy$Refresh.class": {
+      "bytes": 1075,
+      "sha256": "0ddd8fba8441bcfd5d82f2e68df93f7215754c8ae24f9db46397d674ca056dde"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepPolicy$Screen.class": {
+      "bytes": 1211,
+      "sha256": "7e04def2b898047366c3b09ffa4ca83ae9b926797158f681410cd7ef785b3e17"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepPolicy$Session.class": {
+      "bytes": 652,
+      "sha256": "0547a93cbb264ac8b9922ffc05ba09585193ef5489459638a5bbd0c5b96fba63"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepPolicy.class": {
+      "bytes": 985,
+      "sha256": "99ae5eba555aa504a84f337136fd861ab51ab202a1b35b824fd667e988eca2d4"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepsPanel$1.class": {
+      "bytes": 2200,
+      "sha256": "b68b1156e279319e9e4c6dc75e9f4f730ef3cff50699e7934d0b5a46b87251c2"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepsPanel$2.class": {
+      "bytes": 2554,
+      "sha256": "03f63c068c518cd6d4a1565d383b1985f01d5c327cc3e90ab93af584a6482bdb"
+    },
+    "classes/ru/bodyforge/healthqa/LiveStepsPanel.class": {
+      "bytes": 15233,
+      "sha256": "7ee7e30b1695f0b9b013c2eacba20cced590cd56fbe4278ca88c1f0823c7ccfb"
+    },
+    "classes/ru/bodyforge/healthqa/MainActivity$1.class": {
+      "bytes": 3375,
+      "sha256": "83aa04e767cf4d069bb313343269b9adb0a38864a106c8eb8cfd8c5b8d7f260b"
+    },
+    "classes/ru/bodyforge/healthqa/MainActivity$2.class": {
+      "bytes": 3594,
+      "sha256": "4965843ec65c3f4f0d100d29daf33d458cdaa0ca4a6d775f5546eaed35a038e6"
+    },
+    "classes/ru/bodyforge/healthqa/MainActivity$3.class": {
+      "bytes": 3344,
+      "sha256": "d8de9a223c049b00a06fd0991bdbb253329c997ab0a10afd799071dd4235d688"
+    },
+    "classes/ru/bodyforge/healthqa/MainActivity.class": {
+      "bytes": 12778,
+      "sha256": "90ade29e66c219cc2d7b06706216d609fdc52d4119f3144b84f0de7950323296"
+    },
+    "classes/ru/bodyforge/healthqa/PermissionsRationaleActivity.class": {
+      "bytes": 3397,
+      "sha256": "500641966f2b7b80a2b54df65b67011a3926fbc29c84f818c4decab70e92f717"
+    },
+    "classes/ru/bodyforge/healthqa/StepsPolicy$DayWindow.class": {
+      "bytes": 1215,
+      "sha256": "e2fc038019260fd8c065d92ea78a4f2d7493c182b1c099c3446738024aa203c8"
+    },
+    "classes/ru/bodyforge/healthqa/StepsPolicy.class": {
+      "bytes": 1619,
+      "sha256": "581a2d27fc3ce2edb6d1ca1ab5080c8e0389bcb6eba93fca0a54ec4e4eb6c30a"
+    }
+  },
+  "manifest_unchanged": true,
+  "status": "TESTED_LOCAL_SOURCE_ONLY",
+  "class_output": ".bodyforge-qa\\bf601-native-screen-source-20261127",
+  "finished": "2026-11-27T20:04:06.296386+03:00"
+}

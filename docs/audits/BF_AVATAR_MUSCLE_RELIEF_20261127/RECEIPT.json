@@ -1,0 +1,397 @@
+{
+    "schema":  "BF_LOCAL_AUDIT_RECEIPT_V1",
+    "created":  "2026-11-27T18:16:22.4701599+03:00",
+    "status":  "PASS_LOCAL_GEOMETRY_PARTIAL_AAA",
+    "fullTests":  1208,
+    "testFiles":  116,
+    "targetedTests":  15,
+    "browserAssertions":  240,
+    "browserFrames":  24,
+    "rawVertexStates":  93757824,
+    "fittedClothStates":  7753968,
+    "blenderDriverChecks":  80,
+    "productionMarkers":  0,
+    "fileCount":  76,
+    "files":  [
+                  {
+                      "path":  ".bodyforge-qa/muscle-relief-v1/muscle-relief-review.blend",
+                      "bytes":  9440627,
+                      "sha256":  "e8fe10d025e239623cc62b52d77a4f583fbe46972aced8670135b29b45a45813"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/muscle-relief-v1/muscle-shapes.bin",
+                      "bytes":  7813152,
+                      "sha256":  "ad5b4d356ad8befd03a476aca6051775332ba1c73bdd5c32178e26276ee5c3c7"
+                  },
+                  {
+                      "path":  ".bodyforge-qa/muscle-relief-v1/muscle-shapes.json",
+                      "bytes":  22468,
+                      "sha256":  "7e95329724b65456d60a92a7cd56401fb99683de44e6cb9cc500cc5c453778d0"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/Avatar3D.tsx.before.txt",
+                      "bytes":  68960,
+                      "sha256":  "98dc6ea73c7351ace1599d3e62b1e6000f7191b2a1cf4d8c865a72065db2fe9f"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/avatarMuscleReliefReview.before-lazy.txt",
+                      "bytes":  9008,
+                      "sha256":  "e9f166d8cba07ec5aebc3d432c013923a74d88ba06858cc90d15abfc1d3d0b41"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/avatarMuscleReliefReview.test.v1-before-type-fix.txt",
+                      "bytes":  8953,
+                      "sha256":  "096e9ce60a2be1be60a86c0566bff14c6cb06c1743c6ce65131477d779712b07"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/avatarMuscleReliefReview.v1-before-type-fix.txt",
+                      "bytes":  9039,
+                      "sha256":  "267637b31949bb6a0b9c2d27a6364d475242c592a24fe0548fcfd79f7228dbff"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/avatarPhysique.ts.before.txt",
+                      "bytes":  6143,
+                      "sha256":  "a0dd1a34d656c83e4c4efb7a3a120a092b7f6cb65811696192cb07d36e8e74e5"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/avatar-quality-e2e.mjs.before.txt",
+                      "bytes":  133937,
+                      "sha256":  "d90bf8579cdf95de00e76055cadeaf8c77a17a5ab1c46ac9894750b1af997102"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/blender-shape.log",
+                      "bytes":  8074,
+                      "sha256":  "8732df2748d7fe3a418a4ab576124516c46651f7e037f4dcf76605198dda1093"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/blender-shape-first-attempt.log",
+                      "bytes":  4722,
+                      "sha256":  "5eb2d5d89c479fb0ab696208b0c3ad22e920f672c5bdb5a5fdb87bb011c7efe3"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/blender-shape-readback.json",
+                      "bytes":  2372,
+                      "sha256":  "b94371008438a8d10be2ca43357e1c8711626c7d79ffe62f82c6f079af1a8ce7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/blender-shape-second-attempt.log",
+                      "bytes":  4560,
+                      "sha256":  "630326668d6a61af0bbbda53aac7d5f67ba38e8d2c77c03ecba0091e1750d29a"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/build.log",
+                      "bytes":  541,
+                      "sha256":  "2ac7002e71d20d85bb041ffddcc9d0897bcbfd11f2420591c19be1db5608a5c3"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/build-final.log",
+                      "bytes":  3100,
+                      "sha256":  "a7bc45fdea381b05359769d8b0f1a1fbf48c18a8fca4199c784e40a83ab80d03"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/build-muscle-shape-review.py",
+                      "bytes":  9312,
+                      "sha256":  "8531aca7b2dc3a64229833dbf2e0fd8c9f3f84fbdb2d79fe1924ac0e2ba7e58a"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/build-verified.log",
+                      "bytes":  3100,
+                      "sha256":  "32106bda8f0593d87271e0dacccbcfe9dccdde9be9366ded6ebac9205d8e6013"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/compare-relief.py",
+                      "bytes":  2565,
+                      "sha256":  "2b009c6849bccf0a23e467adc9e3304e5bb94e2e8c92e0065ead83bffecb5a23"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/comparison.json",
+                      "bytes":  8090,
+                      "sha256":  "8c6107a464f9c9bf6e5a5a271f49090b447375ae0e40ba20e991b6a2026627a1"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/comparison.log",
+                      "bytes":  11390,
+                      "sha256":  "c00100f4a48db3bdc6168dc2a57b5f13a3bebc0571347a4d4edf10b7007062d4"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/export-muscle-shapes.mjs",
+                      "bytes":  3239,
+                      "sha256":  "433a5fa78d54bccc78b3276a4498fbbc844c179c091954c13590da441202aee3"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc.json",
+                      "bytes":  4266,
+                      "sha256":  "c239a4978a1ced4cb3c9fdf7f29e6cdc85a1d1ac5278a9d3babcff536776a1b7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc.log",
+                      "bytes":  4747,
+                      "sha256":  "57acbea11340ec2c7f6721a6ecde381883c56cb80251228d15098dbda5531104"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc-final.json",
+                      "bytes":  4266,
+                      "sha256":  "6644d2667c6820c13e885e4392074acbf7f3dcf7e07ef9d7d30c20eaf70ad5e7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc-final.log",
+                      "bytes":  4747,
+                      "sha256":  "5211a76acbc37552c12ffb73e271747b082190aaea8faf1919df630a876ec3a6"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc-verified.json",
+                      "bytes":  4266,
+                      "sha256":  "aaf697e35de5749bb573f3cb36b3ce8950f2c51c0a434c7e81b645e4dd714f5c"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/field-qc-verified.log",
+                      "bytes":  4747,
+                      "sha256":  "c29acf811257ed85275c817e6e038b278290211b07d5b8aee3d28ce6c542b3c8"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/full-vitest.log",
+                      "bytes":  34347,
+                      "sha256":  "fb6653174f6a642cdbc46ea47eababd7288ad5d75d8c2e3e5fbdd7dbec668f70"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/matched-relief-max.png",
+                      "bytes":  1431286,
+                      "sha256":  "e318182ac45bdc716dc096c81ad75f12f0fe954ddc51769234537fff4d642144"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/matched-relief-neutral.png",
+                      "bytes":  1209131,
+                      "sha256":  "fcc710374a6e4f80d0ce01aefa6b8ffccc19c7dc3a8fab13dad59f9b01651a64"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max.log",
+                      "bytes":  4775,
+                      "sha256":  "8ac4319e835ba8bd8be7c40f7cb7cb4e4906b87cbfe3d9bcb024fedd4a8f6115"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-bare-front.png",
+                      "bytes":  618376,
+                      "sha256":  "167953e5f62bcd87789592f2c5356052a1fd07e0ca31cdf61e500811ebfa256a"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-bare-rear.png",
+                      "bytes":  617481,
+                      "sha256":  "45a5990b795a446edee78536b19de742e14861e4c16865fca589cb14bb10ae33"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-legs-front.png",
+                      "bytes":  599021,
+                      "sha256":  "9ae1cf105b8bd0ad02a426345a3b710643881218a77852651c10019b5bdb5347"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-legs-rear.png",
+                      "bytes":  593130,
+                      "sha256":  "b0fbc625964967dbf145d397e353df9ce5417882eebf954c396ab0a53182295d"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-shirt-front.png",
+                      "bytes":  588288,
+                      "sha256":  "a883bd94d6c7b651e07a5a7994f10ef7415a1011b9a6186d0fe473830ca34523"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-max/wardrobe-max-shirt-rear.png",
+                      "bytes":  564607,
+                      "sha256":  "657460d957307ba69a347f7774847f6b19d599371b894ef93ff1481a196bea5b"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral.log",
+                      "bytes":  4875,
+                      "sha256":  "85f2cc6358c725a4b6d39371b6adb2cf020f12320c529e8dee1dae0a69c400a7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-bare-front.png",
+                      "bytes":  618950,
+                      "sha256":  "ac3b4abd191fb4e43b5c9af31f4ecb5afa7033b5adf6234d5951f1e70e91040c"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-bare-rear.png",
+                      "bytes":  618515,
+                      "sha256":  "6152a09b41b242314ab8e411d9beadbe7a2db3ba14c04a0af67e7903ba238238"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-legs-front.png",
+                      "bytes":  597275,
+                      "sha256":  "a39745526870c2b0336773a2a2d6a01197bdafca53e8e88afbeb4e4b028988e1"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-legs-rear.png",
+                      "bytes":  593565,
+                      "sha256":  "79fb7aa9a1f5e14d9ed46f77898aced923a9212a5157eb4f00eea28d8dcd478b"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-shirt-front.png",
+                      "bytes":  590917,
+                      "sha256":  "276f3f8cbf21b26e7d607763de6cae6099333dae931cbb842b7082f3bdf708da"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/off-neutral/wardrobe-neutral-shirt-rear.png",
+                      "bytes":  570672,
+                      "sha256":  "1aea41d44e6492da1f109e9f26947166109858053626ceb0587ac9f6777042a0"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max.log",
+                      "bytes":  4762,
+                      "sha256":  "ecdbff3a49ab926339e8c7de184475bbd28915ddcb0d6cb2ad302d5bccb78339"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-bare-front.png",
+                      "bytes":  619134,
+                      "sha256":  "0ce60efa75f843b08e8a4f1bdc8ddca7327e8471bf29bb5fdc5fdf682397a3e5"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-bare-rear.png",
+                      "bytes":  617602,
+                      "sha256":  "1f8424663c96d43aeae5c5fe61f02b98cd9d2a6a3aa9cc8d7a062d3908bdd176"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-legs-front.png",
+                      "bytes":  599303,
+                      "sha256":  "0524d51ccdab35f4351a5b487b783ab86a090f8c2f79ba5614b08b5abe5a0480"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-legs-rear.png",
+                      "bytes":  593305,
+                      "sha256":  "7031feb406283803187889d46e19412209c0699d3b6581421d4126d35c9401f0"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-shirt-front.png",
+                      "bytes":  589172,
+                      "sha256":  "cc1c0397b0b87c61bafac349c059a5c08c1842d8d20f9ed2ea9378d1a163f4b7"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-max/wardrobe-max-shirt-rear.png",
+                      "bytes":  565476,
+                      "sha256":  "5c093bb71c138ce455eab051fd52d44ded8a3f02c723e1d681f5328f213c209a"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral.log",
+                      "bytes":  4862,
+                      "sha256":  "945fc4addb15ce2076bae84e0e6bb52272261a5e57fca7bfd53cd5e297fff1a4"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-bare-front.png",
+                      "bytes":  618950,
+                      "sha256":  "ac3b4abd191fb4e43b5c9af31f4ecb5afa7033b5adf6234d5951f1e70e91040c"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-bare-rear.png",
+                      "bytes":  618515,
+                      "sha256":  "6152a09b41b242314ab8e411d9beadbe7a2db3ba14c04a0af67e7903ba238238"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-legs-front.png",
+                      "bytes":  597275,
+                      "sha256":  "a39745526870c2b0336773a2a2d6a01197bdafca53e8e88afbeb4e4b028988e1"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-legs-rear.png",
+                      "bytes":  593566,
+                      "sha256":  "a1532cb12783380176c9f0efa3eac3b58955604aa4cbacf4fbc0abc3f7288fec"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-shirt-front.png",
+                      "bytes":  590917,
+                      "sha256":  "276f3f8cbf21b26e7d607763de6cae6099333dae931cbb842b7082f3bdf708da"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/on-neutral/wardrobe-neutral-shirt-rear.png",
+                      "bytes":  570672,
+                      "sha256":  "1aea41d44e6492da1f109e9f26947166109858053626ceb0587ac9f6777042a0"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/probe.log",
+                      "bytes":  7700,
+                      "sha256":  "e3bda6bf93a55ed44cdbdd86d65f50c2256f9bda049020b0b5cbc8ad1d5caff8"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/probe-surface.py",
+                      "bytes":  2842,
+                      "sha256":  "421f352a1f82822c5ff0a6d850a11f15fc39f63b83b7915824df299c373a0d87"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/REPORT.md",
+                      "bytes":  5371,
+                      "sha256":  "10b29ac6ff6e1275bb69301d1dc4ff04205588e1945f9451fe5dac90c48a907e"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/surface-probes.json",
+                      "bytes":  9422,
+                      "sha256":  "a08213d810f71e66379458f31b9777ce3e101f761126e0be248ede72cda080a2"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/targeted.log",
+                      "bytes":  3271,
+                      "sha256":  "8acaf7c1473bec26590427625a03f3b00a8322edbb818f1db5a1f8003767c6ee"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/targeted-final.log",
+                      "bytes":  3886,
+                      "sha256":  "f2348a2917a19016691df23f8c8e6b65a99555200a9d60d404b8256c89f7558a"
+                  },
+                  {
+                      "path":  "docs/audits/BF_AVATAR_MUSCLE_RELIEF_20261127/targeted-verified.log",
+                      "bytes":  6752,
+                      "sha256":  "b1b728ae33dc606a18329017410f18918e5749356a3a7728400c1e87b7eecf23"
+                  },
+                  {
+                      "path":  "public/assets/bodyforge-athlete-efficient.glb",
+                      "bytes":  4639184,
+                      "sha256":  "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+                  },
+                  {
+                      "path":  "qa/avatar-muscle-relief-field-qc.mjs",
+                      "bytes":  4953,
+                      "sha256":  "d40a91f36b8cf81a3acedfbddc54d3835491d9c43fb1634a7092e9606c99a447"
+                  },
+                  {
+                      "path":  "qa/avatar-quality-e2e.mjs",
+                      "bytes":  135611,
+                      "sha256":  "9ad0863847bc780d7e0bd6e2682f6584032ace3d4d6f937d04ae81f2777495bb"
+                  },
+                  {
+                      "path":  "src/components/Avatar3D.tsx",
+                      "bytes":  69654,
+                      "sha256":  "664ab049ccc13a2c5aaf546ffb5b2e1357ad6af79725d8160c426fd0fa8ae2ba"
+                  },
+                  {
+                      "path":  "src/lib/avatarAthleticReview.ts",
+                      "bytes":  6971,
+                      "sha256":  "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280"
+                  },
+                  {
+                      "path":  "src/lib/avatarMuscleAnatomy.ts",
+                      "bytes":  5676,
+                      "sha256":  "4d167106d31dd1aadbb3926e267cead3ef23f8cc450be08f899ef9cd8c2fdc86"
+                  },
+                  {
+                      "path":  "src/lib/avatarMuscleReliefReview.test.ts",
+                      "bytes":  12722,
+                      "sha256":  "e8dd32b5f9898329bc06c3d4e9ab0f8ec7556659e5c9dfdb0d92c0dbf40bca80"
+                  },
+                  {
+                      "path":  "src/lib/avatarMuscleReliefReview.ts",
+                      "bytes":  9260,
+                      "sha256":  "7f011a810d4be8b2ea51a8098e6fa7d10fcca76a15e0ec6f591adf22d3fbe5a2"
+                  },
+                  {
+                      "path":  "src/lib/avatarPhysique.ts",
+                      "bytes":  6497,
+                      "sha256":  "2fcf4a0f8aaf75d9fe26a26eb4d991b983709ab3a15f6dcb1a493b9076524c15"
+                  },
+                  {
+                      "path":  "src/lib/avatarScanTorsoRelief.ts",
+                      "bytes":  2540,
+                      "sha256":  "ba196979c01504c3f3833de05c7eb681522875be4a0a3fc300575758b1e7cf23"
+                  },
+                  {
+                      "path":  "src/lib/avatarScanTorsoReviewData.ts",
+                      "bytes":  15443,
+                      "sha256":  "16e4912f3a4a96d408be585a6e287329313cb66ac9f9a8cdbe188c46e5e48d46"
+                  }
+              ]
+}

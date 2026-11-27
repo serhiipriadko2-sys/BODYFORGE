@@ -8,13 +8,14 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 import { createTowerSquatFixture } from './tower-squat-fixture.mjs';
+import { waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 class InfrastructureError extends Error {}
 const infra = message => new InfrastructureError(message);
-let profile, chrome, launchError, browserURL, ws, seq = 0, pageLoads = 0, assertions = 0;
+let profile, chrome, browserIdentity, ws, seq = 0, pageLoads = 0, assertions = 0;
 const requests = new Map(), browserErrors = [];
 const storageKey = 'bodyforge:pilot:v1';
 const journalV2 = process.argv.includes('--journal-v2');
@@ -55,13 +56,6 @@ async function resolveBuild() {
   console.log('QA_BUILD', JSON.stringify({mode:'dev',origin,pose:modules[0],sourceSha256:sha(source)}));
   return { entry: null, pose: modules[0] };
 }
-function socketURL(value, port, kind) {
-  const u = new URL(value);
-  if (u.protocol !== 'ws:' || u.hostname !== '127.0.0.1' || u.port !== String(port) ||
-      u.username || u.password || u.search || u.hash || !u.pathname.startsWith('/devtools/' + kind + '/'))
-    throw infra('Unexpected owned CDP endpoint');
-  return u.href;
-}
 async function connect(url) {
   const socket = new WebSocket(url);
   try {
@@ -83,33 +77,13 @@ async function ownChrome() {
     '--no-first-run','--no-default-browser-check','--remote-allow-origins=*',
     '--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank',
   ],{stdio:'ignore'});
-  chrome.on('error',error => { launchError = error; });
-  const deadline = Date.now()+15000;
-  while (Date.now()<deadline) {
-    if (launchError) throw infra('Chrome launch failed: '+launchError.message);
-    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw infra('Chrome launcher exit '+chrome.exitCode);
-    try {
-      const [portText,browserPath] = fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').trim().split(/\r?\n/);
-      const port = Number(portText);
-      if (!Number.isSafeInteger(port) || port<1 || port>65535 || !/^\/devtools\/browser\/[\w-]+$/.test(browserPath))
-        throw infra('Invalid disposable DevToolsActivePort');
-      const version = await (await get('http://127.0.0.1:'+port+'/json/version')).json();
-      const advertised = socketURL(version.webSocketDebuggerUrl,port,'browser');
-      if (new URL(advertised).pathname !== browserPath) throw infra('Browser identity mismatch');
-      browserURL = advertised;
-      const tabs = await (await get('http://127.0.0.1:'+port+'/json/list')).json();
-      const tab = tabs.find(t => t.type==='page' && t.url==='about:blank');
-      if (tab) {
-        console.log('CDP_OWNER',process.pid,port,browserPath);
-        return await connect(socketURL(tab.webSocketDebuggerUrl,port,'page'));
-      }
-    } catch (error) {
-      if (error instanceof InfrastructureError && /identity mismatch|Invalid disposable|Unexpected owned/.test(error.message)) throw error;
-    }
-    await sleep(150);
-  }
-  throw infra('Owned DevTools unavailable after 15 seconds');
+  try {
+    browserIdentity=await waitForOwnedBrowser(profile,chrome);
+    const tab=await newOwnedPage(browserIdentity);
+    return await connect(tab.webSocketDebuggerUrl);
+  }catch(error){throw infra('Owned DevTools unavailable: '+error.message);}
 }
+
 function cmd(method,params={}) {
   if (!ws || ws.readyState!==WebSocket.OPEN) return Promise.reject(infra('CDP disconnected: '+method));
   return new Promise((resolve,reject)=>{
@@ -370,43 +344,11 @@ async function verifyV2BackupAndRestore() {
 
 async function closeOwned() {
   ws?.close();
-  let failed=false;
-  if (browserURL) {
-    let owned;
-    try {
-      owned=await connect(browserURL);
-      const closed=new Promise(resolve=>{const timer=setTimeout(()=>resolve(false),3000);owned.addEventListener('close',()=>{clearTimeout(timer);resolve(true)},{once:true});});
-      owned.send(JSON.stringify({id:1,method:'Browser.close'}));
-      if(!await closed)throw infra('Owned Chrome close unconfirmed');
-    } catch(error){console.error('QA_CLEANUP_ERROR',error.message);failed=true;}
-    finally{if(owned?.readyState===WebSocket.OPEN)owned.close();}
-  }
-  // Browser.close confirms CDP shutdown, not that Windows has released every
-  // file handle. Wait without treating a transient sharing violation as a UI bug.
-  if(chrome && chrome.exitCode===null){
-    const deadline=Date.now()+3000;
-    while(chrome.exitCode===null&&Date.now()<deadline)await sleep(100);
-    if(chrome.exitCode===null)chrome.kill();
-  }
-  if(profile){
-    if(path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('bf-tower20-'))throw infra('Invalid cleanup target');
-    const deadline=Date.now()+15000;
-    let lastError,attempts=0;
-    do{
-      attempts++;
-      try{
-        fs.rmSync(profile,{recursive:true,force:true,maxRetries:0});
-        lastError=undefined;
-      }catch(error){lastError=error;if(!['EPERM','EBUSY','ENOTEMPTY','EACCES'].includes(error.code))break;}
-      if(!fs.existsSync(profile))break;
-      await sleep(350);
-    }while(Date.now()<deadline);
-    if(fs.existsSync(profile)){console.error('QA_CLEANUP_ERROR',lastError?.message??'Temporary profile still exists');failed=true;}
-    console.log('QA_PROFILE_REMOVAL_ATTEMPTS',attempts);
-  }
-  console.log('QA_OWNED_CLEANUP',failed?'FAIL':profile?'PASS':'NOT_NEEDED');
-  if(failed)process.exitCode ||= 15;
+  if(!profile){console.log('QA_OWNED_CLEANUP NOT_NEEDED');return;}
+  if(!chrome)throw infra('Disposable launcher unavailable for cleanup');
+  await cleanupOwnedChrome(profile,'bf-tower20-',chrome,browserIdentity);
 }
+
 try {
   const build=await resolveBuild();
   if(journalV2&&!build.entry)throw infra('Keyed v2 game flow requires a pinned production preview');

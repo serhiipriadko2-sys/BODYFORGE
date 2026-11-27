@@ -1,0 +1,398 @@
+{
+  "summary": {
+    "body": {
+      "maxIncreaseMm": 0.0,
+      "candidateMaxMm": 0.0
+    },
+    "shirt": {
+      "maxIncreaseMm": 0.0,
+      "candidateMaxMm": 0.0
+    },
+    "nippleRim": {
+      "maxIncreaseMm": 0.0,
+      "candidateMaxMm": 0.0
+    }
+  },
+  "states": {
+    "neutral": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "arms": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "core": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "legs": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "back": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "mixed": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "max": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate1": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate2": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate3": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate4": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate5": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "intermediate6": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "idle0.8": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "idle2.1": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "idle4.2": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "idle8": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "idle12.7": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    },
+    "reset": {
+      "body": {
+        "pairedDuplicates": 17397,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "shirt": {
+        "pairedDuplicates": 88,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      },
+      "nippleRim": {
+        "anchors": 68,
+        "baselineMaxMm": 0.0,
+        "candidateMaxMm": 0.0,
+        "maxIncreaseMm": 0.0
+      }
+    }
+  }
+}

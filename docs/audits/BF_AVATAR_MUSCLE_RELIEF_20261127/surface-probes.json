@@ -1,0 +1,516 @@
+{
+  "sourceSha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e",
+  "scope": "Raw bind-pose ray intersections; artistic candidate landmarks, not measured biological anatomy.",
+  "probes": [
+    {
+      "group": "core",
+      "name": "pec belly",
+      "x": 0.102,
+      "y": 1.35,
+      "front": true,
+      "surface": {
+        "z": 0.13813,
+        "normal": [
+          0.255,
+          0.231,
+          0.939
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "pec lower edge",
+      "x": 0.115,
+      "y": 1.279,
+      "front": true,
+      "surface": {
+        "z": 0.1278,
+        "normal": [
+          0.651,
+          -0.212,
+          0.729
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "pec upper edge",
+      "x": 0.135,
+      "y": 1.394,
+      "front": true,
+      "surface": {
+        "z": 0.10991,
+        "normal": [
+          0.196,
+          0.382,
+          0.903
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "sternum",
+      "x": 0,
+      "y": 1.32,
+      "front": true,
+      "surface": {
+        "z": 0.13109,
+        "normal": [
+          0.111,
+          0.207,
+          0.972
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "rectus upper",
+      "x": 0.047,
+      "y": 1.237,
+      "front": true,
+      "surface": {
+        "z": 0.14023,
+        "normal": [
+          0.004,
+          -0.054,
+          0.999
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "rectus mid",
+      "x": 0.047,
+      "y": 1.183,
+      "front": true,
+      "surface": {
+        "z": 0.13805,
+        "normal": [
+          0.032,
+          -0.076,
+          0.997
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "rectus lower",
+      "x": 0.044,
+      "y": 1.131,
+      "front": true,
+      "surface": {
+        "z": 0.13314,
+        "normal": [
+          0.132,
+          -0.098,
+          0.986
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "intersection upper",
+      "x": 0.046,
+      "y": 1.209,
+      "front": true,
+      "surface": {
+        "z": 0.13904,
+        "normal": [
+          0.018,
+          -0.026,
+          0.999
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "intersection lower",
+      "x": 0.044,
+      "y": 1.157,
+      "front": true,
+      "surface": {
+        "z": 0.13583,
+        "normal": [
+          0.072,
+          -0.111,
+          0.991
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "linea alba",
+      "x": 0,
+      "y": 1.178,
+      "front": true,
+      "surface": {
+        "z": 0.13667,
+        "normal": [
+          0.012,
+          -0.093,
+          0.996
+        ]
+      }
+    },
+    {
+      "group": "core",
+      "name": "oblique",
+      "x": 0.121,
+      "y": 1.175,
+      "front": true,
+      "surface": {
+        "z": 0.10911,
+        "normal": [
+          0.669,
+          -0.126,
+          0.733
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "deltoid front",
+      "x": 0.253,
+      "y": 1.399,
+      "front": true,
+      "surface": {
+        "z": 0.06768,
+        "normal": [
+          0.539,
+          0.159,
+          0.827
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "deltoid insertion",
+      "x": 0.294,
+      "y": 1.345,
+      "front": true,
+      "surface": {
+        "z": 0.06083,
+        "normal": [
+          0.424,
+          0.432,
+          0.796
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "biceps crest",
+      "x": 0.316,
+      "y": 1.313,
+      "front": true,
+      "surface": {
+        "z": 0.06739,
+        "normal": [
+          0.263,
+          0.359,
+          0.896
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "biceps inner transition",
+      "x": 0.279,
+      "y": 1.302,
+      "front": true,
+      "surface": {
+        "z": 0.05819,
+        "normal": [
+          -0.554,
+          -0.462,
+          0.693
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "triceps lateral crest",
+      "x": 0.325,
+      "y": 1.314,
+      "front": false,
+      "surface": {
+        "z": -0.0245,
+        "normal": [
+          0.558,
+          0.321,
+          -0.765
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "triceps inner transition",
+      "x": 0.287,
+      "y": 1.309,
+      "front": false,
+      "surface": {
+        "z": -0.03274,
+        "normal": [
+          -0.069,
+          -0.21,
+          -0.975
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "forearm proximal crest",
+      "x": 0.407,
+      "y": 1.194,
+      "front": true,
+      "surface": {
+        "z": 0.12557,
+        "normal": [
+          -0.482,
+          0.379,
+          0.79
+        ]
+      }
+    },
+    {
+      "group": "arms",
+      "name": "forearm distal transition",
+      "x": 0.462,
+      "y": 1.144,
+      "front": true,
+      "surface": {
+        "z": 0.1889,
+        "normal": [
+          -0.475,
+          0.491,
+          0.73
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "trapezius crest",
+      "x": 0.074,
+      "y": 1.435,
+      "front": false,
+      "surface": {
+        "z": -0.07721,
+        "normal": [
+          -0.266,
+          0.302,
+          -0.915
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "scapular medial",
+      "x": 0.064,
+      "y": 1.372,
+      "front": false,
+      "surface": {
+        "z": -0.08271,
+        "normal": [
+          -0.363,
+          0.024,
+          -0.931
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "scapular lateral",
+      "x": 0.153,
+      "y": 1.38,
+      "front": false,
+      "surface": {
+        "z": -0.06802,
+        "normal": [
+          0.462,
+          -0.135,
+          -0.877
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "lat crest",
+      "x": 0.145,
+      "y": 1.285,
+      "front": false,
+      "surface": {
+        "z": -0.04491,
+        "normal": [
+          0.708,
+          -0.308,
+          -0.635
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "lat inner transition",
+      "x": 0.102,
+      "y": 1.272,
+      "front": false,
+      "surface": {
+        "z": -0.06937,
+        "normal": [
+          0.373,
+          -0.247,
+          -0.895
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "erector crest",
+      "x": 0.04,
+      "y": 1.17,
+      "front": false,
+      "surface": {
+        "z": -0.06038,
+        "normal": [
+          0.082,
+          -0.155,
+          -0.984
+        ]
+      }
+    },
+    {
+      "group": "back",
+      "name": "midline",
+      "x": 0,
+      "y": 1.31,
+      "front": false,
+      "surface": {
+        "z": -0.07098,
+        "normal": [
+          0.06,
+          -0.007,
+          -0.998
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "vastus medialis",
+      "x": 0.102,
+      "y": 0.644,
+      "front": true,
+      "surface": {
+        "z": 0.08921,
+        "normal": [
+          -0.582,
+          -0.348,
+          0.735
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "rectus femoris",
+      "x": 0.13,
+      "y": 0.755,
+      "front": true,
+      "surface": {
+        "z": 0.11853,
+        "normal": [
+          0.156,
+          -0.044,
+          0.987
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "vastus lateralis",
+      "x": 0.181,
+      "y": 0.751,
+      "front": true,
+      "surface": {
+        "z": 0.09677,
+        "normal": [
+          0.648,
+          0.019,
+          0.762
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "quad separation",
+      "x": 0.155,
+      "y": 0.688,
+      "front": true,
+      "surface": {
+        "z": 0.10679,
+        "normal": [
+          0.245,
+          -0.174,
+          0.954
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "calf medial",
+      "x": 0.146,
+      "y": 0.4,
+      "front": false,
+      "surface": {
+        "z": -0.05416,
+        "normal": [
+          -0.542,
+          -0.034,
+          -0.84
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "calf lateral",
+      "x": 0.206,
+      "y": 0.404,
+      "front": false,
+      "surface": {
+        "z": -0.05736,
+        "normal": [
+          0.509,
+          0.049,
+          -0.859
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "calf center transition",
+      "x": 0.178,
+      "y": 0.385,
+      "front": false,
+      "surface": {
+        "z": -0.06435,
+        "normal": [
+          0.002,
+          -0.032,
+          -0.999
+        ]
+      }
+    },
+    {
+      "group": "legs",
+      "name": "tibialis",
+      "x": 0.187,
+      "y": 0.35,
+      "front": true,
+      "surface": {
+        "z": 0.0547,
+        "normal": [
+          -0.075,
+          -0.067,
+          0.995
+        ]
+      }
+    }
+  ]
+}

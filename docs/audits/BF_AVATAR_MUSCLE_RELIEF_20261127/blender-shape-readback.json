@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "scope": "Raw bind-pose CC0 mesh deltas only; excludes scan relief, cloth fitting, pose, bone scaling and runtime materials.",
+  "blend": ".bodyforge-qa\\muscle-relief-v1\\muscle-relief-review.blend",
+  "bytes": 9440627,
+  "sha256": "e8fe10d025e239623cc62b52d77a4f583fbe46972aced8670135b29b45a45813",
+  "binarySha256": "ad5b4d356ad8befd03a476aca6051775332ba1c73bdd5c32178e26276ee5c3c7",
+  "meshes": [
+    {
+      "name": "BODYFORGE_Body",
+      "vertices": 65895,
+      "shapeKeys": 9,
+      "independentReliefMaxErrorM": 1.1615908105180872e-10,
+      "importReliefMaxErrorM": 2.3862846124994216e-06,
+      "importCoordinateMaxErrorM": 2.8186404375912052e-05,
+      "groupVertexHitsAbove01mm": 4089
+    },
+    {
+      "name": "BODYFORGE_Shirt",
+      "vertices": 4415,
+      "shapeKeys": 9,
+      "independentReliefMaxErrorM": 1.1459441468658627e-10,
+      "importReliefMaxErrorM": 2.355330035430951e-06,
+      "importCoordinateMaxErrorM": 1.684084548555134e-05,
+      "groupVertexHitsAbove01mm": 1281
+    },
+    {
+      "name": "BODYFORGE_Shorts",
+      "vertices": 1568,
+      "shapeKeys": 9,
+      "independentReliefMaxErrorM": 1.1200712536282853e-10,
+      "importReliefMaxErrorM": 4.370846563007914e-07,
+      "importCoordinateMaxErrorM": 7.046626627043968e-06,
+      "groupVertexHitsAbove01mm": 118
+    },
+    {
+      "name": "BODYFORGE_SkinNipples",
+      "vertices": 458,
+      "shapeKeys": 9,
+      "independentReliefMaxErrorM": 5.453789416604016e-11,
+      "importReliefMaxErrorM": 1.0464966305097096e-06,
+      "importCoordinateMaxErrorM": 1.0392008280209517e-05,
+      "groupVertexHitsAbove01mm": 448
+    },
+    {
+      "name": "BODYFORGE_ChestMark",
+      "vertices": 8,
+      "shapeKeys": 9,
+      "independentReliefMaxErrorM": 1.8975898109785394e-11,
+      "importReliefMaxErrorM": 1.2326290369899136e-06,
+      "importCoordinateMaxErrorM": 1.2780283122160566e-05,
+      "groupVertexHitsAbove01mm": 4
+    }
+  ],
+  "shapeKeys": 45,
+  "drivenNonBasisKeys": 40,
+  "mixedLevelDriverChecks": 80,
+  "reopenedMaxCoordinateErrorM": 0.0,
+  "sourceHashes": {
+    "src/lib/avatarAthleticReview.ts": "e974739e52c94f8db10abb1a772f3ca8bf03889f74f060e78ae91dae16268280",
+    "src/lib/avatarMuscleReliefReview.ts": "7f011a810d4be8b2ea51a8098e6fa7d10fcca76a15e0ec6f591adf22d3fbe5a2"
+  }
+}

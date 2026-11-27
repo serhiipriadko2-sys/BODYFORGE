@@ -1,0 +1,2852 @@
+{
+  "26-0-0-0": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 60,
+        "severe": 12,
+        "worst": 0.0886748880147934,
+        "p01": 0.5524911284446716,
+        "selfOverlapPairs": 24,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 12,
+          "belowMinus5mm": 0,
+          "minMm": -3.8942918718021247,
+          "p05Mm": 3.754010183183709,
+          "medianMm": 4.903480410575867
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1302154114455334,
+          "p05Mm": 0.4352056977079855,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 132,
+        "severe": 8,
+        "worst": 0.18832653760910034,
+        "p01": 0.44501185417175293,
+        "selfOverlapPairs": 168,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 24,
+          "belowMinus5mm": 4,
+          "minMm": -5.9621993204928,
+          "p05Mm": 2.4809384343313923,
+          "medianMm": 4.891939111985266
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.08681448048264429,
+          "p05Mm": 0.2984393042393008,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 14,
+        "worst": 0.044411830604076385,
+        "p01": 0.4786783456802368,
+        "selfOverlapPairs": 90,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 13,
+          "belowMinus5mm": 0,
+          "minMm": -4.563557557048625,
+          "p05Mm": 1.9751989981159568,
+          "medianMm": 4.766477220982779
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4998578915547114,
+          "p05Mm": -0.050691639444266856,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 60,
+        "severe": 12,
+        "worst": 0.0886748880147934,
+        "p01": 0.5524911284446716,
+        "selfOverlapPairs": 24,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 12,
+          "belowMinus5mm": 0,
+          "minMm": -3.8942918718021247,
+          "p05Mm": 3.754010183183709,
+          "medianMm": 4.90386520687025
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1302154114455334,
+          "p05Mm": 0.4352056977079855,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 110,
+        "severe": 22,
+        "worst": 0.0706033781170845,
+        "p01": 0.45127710700035095,
+        "selfOverlapPairs": 192,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 26,
+          "belowMinus5mm": 1,
+          "minMm": -5.051476793596521,
+          "p05Mm": 2.3052892003988745,
+          "medianMm": 4.865386654273607
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.08016113298481287,
+          "p05Mm": 0.3772813136858622,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 102,
+        "severe": 16,
+        "worst": 0.13541626930236816,
+        "p01": 0.4440426230430603,
+        "selfOverlapPairs": 234,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 28,
+          "belowMinus5mm": 1,
+          "minMm": -5.526670844972159,
+          "p05Mm": 1.7377832421971107,
+          "medianMm": 4.8343634844059125
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.1991421308957797,
+          "p05Mm": 0.19325314476645877,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 94,
+        "severe": 10,
+        "worst": 0.11359109729528427,
+        "p01": 0.4660848081111908,
+        "selfOverlapPairs": 268,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 36,
+          "belowMinus5mm": 1,
+          "minMm": -6.462779041612521,
+          "p05Mm": 1.1029465388673994,
+          "medianMm": 4.571764642605558
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7999937006388791,
+          "p05Mm": -0.2551225430579507,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 91,
+        "severe": 11,
+        "worst": 0.11786935478448868,
+        "p01": 0.4618355631828308,
+        "selfOverlapPairs": 260,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 34,
+          "belowMinus5mm": 1,
+          "minMm": -5.05162967601791,
+          "p05Mm": 1.0551009952905588,
+          "medianMm": 4.573926758894231
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8045515860430896,
+          "p05Mm": -0.2600692512714886,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 95,
+        "severe": 11,
+        "worst": 0.13010142743587494,
+        "p01": 0.47732511162757874,
+        "selfOverlapPairs": 260,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 30,
+          "belowMinus5mm": 1,
+          "minMm": -5.150403769221157,
+          "p05Mm": 0.9723963681608438,
+          "medianMm": 4.593039164319634
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8164425453287549,
+          "p05Mm": -0.27323035301378695,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 93,
+        "severe": 10,
+        "worst": 0.11486202478408813,
+        "p01": 0.46576759219169617,
+        "selfOverlapPairs": 262,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 36,
+          "belowMinus5mm": 2,
+          "minMm": -6.674582342384383,
+          "p05Mm": 1.0658812141628002,
+          "medianMm": 4.572229721816257
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7959247741382569,
+          "p05Mm": -0.2505659843336616,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 60,
+        "severe": 12,
+        "worst": 0.0886748880147934,
+        "p01": 0.5524911284446716,
+        "selfOverlapPairs": 24,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 12,
+          "belowMinus5mm": 0,
+          "minMm": -3.8942918718021247,
+          "p05Mm": 3.754010183183709,
+          "medianMm": 4.903480410575867
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1302154114455334,
+          "p05Mm": 0.4352056977079855,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "24-0-0-0": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 48,
+        "severe": 12,
+        "worst": 0.13232025504112244,
+        "p01": 0.5763242840766907,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 5,
+          "belowMinus5mm": 0,
+          "minMm": -2.9302326765900943,
+          "p05Mm": 3.831300460751663,
+          "medianMm": 4.909240757115185
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 124,
+        "severe": 10,
+        "worst": 0.19599156081676483,
+        "p01": 0.45755571126937866,
+        "selfOverlapPairs": 104,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 34,
+          "belowMinus5mm": 2,
+          "minMm": -5.338083356491552,
+          "p05Mm": 2.3077263431332535,
+          "medianMm": 4.898695333395153
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.030917581852918374,
+          "p05Mm": 0.33477228834862266,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 74,
+        "severe": 16,
+        "worst": 0.07339885085821152,
+        "p01": 0.5130207538604736,
+        "selfOverlapPairs": 72,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 21,
+          "belowMinus5mm": 0,
+          "minMm": -4.781612116858014,
+          "p05Mm": 1.98695575381862,
+          "medianMm": 4.77093051523525
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4284575188648887,
+          "p05Mm": -0.004281397195882108,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 48,
+        "severe": 12,
+        "worst": 0.13232025504112244,
+        "p01": 0.5763242840766907,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 5,
+          "belowMinus5mm": 0,
+          "minMm": -2.9302326765900943,
+          "p05Mm": 3.831300460751663,
+          "medianMm": 4.909240757115185
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 108,
+        "severe": 22,
+        "worst": 0.09398575872182846,
+        "p01": 0.4601774513721466,
+        "selfOverlapPairs": 178,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 19,
+          "belowMinus5mm": 0,
+          "minMm": -4.924643371850834,
+          "p05Mm": 2.6237038314320666,
+          "medianMm": 4.880088847130537
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1328767250470264,
+          "p05Mm": 0.41154644852630096,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 100,
+        "severe": 16,
+        "worst": 0.09256885945796967,
+        "p01": 0.463390052318573,
+        "selfOverlapPairs": 218,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 23,
+          "belowMinus5mm": 1,
+          "minMm": -5.403221508458955,
+          "p05Mm": 1.9609424511145332,
+          "medianMm": 4.842271708184853
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.13902154341849382,
+          "p05Mm": 0.2323315266266946,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 94,
+        "severe": 10,
+        "worst": 0.09422481060028076,
+        "p01": 0.46244657039642334,
+        "selfOverlapPairs": 280,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 39,
+          "belowMinus5mm": 3,
+          "minMm": -5.899524817323254,
+          "p05Mm": 1.2123263990133637,
+          "medianMm": 4.587346702464856
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7230987248476595,
+          "p05Mm": -0.20514080879365792,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 89,
+        "severe": 8,
+        "worst": 0.09488632529973984,
+        "p01": 0.4617067873477936,
+        "selfOverlapPairs": 276,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 43,
+          "belowMinus5mm": 1,
+          "minMm": -5.493141719171035,
+          "p05Mm": 1.1713993499142816,
+          "medianMm": 4.5910184271633625
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.727212434867397,
+          "p05Mm": -0.20979880300728837,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 10,
+        "worst": 0.10224076360464096,
+        "p01": 0.46608930826187134,
+        "selfOverlapPairs": 274,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 45,
+          "belowMinus5mm": 2,
+          "minMm": -5.026427010761836,
+          "p05Mm": 1.163341255596606,
+          "medianMm": 4.605368827469647
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7382264302577823,
+          "p05Mm": -0.22238987821765477,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 93,
+        "severe": 8,
+        "worst": 0.09418214857578278,
+        "p01": 0.4606771469116211,
+        "selfOverlapPairs": 272,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 42,
+          "belowMinus5mm": 3,
+          "minMm": -6.086865731049329,
+          "p05Mm": 1.1730520014680221,
+          "medianMm": 4.5865754946134984
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7188488016254269,
+          "p05Mm": -0.20046660220032209,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 48,
+        "severe": 12,
+        "worst": 0.13232025504112244,
+        "p01": 0.5763242840766907,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 5,
+          "belowMinus5mm": 0,
+          "minMm": -2.9302326765900943,
+          "p05Mm": 3.831300460751663,
+          "medianMm": 4.909240757115185
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "22-0-0-0": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 36,
+        "severe": 8,
+        "worst": 0.1914098858833313,
+        "p01": 0.5945920944213867,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9162292720693586,
+          "p05Mm": 3.8549231562683417,
+          "medianMm": 4.91517802583985
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 106,
+        "severe": 8,
+        "worst": 0.11386940628290176,
+        "p01": 0.47432512044906616,
+        "selfOverlapPairs": 80,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 12,
+          "belowMinus5mm": 0,
+          "minMm": -4.364977736258879,
+          "p05Mm": 2.8167071891090245,
+          "medianMm": 4.909307928755879
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.028354290236620727,
+          "p05Mm": 0.3732990052068231,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 64,
+        "severe": 18,
+        "worst": 0.0513254851102829,
+        "p01": 0.5403411388397217,
+        "selfOverlapPairs": 50,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 14,
+          "belowMinus5mm": 0,
+          "minMm": -4.377814952022163,
+          "p05Mm": 2.035674895887496,
+          "medianMm": 4.780628136359155
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.35284465047880076,
+          "p05Mm": 0.04486696725507505,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 36,
+        "severe": 8,
+        "worst": 0.1914098858833313,
+        "p01": 0.5945920944213867,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9162292720693586,
+          "p05Mm": 3.8549231562683417,
+          "medianMm": 4.916066100122407
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 112,
+        "severe": 18,
+        "worst": 0.08293551951646805,
+        "p01": 0.4745553731918335,
+        "selfOverlapPairs": 130,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 19,
+          "belowMinus5mm": 0,
+          "minMm": -4.884585954414433,
+          "p05Mm": 2.7973208115326993,
+          "medianMm": 4.889630945399404
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18817441525698086,
+          "p05Mm": 0.44748994716277135,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 98,
+        "severe": 14,
+        "worst": 0.05883605033159256,
+        "p01": 0.47419658303260803,
+        "selfOverlapPairs": 188,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 3,
+          "minMm": -5.280531317112036,
+          "p05Mm": 2.394597352031269,
+          "medianMm": 4.847515228902921
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.07552873853455822,
+          "p05Mm": 0.27360184980125274,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 12,
+        "worst": 0.08479873090982437,
+        "p01": 0.46295249462127686,
+        "selfOverlapPairs": 258,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 39,
+          "belowMinus5mm": 2,
+          "minMm": -5.977849985356443,
+          "p05Mm": 1.1715169457602315,
+          "medianMm": 4.591023433022201
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6415344469132833,
+          "p05Mm": -0.15212402813631337,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 8,
+        "worst": 0.08001571148633957,
+        "p01": 0.45560595393180847,
+        "selfOverlapPairs": 254,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 39,
+          "belowMinus5mm": 2,
+          "minMm": -6.132978014647961,
+          "p05Mm": 1.1066821609347242,
+          "medianMm": 4.595701415382791
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6451848494180012,
+          "p05Mm": -0.1564808724651811,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 83,
+        "severe": 8,
+        "worst": 0.07857387512922287,
+        "p01": 0.45366325974464417,
+        "selfOverlapPairs": 270,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 43,
+          "belowMinus5mm": 0,
+          "minMm": -4.95192629750818,
+          "p05Mm": 1.0872646553252707,
+          "medianMm": 4.607464012224227
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6552301420015283,
+          "p05Mm": -0.16844229085108958,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 12,
+        "worst": 0.08287213742733002,
+        "p01": 0.46051692962646484,
+        "selfOverlapPairs": 260,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 40,
+          "belowMinus5mm": 2,
+          "minMm": -5.840500554768369,
+          "p05Mm": 1.1476816307549598,
+          "medianMm": 4.591395521856612
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6371102099365089,
+          "p05Mm": -0.14733651760252536,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 36,
+        "severe": 8,
+        "worst": 0.1914098858833313,
+        "p01": 0.5945920944213867,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9162292720693586,
+          "p05Mm": 3.8549231562683417,
+          "medianMm": 4.91517802583985
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "20-0-0-0": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 34,
+        "severe": 4,
+        "worst": 0.23931092023849487,
+        "p01": 0.6213444471359253,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8615956694484339,
+          "p05Mm": 3.8607377598964376,
+          "medianMm": 4.9253889546889695
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.29719565054620034,
+          "p05Mm": 0.543742853123419,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 8,
+        "worst": 0.08077601343393326,
+        "p01": 0.5016152858734131,
+        "selfOverlapPairs": 60,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 0,
+          "minMm": -4.860633204998521,
+          "p05Mm": 2.9787061674312554,
+          "medianMm": 4.915062470516318
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.09094526842545747,
+          "p05Mm": 0.41398314102956696,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 54,
+        "severe": 14,
+        "worst": 0.09268788993358612,
+        "p01": 0.5666457414627075,
+        "selfOverlapPairs": 16,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 6,
+          "belowMinus5mm": 0,
+          "minMm": -3.39604151849926,
+          "p05Mm": 2.0798210811335593,
+          "medianMm": 4.786071560374694
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.2731962231337093,
+          "p05Mm": 0.09663844502938451,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 34,
+        "severe": 4,
+        "worst": 0.23931092023849487,
+        "p01": 0.6213444471359253,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8615956694484339,
+          "p05Mm": 3.8607377598964376,
+          "medianMm": 4.925024721160298
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.29719565054620034,
+          "p05Mm": 0.543742853123419,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 100,
+        "severe": 16,
+        "worst": 0.07082708925008774,
+        "p01": 0.47727981209754944,
+        "selfOverlapPairs": 122,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 14,
+          "belowMinus5mm": 0,
+          "minMm": -4.408296529618383,
+          "p05Mm": 3.0207514719222672,
+          "medianMm": 4.895478021353483
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.24590102214006038,
+          "p05Mm": 0.48501224163677303,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 94,
+        "severe": 14,
+        "worst": 0.030909478664398193,
+        "p01": 0.49138081073760986,
+        "selfOverlapPairs": 164,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 1,
+          "minMm": -5.41878955118591,
+          "p05Mm": 2.6007964130258188,
+          "medianMm": 4.8608234101266135
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.008827690564316981,
+          "p05Mm": 0.31695753098190954,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 88,
+        "severe": 12,
+        "worst": 0.08913394063711166,
+        "p01": 0.4670978784561157,
+        "selfOverlapPairs": 242,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 26,
+          "belowMinus5mm": 0,
+          "minMm": -4.44376451196149,
+          "p05Mm": 1.4027721335878596,
+          "medianMm": 4.604311485309154
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.5553074333874974,
+          "p05Mm": -0.09607646934455255,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 88,
+        "severe": 12,
+        "worst": 0.07871033996343613,
+        "p01": 0.46893301606178284,
+        "selfOverlapPairs": 246,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 28,
+          "belowMinus5mm": 0,
+          "minMm": -4.688313318183646,
+          "p05Mm": 1.3348299544304605,
+          "medianMm": 4.604985355399549
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.5584216232819017,
+          "p05Mm": -0.1000847754767164,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 84,
+        "severe": 8,
+        "worst": 0.06481116265058517,
+        "p01": 0.46793246269226074,
+        "selfOverlapPairs": 245,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 34,
+          "belowMinus5mm": 0,
+          "minMm": -4.981840786058456,
+          "p05Mm": 1.2461064458676672,
+          "medianMm": 4.617418989141697
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.5675834327121265,
+          "p05Mm": -0.11147192981297843,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 88,
+        "severe": 12,
+        "worst": 0.08538452535867691,
+        "p01": 0.46889135241508484,
+        "selfOverlapPairs": 246,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 27,
+          "belowMinus5mm": 1,
+          "minMm": -6.449342617088405,
+          "p05Mm": 1.3784154542008762,
+          "medianMm": 4.60438069421798
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.5506886882358231,
+          "p05Mm": -0.09116252849707956,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 34,
+        "severe": 4,
+        "worst": 0.23931092023849487,
+        "p01": 0.6213444471359253,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8615956694484339,
+          "p05Mm": 3.8607377598964376,
+          "medianMm": 4.9253889546889695
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.29719565054620034,
+          "p05Mm": 0.543742853123419,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "24-8-0.75-0.75": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 46,
+        "severe": 6,
+        "worst": 0.20869697630405426,
+        "p01": 0.5993098020553589,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9065216420131037,
+          "p05Mm": 3.740496632963186,
+          "medianMm": 4.937283898470923
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 104,
+        "severe": 10,
+        "worst": 0.03908199816942215,
+        "p01": 0.4866749048233032,
+        "selfOverlapPairs": 80,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 19,
+          "belowMinus5mm": 0,
+          "minMm": -4.079582438862417,
+          "p05Mm": 2.470956934485002,
+          "medianMm": 4.911487398203462
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.030917581852918374,
+          "p05Mm": 0.33477228834862266,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 58,
+        "severe": 18,
+        "worst": 0.09574620425701141,
+        "p01": 0.5539514422416687,
+        "selfOverlapPairs": 38,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 0,
+          "minMm": -3.928394158720039,
+          "p05Mm": 2.035674895887496,
+          "medianMm": 4.795749192453513
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4284575188648887,
+          "p05Mm": -0.004281397195882108,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 46,
+        "severe": 6,
+        "worst": 0.20869697630405426,
+        "p01": 0.5993098020553589,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9065216420131037,
+          "p05Mm": 3.740496632963186,
+          "medianMm": 4.937283898470923
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 110,
+        "severe": 16,
+        "worst": 0.08017533272504807,
+        "p01": 0.45455485582351685,
+        "selfOverlapPairs": 164,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 0,
+          "minMm": -4.357863210316282,
+          "p05Mm": 2.5795838082558475,
+          "medianMm": 4.892248471151106
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1328767250470264,
+          "p05Mm": 0.41154644852630096,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 90,
+        "severe": 12,
+        "worst": 0.052717793732881546,
+        "p01": 0.5067346096038818,
+        "selfOverlapPairs": 206,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 3,
+          "minMm": -5.373148236685665,
+          "p05Mm": 2.1095646279718494,
+          "medianMm": 4.8326456162612885
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.13902154341849382,
+          "p05Mm": 0.2323315266266946,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 90,
+        "severe": 14,
+        "worst": 0.08701453357934952,
+        "p01": 0.4670241177082062,
+        "selfOverlapPairs": 288,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 30,
+          "belowMinus5mm": 0,
+          "minMm": -4.438319868768303,
+          "p05Mm": 1.1306097992019204,
+          "medianMm": 4.568117205053568
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7230987248476595,
+          "p05Mm": -0.20514080879365792,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 90,
+        "severe": 16,
+        "worst": 0.07870222628116608,
+        "p01": 0.4750094711780548,
+        "selfOverlapPairs": 282,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 35,
+          "belowMinus5mm": 0,
+          "minMm": -4.460474081042776,
+          "p05Mm": 1.134515024295979,
+          "medianMm": 4.569586366415024
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.727212434867397,
+          "p05Mm": -0.20979880300728837,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 84,
+        "severe": 14,
+        "worst": 0.06788492202758789,
+        "p01": 0.46720418334007263,
+        "selfOverlapPairs": 282,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 40,
+          "belowMinus5mm": 1,
+          "minMm": -5.166444228962064,
+          "p05Mm": 1.044429225294152,
+          "medianMm": 4.585800073982682
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7382264302577823,
+          "p05Mm": -0.22238987821765477,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 90,
+        "severe": 16,
+        "worst": 0.08400791138410568,
+        "p01": 0.46972090005874634,
+        "selfOverlapPairs": 280,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 32,
+          "belowMinus5mm": 0,
+          "minMm": -4.426445600074658,
+          "p05Mm": 1.1276773139798024,
+          "medianMm": 4.565551644191146
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7188488016254269,
+          "p05Mm": -0.20046660220032209,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 46,
+        "severe": 6,
+        "worst": 0.20869697630405426,
+        "p01": 0.5993098020553589,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.9065216420131037,
+          "p05Mm": 3.740496632963186,
+          "medianMm": 4.937283898470923
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "22-8-0.75-0.75": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 40,
+        "severe": 0,
+        "worst": 0.25037437677383423,
+        "p01": 0.6143723130226135,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0073195608129026,
+          "p05Mm": 3.806175460340455,
+          "medianMm": 4.942338797263801
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 8,
+        "worst": 0.08596523851156235,
+        "p01": 0.495990514755249,
+        "selfOverlapPairs": 48,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 0,
+          "minMm": -4.14652216545619,
+          "p05Mm": 2.8142052884504665,
+          "medianMm": 4.919726796060786
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.028354290236620727,
+          "p05Mm": 0.3732990052068231,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 54,
+        "severe": 18,
+        "worst": 0.15680024027824402,
+        "p01": 0.57686448097229,
+        "selfOverlapPairs": 22,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 6,
+          "belowMinus5mm": 0,
+          "minMm": -3.0046600304558524,
+          "p05Mm": 2.0750819341628812,
+          "medianMm": 4.8040330584626645
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.35284465047880076,
+          "p05Mm": 0.04486696725507505,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 40,
+        "severe": 0,
+        "worst": 0.25037437677383423,
+        "p01": 0.6143723130226135,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0073195608129026,
+          "p05Mm": 3.806175460340455,
+          "medianMm": 4.942338797263801
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 16,
+        "worst": 0.07328137755393982,
+        "p01": 0.4708438813686371,
+        "selfOverlapPairs": 130,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 10,
+          "belowMinus5mm": 0,
+          "minMm": -4.771650831116858,
+          "p05Mm": 2.7306906468140824,
+          "medianMm": 4.898216167930514
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18817441525698086,
+          "p05Mm": 0.44748994716277135,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 76,
+        "severe": 12,
+        "worst": 0.007673151325434446,
+        "p01": 0.5046557188034058,
+        "selfOverlapPairs": 190,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 21,
+          "belowMinus5mm": 0,
+          "minMm": -4.619668734449078,
+          "p05Mm": 2.289961044516531,
+          "medianMm": 4.84404485905543
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.07552873853455822,
+          "p05Mm": 0.27360184980125274,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 14,
+        "worst": 0.09873445332050323,
+        "p01": 0.48825719952583313,
+        "selfOverlapPairs": 250,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 25,
+          "belowMinus5mm": 2,
+          "minMm": -5.8689154102467,
+          "p05Mm": 1.1797497503721386,
+          "medianMm": 4.574802796923905
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6415344469132833,
+          "p05Mm": -0.15212402813631337,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 90,
+        "severe": 14,
+        "worst": 0.08708618581295013,
+        "p01": 0.4830990433692932,
+        "selfOverlapPairs": 254,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 26,
+          "belowMinus5mm": 2,
+          "minMm": -5.985571595374495,
+          "p05Mm": 1.139010141941199,
+          "medianMm": 4.583461268339306
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6451848494180012,
+          "p05Mm": -0.1564808724651811,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 87,
+        "severe": 14,
+        "worst": 0.06754034012556076,
+        "p01": 0.49048057198524475,
+        "selfOverlapPairs": 272,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 29,
+          "belowMinus5mm": 1,
+          "minMm": -6.342302629491314,
+          "p05Mm": 1.1245403896282369,
+          "medianMm": 4.594274563714862
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6552301420015283,
+          "p05Mm": -0.16844229085108958,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 92,
+        "severe": 14,
+        "worst": 0.09467499703168869,
+        "p01": 0.48869046568870544,
+        "selfOverlapPairs": 252,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 25,
+          "belowMinus5mm": 2,
+          "minMm": -5.670100727002136,
+          "p05Mm": 1.1718047062458936,
+          "medianMm": 4.576046485453844
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6371102099365089,
+          "p05Mm": -0.14733651760252536,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 40,
+        "severe": 0,
+        "worst": 0.25037437677383423,
+        "p01": 0.6143723130226135,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0073195608129026,
+          "p05Mm": 3.806175460340455,
+          "medianMm": 4.942338797263801
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "24-16-0.85-0.85": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8118656849092076,
+          "p05Mm": 3.6336763194412924,
+          "medianMm": 4.9560918705537915
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 98,
+        "severe": 8,
+        "worst": 0.0436299666762352,
+        "p01": 0.49620240926742554,
+        "selfOverlapPairs": 62,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 0,
+          "minMm": -4.523990599409444,
+          "p05Mm": 2.448473553158692,
+          "medianMm": 4.9292628827970475
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.030917581852918374,
+          "p05Mm": 0.33477228834862266,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 56,
+        "severe": 14,
+        "worst": 0.12156695872545242,
+        "p01": 0.5711923241615295,
+        "selfOverlapPairs": 34,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 4,
+          "belowMinus5mm": 0,
+          "minMm": -2.688104522121648,
+          "p05Mm": 2.007130779202271,
+          "medianMm": 4.79957289644517
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4284575188648887,
+          "p05Mm": -0.004281397195882108,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8118656849092076,
+          "p05Mm": 3.6336763194412924,
+          "medianMm": 4.9560918705537915
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 106,
+        "severe": 16,
+        "worst": 0.07820886373519897,
+        "p01": 0.4476289451122284,
+        "selfOverlapPairs": 172,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 16,
+          "belowMinus5mm": 0,
+          "minMm": -4.032468947116286,
+          "p05Mm": 2.374565033460385,
+          "medianMm": 4.900165484286845
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1328767250470264,
+          "p05Mm": 0.41154644852630096,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 72,
+        "severe": 12,
+        "worst": 0.0058483160100877285,
+        "p01": 0.5086879730224609,
+        "selfOverlapPairs": 206,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 0,
+          "minMm": -4.451556043932214,
+          "p05Mm": 2.031738958248752,
+          "medianMm": 4.834709512579138
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.13902154341849382,
+          "p05Mm": 0.2323315266266946,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 14,
+        "worst": 0.10479991883039474,
+        "p01": 0.503563404083252,
+        "selfOverlapPairs": 266,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 24,
+          "belowMinus5mm": 0,
+          "minMm": -4.926627414533868,
+          "p05Mm": 0.9969339036615565,
+          "medianMm": 4.542688431683928
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7230987248476595,
+          "p05Mm": -0.20514080879365792,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 16,
+        "worst": 0.09342637658119202,
+        "p01": 0.4997386336326599,
+        "selfOverlapPairs": 268,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 27,
+          "belowMinus5mm": 1,
+          "minMm": -5.4504062863998115,
+          "p05Mm": 0.9423775016642819,
+          "medianMm": 4.540186523627199
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.727212434867397,
+          "p05Mm": -0.20979880300728837,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 89,
+        "severe": 16,
+        "worst": 0.07320068776607513,
+        "p01": 0.5048244595527649,
+        "selfOverlapPairs": 266,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 31,
+          "belowMinus5mm": 3,
+          "minMm": -6.1725326522719115,
+          "p05Mm": 0.8997821671073324,
+          "medianMm": 4.555025016088621
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7382264302577823,
+          "p05Mm": -0.22238987821765477,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 14,
+        "worst": 0.10086586326360703,
+        "p01": 0.5024711489677429,
+        "selfOverlapPairs": 268,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 27,
+          "belowMinus5mm": 2,
+          "minMm": -6.0774154553655535,
+          "p05Mm": 0.9557119204828267,
+          "medianMm": 4.539244422630873
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7188488016254269,
+          "p05Mm": -0.20046660220032209,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.8118656849092076,
+          "p05Mm": 3.6336763194412924,
+          "medianMm": 4.9560918705537915
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "22-16-0.85-0.85": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4085202042460878,
+          "p05Mm": 3.713047823839588,
+          "medianMm": 4.963889135979116
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 88,
+        "severe": 8,
+        "worst": 0.11438748240470886,
+        "p01": 0.5167925357818604,
+        "selfOverlapPairs": 38,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 0,
+          "minMm": -3.3880168639370822,
+          "p05Mm": 2.79578025928231,
+          "medianMm": 4.933059024551767
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.028354290236620727,
+          "p05Mm": 0.3732990052068231,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 52,
+        "severe": 16,
+        "worst": 0.1603681892156601,
+        "p01": 0.5796780586242676,
+        "selfOverlapPairs": 14,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.7902296185638988,
+          "p05Mm": 2.127579318766948,
+          "medianMm": 4.8063824174278125
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.35284465047880076,
+          "p05Mm": 0.04486696725507505,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4085202042460878,
+          "p05Mm": 3.713047823839588,
+          "medianMm": 4.960364050930366
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 100,
+        "severe": 20,
+        "worst": 0.07339339703321457,
+        "p01": 0.4394933879375458,
+        "selfOverlapPairs": 108,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 13,
+          "belowMinus5mm": 0,
+          "minMm": -4.128616136817698,
+          "p05Mm": 2.624598719194182,
+          "medianMm": 4.9052511603804305
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18817441525698086,
+          "p05Mm": 0.44748994716277135,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 75,
+        "severe": 16,
+        "worst": 0.04882074519991875,
+        "p01": 0.4985905587673187,
+        "selfOverlapPairs": 188,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 17,
+          "belowMinus5mm": 0,
+          "minMm": -3.2273346187139396,
+          "p05Mm": 2.246178691893874,
+          "medianMm": 4.847917007282376
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.07552873853455822,
+          "p05Mm": 0.27360184980125274,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.09099289029836655,
+        "p01": 0.5161078572273254,
+        "selfOverlapPairs": 258,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 31,
+          "belowMinus5mm": 1,
+          "minMm": -5.829114199627838,
+          "p05Mm": 1.201665212113312,
+          "medianMm": 4.543207984170294
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6415344469132833,
+          "p05Mm": -0.15212402813631337,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.10720382630825043,
+        "p01": 0.5115007758140564,
+        "selfOverlapPairs": 262,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 32,
+          "belowMinus5mm": 0,
+          "minMm": -4.724600201015505,
+          "p05Mm": 1.1517357979755616,
+          "medianMm": 4.544988631096203
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6451848494180012,
+          "p05Mm": -0.1564808724651811,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 84,
+        "severe": 12,
+        "worst": 0.08943558484315872,
+        "p01": 0.51141357421875,
+        "selfOverlapPairs": 258,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 29,
+          "belowMinus5mm": 1,
+          "minMm": -5.181916400662345,
+          "p05Mm": 1.1387796025985606,
+          "medianMm": 4.564306836982723
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6552301420015283,
+          "p05Mm": -0.16844229085108958,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.09651646018028259,
+        "p01": 0.5147817134857178,
+        "selfOverlapPairs": 254,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 34,
+          "belowMinus5mm": 1,
+          "minMm": -5.7670343903737376,
+          "p05Mm": 1.1642334680800557,
+          "medianMm": 4.544923402136192
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6371102099365089,
+          "p05Mm": -0.14733651760252536,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4085202042460878,
+          "p05Mm": 3.713047823839588,
+          "medianMm": 4.963889135979116
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "24-16-0.85-0.45": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.990575456602528,
+          "p05Mm": 3.83012894571948,
+          "medianMm": 4.952198811224662
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 98,
+        "severe": 8,
+        "worst": 0.0436299666762352,
+        "p01": 0.49620240926742554,
+        "selfOverlapPairs": 62,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 25,
+          "belowMinus5mm": 2,
+          "minMm": -5.402681806856435,
+          "p05Mm": 2.7464744229163784,
+          "medianMm": 4.907987487968057
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.030917581852918374,
+          "p05Mm": 0.33477228834862266,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 56,
+        "severe": 14,
+        "worst": 0.12156695872545242,
+        "p01": 0.5711923241615295,
+        "selfOverlapPairs": 34,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 15,
+          "belowMinus5mm": 0,
+          "minMm": -4.150899254454998,
+          "p05Mm": 2.035674895887496,
+          "medianMm": 4.791766841663048
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.4284575188648887,
+          "p05Mm": -0.004281397195882108,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.990575456602528,
+          "p05Mm": 3.8331239416038443,
+          "medianMm": 4.952198811224662
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 106,
+        "severe": 16,
+        "worst": 0.07820886373519897,
+        "p01": 0.4476289451122284,
+        "selfOverlapPairs": 172,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 14,
+          "belowMinus5mm": 0,
+          "minMm": -4.960932295944076,
+          "p05Mm": 2.9421227183775045,
+          "medianMm": 4.8928298347163945
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.1328767250470264,
+          "p05Mm": 0.41154644852630096,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 72,
+        "severe": 12,
+        "worst": 0.0058483160100877285,
+        "p01": 0.5086879730224609,
+        "selfOverlapPairs": 206,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 23,
+          "belowMinus5mm": 0,
+          "minMm": -4.897446270888395,
+          "p05Mm": 2.4812366862533963,
+          "medianMm": 4.847217523774816
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.13902154341849382,
+          "p05Mm": 0.2323315266266946,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 14,
+        "worst": 0.10479991883039474,
+        "p01": 0.503563404083252,
+        "selfOverlapPairs": 266,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 23,
+          "belowMinus5mm": 0,
+          "minMm": -4.899846680928022,
+          "p05Mm": 1.4165765705911326,
+          "medianMm": 4.566713148960844
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7230987248476595,
+          "p05Mm": -0.20514080879365792,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 16,
+        "worst": 0.09342637658119202,
+        "p01": 0.4997386336326599,
+        "selfOverlapPairs": 268,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 28,
+          "belowMinus5mm": 2,
+          "minMm": -5.397024506237358,
+          "p05Mm": 1.356971156928921,
+          "medianMm": 4.570184649764997
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.727212434867397,
+          "p05Mm": -0.20979880300728837,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 89,
+        "severe": 16,
+        "worst": 0.07320068776607513,
+        "p01": 0.5048244595527649,
+        "selfOverlapPairs": 266,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 37,
+          "belowMinus5mm": 3,
+          "minMm": -6.099594302213518,
+          "p05Mm": 1.357524074783889,
+          "medianMm": 4.578686274356869
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7382264302577823,
+          "p05Mm": -0.22238987821765477,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 86,
+        "severe": 14,
+        "worst": 0.10086586326360703,
+        "p01": 0.5024711489677429,
+        "selfOverlapPairs": 268,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 23,
+          "belowMinus5mm": 2,
+          "minMm": -5.513500538654625,
+          "p05Mm": 1.3892884289816718,
+          "medianMm": 4.565534099356228
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.7188488016254269,
+          "p05Mm": -0.20046660220032209,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 44,
+        "severe": 2,
+        "worst": 0.22401957213878632,
+        "p01": 0.591873049736023,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.990575456602528,
+          "p05Mm": 3.83012894571948,
+          "medianMm": 4.952198811224662
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18311152530259278,
+          "p05Mm": 0.46958817171507405,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "22-16-0.85-0.45": {
+    "samples": {
+      "neutral": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0796660226333188,
+          "p05Mm": 3.8588609607359103,
+          "medianMm": 4.962955848895945
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "arms": {
+        "triangles": 5994,
+        "compressed": 88,
+        "severe": 8,
+        "worst": 0.11438748240470886,
+        "p01": 0.5167925357818604,
+        "selfOverlapPairs": 38,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 23,
+          "belowMinus5mm": 0,
+          "minMm": -4.762078503290468,
+          "p05Mm": 2.995451507990765,
+          "medianMm": 4.917684869724326
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.028354290236620727,
+          "p05Mm": 0.3732990052068231,
+          "medianMm": 1.0252450233494415
+        },
+        "logoMaxAbsMm": 1.0559678129311578
+      },
+      "core": {
+        "triangles": 5994,
+        "compressed": 52,
+        "severe": 16,
+        "worst": 0.1603681892156601,
+        "p01": 0.5796780586242676,
+        "selfOverlapPairs": 14,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 5,
+          "belowMinus5mm": 0,
+          "minMm": -3.236064156226348,
+          "p05Mm": 2.1423488200525753,
+          "medianMm": 4.805292934179306
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.35284465047880076,
+          "p05Mm": 0.04486696725507505,
+          "medianMm": 0.8011652771529043
+        },
+        "logoMaxAbsMm": 1.0199520688729535
+      },
+      "legs": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0796660226333188,
+          "p05Mm": 3.859047777905289,
+          "medianMm": 4.962485062492306
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      },
+      "back": {
+        "triangles": 5994,
+        "compressed": 100,
+        "severe": 20,
+        "worst": 0.07339339703321457,
+        "p01": 0.4394933879375458,
+        "selfOverlapPairs": 108,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 20,
+          "belowMinus5mm": 0,
+          "minMm": -4.814665396679629,
+          "p05Mm": 3.022005205275491,
+          "medianMm": 4.89618466963293
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.18817441525698086,
+          "p05Mm": 0.44748994716277135,
+          "medianMm": 1.0456617283978176
+        },
+        "logoMaxAbsMm": 1.175020237951685
+      },
+      "mixed": {
+        "triangles": 5994,
+        "compressed": 75,
+        "severe": 16,
+        "worst": 0.04882074519991875,
+        "p01": 0.4985905587673187,
+        "selfOverlapPairs": 188,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 18,
+          "belowMinus5mm": 1,
+          "minMm": -5.398432673246134,
+          "p05Mm": 2.9000419645626607,
+          "medianMm": 4.852870726608671
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.07552873853455822,
+          "p05Mm": 0.27360184980125274,
+          "medianMm": 0.998046325037194
+        },
+        "logoMaxAbsMm": 1.1472345568677156
+      },
+      "max": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.09099289029836655,
+        "p01": 0.5161078572273254,
+        "selfOverlapPairs": 258,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 32,
+          "belowMinus5mm": 3,
+          "minMm": -5.800175939867813,
+          "p05Mm": 1.3977868524307266,
+          "medianMm": 4.576402367092669
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6415344469132833,
+          "p05Mm": -0.15212402813631337,
+          "medianMm": 0.7968094414536608
+        },
+        "logoMaxAbsMm": 1.1000532260823093
+      },
+      "idle0.8": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.10720382630825043,
+        "p01": 0.5115007758140564,
+        "selfOverlapPairs": 262,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 29,
+          "belowMinus5mm": 5,
+          "minMm": -6.0296137919237935,
+          "p05Mm": 1.449443429009989,
+          "medianMm": 4.582713998388499
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6451848494180012,
+          "p05Mm": -0.1564808724651811,
+          "medianMm": 0.7947504564072005
+        },
+        "logoMaxAbsMm": 1.1051684289213881
+      },
+      "idle2.1": {
+        "triangles": 5994,
+        "compressed": 84,
+        "severe": 12,
+        "worst": 0.08943558484315872,
+        "p01": 0.51141357421875,
+        "selfOverlapPairs": 258,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 27,
+          "belowMinus5mm": 5,
+          "minMm": -6.51943075914474,
+          "p05Mm": 1.3799832119730124,
+          "medianMm": 4.593457211740315
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6552301420015283,
+          "p05Mm": -0.16844229085108958,
+          "medianMm": 0.7898853127699113
+        },
+        "logoMaxAbsMm": 1.1115880761281005
+      },
+      "idle4.2": {
+        "triangles": 5994,
+        "compressed": 82,
+        "severe": 14,
+        "worst": 0.09651646018028259,
+        "p01": 0.5147817134857178,
+        "selfOverlapPairs": 254,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 29,
+          "belowMinus5mm": 6,
+          "minMm": -5.7827050721783735,
+          "p05Mm": 1.4657323914434528,
+          "medianMm": 4.580380535117001
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -0.6371102099365089,
+          "p05Mm": -0.14733651760252536,
+          "medianMm": 0.7977803788890014
+        },
+        "logoMaxAbsMm": 1.1057949400310463
+      },
+      "reset": {
+        "triangles": 5994,
+        "compressed": 32,
+        "severe": 0,
+        "worst": 0.26993775367736816,
+        "p01": 0.6190235018730164,
+        "selfOverlapPairs": 0,
+        "shirt": {
+          "count": 2663,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": -1.0796660226333188,
+          "p05Mm": 3.8588609607359103,
+          "medianMm": 4.962955848895945
+        },
+        "logo": {
+          "count": 8,
+          "belowMinus2mm": 0,
+          "belowMinus5mm": 0,
+          "minMm": 0.23887338306849415,
+          "p05Mm": 0.5058333792629099,
+          "medianMm": 1.0093960696283266
+        },
+        "logoMaxAbsMm": 1.0502411024475578
+      }
+    },
+    "resetMaxDisplacementsM": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}
