@@ -27,8 +27,11 @@ export class CompletionPersistence {
     const task: Promise<DurableWriteResult> = Promise.resolve().then(async (): Promise<DurableWriteResult> => {
       const outcome = await this.write([{ key: this.key, raw: this.raw }], this.baseProfileRaw);
       if (outcome.status !== 'saved') return outcome;
-      const row = outcome.entries.find(entry => entry.key === this.key);
-      if (!row || row.raw !== this.raw || row.baseProfileRaw !== this.baseProfileRaw) return { status: 'unavailable' };
+      // A single immutable write requires one unambiguous read-back receipt.
+      if (!Array.isArray(outcome.entries) || outcome.entries.length !== 1) return { status: 'unavailable' };
+      const [row] = outcome.entries;
+      if (!row || row.key !== this.key || row.raw !== this.raw || row.baseProfileRaw !== this.baseProfileRaw ||
+          (row.state !== 'active' && row.state !== 'settled' && row.state !== 'quarantined')) return { status: 'unavailable' };
       this.acknowledged = Object.freeze({ ...row });
       return { status: 'saved', entries: [this.acknowledged] };
     }).catch(() => ({ status: 'unavailable' }));

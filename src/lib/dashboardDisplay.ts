@@ -1,9 +1,10 @@
 import type { GameState, Muscle } from './game';
 import type { PulseDay } from './progressPulse';
+import { zoneGroupPoints, type ZoneLevels } from './muscleZones';
 
 export type SkillMeter = {
   id: Muscle; label: string; level: number; progress: number;
-  color: string; short: string;
+  color: string; short: string; max?: number;
 };
 const SKILLS: ReadonlyArray<{ id: Muscle; label: string; color: string; short: string }> = [
   { id: 'core', label: 'Корпус', short: 'CORE', color: '#bbfa38' },
@@ -17,6 +18,10 @@ export function fighterSkillMeters(muscles: GameState['muscles']): SkillMeter[] 
     const level = Number.isInteger(value) ? Math.max(0, Math.min(5, value)) : 0;
     return { id, label, color, short, level, progress: level / 5 };
   });
+}
+
+export function fighterZoneMeters(levels: ZoneLevels): SkillMeter[] {
+  return SKILLS.map(({id,label,color,short})=>{const {points,max}=zoneGroupPoints(levels,id);return {id,label,color,short,level:points,max,progress:points/max};});
 }
 
 /**

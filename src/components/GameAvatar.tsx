@@ -1,5 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { BodyBuild, Muscle, Outfit } from '../lib/game';
+import { zonesReviewEnabled, type ZoneLevels } from '../lib/muscleZones';
 import Avatar from './Avatar';
 import { DEFAULT_AVATAR_LOOK, type AvatarLook } from '../lib/avatarLook';
 
@@ -18,6 +19,8 @@ interface GameAvatarProps {
   workouts: number;
   build: BodyBuild;
   muscles: Partial<Record<Muscle, number>>;
+  zoneLevels?: ZoneLevels;
+  onZoneReady?: (ready: boolean) => void;
   outfit: Outfit;
   paused?: boolean;
   animate?: boolean;
@@ -34,7 +37,7 @@ interface GameAvatarProps {
  * The old lightweight SVG remains the fallback on unsupported devices.
  */
 export default function GameAvatar({ workouts, build, muscles, outfit, paused = false, animate = false, studio = false, className,
-  look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21, onYawChange }: GameAvatarProps) {
+  look = DEFAULT_AVATAR_LOOK, focus = 'full', yaw = -.21, onYawChange, zoneLevels, onZoneReady }: GameAvatarProps) {
   const container = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -50,7 +53,10 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
     watcher.observe(element);
     return () => watcher.disconnect();
   }, []);
-  const show3D = inView && !paused;
+  // In the active local studio keep one loaded regional model mounted while
+  // the user scrolls to the purchase cards. Its own renderer still pauses offscreen.
+  const show3D = (inView || (studio && !!zoneLevels && zonesReviewEnabled())) && !paused;
+  useEffect(() => { if (!show3D) onZoneReady?.(false); }, [show3D,onZoneReady]);
   return (
     <div className={`avatar-3d-slot ${className ?? ''}`} ref={container} data-avatar-focus={focus}>
       {show3D ? (
@@ -60,7 +66,7 @@ export default function GameAvatar({ workouts, build, muscles, outfit, paused = 
         </div>}>
         <Suspense fallback={<div className="avatar-3d-wait"><div className="avatar-3d-loading-orb"/><span>КУЗНЕЦ ГОТОВИТ БОЙЦА...</span></div>}>
           <Avatar3D build={build} muscles={muscles} outfit={outfit} look={look}
-            focus={focus} yaw={yaw} onYawChange={onYawChange} animate={animate} studio={studio} />
+            focus={focus} yaw={yaw} onYawChange={onYawChange} animate={animate} studio={studio} zoneLevels={zoneLevels} onZoneReady={onZoneReady}/>
         </Suspense>
         </AvatarBoundary>
       ) : (

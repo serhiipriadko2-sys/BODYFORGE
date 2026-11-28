@@ -1,0 +1,299 @@
+{
+  "status": "DIAGNOSTIC_NOT_INTEGRATED",
+  "head": "11d51edf407bed2ad7e1fd0a04332654fe46afcb",
+  "priorReceipt": {
+    "path": "docs/audits/BF_AVATAR_V20_20261128/RECEIPT.json",
+    "bytes": 85158,
+    "sha256": "e5ed821b357930a806da561f7d005fcb4efcae805fec0945c87ec6dda0778589"
+  },
+  "priorFilesVerified": 325,
+  "technical": "PASS",
+  "visual": "NOT_MET",
+  "screenshots": 17,
+  "metrics": {
+    "sand-pigment": {
+      "changed": 8017,
+      "meanRgbAbs": 0.1432936507936508,
+      "max": 107,
+      "box": [
+        296,
+        508,
+        543,
+        557
+      ]
+    },
+    "sand-tissue": {
+      "changed": 8056,
+      "meanRgbAbs": 0.16466635338345864,
+      "max": 186,
+      "box": [
+        296,
+        508,
+        543,
+        557
+      ]
+    },
+    "sand-strong": {
+      "changed": 11825,
+      "meanRgbAbs": 0.2318875313283208,
+      "max": 235,
+      "box": [
+        295,
+        505,
+        544,
+        560
+      ]
+    },
+    "sand-soft": {
+      "changed": 4457,
+      "meanRgbAbs": 0.10550020885547201,
+      "max": 124,
+      "box": [
+        298,
+        523,
+        542,
+        552
+      ]
+    },
+    "deep-tissue": {
+      "changed": 2479,
+      "meanRgbAbs": 0.046294903926482875,
+      "max": 45,
+      "box": [
+        299,
+        527,
+        541,
+        546
+      ]
+    },
+    "deep-strong": {
+      "changed": 3164,
+      "meanRgbAbs": 0.063093671679198,
+      "max": 60,
+      "box": [
+        298,
+        526,
+        541,
+        549
+      ]
+    },
+    "porcelain-tissue": {
+      "changed": 10827,
+      "meanRgbAbs": 0.1942684837092732,
+      "max": 230,
+      "box": [
+        295,
+        506,
+        544,
+        559
+      ]
+    },
+    "porcelain-strong": {
+      "changed": 12269,
+      "meanRgbAbs": 0.2766379490392648,
+      "max": 299,
+      "box": [
+        294,
+        504,
+        545,
+        560
+      ]
+    },
+    "side-tissue": {
+      "changed": 5425,
+      "meanRgbAbs": 0.10809053884711779,
+      "max": 168,
+      "box": [
+        312,
+        509,
+        504,
+        557
+      ]
+    },
+    "side-strong": {
+      "changed": 8617,
+      "meanRgbAbs": 0.15282529239766082,
+      "max": 214,
+      "box": [
+        311,
+        505,
+        504,
+        559
+      ]
+    },
+    "low-tissue": {
+      "changed": 9059,
+      "meanRgbAbs": 0.16778717627401837,
+      "max": 188,
+      "box": [
+        295,
+        507,
+        543,
+        558
+      ]
+    },
+    "low-strong": {
+      "changed": 11915,
+      "meanRgbAbs": 0.23672410192147034,
+      "max": 238,
+      "box": [
+        295,
+        505,
+        544,
+        560
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique.log",
+      "bytes": 3090,
+      "sha256": "1443a461acdcd6883c30f06b7d5dd5571bcd1dd37142527da9dd5f9fd219abdf"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/deep-base.png",
+      "bytes": 590490,
+      "sha256": "3112a7a878027a09dec2bc57cf09a9467f416587095ca0b8d2b9ee04f4c7ad33"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/deep-strong.png",
+      "bytes": 590009,
+      "sha256": "63812af0a66b597e7255b0152170e4dfd482037503dbec691b776f66750aab37"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/deep-tissue.png",
+      "bytes": 590049,
+      "sha256": "aeae4ca61b8f0f9a13a24099394fd7604aeb25710042abbbfddd75a6d681d693"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/low-base.png",
+      "bytes": 700747,
+      "sha256": "e665e5a5e796229f8c6f182a4ccc7ec3076248b99ec2a01e4700f8962623c7d7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/low-strong.png",
+      "bytes": 701615,
+      "sha256": "68fe3e04a3cdb445b1049e54c77cdc9d18864a4ecb20ca37c3d5bb4910d34417"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/low-tissue.png",
+      "bytes": 701378,
+      "sha256": "e8c5001b84848decbd89c527648ccad9bb93e61ba7d1757f29dd863c1ecca6f6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/porcelain-base.png",
+      "bytes": 709718,
+      "sha256": "b4bdf692f885f1436e7aa814c202f2aa4e5721ae06334676c7cf1c44617142a7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/porcelain-strong.png",
+      "bytes": 710838,
+      "sha256": "cb4f7ecc9e72063b8483014da0a500508340174ae7e09cbffb4c911f8ac6761f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/porcelain-tissue.png",
+      "bytes": 710493,
+      "sha256": "2f3d2233280438058211ede17c7eae2e4aa43c7dc2c122706b5ad676f92506ae"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/result.json",
+      "bytes": 3570,
+      "sha256": "2535d66aed35c21f906667cb1a30288c35178f22b30626d88d696168708e4247"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/sand-base.png",
+      "bytes": 709800,
+      "sha256": "5ff3c3ee5d2efdfff218f6d70d9e0d1580c1c49a09a81bbc3df8396b6a6266d6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/sand-pigment.png",
+      "bytes": 709850,
+      "sha256": "18dabf4579cc63349353d15bdf3f1a6d4c9dc684375dda1ea0da5a045f550061"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/sand-soft.png",
+      "bytes": 709712,
+      "sha256": "aee094794df51e2e7bed256af3a5b8008f580f9dad30313c1086fcaf706f49b0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/sand-strong.png",
+      "bytes": 710258,
+      "sha256": "72936d567cd973e4fb0429e0c3bd58b49b5387c6a306432c5b9873a4788f0de0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/sand-tissue.png",
+      "bytes": 709997,
+      "sha256": "24f1f350dffecbffdc44c9fa5f30fbae2b1c85ef4e40a900aa4be93011e1e899"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/side-base.png",
+      "bytes": 593955,
+      "sha256": "d29c43aa6df7617664913cf190c4de3b9315be7d83c4a624b62c853dd62c1032"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/side-strong.png",
+      "bytes": 594082,
+      "sha256": "78da389a43b9547fd377478ddb0818ee0a9cd3eb5ded5f155c1f36c12be92f5b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue-unique/side-tissue.png",
+      "bytes": 594065,
+      "sha256": "76cfa38a9914c2aca2b269aaf6f24f8787b0a846869bb82c2ee0032f40cbe15e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v21-lip-tissue.log",
+      "bytes": 5552,
+      "sha256": "248ed9e30699324a4ef793ddfe9ffc418dfb2327fa7bd942fbd520532873c7fa"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/compare-v21-lip-tissue-unique.mjs",
+      "bytes": 18617,
+      "sha256": "37117dc000d629b621a74043e155849cf512709322f0ece33bae1f5211f86554"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/compare-v21-lip-tissue.mjs",
+      "bytes": 18509,
+      "sha256": "7f136af08fc032a0f7ba1dc9352f8fe45427d3b9b9099b438098e9e11ce072a0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-v21-lip-tissue.mjs",
+      "bytes": 9766,
+      "sha256": "80bf62024224afd27a7a08a8b4c81dcbcbb673f87e5a7cf42eef527033022bc7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-v21-unique.mjs",
+      "bytes": 634,
+      "sha256": "e0cdd6a7c3ec601b05f9e1d223f994bdd6f24b8140cd35cecc41c1b4fa9d93df"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v16-mouth-ray-diagnostic.json",
+      "bytes": 639832,
+      "sha256": "f85928a03eda192dc151e643117dc7b59bc738d5f9f020541e9fd63f6e3a60b0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v21-lip-comparison.png",
+      "bytes": 732682,
+      "sha256": "6c78afadf6d4698384fd467e9610243ca7108ad193fe5160985181e2b6f826cf"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v21-mouth-direct-visibility.json",
+      "bytes": 456529,
+      "sha256": "6f78c9dd19563d1fbb6dbd70a88869881574ab6c378148a97234561d2f89ba3f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v21-mouth-pigment-audit.json",
+      "bytes": 258801,
+      "sha256": "698162cdecc08f7480d8cda04999c4b3051f22901145360945311079dbb63d7e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V20_20261128/RECEIPT.json",
+      "bytes": 85158,
+      "sha256": "e5ed821b357930a806da561f7d005fcb4efcae805fec0945c87ec6dda0778589"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V21_LIP_STUDY_20261128/REPORT.md",
+      "bytes": 1596,
+      "sha256": "e7ab4bc7cacd833045db08fbc5d3969000ed67c90e6286e01598d21fea31e2c3"
+    }
+  ]
+}

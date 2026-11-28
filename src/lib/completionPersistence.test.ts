@@ -68,6 +68,20 @@ describe('completion persistence before profile lock acquisition', () => {
     }
   });
 
+  it.each([
+    { label: 'extra unrelated row', entries: [row(), { ...row(), key: 'other' }] },
+    { label: 'duplicate identical row', entries: [row(), row()] },
+    { label: 'conflicting states for one key', entries: [row(), row('quarantined')] },
+    { label: 'unknown state', entries: [{ ...row(), state: 'unknown' as DurableJournalEntry['state'] }] },
+  ])('does not acknowledge $label and can retry', async ({ entries }) => {
+    const write = vi.fn().mockResolvedValueOnce({ status: 'saved', entries }).mockResolvedValueOnce(saved());
+    const operation = createCompletionPersistence(result, context, write)!;
+    expect(await operation.stage()).toEqual({ status: 'unavailable' });
+    expect(operation.acknowledged).toBeNull();
+    expect(await operation.stage()).toEqual(saved());
+    expect(write).toHaveBeenCalledTimes(2);
+  });
+
   it('converts a rejected storage operation into an honest unavailable outcome', async () => {
     const operation = createCompletionPersistence(result, context, vi.fn(async () => { throw new Error('closed IDB'); }))!;
     expect(await operation.stage()).toEqual({ status: 'unavailable' });

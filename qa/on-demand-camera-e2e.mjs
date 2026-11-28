@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { isDeepStrictEqual } from 'node:util';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
 const chromePath = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -91,16 +92,78 @@ try {
   await cdp('Page.enable');
   await cdp('Network.enable');
   await cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-  await cdp('Page.navigate', { url: origin + '/' });
-  await until("!!document.querySelector('#onboarding')", 'initial fighter screen');
-  await sleep(1000);
   const moduleRequests = () => urls.filter((url) => /mediapipe.tasks.vision|mediapipe_tasks-vision|vision_bundle/i.test(url));
+  for (const [scenario, override, title] of [
+    ['unsupported-api', "Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: undefined })", 'КАМЕРА НЕДОСТУПНА В ЭТОМ БРАУЗЕРЕ'],
+    ['insecure-context', "Object.defineProperty(window, 'isSecureContext', { value: false })", 'КАМЕРА ТРЕБУЕТ HTTPS'],
+  ]) {
+    const { identifier } = await cdp('Page.addScriptToEvaluateOnNewDocument', {
+      source: `${override}; window.__qaPreflight = ${JSON.stringify(scenario)};`,
+    });
+    await cdp('Page.navigate', { url: origin + '/' });
+    await until(`window.__qaPreflight === ${JSON.stringify(scenario)} && !!document.querySelector('#onboarding')`, scenario + ' fixture ready');
+    await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+    const initialSave = await js("localStorage.getItem('bodyforge:pilot:v1')");
+    await click('.mobile-nav button:nth-child(2)');
+    await until("document.querySelector('.app-shell')?.dataset.screen === 'challenge'", 'camera section visible');
+    const preflight = await read(`({
+      title: document.querySelector('.camera-preflight strong')?.textContent,
+      start: !!document.querySelector('#challenge .primary-button'),
+      controls: !!document.querySelector('.camera-control-deck'),
+      hasStream: !!document.querySelector('video.camera-feed')?.srcObject,
+      save: localStorage.getItem('bodyforge:pilot:v1'),
+    })`);
+    check(preflight.title === title, scenario + ' explains the actual cause, received: ' + preflight.title);
+    check(!preflight.start && !preflight.controls && !preflight.hasStream && moduleRequests().length === 0,
+      scenario + ' offers no unavailable camera controls or pose downloads');
+    check(preflight.save === initialSave, scenario + ' leaves the profile unchanged');
+  }
+  await cdp('Page.navigate', { url: origin + '/' });
+  await until("window.__qaPreflight === undefined && !!document.querySelector('#onboarding')", 'initial fighter screen');
+  await sleep(1000);
   check(moduleRequests().length === 0, 'home and onboarding never download the pose JavaScript');
   check(await js("!!document.querySelector('.app-shell')"), 'app renders without pose code');
   await click('#onboarding .forge-solid-button');
-  await until("!document.querySelector('#onboarding')", 'fighter created');
+  await until("!document.querySelector('#onboarding') && JSON.parse(localStorage.getItem('bodyforge:pilot:v1') || '{}').game?.created", 'fighter created and saved');
   await click('.mobile-nav button:nth-child(2)');
   check(moduleRequests().length === 0, 'camera tab preview alone does not download pose JavaScript');
+
+  const beforeDenial = await read("JSON.parse(localStorage.getItem('bodyforge:pilot:v1'))");
+  await js(`(() => {
+    window.__qaDeniedRequests = 0;
+    navigator.mediaDevices.getUserMedia = async () => {
+      window.__qaDeniedRequests++;
+      throw new DOMException('QA camera denied', 'NotAllowedError');
+    };
+  })()`);
+  check(await js("!document.querySelector('.camera-preflight') && window.__qaDeniedRequests === 0"),
+    'available API leaves permission untouched until start');
+  await click('#challenge .primary-button');
+  await until("!!document.querySelector('.camera-error')", 'permission denial handled');
+  const denied = await read(`({
+    message: document.querySelector('.camera-error')?.textContent,
+    action: document.querySelector('#challenge .primary-button')?.textContent,
+    requests: window.__qaDeniedRequests,
+    hasStream: !!document.querySelector('video.camera-feed')?.srcObject,
+    save: localStorage.getItem('bodyforge:pilot:v1'),
+  })`);
+  check(denied.message.includes('Доступ к камере запрещён') && denied.action.includes('ПОВТОРИТЬ'),
+    'permission denial explains how to recover and offers retry');
+  check(denied.requests === 1 && !denied.hasStream && moduleRequests().length === 0,
+    'permission denial leaves no stream and skips the pose module');
+  // The first attempt can initialize the profile identity under the write lock.
+  const { profileId, creditedWorkoutIds, ...progress } = JSON.parse(denied.save);
+  const { profileId: initialId, creditedWorkoutIds: initialLedger = [], ...initialProgress } = beforeDenial;
+  check(typeof profileId === 'string' && (!initialId || profileId === initialId) &&
+    isDeepStrictEqual(creditedWorkoutIds, initialLedger) && isDeepStrictEqual(progress, initialProgress),
+    'permission denial preserves the wallet, workout history and reward ledger');
+  await click('.mobile-nav button:nth-child(1)');
+  await until("document.querySelector('.app-shell')?.dataset.screen === 'dashboard'", 'leave camera after denial');
+  await click('.mobile-nav button:nth-child(2)');
+  await until("document.querySelector('.app-shell')?.dataset.screen === 'challenge'", 'return to camera after denial');
+  check(await js("!document.querySelector('.camera-error') && window.__qaDeniedRequests === 1"),
+    'leaving and revisiting camera clears the error without another permission request');
+  await js("delete navigator.mediaDevices.getUserMedia");
   check(await js(observeTracks), 'QA intercepts its own fake camera tracks');
 
   // Simulate a deleted or offline JavaScript chunk after the user starts.

@@ -1,0 +1,1087 @@
+{
+  "status": "PARTIAL_RECEIPT_VERIFIED",
+  "scope": "local review V5a/V6; not committed/deployed",
+  "head": "11d51edf407bed2ad7e1fd0a04332654fe46afcb",
+  "checks": {
+    "masterCases": 699,
+    "masterFailures": 0,
+    "minimumAreaRatio": 0.39201910906445936,
+    "garments": {
+      "BF_Foundation_Shirt": {
+        "states": 36,
+        "maxPairs": 0,
+        "minSignedFaceNormalDistanceMm": 0.27989359296043403
+      },
+      "BF_Foundation_Shorts": {
+        "states": 36,
+        "maxPairs": 0,
+        "minSignedFaceNormalDistanceMm": 3.1042792616062798
+      }
+    },
+    "browserV5a": {
+      "assertions": 1246,
+      "purchases": {
+        "lean": 180,
+        "solid": 180,
+        "full": 180
+      },
+      "screenshots": 46
+    },
+    "browserV6": {
+      "assertions": 1306,
+      "purchases": {
+        "lean": 180,
+        "solid": 180,
+        "full": 180
+      },
+      "screenshots": 64,
+      "reliefOnly": {
+        "front": {
+          "changed": 6166,
+          "pixels": 104280,
+          "meanRgbAbs": 0.9956495333077612
+        },
+        "back": {
+          "changed": 5953,
+          "pixels": 104280,
+          "meanRgbAbs": 0.9634733410049866
+        }
+      },
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "csp": {
+      "oldEvents": [
+        {
+          "directive": "connect-src",
+          "scheme": "blob"
+        },
+        {
+          "directive": "connect-src",
+          "scheme": "blob"
+        }
+      ],
+      "newEvents": [],
+      "versions": {
+        "4": {
+          "id": "BF_CC0_ZONES_V4",
+          "maps": [
+            {
+              "name": "BF_Foundation_Shirt",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Shorts",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Skin",
+              "width": 3072,
+              "height": 2048
+            },
+            {
+              "name": "BF_Foundation_TorsoSkin",
+              "width": 3072,
+              "height": 2048
+            }
+          ]
+        },
+        "5": {
+          "id": "BF_CC0_ZONES_V5",
+          "maps": [
+            {
+              "name": "BF_Foundation_Shirt",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Shorts",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Skin",
+              "width": 3072,
+              "height": 2048
+            },
+            {
+              "name": "BF_Foundation_TorsoSkin",
+              "width": 3072,
+              "height": 2048
+            }
+          ]
+        },
+        "6": {
+          "id": "BF_CC0_ZONES_V6",
+          "maps": [
+            {
+              "name": "BF_Foundation_Shirt",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Shorts",
+              "width": 256,
+              "height": 256
+            },
+            {
+              "name": "BF_Foundation_Skin",
+              "width": 3072,
+              "height": 2048
+            },
+            {
+              "name": "BF_Foundation_TorsoSkin",
+              "width": 3072,
+              "height": 2048
+            }
+          ]
+        }
+      },
+      "indexUnchanged": true
+    },
+    "fullSummary": [
+      "Test Files  128 passed (128)",
+      "Tests  1255 passed | 1 skipped (1256)"
+    ],
+    "productionMarkers": 0,
+    "boundaries": [
+      {
+        "path": "/_bodyforge/review/foundation-zones-v6.glb",
+        "status": 200,
+        "sha256": "7dc94d5c9755fc6152c20120296d4a2213c18e59b2c970d658b4ef20e8247fa1"
+      },
+      {
+        "path": "/_bodyforge/review/zone-fields-v6.bin",
+        "status": 200,
+        "sha256": "85344dd7f012f8a284b4fae5d3b28150615b9985e7f0141163ca05f483654331"
+      },
+      {
+        "path": "/_bodyforge/review/zone-fields-v6.bin",
+        "status": 403
+      },
+      {
+        "path": "/.bodyforge-qa/avatar-zones-20261127/v5d/foundation-zones-v5.blend",
+        "status": 403
+      },
+      {
+        "path": "/.bodyforge-qa/avatar-zones-20261127/v5d/zone-fields-v5.bin",
+        "status": 403
+      }
+    ]
+  },
+  "limitations": [
+    "art not AAA accepted",
+    "not exhaustive all combinations",
+    "not animated garment/pose certification",
+    "physical Android not run",
+    "local review only"
+  ],
+  "files": [
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/Avatar3D.tsx.v4e.before",
+      "bytes": 77291,
+      "sha256": "4c2b332d6ef77dae3e656b76fbe3c63add6556574efee34b33c9f948751e4c92"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/Avatar3D.tsx.v5a.before",
+      "bytes": 77346,
+      "sha256": "23630eb0d35c36f6b99452c4e3e01ce45dceac816374038ec5896879654db5fd"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/add-embedded-test.mjs",
+      "bytes": 1622,
+      "sha256": "caea9f8269b301ca4a93e6fa982be0f31c8a2031515d826b062aca2dbe126398"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/audit-v5-garments.py",
+      "bytes": 3341,
+      "sha256": "7313277bb3f6d4794d7ab45d3a6191e7a25945e8489e2c064287a88f278884ff"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/avatarFoundationReview.ts.pre-csp.before",
+      "bytes": 6329,
+      "sha256": "ff33733a2ad3543e251f192f75d390f2a6b0912d3ebae2982ccf4ead4aad1f67"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/avatarZoneFoundation.ts.pre-csp.before",
+      "bytes": 5806,
+      "sha256": "6ad12588a87d0c746417b5fbb6af5b27b5ebc7ae8f3d75c7349d52e391a2324f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/avatarZoneFoundation.ts.v4e.before",
+      "bytes": 5599,
+      "sha256": "89251a6f2dd5fa5ab067b809efe117f1d2c3aa3dffb3f58a59f40f6ad46582e3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/avatarZoneFoundation.ts.v5a.before",
+      "bytes": 5723,
+      "sha256": "6bfd30a7c72f19a93ffdff0ce3052daab1dcb33ef354c9eb62e8d49514dbd91f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-csp-verify/result.json",
+      "bytes": 2042,
+      "sha256": "4187770dee58989f78d22f8c15aaad72add052db19bb8844c2223bfb649b285a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a.log",
+      "bytes": 97546,
+      "sha256": "0c3cfb583f3ce7421ec96ab5afaadb98fb677c7fbfc7b07750defd58df5de516"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/full-neutral-full.png",
+      "bytes": 150687,
+      "sha256": "3112e3dfec5c05a6fc17a896a9f0883d5651dc8747790fafafd4fd664753660e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/full-reloaded.png",
+      "bytes": 151991,
+      "sha256": "014d664f39f37155f9cc2b0440e239be6b0bc02bb053bcd5d00f402414b92895"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-abs-0.png",
+      "bytes": 154514,
+      "sha256": "6b9160ca2187e3e5c1077e492bf955f6d164272fd856fdf155bcfd2baa821a95"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-abs-12.png",
+      "bytes": 155179,
+      "sha256": "751e8a5e73e7544c550b225f6b5d5c2bcc097b8f6d267c441a55e98bd05bd597"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-biceps-0.png",
+      "bytes": 153794,
+      "sha256": "2e67d3db0acdeb9947cca4473e8e12a13a242102312f9f1af4f3932d509d90ad"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-biceps-12.png",
+      "bytes": 154280,
+      "sha256": "3641b05293477e9429554d54ae87e403ad899718d7a402843d8d102460235b33"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-calves-0.png",
+      "bytes": 142605,
+      "sha256": "130d7b85fdea4bd29dff954821cab2547bba27a581fdce9198b788d60983bde9"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-calves-12.png",
+      "bytes": 142872,
+      "sha256": "7bea30cc425cb5c8b9dcbdb28c3ff728238a418c6c42c62564d1c11db9298231"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-chest-0.png",
+      "bytes": 154223,
+      "sha256": "64fd22ad4c9d72b9a056b16863c8c260ceba6d3e3ea2b5da0cccf38abe83636f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-chest-12.png",
+      "bytes": 154514,
+      "sha256": "6b9160ca2187e3e5c1077e492bf955f6d164272fd856fdf155bcfd2baa821a95"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-forearms-0.png",
+      "bytes": 154280,
+      "sha256": "3641b05293477e9429554d54ae87e403ad899718d7a402843d8d102460235b33"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-forearms-12.png",
+      "bytes": 154223,
+      "sha256": "64fd22ad4c9d72b9a056b16863c8c260ceba6d3e3ea2b5da0cccf38abe83636f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-glutes-0.png",
+      "bytes": 141982,
+      "sha256": "66c71049952709934406d36b970d42c56dadad6949a5dffebdfcf53b6d2f7cb0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-glutes-12.png",
+      "bytes": 142605,
+      "sha256": "130d7b85fdea4bd29dff954821cab2547bba27a581fdce9198b788d60983bde9"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-hamstrings-0.png",
+      "bytes": 141792,
+      "sha256": "c05dc2b5144fbb16046c6b24a456b3068b83508b3deeb41ddec6b3b36f545219"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-hamstrings-12.png",
+      "bytes": 141982,
+      "sha256": "66c71049952709934406d36b970d42c56dadad6949a5dffebdfcf53b6d2f7cb0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-lats-0.png",
+      "bytes": 150600,
+      "sha256": "57fa6a48678827213064219589c3d3d6ff61523111c08abb76b4d5b8cf2c52cf"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-lats-12.png",
+      "bytes": 150649,
+      "sha256": "228f5fbf3735dbb1b364f1c5c113669dce9dddc9f35c3b1d2610d75d3d63716a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-lowerback-0.png",
+      "bytes": 150827,
+      "sha256": "94bde6d49bcab9f28a222b9f6aea98a28417e041319d16807e332e4c25267e00"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-lowerback-12.png",
+      "bytes": 151225,
+      "sha256": "8c5528b01dbab96ce901d676c56acf4f410619f8bd59c13e3c0201727fbd7b3b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-legs-front.png",
+      "bytes": 144340,
+      "sha256": "ce9465e4f0bf4e393b76e1f15a7224f5d4f07c2b9903c455b0c0133b936e4e76"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-legs-rear.png",
+      "bytes": 143251,
+      "sha256": "79d1ccfc9d0896594a313faa965c311334a540fba9c5dd32ca02f8921270f8b3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-relief-back.png",
+      "bytes": 151225,
+      "sha256": "8c5528b01dbab96ce901d676c56acf4f410619f8bd59c13e3c0201727fbd7b3b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-relief-front.png",
+      "bytes": 155737,
+      "sha256": "c3495feaa5e5ee9a5058250a4e82fd04664bc8be6e611759fe969ea8613c245b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-volume-only-back.png",
+      "bytes": 149261,
+      "sha256": "4fd0c5518aa20f7aee2ba8c8c04cbf2d8b301a54d59e737f2aaadb37ee506979"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-max-volume-only-front.png",
+      "bytes": 153861,
+      "sha256": "81f8b703d41752c9d483067fdbf157ea21bbd494c3d30f44aaf7f21e3d6bab86"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-midback-0.png",
+      "bytes": 150649,
+      "sha256": "228f5fbf3735dbb1b364f1c5c113669dce9dddc9f35c3b1d2610d75d3d63716a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-midback-12.png",
+      "bytes": 150827,
+      "sha256": "94bde6d49bcab9f28a222b9f6aea98a28417e041319d16807e332e4c25267e00"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-neutral-full.png",
+      "bytes": 150406,
+      "sha256": "b79a528735d968e0f7b9ba57aa74953b8c684acf74245d8df024852fe89d8ab6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-obliques-0.png",
+      "bytes": 155179,
+      "sha256": "751e8a5e73e7544c550b225f6b5d5c2bcc097b8f6d267c441a55e98bd05bd597"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-obliques-12.png",
+      "bytes": 155451,
+      "sha256": "380844a9cf5dcef736f303dcb786a58ae5e3ba3f4fa58fe03c1bd591c040e8f2"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-quads-0.png",
+      "bytes": 144024,
+      "sha256": "c08316d7af25c0bd1ea15f657b3a7d4322dba940f186a370d67c7c2388a7acbb"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-quads-12.png",
+      "bytes": 144314,
+      "sha256": "6e2ebde2b202b563f20482693e6d40aaf34ce73fee5f604e1f5cd162a76e36c8"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-shoulders-0.png",
+      "bytes": 153209,
+      "sha256": "313f93ed00b59c05733ac482d15760137d4026a5e3f19ce6053c5bc90fa4e451"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-shoulders-12.png",
+      "bytes": 153794,
+      "sha256": "2e67d3db0acdeb9947cca4473e8e12a13a242102312f9f1af4f3932d509d90ad"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-traps-0.png",
+      "bytes": 150040,
+      "sha256": "ed240e16e985e40125b60e46ff53d137fd90dc6d3236f28c11d9b9773c83e4ed"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-traps-12.png",
+      "bytes": 150600,
+      "sha256": "57fa6a48678827213064219589c3d3d6ff61523111c08abb76b4d5b8cf2c52cf"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-triceps-0.png",
+      "bytes": 148222,
+      "sha256": "0a25c541e61d188e467b6b5a0e5000f1d34afee2b70612f3e680be17ba72a060"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/lean-triceps-12.png",
+      "bytes": 148773,
+      "sha256": "ed96ed54ae79fd52ac027220d88bba369f0315cdae581cbd8311f5d7f6fb1a24"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/regional-ui-360.png",
+      "bytes": 75894,
+      "sha256": "d807a7513ba0abe47c7ce2b364a06e7606e1fe220a98ee2d9ff27c881c9932b1"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/regional-ui-390.png",
+      "bytes": 80519,
+      "sha256": "32f645f243f3a41bf0d70f26def5b32b7fb39a9780f33290675462af733863e7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/result.json",
+      "bytes": 5630,
+      "sha256": "589d6665eaa737e0467dcc2c908d54b2d67f18519fb3af7f60806b7e5994667c"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/solid-neutral-full.png",
+      "bytes": 150129,
+      "sha256": "4a8e1bbe3242fbfb0754ca9c0412fe452212068ab2f31827c48bf658a5c97198"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/solid-reloaded.png",
+      "bytes": 151121,
+      "sha256": "b237c1bae07df03503cb49f844cdb925d289618096ee8f86743a606e8e00d1b1"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/start-full.png",
+      "bytes": 139854,
+      "sha256": "c2ea1166cee63aec2d67d958b87500f6d542c3b10128cf1cab6a89e59a00050a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/start-lean.png",
+      "bytes": 139185,
+      "sha256": "01d98d50afd90b38358f24bfe166915336e5a33fc8f605019e9f677c479c36db"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v5a/start-solid.png",
+      "bytes": 138751,
+      "sha256": "06f19f3113d22a15eb179863304e6f9d95b7ee28020381dfdc8d7e0d6e44350b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final.log",
+      "bytes": 101904,
+      "sha256": "1d1079b9609f28fd4ccea41259f409060281f8fa17b9f16d97154650c43e9163"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-max-bare.png",
+      "bytes": 153771,
+      "sha256": "a3cb45809c220ef181321060b1d80f88e91f8823e4f980349491d82b8fbc4c48"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-max-shirt-back.png",
+      "bytes": 146382,
+      "sha256": "47cde4a299c3ecd5a68ce26bf2328b56d3e5137f0d27f2af926a6eaa53bafd01"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-max-shirt-front.png",
+      "bytes": 149724,
+      "sha256": "573fbfbaebf07094c18401d9a65637474b05002057e5f752b3b983c507e502a6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-neutral-full.png",
+      "bytes": 150365,
+      "sha256": "e93b594465823a92d50b0837600516e3aab21e330ee9411f60ffd827257bbfaf"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-reloaded.png",
+      "bytes": 152153,
+      "sha256": "862bb3e2a876797d90c93798c357893dc443f463dba3310a529ef675fc6323be"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-zero-bare.png",
+      "bytes": 149493,
+      "sha256": "a208d6ee065d2d58d36eb072bf5277a11524573b11ede86665294512c4d1d548"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-zero-shirt-back.png",
+      "bytes": 142891,
+      "sha256": "7cf55cc1e6de9db4d29ff2e74d0aa6631d996d71142ee69c168a3a8cbe12584b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/full-zero-shirt-front.png",
+      "bytes": 144369,
+      "sha256": "decb90c9003f18de8e0ea64af491355f8e1dd9281be0c1f43d32c6bebb8d2dad"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-abs-0.png",
+      "bytes": 153959,
+      "sha256": "a79d3186426bd6ee77ddb9b6b99b3ce01cae39436b064937f96b1a46d66ca2f9"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-abs-12.png",
+      "bytes": 154896,
+      "sha256": "ebdd5173417e489c890941bd95e160655acf499f7f59bf20c3ca4d4023dc1144"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-biceps-0.png",
+      "bytes": 152340,
+      "sha256": "ca2687fb00bf049280f90b308428805a7123c877181022950be816b6d8527db3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-biceps-12.png",
+      "bytes": 152761,
+      "sha256": "19cbe800407d757d4a635cf8e93bdb7b63f7ecb490e695fe517f729ac84f0313"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-calves-0.png",
+      "bytes": 142682,
+      "sha256": "a7804ce06af4f4b108321ede0eb6dc67d22368b7451766aaee1c35855dc66a85"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-calves-12.png",
+      "bytes": 142954,
+      "sha256": "b039390f80f276a0e0177c70c6c6d9c03ed0d228a1532f2a20df5e9e31d99809"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-chest-0.png",
+      "bytes": 152794,
+      "sha256": "88e8777cc27406cc2c95bceb1e5d09b2df1b35183991a74faa8087307e9bf49a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-chest-12.png",
+      "bytes": 153959,
+      "sha256": "a79d3186426bd6ee77ddb9b6b99b3ce01cae39436b064937f96b1a46d66ca2f9"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-forearms-0.png",
+      "bytes": 152761,
+      "sha256": "19cbe800407d757d4a635cf8e93bdb7b63f7ecb490e695fe517f729ac84f0313"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-forearms-12.png",
+      "bytes": 152794,
+      "sha256": "88e8777cc27406cc2c95bceb1e5d09b2df1b35183991a74faa8087307e9bf49a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-glutes-0.png",
+      "bytes": 141839,
+      "sha256": "8472629aab84e18a50c1154fe5c1edac86bfab7ccce9463580e81c0eb758ce99"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-glutes-12.png",
+      "bytes": 142682,
+      "sha256": "a7804ce06af4f4b108321ede0eb6dc67d22368b7451766aaee1c35855dc66a85"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-hamstrings-0.png",
+      "bytes": 141748,
+      "sha256": "ca6c62766afb09f2b36a5c10c21a5bf76963e5699dfc56942c99bb2e1e0f9352"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-hamstrings-12.png",
+      "bytes": 141839,
+      "sha256": "8472629aab84e18a50c1154fe5c1edac86bfab7ccce9463580e81c0eb758ce99"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-lats-0.png",
+      "bytes": 150533,
+      "sha256": "bd9b3bf6d407d8991141f61c3b8e9de417ffec5ecffb8d014af1ee68ba7c095b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-lats-12.png",
+      "bytes": 150792,
+      "sha256": "8ac35746836d518bbcf112cbb2a667b84787acbd686c47c4dcb09014b4091418"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-lowerback-0.png",
+      "bytes": 150846,
+      "sha256": "758635024de14df89ce567b0dec448a169d4a4c6a15e83fd3708eecb4c27545a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-lowerback-12.png",
+      "bytes": 151168,
+      "sha256": "9144ec42630344f76fe4b673b277cb1c6d50c8e77a5ab2147033a3af7f8ab117"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-bare.png",
+      "bytes": 155944,
+      "sha256": "102b4fa6fdd79d6c1d2b3dcd468fe013c823f86c7db9220d93b6fd02f63c4803"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-legs-front.png",
+      "bytes": 144425,
+      "sha256": "65dc0f0407c3c3c15e46e239762018b4e8a0a2c2f8b5f4f6aaca1827b4bb3726"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-legs-rear.png",
+      "bytes": 143271,
+      "sha256": "f8889f55cb70f107e9af0f76e3140e312bb6af0da11168fa992b08952d341e72"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-relief-back.png",
+      "bytes": 151168,
+      "sha256": "9144ec42630344f76fe4b673b277cb1c6d50c8e77a5ab2147033a3af7f8ab117"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-relief-front.png",
+      "bytes": 155944,
+      "sha256": "102b4fa6fdd79d6c1d2b3dcd468fe013c823f86c7db9220d93b6fd02f63c4803"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-shirt-back.png",
+      "bytes": 148360,
+      "sha256": "7acabc40a1b40fdb50c9e32a9b46ee0afb688b3ba497904b62b3169d9ebbc76a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-shirt-front.png",
+      "bytes": 152394,
+      "sha256": "968dae1e14a688b7693dc0b9098568225ff479cb5126ecb253dc74ca1c192d9f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-volume-only-back.png",
+      "bytes": 149032,
+      "sha256": "1d059638659932c3c74b0df93263cd88f987e3d3fba4c8103cf7786b8bc74b96"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-max-volume-only-front.png",
+      "bytes": 153414,
+      "sha256": "0b2ea3a4657b92aa610912e0f508434dcf0c8c7beb09046dffd2548aa6f9b48b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-midback-0.png",
+      "bytes": 150792,
+      "sha256": "8ac35746836d518bbcf112cbb2a667b84787acbd686c47c4dcb09014b4091418"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-midback-12.png",
+      "bytes": 150846,
+      "sha256": "758635024de14df89ce567b0dec448a169d4a4c6a15e83fd3708eecb4c27545a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-neutral-full.png",
+      "bytes": 147409,
+      "sha256": "98497548f507baf26a8ec74b00bbcd4849d95a04ddd9bb881232c102f40e98a8"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-obliques-0.png",
+      "bytes": 154896,
+      "sha256": "ebdd5173417e489c890941bd95e160655acf499f7f59bf20c3ca4d4023dc1144"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-obliques-12.png",
+      "bytes": 155310,
+      "sha256": "bf18afe60d07417c9a3e6e8df3e4097345c4bcba591f8e855d32fcb615b97fd6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-quads-0.png",
+      "bytes": 143824,
+      "sha256": "b15e2f2047f86bd71173daaa1dabc5f912b03b177662dbf7bd51c3c89d263b4c"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-quads-12.png",
+      "bytes": 144364,
+      "sha256": "30f8f3b9e15676d69ab681624842366f088f2fab74f79905cedff190edb3380a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-shoulders-0.png",
+      "bytes": 151829,
+      "sha256": "d6a068c9ac74d86c8b9bc2b5af5e5fbf68976ed1fd352fd0e1eb2e36bbc6ee94"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-shoulders-12.png",
+      "bytes": 152340,
+      "sha256": "ca2687fb00bf049280f90b308428805a7123c877181022950be816b6d8527db3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-traps-0.png",
+      "bytes": 149974,
+      "sha256": "90b6ec6b0c840b5fcbb3baa85e35a9d9a1ceaa4d2c0759921da40aa34fa47a46"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-traps-12.png",
+      "bytes": 150533,
+      "sha256": "bd9b3bf6d407d8991141f61c3b8e9de417ffec5ecffb8d014af1ee68ba7c095b"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-triceps-0.png",
+      "bytes": 147916,
+      "sha256": "5244028cb9b67232f694530e813dd5a592af1e1ec2b75149eddec32f060fa650"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-triceps-12.png",
+      "bytes": 148505,
+      "sha256": "c3343dc00d75f4db3d6e78793fa275cd13b29398cd861e44cca5d4bc0967988c"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-zero-bare.png",
+      "bytes": 151829,
+      "sha256": "d6a068c9ac74d86c8b9bc2b5af5e5fbf68976ed1fd352fd0e1eb2e36bbc6ee94"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-zero-shirt-back.png",
+      "bytes": 145002,
+      "sha256": "742ab6f3ab07f2a60dddcea3e85a85455fe8d94baa45b504395576d6d41c85fb"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/lean-zero-shirt-front.png",
+      "bytes": 147798,
+      "sha256": "e7252dba0adbb5e729a11de00448aaa423a67a5a73cd7e9e60bbfe68efb257dd"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/regional-ui-360.png",
+      "bytes": 75894,
+      "sha256": "d807a7513ba0abe47c7ce2b364a06e7606e1fe220a98ee2d9ff27c881c9932b1"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/regional-ui-390.png",
+      "bytes": 80519,
+      "sha256": "32f645f243f3a41bf0d70f26def5b32b7fb39a9780f33290675462af733863e7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/result.json",
+      "bytes": 6918,
+      "sha256": "6137326bba2922a48bc4bc98f6c3d199395008f4ba0c5cf0adbeaf1859e75840"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-max-bare.png",
+      "bytes": 154628,
+      "sha256": "b4799b9fd6bd58823a86522cb899093512a75957897567382ef355be22ce0284"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-max-shirt-back.png",
+      "bytes": 147504,
+      "sha256": "52ad8845c5e0fa8f5bf80ee0e52a67c819dff208c2abf0835b2d9d6a5f8de725"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-max-shirt-front.png",
+      "bytes": 150887,
+      "sha256": "0f9e8d1a106e78867a98c3b15d3dd1612a7760259e634573202719a8649eea34"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-neutral-full.png",
+      "bytes": 149696,
+      "sha256": "e6678fb8f0e3a32e52e2363d6367d992aa1be07093bed9c28f6ccf37b35cb2cb"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-reloaded.png",
+      "bytes": 151526,
+      "sha256": "e300c175a4e012ee59df9f7eca94ded94b1102d084d4d1ea555ccbf2543379a7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-zero-bare.png",
+      "bytes": 150519,
+      "sha256": "c718eaf7bd2b9e2c7558095543d30f8331d6ed8d31a1ae9e35dc133767e02e2e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-zero-shirt-back.png",
+      "bytes": 144128,
+      "sha256": "b944a06326dae0961ba1965d74cf1e20cfd11c9b057f99c5e37b0d50c072adc7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/solid-zero-shirt-front.png",
+      "bytes": 146306,
+      "sha256": "1493b505a7168d6087d1c6a3fb12924b475930f1b4b550ec0949f7a06f6915d6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/start-full.png",
+      "bytes": 139326,
+      "sha256": "982276cee7454e1dd348bf78ec53263e04af9466134610250977bb5a94cab4b0"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/start-lean.png",
+      "bytes": 138388,
+      "sha256": "370be5bdfd14f38482dcf1c050db91fc29f91a1ec5562af350a3724d618a7682"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6-final/start-solid.png",
+      "bytes": 138463,
+      "sha256": "671d56576b4b66392df37188b834305d70e807dcdd75ae57360c0c3b4b025d8c"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/browser-v6.log",
+      "bytes": 2228,
+      "sha256": "a6dbee573952ab79bf3add17fa8681fae39e47274a0add3aec20b9ebce51a17f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-v5a.log",
+      "bytes": 7424,
+      "sha256": "571164e9103f3d59e3008934ba44d99dbe7aca1e34ce38ef98363c2d465b2b18"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-v5b.log",
+      "bytes": 7824,
+      "sha256": "06028986d4b6e1b20319abc14bdc0a63ce75974ee798dd647243b9f7fda9266f"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-v5c.log",
+      "bytes": 2796,
+      "sha256": "a6d11085df6310afb3d04ee5e697685a4a2c0978f331f98b17ddbdb5cad517c8"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-v5d.log",
+      "bytes": 2796,
+      "sha256": "a80a848fd3d2a85097007e148bed09755938396e65db6a4f6226c05f5be42110"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-zones-v5a.py",
+      "bytes": 25967,
+      "sha256": "ffa58173802b027a27ad088ab4a18bf33f0e4f36d1ecd580a388aea772ddb7ec"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-zones-v5b.py",
+      "bytes": 26879,
+      "sha256": "f21d64410bee842ac37a5bbfb928385a41f76501b516aa5f1e4a636db61b5971"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-zones-v5c.py",
+      "bytes": 23841,
+      "sha256": "6b0954e00a5808b5d05847bbeaa152f3d581148d6f21e1df5dcdb7790b82c6c3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/build-zones-v5d.py",
+      "bytes": 24424,
+      "sha256": "2ace1f11a237007de275e94be2f3aba062d5bdbfed78c4f91dd03dffe23941d7"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/fix-embedded-textures.mjs",
+      "bytes": 5049,
+      "sha256": "a84edb4d189ae78ed699da7d6c8ae0d03ae910c15be354a4cf229773032d6d26"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/fix-qa-pixel-decode.mjs",
+      "bytes": 820,
+      "sha256": "1b9caad622db3434222bf13755ee72f62a1de3c8676c5a7e98a8f265c31ad42e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/garment-v5a.log",
+      "bytes": 4718,
+      "sha256": "eabd912c0e2ebbbbb91cbfc0b4123dcd54b44dd18aceb692df627e6d5db7f537"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/garment-v5c.log",
+      "bytes": 4664,
+      "sha256": "f9f496215d1878f06bd9782f6aa9d8aa87fe346bb2c61feafe573a9f21c0e4d5"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/garment-v5d.log",
+      "bytes": 4620,
+      "sha256": "3dbd4b3de52cdd2b542c6d91b3d7005fd41b48d0658c793117d12b8f402bfe6a"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/inspect-shirt-collision.py",
+      "bytes": 1622,
+      "sha256": "3f3bd7d899883b9205179caa92b0cbb73cd7c034cb25ac7c4f1d8a831bf9cbc1"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/inspect-v5-sections.py",
+      "bytes": 1222,
+      "sha256": "adb3796124a6875bdb01cc1b05e0ee2632099af356f0fb6d8529b85fb2a26331"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/integrate-v5a.mjs",
+      "bytes": 3537,
+      "sha256": "d0115ed1bf11fc25fada10926e9d6c4ad5227bf1ea435e0ef8764f7faa96272d"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/integrate-v6.mjs",
+      "bytes": 3549,
+      "sha256": "f789d8656db885d768185b2516802d4fddaca27864f8b69763adab469f53fa56"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/local-avatar-foundation-review.ts.v4e.before",
+      "bytes": 3168,
+      "sha256": "d00a43a241ce981597c885e883d021da72f22a47383ea240fa2ffdd0327878aa"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/local-avatar-foundation-review.ts.v5a.before",
+      "bytes": 3374,
+      "sha256": "463cf1c4afc75e6289e1e1a1716b87647ed3650ade6e9bcb31722ba2433c31a3"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/muscleZones.ts.v4e.before",
+      "bytes": 6293,
+      "sha256": "201914c85e65a35a0b0c0185cc61e63216cff182772db2a8226a2f8288594190"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/muscleZones.ts.v5a.before",
+      "bytes": 6311,
+      "sha256": "b59bd69d0ecfd498c0511b16d90124d105391c25379c6cc43c11d78b2d7bd29d"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-csp-check.mjs",
+      "bytes": 2652,
+      "sha256": "60a6bfb66007986ca09c5df68c743ec349b342243b15adf5c2042b1d595b9124"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-v5a.mjs",
+      "bytes": 4465,
+      "sha256": "e03dde3cbe85cb23ae83194b89320177ae2cbf4f728ef71096b1790a3e018f98"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-v5b.mjs",
+      "bytes": 1925,
+      "sha256": "ef631a6010e13c480e9d5c6cf5ef7baa7b4f8380114213702073f5074228bfd6"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/prepare-v5c.mjs",
+      "bytes": 4151,
+      "sha256": "74fbf6455d7a4ae287e2a39ff7baeea405c26d18b74a1c54eae21dc3326952c4"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/production-v6.log",
+      "bytes": 8772,
+      "sha256": "b7ed86c860e56e6e3de1e05f90491e0a8d18f8ca9b18efab1a8a0449d7b4883c"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/regression-v6-full.log",
+      "bytes": 126678,
+      "sha256": "ac13e0be46ce62c7ff8c2cf0c08bddb28b335d8f5d4404223168087621c40e27"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5a/garment-audit.json",
+      "bytes": 19297,
+      "sha256": "d9c607a47af28da987af34b97f95088db67adb9b83ce011e444e3128c449a81e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5a/master-qc.json",
+      "bytes": 22685,
+      "sha256": "4bb4d74f0e4c6e32b4daea439819e2368a54be8ea743184aff9151c2c336af4e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5b/master-fields.npz",
+      "bytes": 2311411,
+      "sha256": "945756be656353ff32f8f87e622d71e827080cb643926a30c188a89f8e71c9aa"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5b/master-qc.json",
+      "bytes": 22677,
+      "sha256": "cb07ab12b41a1a264137d56dff2b86ad406eecc2096bc77f2a0e265ce0bab5ea"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5c/garment-audit.json",
+      "bytes": 19150,
+      "sha256": "aa37faa93cb8a983a4e99fe75cd725ebcc553fdd29493baac7fcb70ad74e9217"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/foundation-zones-v5.blend",
+      "bytes": 32255713,
+      "sha256": "e3b590fc7e29f03d9a8decf9a3f98e8b7e4bbe406167fb3f3d6843ee3bdb1a1e"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/foundation-zones-v5.glb",
+      "bytes": 14719772,
+      "sha256": "7dc94d5c9755fc6152c20120296d4a2213c18e59b2c970d658b4ef20e8247fa1"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/garment-audit.json",
+      "bytes": 19017,
+      "sha256": "9458166a85d61db49122b96f2952f4e4377ee84457cca84ceebe2ecc38524c33"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/master-fields.npz",
+      "bytes": 2311411,
+      "sha256": "945756be656353ff32f8f87e622d71e827080cb643926a30c188a89f8e71c9aa"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/master-qc.json",
+      "bytes": 22677,
+      "sha256": "cb07ab12b41a1a264137d56dff2b86ad406eecc2096bc77f2a0e265ce0bab5ea"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/measurements.json",
+      "bytes": 17430,
+      "sha256": "399a8d9b6da87fd905435a3aa4d66da151c943c68ca573c048fd4a8d0e9a4974"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/v5d/zone-fields-v5.bin",
+      "bytes": 4258496,
+      "sha256": "85344dd7f012f8a284b4fae5d3b28150615b9985e7f0141163ca05f483654331"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/verify-csp.log",
+      "bytes": 2746,
+      "sha256": "2fe68634fe187e2441b6cfceda2cfe072c71b1b8f44144dd5e06c6c394275415"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/verify-embedded-csp.mjs",
+      "bytes": 11697,
+      "sha256": "307186d89aabad496e8981ec097b327cd70f777da72292c33f626b72f888d2ef"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/write-v6-receipt.mjs",
+      "bytes": 11834,
+      "sha256": "8469e7f25cdb6a78b2f934c9ddaf505f1c2083ebcc4c2e1d8ea6ab31636ff355"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/zoneAssetPins.ts.v4e.before",
+      "bytes": 451,
+      "sha256": "bd04f94de52b0d65d34418e0b230ded6c173fe4706fdebe01e3059f67e7c6c80"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/zoneAssetPins.ts.v5a.before",
+      "bytes": 773,
+      "sha256": "f17c1302c49f16fdbeb080c612bfdd59ae5cfd75238760a36da1987641f9fa33"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/zones-browser-v5-e2e.mjs",
+      "bytes": 23572,
+      "sha256": "b2b0515c32dedc21673a8dc57cbea45353416558f2935c8034e0d9ef6d7e8ac8"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/zones-browser-v6-e2e.mjs",
+      "bytes": 24453,
+      "sha256": "7a6ab50bc3ef73feabb06c5653ba0fc639d34658927f2219a288630aad61e423"
+    },
+    {
+      "path": ".bodyforge-qa/avatar-zones-20261127/zones-browser-v6-final-e2e.mjs",
+      "bytes": 24498,
+      "sha256": "b3017a78e8c652ac0aa8ed90660db91a1aab75b57135c481c81d4bef9e53cbbc"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V5_V6_20261127/REPORT.md",
+      "bytes": 2827,
+      "sha256": "b55911a09d025a9bb55af95f279bb72aac216c54b4590e65c3154d85ae567527"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1274,
+      "sha256": "ee117a4222cf463fb749f8b2915c0b323770a690551da50a646f4088d3cb5ff6"
+    },
+    {
+      "path": "qa/local-avatar-foundation-review.ts",
+      "bytes": 3797,
+      "sha256": "c32a3447a50014b9a97a0a1d70f1711a5ed1952c1a4500cec789228bec653c4e"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 77384,
+      "sha256": "9483b3046994c5cbe74e662698744362656bd652bc42c3bebbe09bf5883c6447"
+    },
+    {
+      "path": "src/lib/avatarFoundationReview.ts",
+      "bytes": 6332,
+      "sha256": "d585315e1119c02768134cd30c886926dc348e0cb97af49fffa7bdfc2ff69d04"
+    },
+    {
+      "path": "src/lib/avatarZoneFoundation.ts",
+      "bytes": 5810,
+      "sha256": "8ad5c5ea2b8a82a436f5fa84c6f123222d5d45e080bfc6b7447d01cfc3e59b42"
+    },
+    {
+      "path": "src/lib/embeddedFoundationGltf.test.ts",
+      "bytes": 1385,
+      "sha256": "05d0b85caced2f25a145b0ece45d974c79f52286e8f4e7a0ae6c0dd9519f6f46"
+    },
+    {
+      "path": "src/lib/embeddedFoundationGltf.ts",
+      "bytes": 3572,
+      "sha256": "7959176ee87d139a9a5ce12015692582c028465f3a8baccd4a6f7a587d4664e3"
+    },
+    {
+      "path": "src/lib/muscleZones.ts",
+      "bytes": 6315,
+      "sha256": "9bbae705c45c604ce751ad9aa1ec4f7999e5ba2c47b37b0ddaa1338487392a6a"
+    },
+    {
+      "path": "src/lib/zoneAssetPins.ts",
+      "bytes": 1201,
+      "sha256": "e690389055f3690f863350f30ef4ebbf405057555435ac0bee3b3fd6300f67cb"
+    }
+  ]
+}

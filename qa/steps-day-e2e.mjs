@@ -10,7 +10,8 @@ const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
 if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) throw Error('QA requires a loopback HTTP origin');
 const key = 'bodyforge:manual-steps:v1';
 const selectedCase = process.argv.find((value) => value.startsWith('--case='))?.slice(7) || 'all';
-if (!['all', 'future', 'timezone-day'].includes(selectedCase)) throw Error('Unknown steps-day QA case');
+if (!['all', 'future', 'timezone-day', 'localization'].includes(selectedCase)) throw Error('Unknown steps-day QA case');
+const artifactDir = process.env.BODYFORGE_QA_ARTIFACT_DIR || 'docs/audits/BF_STEPS_WEB_DASHBOARD_20261124';
 const beforeMidnight = Date.parse('2026-10-26T23:59:59.900+03:00');
 const afterMidnight = beforeMidnight + 200;
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-steps-day-'));
@@ -92,7 +93,7 @@ class Client {
     if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
     return result.result.value;
   }
-  async until(expression, label) { return waitFor(() => this.js(expression), label); }
+  async until(expression, label, timeout) { return waitFor(() => this.js(expression), label, timeout); }
   async input(value) {
     check(await this.js(`(()=>{const e=document.querySelector('#bf-steps-today');if(!e)return false;
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(value)});
@@ -127,12 +128,15 @@ class Client {
     await sleep(140);
   }
 }
-async function newTab(epoch) {
+async function newTab(epoch, locale = 'ru-RU') {
   const target = await (await fetch('http://127.0.0.1:' + port + '/json/new?about:blank', { method: 'PUT' })).json();
   const tab = new Client(target);
   await tab.cdp('Runtime.enable'); await tab.cdp('Page.enable');
   await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   await tab.cdp('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Moscow' });
+  await tab.cdp('Page.addScriptToEvaluateOnNewDocument', {
+    source: `Object.defineProperty(navigator, 'language', { value: ${JSON.stringify(locale)} })`,
+  });
   tab.clockScript = (await tab.cdp('Page.addScriptToEvaluateOnNewDocument', { source: clockSource(epoch) })).identifier;
   return tab;
 }
@@ -144,13 +148,21 @@ async function app(tab, reload = false) {
   if (await tab.js('!!document.querySelector("#onboarding .forge-solid-button")')) {
     await tab.js('document.querySelector("#onboarding .forge-solid-button").click();true');
   }
-  await tab.until('!!document.querySelector("#step-log")&&!document.querySelector("#onboarding")', 'steps panel mounted');
+  await tab.until('!!document.querySelector("#step-log summary")&&!document.querySelector("#onboarding")', 'steps panel mounted');
   await tab.js('document.querySelector(".mobile-nav button:nth-child(2)").click();true');
-  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#step-log")?.getClientRects().length>0', 'Camera steps visible');
+  await tab.until('document.querySelector(".app-shell")?.dataset.screen==="challenge" && document.querySelector("#step-log summary")?.getClientRects().length>0', 'Camera steps visible');
   await tab.until('!!localStorage.getItem("bodyforge:pilot:v1")', 'fighter persisted');
   const before = await tab.js('JSON.stringify(Object.entries(localStorage).sort(([a],[b])=>a.localeCompare(b)))');
-  check(await tab.js('(()=>{const d=document.querySelector("#step-log details"),s=d?.querySelector("summary"),input=document.querySelector("#bf-steps-today");return !!d&&!d.open&&!!s&&s.getBoundingClientRect().height>=44&&input.getClientRects().length===0&&s.dataset.syncState==="unavailable"&&!s.querySelector("[data-manual-steps]")})()'), 'compact steps button defaults closed with honest unavailable sync status');
-  if (!compactLayoutChecked) {
+  const summary = await tab.js(`(() => {
+    const details = document.querySelector('#step-log details'), summary = details?.querySelector('summary');
+    return { open: details?.open, height: summary?.getBoundingClientRect().height,
+      inputRects: document.querySelector('#bf-steps-today')?.getClientRects().length,
+      state: summary?.dataset.syncState, containsManualCount: !!summary?.querySelector('[data-manual-steps]') };
+  })()`);
+  check(summary.open === false && summary.height >= 44 && summary.inputRects === 0 &&
+    summary.state === 'unavailable' && !summary.containsManualCount,
+  'compact steps button defaults closed with honest unavailable sync status ' + JSON.stringify(summary));
+  if (selectedCase !== 'localization' && !compactLayoutChecked) {
     compactLayoutChecked = true;
     for (const width of [320,360,390,428]) {
       await tab.cdp('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:true});
@@ -163,12 +175,12 @@ async function app(tab, reload = false) {
     await tab.js('document.querySelector("#step-log").scrollIntoView({block:"center",behavior:"instant"});true');
     await sleep(200);
     const shot=await tab.cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-    fs.writeFileSync(path.resolve('docs/audits/BF_STEPS_WEB_DASHBOARD_20261124/steps-closed-390.png'),Buffer.from(shot.data,'base64'));
+    fs.writeFileSync(path.resolve(artifactDir, 'steps-closed-390.png'),Buffer.from(shot.data,'base64'));
   }
   await tab.js('document.querySelector("#step-log summary").click();true');
   await tab.until('document.querySelector("#step-log details")?.open&&document.querySelector("#bf-steps-today")?.getClientRects().length>0', 'manual fallback opens on Camera');
   check(await tab.js('JSON.stringify(Object.entries(localStorage).sort(([a],[b])=>a.localeCompare(b)))')===before, 'opening steps never writes or fabricates synced data');
-  if (!compactEditorChecked) {
+  if (selectedCase !== 'localization' && !compactEditorChecked) {
     compactEditorChecked = true;
     const editor=await tab.js('(()=>{const e=document.querySelector("#step-log .bf-steps-compact-editor"),s=document.querySelector("#step-log");return {height:e?.getBoundingClientRect().height,old:!!s.querySelector(".bf-step-android,.bf-panel-heading"),label:s.querySelector("label[for=bf-steps-today]")?.textContent}})()');
     console.log('STEPS_EDITOR',JSON.stringify(editor));
@@ -176,7 +188,7 @@ async function app(tab, reload = false) {
     await tab.js('document.querySelector("#step-log").scrollIntoView({block:"center",behavior:"instant"});true');
     await sleep(180);
     const shot=await tab.cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-    fs.writeFileSync(path.resolve('docs/audits/BF_STEPS_WEB_DASHBOARD_20261124/steps-open-390.png'),Buffer.from(shot.data,'base64'));
+    fs.writeFileSync(path.resolve(artifactDir, 'steps-open-390.png'),Buffer.from(shot.data,'base64'));
   }
 
 }
@@ -184,6 +196,76 @@ async function gameBytes(tab) {
   return tab.js('JSON.stringify(Object.entries(localStorage).filter(([key])=>key.startsWith("bodyforge:pilot:v1")).sort(([a],[b])=>a.localeCompare(b)))');
 }
 async function stored(tab) { return tab.js('localStorage.getItem(' + JSON.stringify(key) + ')'); }
+async function localization() {
+  const tab = await newTab(afterMidnight, 'en-US');
+  await app(tab);
+  const originalGame = await gameBytes(tab);
+  const initial = await tab.snapshot();
+  check(await tab.js(`document.documentElement.lang === 'ru' &&
+    document.querySelector('#step-log')?.lang === 'en' &&
+    document.querySelector('#step-log')?.getAttribute('aria-label') === 'Steps and sync'`),
+  'English region declares its own language inside the Russian document');
+  check(await tab.js(`document.querySelector('[data-manual-steps]').textContent === '0 steps' &&
+    document.querySelector('#bf-steps-today').labels[0].textContent === 'Manual entry for today' &&
+    document.querySelector('#bf-steps-privacy').textContent.includes('earn no rewards')`),
+  'English empty count, input name and storage guidance');
+
+  await tab.cdp('Page.bringToFront');
+  await tab.js(`document.querySelector('#step-log details').open = false;
+    document.querySelector('#step-log summary').focus(); true`);
+  async function press(key, code, virtualKey, text) {
+    const params = { key, code, windowsVirtualKeyCode: virtualKey, nativeVirtualKeyCode: virtualKey };
+    await tab.cdp('Input.dispatchKeyEvent', { type: 'keyDown', ...params, ...(text && { text, unmodifiedText: text }) });
+    await tab.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...params });
+  }
+  await press('Enter', 'Enter', 13, '\r');
+  check(await tab.js(`document.querySelector('#step-log details').open`), 'trusted Enter opens the focused disclosure');
+  await press('Tab', 'Tab', 9);
+  check(await tab.js(`document.activeElement === document.querySelector('#bf-steps-today')`), 'trusted Tab reaches the count field');
+  await press('Tab', 'Tab', 9);
+  check(await tab.js(`document.activeElement === document.querySelector('#step-log button')`), 'next Tab reaches Save');
+  const { nodes } = await tab.cdp('Accessibility.getFullAXTree');
+  check(nodes.some(node => node.role?.value === 'spinbutton' && node.name?.value === 'Manual entry for today') &&
+    nodes.some(node => node.role?.value === 'button' && node.name?.value === 'SAVE'),
+  'Chrome accessibility tree exposes localized input and action names');
+  await tab.input('100001'); await tab.save();
+  check((await tab.snapshot()).status === 'Enter a whole number from 0 to 100,000.' &&
+    (await tab.snapshot()).stepSetItemCalls === initial.stepSetItemCalls, 'invalid count reports the localized limit and attempts no writes');
+  await tab.input('1'); await tab.save();
+  check(await tab.js(`document.querySelector('[data-manual-steps]').textContent === '1 step' &&
+    document.querySelector('#step-log [role=status]').textContent === 'Manual entry saved in this browser.'`),
+  'English singular and save confirmation reflect the actual saved count');
+  await tab.input('100000'); await tab.save();
+  const saved = await stored(tab);
+  check(JSON.parse(saved).count === 100000 && (await tab.snapshot()).stepSetItemCalls === initial.stepSetItemCalls + 2,
+    'localized rendering preserves the numeric data and one write per explicit valid save');
+  for (const width of [320, 360, 390, 428]) {
+    await tab.cdp('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 1, mobile: true });
+    check(await tab.js(`(() => {
+      const steps = document.querySelector('#step-log'), count = steps.querySelector('[data-manual-steps]');
+      const editor = steps.querySelector('.bf-steps-compact-editor'), button = steps.querySelector('button');
+      return innerWidth === ${width} && count.textContent === '100,000 steps' &&
+        steps.getBoundingClientRect().right <= innerWidth && editor.scrollWidth <= editor.clientWidth &&
+        button.getBoundingClientRect().height >= 44;
+    })()`), `localized maximum and save action fit at ${width}px`);
+  }
+  await tab.clock(beforeMidnight); await tab.visibleRefresh();
+  const conflict = await tab.snapshot();
+  check(conflict.disabled && conflict.readOnly && conflict.alert.includes('October 27, 2026') &&
+    await stored(tab) === saved, 'English conflict names the saved calendar date and preserves the record');
+  await tab.clock(afterMidnight); await tab.visibleRefresh();
+  const russian = await newTab(afterMidnight, 'ru-RU');
+  await app(russian);
+  check(await russian.js(`document.querySelector('#step-log')?.lang === 'ru' &&
+    document.querySelector('[data-manual-steps]').textContent.replace(/\u00a0/g,' ') === '100 000 шагов'`),
+  'Russian browser renders the same record with the correct unit');
+  await russian.clock(beforeMidnight); await russian.visibleRefresh();
+  check((await russian.snapshot()).alert.includes('27 октября 2026') && await stored(russian) === saved,
+    'Russian conflict identifies the same saved calendar date');
+  check(await gameBytes(tab) === originalGame && await gameBytes(russian) === originalGame &&
+    (await tab.snapshot()).stepSetItemCalls === initial.stepSetItemCalls + 2 && (await russian.snapshot()).stepSetItemCalls === 0,
+  'locale selection and date recovery produce no extra writes and preserve exact game bytes');
+}
 async function timezoneDay() {
   const epoch = Date.parse('2026-10-26T21:00:00.000Z');
   const tab = await newTab(epoch);
@@ -204,30 +286,72 @@ async function timezoneDay() {
   })()`);
   check(fixture.profile.workouts.length === 1 && fixture.profile.workouts[0].repetitions === 20 && fixture.workoutUtcDay === '2026-10-26', 'fixture contains one saved 20-rep workout on UTC day 26');
   await app(tab);
-  await tab.until('document.querySelector("[data-avatar-source=cc0]")?.dataset.avatarSource==="cc0"', 'GLB completes loading before the parent-day assertion');
-  await sleep(1000);
-  await tab.until('document.querySelector("[data-goal-completed]")?.dataset.goalCompleted==="20"', 'stable UTC dashboard shows its completed 20 reps');
+  const selectedDay = 'document.querySelector(".pulse-day-detail")?.dataset.selectedDay';
+  const selectedSessions = 'document.querySelector("[data-selected-sessions]")?.dataset.selectedSessions';
+  await tab.until(`${selectedDay} === '2026-10-26' && ${selectedSessions} === '1'`,
+    'Camera activity shows the saved workout on UTC day 26');
+  await tab.js(`(() => {
+    const range = document.querySelector('#pulse-activity-range');
+    range.value = '30';
+    range.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  })()`);
+  const selectedDateVisible = `(() => {
+    const strip = document.querySelector('.pulse-date-strip');
+    const active = strip?.querySelector('[aria-pressed="true"]');
+    if (!active) return false;
+    const rail = strip.getBoundingClientRect(), day = active.getBoundingClientRect();
+    return day.left >= rail.left - 1 && day.right <= rail.right + 1;
+  })()`;
+  await tab.until(`document.querySelector('.pulse-date-strip')?.dataset.period === '30' && ${selectedDateVisible}`,
+    '30-day activity strip starts with the selected date in view');
+  await tab.js(`document.querySelector('.pulse-date-strip').scrollLeft = 0; true`);
+  check(!await tab.js(selectedDateVisible), 'swiping to older dates can move the selected date out of view');
   const beforeGame = await gameBytes(tab);
   const before = await tab.snapshot();
   check(await tab.js('JSON.parse(localStorage.getItem("bodyforge:pilot:v1")).profileId==="qa-timezone-day-profile"'), 'actual dashboard loaded the pre-mounted fixture profile');
-  check(before.localSetItemCalls === 0, 'initial App mount and GLB warmup do not write localStorage');
+  check(before.localSetItemCalls === 0, 'initial App mount does not write localStorage');
   await tab.js('window.__bfObservedDateBeforeTimezone=new Date();window.__bfCapturedDayBeforeTimezone=[new Date().getFullYear(),String(new Date().getMonth()+1).padStart(2,"0"),String(new Date().getDate()).padStart(2,"0")].join("-");true');
   await tab.cdp('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Moscow' });
   const legacy = await tab.js(`(()=>{const previous=window.__bfObservedDateBeforeTimezone,now=new Date();return {
     epochUnchanged:previous.getTime()===now.getTime(),oldPredicateWouldSkip:previous.toDateString()===now.toDateString(),
     capturedDay:window.__bfCapturedDayBeforeTimezone,currentDay:[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'),
     workoutDay:[new Date('2026-10-26T20:58:00.000Z').getFullYear(),String(new Date('2026-10-26T20:58:00.000Z').getMonth()+1).padStart(2,'0'),String(new Date('2026-10-26T20:58:00.000Z').getDate()).padStart(2,'0')].join('-'),
-    completedBeforeRefresh:document.querySelector('[data-goal-completed]').dataset.goalCompleted}})()`);
+    selectedBeforeRefresh:${selectedDay}}})()`);
   console.log('TIMEZONE_LEGACY_PREDICATE', JSON.stringify(legacy));
   check(legacy.epochUnchanged && legacy.oldPredicateWouldSkip && legacy.capturedDay === '2026-10-26' && legacy.currentDay === '2026-10-27' && legacy.workoutDay === '2026-10-26', 'timezone changes the captured calendar day while the old Date comparison would skip refresh');
-  check(legacy.completedBeforeRefresh === '20', 'completed-goal DOM stays at 20 until the explicit visibility refresh');
+  check(legacy.selectedBeforeRefresh === '2026-10-26', 'activity calendar retains the previously observed day before visibility refresh');
   await tab.visibleRefresh();
-  await tab.until('document.querySelector("[data-goal-completed]")?.dataset.goalCompleted==="0"', 'App day observation refreshes daily goal independently of StepsBoard');
+  await tab.until(`${selectedDay} === '2026-10-27' && ${selectedSessions} === '0'`,
+    'App day observation refreshes the Camera activity calendar independently of StepsBoard');
+  await tab.until(selectedDateVisible, 'new selected date scrolls into view after day rollover', 3000);
+  check(await tab.js(selectedDateVisible), 'active date is readable without a second swipe after day rollover');
+  check(await tab.js('document.querySelector("[data-period-sessions]")?.dataset.periodSessions === "1"'),
+    'moving the activity calendar to the next day keeps the previous workout in the selected period total');
   const after = await tab.snapshot();
-  console.log('TIMEZONE_DAY_DOM', JSON.stringify({ completed: await tab.js('document.querySelector("[data-goal-completed]").dataset.goalCompleted'), before, after }));
+  console.log('TIMEZONE_DAY_DOM', JSON.stringify({ selected: await tab.js(selectedDay), before, after }));
   check(after.localDay === '2026-10-27', 'refreshed dashboard is on Moscow day 27');
   check(after.stepSetItemCalls - before.stepSetItemCalls === 0 && after.profileSetItemCalls - before.profileSetItemCalls === 0 && after.localSetItemCalls - before.localSetItemCalls === 0, 'timezone visibility refresh makes zero localStorage setItem calls, including profile and steps');
   check(await gameBytes(tab) === beforeGame && await tab.js('localStorage.getItem("bodyforge:pilot:v1")') === fixture.raw, 'timezone refresh preserves exact fixture profile and all game-prefix bytes');
+
+  await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 740, height: 390, deviceScaleFactor: 1, mobile: true });
+  await tab.until(`innerWidth === 740 && ${selectedDateVisible}`, 'selected date stays visible in landscape');
+  await tab.cdp('Emulation.setDeviceMetricsOverride', { width: 320, height: 844, deviceScaleFactor: 1, mobile: true });
+  await tab.until(`innerWidth === 320 && ${selectedDateVisible}`, 'selected date stays visible when returning to 320px portrait', 3000);
+  check(await tab.js(`${selectedDay} === '2026-10-27' && ${selectedDateVisible}`),
+    'orientation changes keep the same selected date fully within the strip');
+
+  await tab.js(`document.querySelector('[data-pulse-date="2026-10-25"]').click(); true`);
+  await tab.until(`${selectedDay} === '2026-10-25' && ${selectedDateVisible}`, 'an explicit historical date stays in view');
+  await tab.js(`document.querySelector('.pulse-date-strip').scrollLeft = 0; true`);
+  await tab.cdp('Emulation.setTimezoneOverride', { timezoneId: 'UTC' });
+  await tab.visibleRefresh();
+  await tab.until(`document.querySelector('.pulse-date-strip').lastElementChild?.dataset.pulseDate === '2026-10-26'`,
+    'activity window rolls back to UTC day 26');
+  check(await tab.js(`${selectedDay} === '2026-10-25' && ${selectedDateVisible}`),
+    'calendar rollover keeps a still-valid explicit selection visible');
+  check(await gameBytes(tab) === beforeGame && (await tab.snapshot()).localSetItemCalls === before.localSetItemCalls,
+    'calendar selection and rollback make no profile or step writes');
 }
 try {
   check((await fetch(origin)).status === 200, 'existing loopback Vite responds HTTP 200');
@@ -239,6 +363,8 @@ try {
   }, 'disposable Chrome CDP port');
   if (selectedCase === 'timezone-day') {
     await timezoneDay();
+  } else if (selectedCase === 'localization') {
+    await localization();
   } else {
   const a = await newTab(beforeMidnight);
   await app(a);

@@ -4,6 +4,7 @@ import { lstatSync, readFileSync, readdirSync, mkdirSync, mkdtempSync } from 'no
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildAndVerify } from './release-artifact-boundary.mjs';
+import { verifyOfflineWorkerDistribution } from './offline-worker-build.mjs';
 import { requirePreviewOrigin } from './owned-chrome.mjs';
 import { readReleaseMemory, RESOURCE_MINIMUM_MIB } from './release-resource-gate.mjs';
 import { createRecoveryDiagnostics } from './release-gate-diagnostics.mjs';
@@ -56,7 +57,8 @@ async function gate(label, command, markers = [], extra = {}) {
     const child = spawn(process.execPath, command, { cwd: root,
       env: { ...extra.base, ...extra.env }, stdio: ['ignore','pipe','pipe'] });
     const seen = new Set();
-    const recoveryDiagnostics=label==='owned-browser-recovery'?createRecoveryDiagnostics():null;
+    // Unit tests intentionally exercise and log rejected cleanup attempts.
+    const recoveryDiagnostics=command[0].startsWith("qa/")?createRecoveryDiagnostics():null;
     const entry = command[0].startsWith('qa/') ? command[0].split('/').at(-1) : null;
     let location;
     let timedOut = false;
@@ -90,9 +92,11 @@ async function gate(label, command, markers = [], extra = {}) {
     const timer = setTimeout(() => { timedOut = true; child.kill(); }, extra.timeout ?? 180000);
     timer.unref();
   });
-  const pass = exit === 0 && markers.every(marker => seen.has(marker)) && !diagnostics?.failure && !diagnostics?.cleanupUnverified;
-  receipt.checks[label] = { exit, pass, ...(!pass && location ? { location } : {}), ...(diagnostics?{diagnostics}:{}) };
+  const pass = exit === 0 && markers.every(marker => seen.has(marker)) && !diagnostics?.failure && !diagnostics?.screenFailure && !diagnostics?.cleanupUnverified && !diagnostics?.cleanupFailure;
+  receipt.checks[label] = { exit, pass, ...(!pass && location ? { location } : {}), ...((label==='owned-browser-recovery'||diagnostics?.cleanupFailure||diagnostics?.screenFailure)?{diagnostics}:{}) };
   console.error('BODYFORGE_QA_EXIT', label, exit);
+  if(diagnostics?.cleanupFailure) console.error('BODYFORGE_QA_CLEANUP_FAILURE',label,diagnostics.cleanupFailure.stage,diagnostics.cleanupFailure.code);
+  if(diagnostics?.screenFailure) console.error('BODYFORGE_QA_SCREEN_FAILURE',label,diagnostics.screenFailure.stage,diagnostics.screenFailure.code);
   if (pass) return true;
   if (exit === extra.replayExit && extra.replayMarkers?.every(marker => seen.has(marker))) return false;
   throw Error('required gate failed');
@@ -126,20 +130,28 @@ try {
   const base = { base: env };
   await gate('resource-unit', ['--test', 'qa/release-resource-gate.test.mjs', 'qa/release-gate-diagnostics.test.mjs'], [], base);
   await gate('artifact-unit', ['--test', 'qa/release-artifact-boundary.test.mjs'], [], base);
+  await gate('offline-worker-build-unit', ['--test', 'qa/offline-worker-build.test.mjs'], [], base);
+  await gate('third-party-notices-unit', ['--test', 'qa/third-party-notices.test.mjs'], [], base);
+  await gate('third-party-notices', ['qa/third-party-notices.mjs'], ['BF_THIRD_PARTY_NOTICES_PASS'], base);
   await gate('owned-browser-unit', ['--test', 'qa/owned-chrome.test.mjs'], [], base);
   await gate('native-policy-unit', ['--test', 'qa/native-policy-gate.test.mjs',
     'android/tests/nativeScreenProbe.test.mjs'], [], base);
   await gate('native-policy', ['qa/native-policy-gate.mjs'], ['BF_NATIVE_POLICY_PASS'], base);
   receipt.native = { policy: 'source-only', packaging: 'not-run', field: 'not-run' };
   await gate('offline-runtime-unit', ['--test', 'qa/offline-pose-pack.test.mjs'], [], base);
+  // Model verifier is mandatory; acquisition and local inference stay operator-only.
+  await gate('offline-model-unit', ['--test', 'qa/offline-pose-model.test.mjs'], [], base);
+  await gate('pose-egress-unit', ['--test', 'qa/pose-egress-policy.test.mjs'], [], base);
   await gate('offline-runtime-pins', ['qa/offline-pose-pack.mjs', '--verify-installed'],
     ['"sdkLicenseMetadata": "Apache-2.0"', '"state": "license-and-model-bytes-required"'], base);
   receipt.offlinePose = { runtime: 'pinned-installed-bytes', model: 'not-verified', inference: 'not-run' };
   await gate('field-metrics-unit', ['--test', 'qa/field-study-metrics.test.mjs'], [], base);
+  await gate('offline-worker-shell-browser', ['qa/offline-worker-shell-e2e.mjs'],
+    ['BF604_WORKER_SHELL_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], { ...base, timeout: 180000 });
   await gate('owned-browser-recovery', ['qa/owned-chrome-cleanup-e2e.mjs'],
     ['BF005_OWNED_CHROME_RECOVERY_PASS', 'mode=verified-windows-recovery', 'remaining=0'], base);
   await gate('unit', ['node_modules/vitest/vitest.mjs', 'run', '--maxWorkers=1',
-    '--no-file-parallelism', '--pool=threads'], [], base);
+    '--no-file-parallelism', '--pool=threads'], [], { ...base, timeout: 300_000 });
   await gate('types', ['node_modules/typescript/bin/tsc', '-b'], [], base);
 
   requireResources('artifact');
@@ -147,6 +159,9 @@ try {
   const build = await buildAndVerify(root, policy);
   receipt.distribution = build.distribution;
   receipt.checks.artifact = { exit: 0, pass: true };
+  requireResources('offline-worker-artifact');
+  receipt.offlineWorker = await verifyOfflineWorkerDistribution(root, build.distribution);
+  receipt.checks['offline-worker-artifact'] = { exit: 0, pass: true };
   await gate('bundle', ['qa/bundle-on-demand.mjs'], ['BODYFORGE_BUNDLE_ON_DEMAND_PASS'], base);
   await gate('pwa-install', ['qa/pwa-install.mjs'], ['BODYFORGE_PWA_INSTALL_PASS'], base);
   await gate('private-path-fixtures', ['qa/private-qa-paths-e2e.mjs'],
@@ -170,9 +185,11 @@ try {
   const browser = { base: env, timeout: 300000, env: {
     BODYFORGE_QA_ORIGIN: origin, BODYFORGE_DEV_ORIGIN: origin,
     BODYFORGE_QA_EXPECT_ENTRY_SHA256: entry.sha256,
+    BODYFORGE_QA_EXPECT_INDEX_SHA256: index.sha256,
     BODYFORGE_QA_ARTIFACT_DIR: mkdtempSync(path.join(qaRoot, 'release-gates-')),
   } };
   await gate('privacy', ['qa/privacy-server-e2e.mjs'], ['BODYFORGE_PRIVATE_DEV_PATHS_PASS'], browser);
+  await gate('pose-egress-browser', ['qa/pose-egress-e2e.mjs'], ['BF604_EGRESS_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], browser);
   // Functional screen gates use the same pinned preview but no optional screenshots.
   // The other browser scripts retain their existing artifact directory.
   const screenBrowser = { base: env, timeout: 300000, env: {
@@ -182,6 +199,9 @@ try {
     ['BF_SCREEN_OWNERSHIP_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], screenBrowser);
   await gate('synthetic-screen-content', ['qa/screen-content-e2e.mjs'],
     ['BF_SCREEN_CONTENT_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], screenBrowser);
+  // The recovery shortcut is a mandatory functional gate, not optional visual evidence.
+  await gate('synthetic-backup-help', ['qa/backup-help-e2e.mjs'],
+    ['BF_BACKUP_HELP_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], screenBrowser);
   await gate('synthetic-tower', ['qa/tower20-e2e.mjs'], ['BODYFORGE_TOWER_20REPS_E2E_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'], browser);
   const mobile = ['qa/mobile-e2e.mjs'];
   const mobilePass = ['BODYFORGE_MOBILE_E2E_PASS', 'QA_OWNED_CLEANUP PASS', 'remaining=0'];

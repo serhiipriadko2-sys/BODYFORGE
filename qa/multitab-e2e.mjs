@@ -322,6 +322,53 @@ try {
   await actualApp(b, true);
   check(JSON.stringify(await storage(b)) === JSON.stringify(combined), 'combined earned and spent coins plus muscle upgrade survive reload without replay');
 
+  // A real timeout must leave the purchase pending only in this page, then
+  // persist the same exact purchase once after an explicit retry.
+  await seed(a); await actualApp(b);
+  await b.js('document.querySelector(".mobile-nav button:nth-child(3)").click();true');
+  await b.until('document.querySelector("#forge .muscle-card button")?.disabled===false', 'upgrade available before timeout fixture');
+  const beforeTimeout = await storage(b);
+  await b.js(`(() => {
+    const original = Storage.prototype.setItem;
+    window.__walletWrites = [];
+    Storage.prototype.setItem = function (name, value) {
+      if (this === localStorage && [${JSON.stringify(key)}, ${JSON.stringify(backupKey)}].includes(name)) {
+        window.__walletWrites.push(name);
+      }
+      return Reflect.apply(original, this, arguments);
+    };
+    return true;
+  })()`);
+  await hold(a, lockName);
+  await b.js('document.querySelector("#forge .muscle-card button").click();true');
+  await a.until('(async()=> (await navigator.locks.query()).pending.length===1)()', 'purchase waits behind the held Web Lock');
+  await b.until('document.querySelector("[data-storage-status]")?.dataset.storageStatus==="unavailable" && document.querySelector("[data-action=retry-save]")?.disabled===false',
+    'purchase timeout presents an explicit retry', 20000);
+  const timeoutCopy = await b.js('document.querySelector("[data-storage-status] [role=alert]")?.textContent');
+  check(await a.js('(async()=>{const locks=await navigator.locks.query();return locks.held.length===1&&locks.pending.length===0})()'),
+    'timed-out purchase leaves only the original holder in the browser lock manager');
+  check(JSON.stringify(await storage(b)) === JSON.stringify(beforeTimeout) && (await b.js('__walletWrites')).length === 0,
+    'purchase timeout preserves primary and backup bytes with zero wallet writes');
+  await a.js('release();true');
+  await a.until('(async()=> (await navigator.locks.query()).held.length===0)()', 'original holder released before purchase retry');
+  await b.js('document.querySelector("[data-action=retry-save]").click();true');
+  await b.until('!!document.querySelector(".app-shell") && !document.querySelector("[data-storage-status]")',
+    'explicit retry returns to the app after durable purchase');
+  const afterTimeoutRetry = await storage(b);
+  const purchase = JSON.parse(beforeTimeout.primary);
+  purchase.coins -= 25;
+  purchase.game.muscles.arms += 1;
+  check(afterTimeoutRetry.primary === JSON.stringify(purchase) && afterTimeoutRetry.backup === beforeTimeout.primary,
+    'retry spends exactly 25 coins for one upgrade and retains the previous primary as backup');
+  check(JSON.stringify(await b.js('__walletWrites')) === JSON.stringify([backupKey, key]),
+    'retry writes only the backup and the new primary once each');
+  await actualApp(b, true);
+  check(JSON.stringify(await storage(b)) === JSON.stringify(afterTimeoutRetry),
+    'reload preserves the retried purchase and fallback bytes');
+  check(timeoutCopy?.includes('Сохранение занято') && timeoutCopy.includes('Повторить сохранение') &&
+    timeoutCopy.includes('Оставь страницу открытой') && !timeoutCopy.includes('Закрой зависшую вкладку'),
+    'timeout guidance describes the known state and offers retry without blaming another tab');
+
   // Explicit recovery uses the same lock as routine saves. It may not quarantine
   // or replace anything until the competing protected operation has released it.
   await seed(a);
@@ -352,7 +399,7 @@ try {
   check(await b.js('/HTTPS/.test(document.querySelector("[data-storage-status]").textContent)'), 'unsupported browser UI explains the secure-context or browser requirement');
   observations.ui = { durableCoins: JSON.parse(afterLogin.primary).coins, realStorageEvent: true,
     queuedLatestCancelled: true, queuedPageReloadCancelled: true, queuedPageCloseCancelled: true,
-    supersededSnapshotPreserved: true, recoveryProtected: true, unsupportedMutationRefused: true };
+    supersededSnapshotPreserved: true, purchaseTimeoutRetryOnce: true, recoveryProtected: true, unsupportedMutationRefused: true };
   console.log('BODYFORGE_MULTITAB_PASS', JSON.stringify({ assertions, observations }));
 } catch (error) {
   console.error('BODYFORGE_MULTITAB_FAIL', error.stack || String(error));

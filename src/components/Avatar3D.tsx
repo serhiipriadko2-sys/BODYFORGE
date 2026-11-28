@@ -36,7 +36,8 @@ import { avatarRimColor, avatarShadowsEnabled, configureAvatarKey } from '../lib
 import { configureAvatarLegCamera } from '../lib/avatarViewFraming';
 import { avatarLookDev } from '../lib/avatarLookDev';
 import { applyAvatarDetailMap, type AvatarDetailMap } from '../lib/avatarDetailMaps';
-import { installAvatarOcularDetail, ownAvatarOcularImages } from '../lib/avatarOcular';
+import { installAvatarOcularDetail } from '../lib/avatarOcular';
+import { loadAvatarOcularGltf } from '../lib/avatarOcularLoader';
 import { applyAvatarFaceForm, tintAvatarFace, type AvatarFaceForm } from '../lib/avatarFace';
 import { applyAvatarFaceContour } from '../lib/avatarFaceContour';
 import { installAvatarBrows } from '../lib/avatarBrows';
@@ -46,11 +47,15 @@ import { installScalpDensity, setScalpDensityLook } from '../lib/avatarScalpDens
 import { installBuzzSurface, setBuzzSurface } from '../lib/avatarBuzzReview';
 import { clampAvatarYaw, INITIAL_AVATAR_YAW, stepAvatarYaw } from '../lib/avatarYaw';
 import type { AvatarFocus } from './GameAvatar';
+import type { FoundationFigure } from '../lib/avatarFoundationReview';
+import type { ZoneLevels } from '../lib/muscleZones';
 import { avatarPixelRatio, GRAPHICS_CHANGE_EVENT } from '../lib/mobileGraphics';
 
 interface Avatar3DProps {
   build: BodyBuild;
   muscles: Partial<Record<Muscle, number>>;
+  zoneLevels?: ZoneLevels;
+  onZoneReady?: (ready: boolean) => void;
   outfit: Outfit;
   paused?: boolean;
   animate?: boolean;
@@ -62,7 +67,7 @@ interface Avatar3DProps {
   onYawChange?: (angle: number) => void;
 }
 
-type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look'>;
+type FigureParams = Pick<Avatar3DProps, 'build' | 'muscles' | 'outfit' | 'look' | 'zoneLevels'>;
 
 interface ImportedFigure {
   root: THREE.Group;
@@ -101,7 +106,7 @@ interface ImportedFigure {
  * No external image CDN or access to the camera stream.
  */
 export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, focus = 'full',
-  yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, animate = false, studio: studioView = false, className = '' }: Avatar3DProps) {
+  yaw = INITIAL_AVATAR_YAW, onYawChange, paused = false, animate = false, studio: studioView = false, className = '', zoneLevels, onZoneReady }: Avatar3DProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const runtime = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -121,12 +126,15 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
   const studioRef = useRef(studioView);
   const onYawChangeRef = useRef(onYawChange);
   onYawChangeRef.current = onYawChange;
-  const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit, look });
+  const zoneReadyRef = useRef(onZoneReady);
+  zoneReadyRef.current = onZoneReady;
+  const figureSettingsRef = useRef<FigureParams>({ build, muscles, outfit, look, zoneLevels });
   const importedRef = useRef<ImportedFigure | null>(null);
-  figureSettingsRef.current = { build, muscles, outfit, look };
+  const foundationRef = useRef<FoundationFigure | null>(null);
+  figureSettingsRef.current = { build, muscles, outfit, look, zoneLevels };
   const [available, setAvailable] = useState(true);
   const [modelSource, setModelSource] = useState<'procedural' | 'cc0'>('procedural');
-  const [modelAsset, setModelAsset] = useState<'procedural' | 'legacy' | 'athlete'>('procedural');
+  const [modelAsset, setModelAsset] = useState<'procedural' | 'legacy' | 'athlete' | 'foundation'>('procedural');
   const [skinMapReady, setSkinMapReady] = useState(false);
   const [realistic, setRealistic] = useState(false);
   const [groomed, setGroomed] = useState(false);
@@ -284,7 +292,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
             renderer.shadowMap.enabled = warm.castShadow = shadows;
             element.dataset.studioShadows = shadows ? currentView : 'off';
             const wardrobe = importedRef.current?.wardrobe;
-            element.dataset.shirtState = wardrobe ? (wardrobe.shirtVisible ? 'on' : 'off') : 'fallback';
+            element.dataset.shirtState = import.meta.env.DEV && foundationRef.current ? (foundationRef.current.shirt.visible ? 'on' : 'off') : wardrobe ? (wardrobe.shirtVisible ? 'on' : 'off') : 'fallback';
             renderer.render(scene, camera);
             runtimeDiagnostics.recordAvatarFrame(telemetryId, performance.now(), {
               drawCalls: renderer.info.render.calls,
@@ -367,15 +375,21 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       const frameLoop = new ActiveFrameLoop(time => {
         const seconds = idleClock.tick(time);
         const imported = importedRef.current;
-        if (!moving || !imported?.idle || disposed || document.hidden) return;
+        const foundationIdle = import.meta.env.DEV ? foundationRef.current?.idle : undefined;
+        if (!moving || (!imported?.idle && !foundationIdle) || disposed || document.hidden) return;
         if (seconds === undefined) return;
         try {
           const pose = sampleAvatarIdle(seconds);
-          imported.idle.pose(pose);
-          imported.idleBreath = pose.breath;
-          applyAvatarGrowth(imported.root, figureSettingsRef.current.muscles, pose.breath);
-          imported.seams?.update(imported.root);
-          element.dataset.idleBlink = pose.blink.toFixed(3);
+          if (foundationIdle) {
+            foundationIdle.pose(pose);
+            element.dataset.idleBlink = ['BF_CC0_ZONES_V10','BF_CC0_ZONES_V11','BF_CC0_ZONES_V12','BF_CC0_ZONES_V13','BF_CC0_ZONES_V14','BF_CC0_ZONES_V15','BF_CC0_ZONES_V20','BF_CC0_ZONES_V23','BF_CC0_ZONES_V24','BF_CC0_ZONES_V26','BF_CC0_ZONES_V27','BF_CC0_ZONES_V28'].includes(foundationRef.current?.id ?? '') ? pose.blink.toFixed(3) : '0';
+          } else if (imported?.idle) {
+            imported.idle.pose(pose);
+            imported.idleBreath = pose.breath;
+            applyAvatarGrowth(imported.root, figureSettingsRef.current.muscles, pose.breath);
+            imported.seams?.update(imported.root);
+            element.dataset.idleBlink = pose.blink.toFixed(3);
+          }
           element.dataset.idleBreath = pose.breath.toFixed(3);
           redraw();
         } catch (error) {
@@ -394,13 +408,19 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       function syncMotion() {
         const shown = visible && !document.hidden && !pausedRef.current && !disposed;
         const imported = importedRef.current;
-        const enabled = shown && animateRef.current && Boolean(imported?.idle) && !motionFailed &&
+        const foundationIdle = import.meta.env.DEV ? foundationRef.current?.idle : undefined;
+        const enabled = shown && animateRef.current && Boolean(imported?.idle || foundationIdle) && !motionFailed &&
           !motionQuery.matches && document.documentElement.dataset.bfGraphics !== 'economy' &&
           currentView !== 'legs';
         if (moving !== enabled) {
           moving = enabled;
           idleClock.reset();
           frameLoop.setActive(enabled);
+          if (!enabled && foundationIdle) {
+            foundationIdle.reset();
+            element.dataset.idleBlink = '0';
+            element.dataset.idleBreath = '0';
+          }
           if (!enabled && imported?.idle) {
             imported.idle.reset();
             imported.idleBreath = 0;
@@ -433,6 +453,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
           if (runtime.current === currentRuntime) {
             runtime.current = null;
             importedRef.current = null;
+            foundationRef.current = null;
           }
           element.removeEventListener('pointerdown', onPointerDown);
           element.removeEventListener('pointermove', onPointerMove);
@@ -829,8 +850,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                 const loadFallbackEyes = () => loadDetailMap('eyes', 'athlete-eyes.jpg');
                 const eyes = imported.eyes;
                 if (preferred && eyes) {
-                  new GLTFLoader().load('/assets/bodyforge-ocular-detail.glb', ({ scene: donor }) => {
-                    ownAvatarOcularImages(donor);
+                  void loadAvatarOcularGltf().then(({ scene: donor }) => {
                     if (!isCurrent() || !installAvatarOcularDetail(eyes, donor)) {
                       disposeThreeTree(donor);
                       loadFallbackEyes();
@@ -839,7 +859,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
                     element.dataset.ocularDetail = 'fitted-pbr';
                     setDetailMaps(count => count + 1);
                     redraw();
-                  }, undefined, loadFallbackEyes);
+                  }).catch(loadFallbackEyes);
                 } else loadFallbackEyes();
               }
             }
@@ -856,7 +876,46 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
       );
       // Compact attribute encoding keeps the 163-bone rig and all 129,973
       // triangles. Keep the original full-precision GLB as the first fallback.
-      loadFigure(['/assets/bodyforge-athlete-efficient.glb', '/assets/bodyforge-athlete-detail.glb', '/assets/bodyforge-athlete-realistic.glb', '/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb']);
+      const loadDefault = () => loadFigure(['/assets/bodyforge-athlete-efficient.glb', '/assets/bodyforge-athlete-detail.glb', '/assets/bodyforge-athlete-realistic.glb', '/assets/bodyforge-athlete.glb', '/assets/male-base-mesh-base_male.glb']);
+      const requestedFoundation = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('avatarFoundation') : null;
+      const regional = ['4','5','6','7','8','9','10','11','12','13','14','15','20','23','24','26','27','28'].includes(requestedFoundation ?? '') && !!figureSettingsRef.current.zoneLevels;
+      if (import.meta.env.DEV && (regional || (studioRef.current && ['1','3'].includes(requestedFoundation ?? ''))) &&
+          (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')) {
+        const version = requestedFoundation === '3' ? 3 : 1;
+        const relief = new URLSearchParams(window.location.search).get('avatarFoundationRelief') !== '0';
+        const promise = regional ? import('../lib/avatarZoneFoundation').then(({loadZoneFoundation}) => loadZoneFoundation(relief,(weights,proof)=>{
+          if (!disposed) { element.dataset.foundationWeights=JSON.stringify(weights);element.dataset.zoneGeometry=JSON.stringify(proof); }
+        }, requestedFoundation === '28' ? 28 : requestedFoundation === '27' ? 27 : requestedFoundation === '26' ? 26 : requestedFoundation === '24' ? 24 : requestedFoundation === '23' ? 23 : requestedFoundation === '20' ? 20 : requestedFoundation === '15' ? 15 : requestedFoundation === '14' ? 14 : requestedFoundation === '13' ? 13 : requestedFoundation === '12' ? 12 : requestedFoundation === '11' ? 11 : requestedFoundation === '10' ? 10 : requestedFoundation === '9' ? 9 : requestedFoundation === '8' ? 8 : requestedFoundation === '7' ? 7 : requestedFoundation === '6' ? 6 : requestedFoundation === '5' ? 5 : 4)) : import('../lib/avatarFoundationReview').then(({ loadFoundationFigure }) => loadFoundationFigure(relief, weights => {
+          if (!disposed) element.dataset.foundationWeights = JSON.stringify(weights);
+        }, version));
+        void promise
+          .then(foundation => {
+            if (disposed || runtime.current !== currentRuntime) {
+              disposeThreeTree(foundation.root); return;
+            }
+            try { foundation.apply(figureSettingsRef.current); }
+            catch (error) { disposeThreeTree(foundation.root); throw error; }
+            if (currentRuntime.current) {
+              figureRoot.remove(currentRuntime.current); disposeThreeTree(currentRuntime.current);
+            }
+            figureRoot.add(foundation.root);
+            currentRuntime.current = foundation.root;
+            foundationRef.current = foundation;
+            setModelSource('cc0'); setModelAsset('foundation');
+            element.dataset.foundationReview = foundation.id;
+            element.dataset.foundationRelief = relief ? 'on' : 'off';
+            element.dataset.idleRig = foundation.idle ? (['10','11','12','13','14','15','20','23','24','26','27','28'].includes(requestedFoundation ?? '') ? 'foundation-19-bone-eyes-blink' : ['8','9'].includes(requestedFoundation ?? '') ? 'foundation-19-bone-eyes' : 'foundation-19-bone') : 'static-review';
+            syncMotion();
+            runtimeDiagnostics.recordGlbLoad(telemetryId, performance.now() - glbStartedAt);
+            redraw();
+            if (regional) { setSkinMapReady(true); zoneReadyRef.current?.(true); }
+          }).catch(() => {
+            if (!disposed && runtime.current === currentRuntime) {
+              if (regional) zoneReadyRef.current?.(false);
+              if (!foundationRef.current) { element.dataset.foundationReview = 'unavailable'; loadDefault(); }
+            }
+          });
+      } else loadDefault();
     } catch (error) {
       console.error('BODYFORGE 3D renderer unavailable:', error);
       renderer?.dispose();
@@ -869,6 +928,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     return () => {
       runtime.current?.stopped();
       runtime.current = null;
+      zoneReadyRef.current?.(false);
     };
   }, []);
 
@@ -876,6 +936,12 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     const state = runtime.current;
     if (!state) return;
     state.setAccent(lookColors(look).trim);
+    if (import.meta.env.DEV && foundationRef.current) {
+      try { foundationRef.current.apply({ build, muscles, outfit, look, zoneLevels }); }
+      catch (error) { zoneReadyRef.current?.(false); console.error('Regional deformation unavailable', error); return; }
+      state.redraw();
+      return;
+    }
     if (importedRef.current) {
       styleImportedFigure(importedRef.current, { build, muscles, outfit, look });
       state.redraw();
@@ -889,7 +955,7 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     state.figureRoot.add(mesh);
     state.current = mesh;
     state.redraw();
-  }, [build, muscles.arms, muscles.core, muscles.legs, muscles.back, outfit, look]);
+  }, [build, muscles.arms, muscles.core, muscles.legs, muscles.back, outfit, look, zoneLevels]);
 
   useEffect(() => {
     runtime.current?.setView(focus);
@@ -909,10 +975,10 @@ export function Avatar3D({ build, muscles, outfit, look = DEFAULT_AVATAR_LOOK, f
     <div className={`avatar-3d-shell ${className}`} data-3d-status="active" data-avatar-source={modelSource}
       data-avatar-asset={modelAsset}
       data-skin-map={skinMapReady ? 'ready' : 'basic'}
-      data-avatar-revision={groomed ? 'detail-v2' : realistic ? 'realistic-v1' : 'base'}
+      data-avatar-revision={import.meta.env.DEV && modelAsset === 'foundation' ? (foundationRef.current?.id ?? 'foundation-review') : groomed ? 'detail-v2' : realistic ? 'realistic-v1' : 'base'}
       data-hair-maps={hairMaps}
       data-detail-maps={detailMaps}
-      data-outfit-fit={modelAsset === 'athlete' ? 'skinned-garment' : modelSource === "cc0" ? "skinned-surface" : "procedural"}
+      data-outfit-fit={import.meta.env.DEV && modelAsset === 'foundation' ? 'review-shell' : modelAsset === 'athlete' ? 'skinned-garment' : modelSource === "cc0" ? "skinned-surface" : "procedural"}
       data-look-skin={look.skin} data-look-hair={look.hair} data-look-hair-style={look.hairStyle ?? 'crop'}
       data-look-trim={look.trim} data-look-shirt={look.shirt === true ? 'on' : 'off'} data-look-visor={look.visor ? "on" : "off"}>
       <div className="avatar-3d-embers" aria-hidden="true" />
@@ -1146,7 +1212,9 @@ function buildImportedFigure(source: THREE.Group, settings: FigureParams, prefer
   const poseCorrective = import.meta.env.DEV && poseCorrectiveRequested && reliefReview && wardrobe &&
       sleeveRepair === 14 && originalShoulderIndex
     ? createPoseCorrective(source, originalShoulderIndex,
-      new URLSearchParams(window.location.search).get('avatarArmTaper') === '2' ? 'contour' :
+      new URLSearchParams(window.location.search).get('avatarArmTaper') === '2' ?
+        (new URLSearchParams(window.location.search).get('avatarAxillaContact') === '2' ? 'contact-medial' :
+          new URLSearchParams(window.location.search).get('avatarAxillaContact') === '1' ? 'contact' : 'contour') :
       new URLSearchParams(window.location.search).get('avatarArmTaper') === '1') : undefined;
   const sculpt = groomed ? createAvatarPhysique(source, Boolean(seams), landmarksReview, scanTorsoReview, athleticReview, reliefReview) : undefined;
   if (typeof source.userData.BODYFORGE_muscleReliefReview === 'string') {

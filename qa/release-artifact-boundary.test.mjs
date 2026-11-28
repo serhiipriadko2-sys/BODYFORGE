@@ -141,3 +141,21 @@ test('build refuses dangling output links, not just paths with existing targets'
   await assert.rejects(buildAndVerify(root,policy()),e=>e instanceof BoundaryError&&e.code==='OUTPUT_ALREADY_EXISTS');
   assert.equal(fs.existsSync(target),false);
 });
+
+test('only the exact generated offline worker is allowed at root; public and unreported copies are rejected',t=>{
+  const {dist}=fixture(t,true);
+  const worker={type:'asset',fileName:'bodyforge-offline.js',source:'/* synthetic generated worker */'};
+  const extended={output:[...bundle.output,worker]};
+  put(dist,worker.fileName,worker.source);
+  fails(()=>verifyDistribution(dist,policy(),bundle),'UNEXPECTED_ENTRY');
+  assert.equal(verifyDistribution(dist,policy(),extended).generatedCount,4);
+  fails(()=>generatedEntries({output:[...bundle.output,{...worker,fileName:'other.js'}]}),'GENERATED_PATH_FORBIDDEN');
+  fails(()=>generatedEntries({output:[...bundle.output,{type:'chunk',fileName:worker.fileName,code:worker.source}]}),'BUILD_OUTPUT_TYPE_INVALID');
+  fails(()=>validatePublicPolicy(policy({...base,[worker.fileName]:worker.source})),'MANIFEST_PATH_FORBIDDEN');
+});
+
+test('only the exact third-party notice path is admitted',t=>{
+  const {pub}=fixture(t);put(pub,'third-party-notices.txt','PINNED_NOTICE');
+  assert.equal(verifyPublic(pub,policy({...base,'third-party-notices.txt':'PINNED_NOTICE'})).count,5);
+  for(const n of ['other-notices.txt','third-party-notices.md','licenses/extra.txt'])fails(()=>validatePublicPolicy(policy({...base,[n]:'x'})),'MANIFEST_PATH_FORBIDDEN');
+});

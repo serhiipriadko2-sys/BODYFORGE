@@ -235,21 +235,29 @@ try {
   }
   const expectedCompleted = process.env.BODYFORGE_QA_ONLY
     ? (['pushup','plank'].includes(process.env.BODYFORGE_QA_ONLY) ? 1 : 0) : 2;
-  assert(completed===expectedCompleted,'completed workouts saved exactly once');
+  const profile = await saved();
+  const paidIds = new Set(profile.creditedWorkoutIds);
+  assert(completed === expectedCompleted && profile.workouts.length === expectedCompleted &&
+    profile.xp === expectedCompleted * 120 && profile.coins === expectedCompleted * 35 &&
+    paidIds.size === expectedCompleted && profile.workouts.every((workout) => paidIds.has(workout.id)),
+    'completed workouts saved and paid exactly once');
   await click('.mobile-nav button:nth-child(1)');
   if (!process.env.BODYFORGE_QA_ONLY) {
-    await until("document.querySelector('#daily-plan [data-goal-completed]') !== null",
-      'daily plan loaded', 13000);
-    assert(await ev("document.querySelector('#daily-plan [data-goal-completed]')?.dataset.goalCompleted") === '0',
-      'pushups and plank do not count as the squat daily target');
-    await until("document.querySelector('#pulse-progress [data-period-sessions]') !== null",
-      'pulse progress loaded', 13000);
+    const questButton = "#quests .quest-card:nth-child(2) .quest-button";
+    await until(`document.querySelector(${JSON.stringify(questButton)})?.getClientRects().length > 0`,
+      'squat quest visible on Forge', 13000);
+    assert(await ev(`document.querySelector(${JSON.stringify(questButton)})?.textContent.trim()`) === 'ВЫПОЛНИТЬ',
+      'pushups and plank do not unlock the squat quest reward');
+    await click('.mobile-nav button:nth-child(2)');
+    await until("document.querySelector('#pulse-progress [data-period-sessions]')?.getClientRects().length > 0",
+      'activity graph visible on Camera', 13000);
     assert(await ev("document.querySelector('#pulse-progress [data-period-sessions]')?.dataset.periodSessions") === '2',
       'activity graph includes both saved exercises');
     assert(await ev("document.querySelector('[data-period-plank-seconds]')?.dataset.periodPlankSeconds") === '30',
       'activity graph includes 30 seconds of plank');
     assert(await ev("document.querySelector('[data-period-reps]')?.dataset.periodReps") === '20',
       'activity graph excludes plank seconds from repetitions');
+    await click('.mobile-nav button:nth-child(1)');
   }
   await click('[aria-label="Начать тренировку приседаний"]');
   await until("!!document.querySelector('#challenge .challenge-heading h2')",'home quick start heading');

@@ -51,9 +51,9 @@ async function click(selector) {
   assert(found, 'click ' + selector);
   await sleep(140);
 }
-async function viewport(width) {
+async function viewport(width, height = 800) {
   await cdp('Emulation.setDeviceMetricsOverride', {
-    width, height: 800, deviceScaleFactor: 1, mobile: true,
+    width, height, deviceScaleFactor: 1, mobile: true,
   });
   await sleep(220);
 }
@@ -158,6 +158,20 @@ try {
     monthlyStats.reps === '0' && monthlyStats.denom === '0/30' &&
     monthlyStats.chart === '30',
     'empty Camera activity shows 0/30 active days and 0 repetitions for 30 days');
+  const selectedDate = await js('document.querySelector(".pulse-day-detail")?.dataset.selectedDay');
+  const visibleSelection = `(() => {
+    const strip = document.querySelector('.pulse-date-strip[data-period="30"]');
+    const active = strip?.querySelector('[aria-pressed="true"]');
+    if (!active || active.dataset.pulseDate !== ${JSON.stringify(selectedDate)}) return false;
+    const rail = strip.getBoundingClientRect(), day = active.getBoundingClientRect();
+    return day.width >= 44 && day.left >= rail.left - 1 && day.right <= rail.right + 1;
+  })()`;
+  for (const [width, height] of [[740, 390], [320, 844]]) {
+    await viewport(width, height);
+    await until(`innerWidth === ${width} && ${visibleSelection}`, `selected date visible at ${width} by ${height}`, 4000);
+    assert(await js(visibleSelection), `selected date remains visible in the 30-day strip at ${width} by ${height}`);
+  }
+  await viewport(360);
   await js('document.querySelector("#pulse-progress .pulse-trend-card")?.scrollIntoView({block:"start",behavior:"auto"})');
   await sleep(200);
   await snapshot('camera-activity-30days-360.png');

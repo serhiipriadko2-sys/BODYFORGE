@@ -1,10 +1,12 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { CircleHelp, Info } from 'lucide-react';
 import type { Profile } from '../lib/progression';
 import type { CompletedWorkoutResult } from '../lib/workoutJournal';
+import ThirdPartyNoticesPanel from './ThirdPartyNoticesPanel';
 
 // Load the file inspector and backup exporter only when Settings is opened.
 const ProgressBackupPanel = lazy(() => import('./ProgressBackupPanel'));
+const OfflineReadinessPanel = lazy(() => import('./OfflineReadinessPanel'));
 
 interface Props {
   profile: Profile;
@@ -14,6 +16,7 @@ interface Props {
 
 /** Help and local data protection; never initiates a download without a click. */
 export default function SettingsFaq({ profile, pendingResult, disabled }: Props) {
+  const [openInspectorRequest, setOpenInspectorRequest] = useState(0);
   return (
     <>
       <div className="forge-heading">
@@ -34,10 +37,25 @@ export default function SettingsFaq({ profile, pendingResult, disabled }: Props)
           <summary>Когда начисляются XP и монеты?</summary>
           <p>После выполнения цели и подтверждённого сохранения результата. Отмена подхода не даёт наград, повторное сохранение не должно начислять их второй раз.</p>
         </details>
-        <details className="bf-faq-item">
-          <summary>Как перенести прогресс на другой телефон?</summary>
-          <p>Можно скачать JSON-копию ниже. Автоматического импорта и синхронизации между телефонами пока нет. Проверка файла не восстанавливает сохранения.</p>
+        <details className="bf-faq-item" data-help-topic="backup-recovery">
+          <summary>Как восстановить прогресс из копии?</summary>
+          <p>В разделе «Сохрани своего бойца» подготовь резервную копию, скачай JSON или GZIP и проверь файл на устройстве.</p>
+          <p>Просмотр файла не изменяет прогресс. Если копия совместима с текущим бойцом и журналом, появится возможность перейти к замене. Нажми «Подтвердить замену» только после сравнения данных. На экране восстановления можно оставить новую копию или вернуть прежние сохранения.</p>
+          {profile.game.created && <p className="bf-goal-actions">
+            <button type="button" className="bf-small-action" data-action="open-backup-inspector"
+              aria-controls="progress-backup-file-checker" disabled={disabled}
+              onClick={() => setOpenInspectorRequest((request) => request + 1)}>Открыть проверку копии</button>
+          </p>}
         </details>
+        <details className="bf-faq-item" data-help-topic="device-transfer">
+          <summary>Как перенести прогресс на другой телефон?</summary>
+          <p>Скачай полную резервную копию и храни её отдельно. Перенос на чистый телефон пока не поддерживается: проверка файла доступна после создания бойца, но замена требует совместимого профиля и журнала. Облачной синхронизации нет.</p>
+          <p>Не удаляй данные исходного браузера, пока не проверишь полную копию и доступный способ восстановления.</p>
+        </details>
+        <Suspense fallback={<p role="status">Загружаем автономный режим…</p>}>
+          <OfflineReadinessPanel disabled={disabled || pendingResult !== null}/>
+        </Suspense>
+        <ThirdPartyNoticesPanel/>
       </div>
       <div className="tips-card" aria-label="Подготовка кадра для приседаний">
         <div className="lower-card-header"><div><span className="section-index">ПЕРЕД УДАРОМ</span><h3>ПОДГОТОВЬ <em>КАДР</em></h3></div><CircleHelp size={22} /></div>
@@ -48,7 +66,8 @@ export default function SettingsFaq({ profile, pendingResult, disabled }: Props)
       </div>
       {profile.game.created
         ? <Suspense fallback={<p role="status">Загружаем защиту прогресса…</p>}>
-            <ProgressBackupPanel profile={profile} pendingResult={pendingResult} disabled={disabled}/>
+            <ProgressBackupPanel profile={profile} pendingResult={pendingResult} disabled={disabled}
+              openInspectorRequest={openInspectorRequest}/>
           </Suspense>
         : <p className="bf-settings-hint">Создай бойца на экране «Горн», чтобы сохранить его прогресс.</p>}
     </>

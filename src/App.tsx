@@ -32,9 +32,10 @@ import { withTimeout } from './lib/withTimeout';
 import { DailyBoard, FighterSetup, ForgeStudio, OnlineBoard, TowerBoard } from './components/ForgeWorld';
 import {
   buyOrEquipOutfit, claimDailyQuest, claimLogin, createFighter, ghostRepetitions,
-  localDay, nextTowerFloor, TOWER_FLOORS, upgradeMuscle,
+  localDay, nextTowerFloor, TOWER_FLOORS, upgradeMuscle, upgradeMuscleZone,
   type BodyBuild, type Muscle, type Outfit, type WorkoutMode,
 } from './lib/game';
+import { investmentSummary, zoneLevelsForGame, zoneViewEnabled, zonesReviewEnabled, type MuscleZone } from './lib/muscleZones';
 import {
   getProfileTotals, COIN_REWARD, formatTime, getLevel,
   getLevelProgress, getRank, TARGET_REPS, XP_REWARD,
@@ -67,6 +68,18 @@ const FIRST_SNAPSHOT: CounterSnapshot = {
   counted: false, calibrated: false, calibrationRemainingMs: null, standingAngle: null, depthTarget: null,
   returnTarget: null, lowestAngle: null,
 };
+
+function getCameraPreflight() {
+  if (!window.isSecureContext) return {
+    title: 'КАМЕРА ТРЕБУЕТ HTTPS',
+    detail: 'Открой приложение по защищённому HTTPS-адресу, чтобы запустить тренировку с камерой.',
+  };
+  if (typeof navigator.mediaDevices?.getUserMedia !== 'function') return {
+    title: 'КАМЕРА НЕДОСТУПНА В ЭТОМ БРАУЗЕРЕ',
+    detail: 'Открой BODYFORGE в другом браузере с поддержкой камеры. Остальные разделы доступны здесь.',
+  };
+  return null;
+}
 
 function cameraErrorMessage(error: unknown): string {
   const name = error instanceof DOMException ? error.name : '';
@@ -516,6 +529,12 @@ function App() {
       setMode('error');
       return;
     }
+    const preflight = getCameraPreflight();
+    if (preflight) {
+      setError(preflight.detail);
+      setMode('error');
+      return;
+    }
     workoutModeRef.current = requestedMode;
     setWorkoutMode(requestedMode);
     const exerciseId: ExerciseId = requestedMode === 'training' ? (explicitExercise ?? previewExercise) : 'squat';
@@ -543,12 +562,6 @@ function App() {
     setCameraMessage('');
     setCameraModuleUnavailable(false);
     setError('');
-
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      setError('Для камеры нужен HTTPS или localhost. Открой приложение по защищённому адресу.');
-      setMode('error');
-      return;
-    }
 
     // Start audio during the button gesture; some mobile browsers block it later.
     if (soundEnabled && typeof window.AudioContext === 'function') {
@@ -919,6 +932,7 @@ function App() {
   const canNavigate = mode !== 'active' && mode !== 'loading';
   const homeAvatarOnly = profile.game.created && section === 'dashboard';
   const showTrainingPanels = section === 'challenge' || mode === 'active' || mode === 'loading';
+  const cameraPreflight = getCameraPreflight();
   // Training history and steps belong to the saved activity, not fighter creation.
   const showProgressPanels = profile.game.created || section === 'challenge';
 
@@ -929,6 +943,7 @@ function App() {
 
   return (
     <div className="app-shell" data-screen={section} data-fighter-created={profile.game.created ? 'true' : 'false'}>
+      <a className="skip-to-content" href="#main-content">К основному содержимому</a>
       <aside className="sidebar">
         <Brand />
         <div className="sidebar-section-label">НАВИГАЦИЯ КУЗНИ</div>
@@ -957,7 +972,7 @@ function App() {
           </div>
         </header>
 
-        <main className="content">
+        <main className="content" id="main-content" tabIndex={-1}>
           {(quarantined.entries.length > 0 || quarantined.status === 'unavailable') && <Suspense fallback={null}>
             <ResultQuarantineNotice profile={profile} count={quarantined.entries.length} unavailable={quarantined.status === 'unavailable'}/>
           </Suspense>}
@@ -981,7 +996,7 @@ function App() {
           )}
           {!profile.game.created && <FighterSetup legacyWorkouts={profile.workouts.length}
             onCreate={(build: BodyBuild, nickname: string) => {
-              setProfile((previous) => createFighter(previous, build, nickname));
+              setProfile((previous) => createFighter(previous, build, nickname, zonesReviewEnabled()));
               setSection('dashboard');
             }} />}
           <section className="intro" aria-label="Приветствие">
@@ -1004,8 +1019,8 @@ function App() {
                 {!homeAvatarOnly && <span className="kinetic-axis" aria-hidden="true">MOVE / BUILD / EVOLVE</span>}
                 <div className="stage-cross left" aria-hidden="true">+</div><div className="stage-cross right" aria-hidden="true">+</div>
                 <GameAvatar workouts={workoutCount} build={profile.game.build}
-                  muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown} look={avatarLook}/>
-                <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{Object.values(profile.game.muscles).reduce((sum, value) => sum + value, 0)}/20</span></div>
+                  muscles={profile.game.muscles} outfit={profile.game.outfit} paused={isCameraShown} look={avatarLook} zoneLevels={zoneViewEnabled(profile.game) ? zoneLevelsForGame(profile.game) ?? undefined : undefined}/>
+                <div className="power-label"><span className="online-dot" /><strong>МЫШЦЫ</strong><span>{investmentSummary(profile.game).points}/{investmentSummary(profile.game).max}</span></div>
               </div>
               {!homeAvatarOnly && <>
                 <div className="mobile-quickstart" aria-label="Быстрый старт тренировки">
@@ -1032,16 +1047,14 @@ function App() {
                   busy={mode === 'active' || mode === 'loading'} />
               </Suspense>}
 
-              {(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) && (
+              {cameraPreflight && (
                 <div className="camera-preflight" role="status">
-                  <WifiOff size={19} />
-                  <div><strong>КАМЕРА ТРЕБУЕТ HTTPS</strong>
-                    <span>По текущему HTTP-адресу доступен интерфейс, но браузер не разрешает распознавание упражнений. Для камеры нужен защищённый HTTPS-адрес.</span>
-                  </div>
+                  <WifiOff size={19} aria-hidden="true" />
+                  <div><strong>{cameraPreflight.title}</strong><span>{cameraPreflight.detail}</span></div>
                 </div>
               )}
 
-              {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем управление камерой…</div>}>
+              {showTrainingPanels && !cameraPreflight && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем управление камерой…</div>}>
                 <CameraControls source={cameraSource} verification={cameraVerification}
                   devices={cameraDevices} zoom={cameraZoom}
                   active={mode === 'active'} busy={mode === 'loading' || cameraBusy}
@@ -1133,17 +1146,17 @@ function App() {
                 <span>Короткий сигнал молота после каждого зачёта</span>
               </div>
 
-              {mode === 'error' && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
-              {mode === 'idle' && (canStartCameraExercise(previewExercise)
+              {mode === 'error' && !cameraPreflight && <div className="camera-error" role="alert"><WifiOff size={18} /><span>{error}</span></div>}
+              {mode === 'idle' && !cameraPreflight && (canStartCameraExercise(previewExercise)
                 ? <button className="primary-button" onClick={() => goTraining('training')}><Hammer size={20} /> НАЧАТЬ ЗАКАЛКУ <ArrowRight size={20} /></button>
                 : <button className="primary-button" onClick={() => setPreviewExercise('squat')}><CameraOff size={20} /> ВЕРНУТЬСЯ К ПРИСЕДАНИЯМ <ArrowRight size={20} /></button>)}
-              {mode === 'error' && (profile.game.created
+              {mode === 'error' && !cameraPreflight && (profile.game.created
                 ? cameraModuleUnavailable
                   ? <button className="primary-button" onClick={() => window.location.reload()}><RotateCcw size={19} /> ОБНОВИТЬ ПРИЛОЖЕНИЕ <ArrowRight size={19} /></button>
                   : <button className="primary-button" onClick={restartWorkout}><RotateCcw size={19} /> {towerFinished ? 'ОБЫЧНАЯ ТРЕНИРОВКА' : 'ПОВТОРИТЬ ПОПЫТКУ'} <ArrowRight size={19} /></button>
                 : <button className="primary-button" onClick={() => { setMode('idle'); navigate('dashboard'); }}><UserRound size={19} /> СОЗДАТЬ БОЙЦА <ArrowRight size={19} /></button>
               )}
-              {mode === 'complete' && <button className="primary-button" data-action="restart-workout" disabled={isSaving} onClick={restartWorkout}><RotateCcw size={19} /> {towerFinished ? 'ОБЫЧНАЯ ТРЕНИРОВКА' : 'НОВАЯ ЗАКАЛКА'} <ArrowRight size={19} /></button>}
+              {mode === 'complete' && !cameraPreflight && <button className="primary-button" data-action="restart-workout" disabled={isSaving} onClick={restartWorkout}><RotateCcw size={19} /> {towerFinished ? 'ОБЫЧНАЯ ТРЕНИРОВКА' : 'НОВАЯ ЗАКАЛКА'} <ArrowRight size={19} /></button>}
               <div className="challenge-footnote"><ShieldCheck size={14} /> ВИДЕО ОБРАБАТЫВАЕТСЯ НА ТВОЁМ УСТРОЙСТВЕ · НЕ ЗАПИСЫВАЕТСЯ</div>
               {showTrainingPanels && <Suspense fallback={<div role="status" className="catalog-loading">Загружаем диагностику…</div>}>
                 <RuntimeDiagnosticsPanel />
@@ -1192,6 +1205,7 @@ function App() {
           <ForgeStudio profile={profile} paused={isCameraShown} busy={isSaving} active={section === 'forge'}
             look={avatarLook} onLookChange={updateAvatarLook} lookStatus={avatarLookStatus} lookMessage={avatarLookMessage}
             onUpgrade={(part: Muscle) => setProfile((previous) => upgradeMuscle(previous, part))}
+             onZoneUpgrade={(zone: MuscleZone) => { if (zonesReviewEnabled()) setProfile(previous => upgradeMuscleZone(previous, zone)); }}
             onOutfit={(outfit: Outfit) => setProfile((previous) => buyOrEquipOutfit(previous, outfit))}/>
           <TowerBoard profile={profile}
             onTower={() => goTraining('tower')}

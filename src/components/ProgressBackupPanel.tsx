@@ -15,6 +15,7 @@ interface Props {
   profile: Profile;
   pendingResult: CompletedWorkoutResult | null;
   disabled: boolean;
+  openInspectorRequest?: number;
 }
 
 type ImportIssue = Extract<FileReplacementPreparation, { status: 'blocked' }>['reason'];
@@ -40,7 +41,7 @@ const importIssueText: Record<ImportIssue, string> = {
 };
 
 /** Preview and confirmation share the same immutable replacement plan. */
-export default function ProgressBackupPanel({ profile, pendingResult, disabled }: Props) {
+export default function ProgressBackupPanel({ profile, pendingResult, disabled, openInspectorRequest = 0 }: Props) {
   const [status, setStatus] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
   const [prepared, setPrepared] = useState<PreparedProgressBackup | null>(null);
   const [message, setMessage] = useState('');
@@ -64,6 +65,20 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
   const checkpointOperation = useRef<AbortController | null>(null);
   const [checkpointPreview, setCheckpointPreview] = useState<CheckpointPreview | null>(null);
   const [checkingCheckpoints, setCheckingCheckpoints] = useState(false);
+  const fileChecker = useRef<HTMLDetailsElement>(null);
+  const handledInspectorRequest = useRef(0);
+
+  // A FAQ shortcut only reveals and focuses the existing inspector. It does
+  // not select a file, inspect storage or authorize a profile replacement.
+  useEffect(() => {
+    if (openInspectorRequest === handledInspectorRequest.current) return;
+    handledInspectorRequest.current = openInspectorRequest;
+    if (disabled || !fileChecker.current) return;
+    fileChecker.current.open = true;
+    const summary = fileChecker.current.querySelector('summary');
+    summary?.focus({ preventScroll: true });
+    summary?.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }, [openInspectorRequest, disabled]);
 
   async function estimateCheckpoints() {
     if (!prepared || disabled || checkpointOperation.current) return;
@@ -291,7 +306,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
         <span className="section-index">ЗАЩИТА ПРОГРЕССА · ЛОКАЛЬНО</span>
         <h3>СОХРАНИ СВОЕГО БОЙЦА</h3>
         <p>Тренировки, XP, покупки, внешность и настройки хранятся в браузере. Перед очисткой данных или сменой телефона сохрани копию в JSON.</p>
-        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Сначала сравни прогресс. Для совместимой копии можно подтвердить замену.</small>
+        <small>Файл может содержать имя бойца и историю тренировок. Никуда не отправляется. Сначала сравни прогресс. Для совместимой копии можно подтвердить замену. Перенос на чистый телефон пока не поддерживается; не удаляй исходное сохранение.</small>
         <details className="progress-storage-capacity" data-storage-capacity={measuring ? 'checking' : capacity?.local.state ?? 'idle'}>
           <summary>МЕСТО ДЛЯ СОХРАНЕНИЙ</summary>
           <p>Проверка только читает объём данных. Ничего не удаляет и не запрашивает разрешения.</p>
@@ -321,7 +336,7 @@ export default function ProgressBackupPanel({ profile, pendingResult, disabled }
           <p><strong>iPhone / Safari:</strong> «Поделиться» → «На экран „Домой“».</p>
           <small>Камере нужен HTTPS; первая загрузка модели требует интернет. Копия прогресса не переносится на другое устройство автоматически.</small>
         </details>
-        <details className="progress-backup-file-checker"
+        <details ref={fileChecker} id="progress-backup-file-checker" className="progress-backup-file-checker"
           data-inspection-state={inspecting ? 'checking' : inspection?.state ?? 'idle'}>
           <summary>ПРОВЕРИТЬ СКАЧАННЫЙ JSON / GZIP</summary>
           <label htmlFor="bf-verify-local-backup">Выбери резервную копию с устройства. Файл останется в этом браузере.</label>

@@ -23,6 +23,27 @@ button:disabled { cursor: not-allowed; opacity: .6; }
 ::selection { background: var(--lime); color: #131513; }
 .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
 
+.skip-to-content {
+  position: fixed;
+  z-index: 20;
+  inset-block-start: max(12px, env(safe-area-inset-top));
+  inset-inline-start: 12px;
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: calc(100% - 24px);
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--bf-accent-copy, var(--lime));
+  border-radius: 8px;
+  background: var(--bf-surface-solid, var(--panel));
+  color: var(--bf-copy, var(--white));
+  font-weight: 700;
+}
+.skip-to-content:not(:focus) { clip-path: inset(50%); }
+.skip-to-content:focus-visible,
+#main-content:focus-visible { outline: 2px solid var(--bf-accent-copy, var(--lime)); }
+#main-content:focus-visible { outline-offset: -2px; }
+
 .app-shell { display: flex; min-height: 100vh; position: relative; overflow: hidden; }
 .sidebar { flex: 0 0 240px; width: 240px; background: #131515; border-right: 1px solid #292e2e; padding: 34px 20px 22px; display: flex; flex-direction: column; min-height: 100vh; position: sticky; top: 0; height: 100vh; z-index: 4; }
 .brand { display: flex; gap: 12px; align-items: center; user-select: none; }

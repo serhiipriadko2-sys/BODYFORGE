@@ -3,3 +3,6 @@ public/**/*.md text eol=lf
 public/**/*.txt text eol=lf
 public/**/*.svg text eol=lf
 public/manifest.webmanifest text eol=lf
+
+# Preserve upstream license evidence byte-for-byte.
+qa/license-inputs/*.txt -text

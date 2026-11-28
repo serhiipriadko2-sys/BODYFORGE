@@ -5,6 +5,8 @@ import {
   Swords, Target, Timer, UserRound, Zap,
 } from 'lucide-react';
 import GameAvatar, { type AvatarFocus } from './GameAvatar';
+import MuscleZonePanel from './MuscleZonePanel';
+import { bodyBuildLabel, emptyZoneLevels, investmentSummary, zoneLevelsForGame, zoneViewEnabled, zonesReviewEnabled, type MuscleZone } from '../lib/muscleZones';
 const AvatarLab = lazy(() => import('./AvatarLab'));
 import type { AvatarLook } from '../lib/avatarLook';
 import { canClaimLogin, canClaimQuest, hasClaimedDailyReward } from '../lib/game';
@@ -22,25 +24,27 @@ interface SetupProps {
 
 export function FighterSetup({ onCreate, legacyWorkouts }: SetupProps) {
   const [name, setName] = useState('БОЕЦ 01');
-  const [build, setBuild] = useState<BodyBuild>('lean');
+  const regional = zonesReviewEnabled();
+  const [build, setBuild] = useState<BodyBuild>(regional?'solid':'lean');
   return (
     <section className="forge-onboarding" id="onboarding" aria-label="Создание своего бойца">
       <div className="forge-heading"><span>ИСТОК КУЗНИ / 00</span><h2>СОЗДАЙ СВОЕГО <em>БОЙЦА</em></h2>
         <p>Начни с обычного человека. Его форму, мышцы и одежду изменят только твои тренировки.</p></div>
       {legacyWorkouts > 0 && <p className="legacy-note"><ShieldCheck size={16} /> Твои прежние тренировки и XP сохранены.</p>}
       <div className="forge-setup-layout">
-        <div className="setup-avatar-preview"><GameAvatar workouts={0} build={build} muscles={{ arms: 0, core: 0, legs: 0, back: 0 }} outfit="base"/><span>БОЕЦ / СТАРТ</span></div>
+        <div className="setup-avatar-preview"><GameAvatar workouts={0} build={build} muscles={{ arms: 0, core: 0, legs: 0, back: 0 }} outfit="base" zoneLevels={regional?emptyZoneLevels():undefined} studio={regional}/><span>БОЕЦ / СТАРТ</span></div>
         <div className="setup-controls">
           <label className="forge-field">ИМЯ БОЙЦА
             <input value={name} maxLength={20} onChange={(event) => setName(event.target.value)}
               autoComplete="off" placeholder="Как назовём героя?" aria-label="Имя персонажа" />
           </label>
           <div className="forge-field">ТЕЛОСЛОЖЕНИЕ</div>
-          <div className="build-options" role="group" aria-label="Телосложение">
+          <div className={'build-options'+(regional?' zone-build-options':'')} role="group" aria-label="Телосложение">
             <button className={build === 'lean' ? 'selected' : ''} aria-pressed={build === 'lean'}
-              onClick={() => setBuild('lean')} type="button"><UserRound size={19} /><strong>СТРОЙНЫЙ</strong><span>Нарастить форму с нуля</span></button>
+              onClick={() => setBuild('lean')} type="button"><UserRound size={19} /><strong>{regional?'ХУДОЙ':'СТРОЙНЫЙ'}</strong><span>Нарастить форму с нуля</span></button>
             <button className={build === 'solid' ? 'selected' : ''} aria-pressed={build === 'solid'}
-              onClick={() => setBuild('solid')} type="button"><ShieldCheck size={19} /><strong>КРЕПКИЙ</strong><span>Закалить исходную силу</span></button>
+              onClick={() => setBuild('solid')} type="button"><ShieldCheck size={19} /><strong>{regional?'СРЕДНИЙ':'КРЕПКИЙ'}</strong><span>{regional?'Обычная стартовая форма':'Закалить исходную силу'}</span></button>
+            {regional && <button className={build==='full'?'selected':''} aria-pressed={build==='full'} type="button" onClick={()=>setBuild('full')}><UserRound size={19}/><strong>ПОЛНЫЙ</strong><span>Более мягкие контуры</span></button>}
           </div>
           <button className="forge-solid-button" type="button" disabled={name.trim().length < 2}
             onClick={() => onCreate(build, name)}>
@@ -94,6 +98,7 @@ export function DailyBoard({ profile, now, onLogin, onClaimQuest, onTraining, bu
 interface StudioProps {
   profile: Profile;
   onUpgrade: (muscle: Muscle) => void;
+  onZoneUpgrade: (zone: MuscleZone) => void;
   onOutfit: (outfit: Outfit) => void;
   look: AvatarLook;
   onLookChange: (look: AvatarLook) => void;
@@ -103,13 +108,19 @@ interface StudioProps {
   paused?: boolean;
   busy?: boolean;
 }
-export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, lookStatus, lookMessage,
+export function ForgeStudio({ profile, onUpgrade, onZoneUpgrade, onOutfit, look, onLookChange, lookStatus, lookMessage,
   paused = false, busy = false, active = false }: StudioProps) {
   const [focus, setFocus] = useState<AvatarFocus>('full');
   const [yaw, setYaw] = useState(-.21);
   const [animate, setAnimate] = useState(true);
   const game = profile.game;
-  const sum = MUSCLES.reduce((total, muscle) => total + game.muscles[muscle.id], 0);
+  const regional=zoneViewEnabled(game),levels=regional?zoneLevelsForGame(game):null;
+  const [zoneReady,setZoneReady]=useState(false);
+  const progress=investmentSummary(game);
+  const viewZone=(group:Muscle,zone?:MuscleZone)=>{
+    setFocus(group==='legs'?'legs':'torso');
+    setYaw(group==='back'||zone==='triceps'||zone==='hamstrings'||zone==='glutes'||zone==='calves'?Math.PI-.21:-.21);
+  };
   return (
     <section className="forge-section" id="forge" aria-label="Прокачка персонажа">
       <div className="forge-heading">
@@ -123,25 +134,12 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
           <span className="preview-kicker">BODYFORGE // AVATAR SYSTEM · 01</span>
           <div className="armory-studio-badge"><span className="armory-live-dot"/> LIVE 3D · {{ full: 'ПОЛНЫЙ РОСТ', portrait: 'ПОРТРЕТ', torso: 'ТОРС', legs: 'НОГИ' }[focus]}</div>
           <GameAvatar workouts={profile.workouts.length} build={game.build} muscles={game.muscles} outfit={game.outfit}
-            paused={paused} look={look} focus={focus} yaw={yaw} onYawChange={setYaw} animate={active && animate} studio={active}/>
+            paused={paused} look={look} focus={focus} yaw={yaw} onYawChange={setYaw} animate={active && animate} studio={active} zoneLevels={levels??undefined} onZoneReady={setZoneReady}/>
           <strong>{game.nickname}</strong>
-          <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {sum}/20 · {game.build === 'lean' ? 'СТРОЙНЫЙ' : 'КРЕПКИЙ'}</span>
+          <span className="preview-spec">LVL {getLevel(profile.xp)} · ЗАКАЛКА {progress.points}/{progress.max} · {bodyBuildLabel(game.build,regional)}</span>
           <div className="studio-wallet"><Coins size={17}/> {profile.coins} МОНЕТ</div>
           </div>
-          <button type="button" className="armory-visor studio-motion-toggle" data-shirt={look.shirt === true ? 'on' : 'off'}
-            aria-label="Футболка" aria-pressed={look.shirt === true}
-            onClick={() => onLookChange({ ...look, shirt: look.shirt !== true })}>
-            <span className="armory-visor-icon"><Shirt size={19}/></span>
-            <span><strong>{look.shirt === true ? 'СНЯТЬ ФУТБОЛКУ' : 'НАДЕТЬ ФУТБОЛКУ'}</strong><small>Открытый торс показывает развитие мышц · бесплатно</small></span>
-            <span className="armory-toggle" aria-hidden="true"><i/></span>
-          </button>
-          <button type="button" className="armory-visor studio-motion-toggle" data-avatar-motion
-            aria-pressed={animate} onClick={() => setAnimate(value => !value)}>
-            <span className="armory-visor-icon"><UserRound size={19}/></span>
-            <span><strong>ЖИВОЙ ПЕРСОНАЖ</strong><small>Дыхание, взгляд и моргание. В экономичном режиме движение отключено.</small></span>
-            <span className="armory-toggle" aria-hidden="true"><i/></span>
-          </button>
-          <section className="studio-muscle-panel" aria-label="Прокачка мышц">
+          {regional ? <MuscleZonePanel levels={levels} coins={profile.coins} created={game.created} busy={busy} ready={active&&!paused&&zoneReady&&zonesReviewEnabled()} legacy={game.zoneProgress===undefined} onUpgrade={onZoneUpgrade} onView={viewZone}/> : <section className="studio-muscle-panel" aria-label="Прокачка мышц">
             <div className="forge-subheading"><Hammer size={18}/> ПРОКАЧКА МЫШЦ <span>МАКСИМУМ 5</span></div>
           <div className="muscle-grid">
             {MUSCLES.map((muscle) => {
@@ -157,7 +155,20 @@ export function ForgeStudio({ profile, onUpgrade, onOutfit, look, onLookChange, 
               </div>;
             })}
             </div>
-          </section>
+          </section>}
+          <button type="button" className="armory-visor studio-motion-toggle" data-shirt={look.shirt === true ? 'on' : 'off'}
+            aria-label="Футболка" aria-pressed={look.shirt === true}
+            onClick={() => onLookChange({ ...look, shirt: look.shirt !== true })}>
+            <span className="armory-visor-icon"><Shirt size={19}/></span>
+            <span><strong>{look.shirt === true ? 'СНЯТЬ ФУТБОЛКУ' : 'НАДЕТЬ ФУТБОЛКУ'}</strong><small>Открытый торс показывает развитие мышц · бесплатно</small></span>
+            <span className="armory-toggle" aria-hidden="true"><i/></span>
+          </button>
+          <button type="button" className="armory-visor studio-motion-toggle" data-avatar-motion
+            aria-pressed={animate} onClick={() => setAnimate(value => !value)}>
+            <span className="armory-visor-icon"><UserRound size={19}/></span>
+            <span><strong>ЖИВОЙ ПЕРСОНАЖ</strong><small>Дыхание, взгляд и моргание. В экономичном режиме движение отключено.</small></span>
+            <span className="armory-toggle" aria-hidden="true"><i/></span>
+          </button>
         </div>
         <div className="studio-content">
           <details className="studio-accordion" data-studio-panel="appearance">

@@ -5,7 +5,9 @@ import { prepareShoulderWeights, type ShoulderWeightCandidate } from './avatarSh
 export const POSE_CORRECTIVE_ID = 'BF_POSE_CORRECTIVE_REVIEW_V1';
 export const ARM_TAPER_ID = 'BF_ARM_TAPER_REVIEW_V1';
 export const ARM_CONTOUR_ID = 'BF_ARM_CONTOUR_REVIEW_V1';
-type ArmTaperMode = boolean | 'contour';
+export const AXILLA_CONTACT_ID = 'BF_AXILLA_CONTACT_REVIEW_V1';
+export const AXILLA_MEDIAL_ID = 'BF_AXILLA_MEDIAL_REVIEW_V2';
+type ArmTaperMode = boolean | 'contour' | 'contact' | 'contact-medial';
 // Pinned bind-space humerus endpoints (metres); mirrored for the right arm.
 const armStart = [.203572626546,1.428929295450,.018598292131] as const;
 const armAxis = [.170015193799,-.197040238502,-.001440444382] as const;
@@ -28,6 +30,35 @@ export function armTaperGain(x:number,y:number,z:number,contour=false):number {
   const to=contour?1.30+.20*outside:1.10;
   return THREE.MathUtils.clamp(1-smoother(a,.21,.29)*smoother(t,from,to),0,1);
 }
+// Paired clearance field in the pinned bind-space axilla. This is a
+// sampled contact-shaping approximation, not a medical model or IPC solver.
+// The lateral torso retracts as the medial arm moves away; outer arm,
+// chest/back surface, elbow and hands are outside the smooth envelope.
+export function axillaContactField(x:number,y:number,z:number):number {
+  if(![x,y,z].every(Number.isFinite))return 0;
+  const a=Math.abs(x);
+  const envelope=smoother(a,.125,.155)*(1-smoother(a,.275,.325))*
+    smoother(y,1.19,1.25)*(1-smoother(y,1.375,1.43))*(1-smoother(Math.abs(z),.045,.085));
+  return envelope===0?0:Math.sign(x)*envelope*(2*smoother(a,.175,.220)-1);
+}
+// Restrict the positive arm branch to its medial surface. The lateral
+// coordinate is measured from the pinned rest humeral axis, not world x.
+// Torso retraction remains unchanged; the smooth fade preserves continuity.
+export function axillaMedialField(x:number,y:number,z:number):number {
+  const field=axillaContactField(x,y,z);
+  if(field===0||field*Math.sign(x)<=0)return field;
+  const a=Math.abs(x);
+  const t=((a-armStart[0])*armAxis[0]+(y-armStart[1])*armAxis[1]+(z-armStart[2])*armAxis[2])/axisSquared;
+  const lateral=a-armStart[0]-t*armAxis[0];
+  return field*(1-smoother(lateral,-.025,.015));
+}
+export function axillaContactStrength(levels:Partial<Record<Muscle,number>>):number {
+  const level=(key:Muscle)=>{
+    const value=levels[key]??0;
+    return Number.isFinite(value)?THREE.MathUtils.clamp(value,0,5):0;
+  };
+  return .014*(.35*level('arms')+.20*level('core')+.45*level('back'))/5;
+}
 const MAX_POSED_DELTA = .035;
 type Levels = Partial<Record<Muscle, number>>;
 const ramp = (x: number, a: number, b: number) => THREE.MathUtils.smoothstep(x, a, b);
@@ -37,7 +68,7 @@ export function poseCorrectiveMask(x: number, y: number): number {
   const collar = ramp(a,.055,.10)*(1-ramp(a,.20,.27))*ramp(y,1.40,1.46)*(1-ramp(y,1.50,1.54));
   return Math.max(shoulder,collar);
 }
-type Active = { i:number; mask:number; group:number; taper:number };
+type Active = { i:number; mask:number; group:number; taper:number; contact:number };
 type Target = {
   mesh:THREE.SkinnedMesh; alternate:ShoulderWeightCandidate; active:Active[];
   group:Int32Array; groupCount:number; triangles:Uint32Array;
@@ -56,11 +87,12 @@ function prepare(mesh:THREE.SkinnedMesh,index:THREE.BufferAttribute,taper:ArmTap
   // Weld only the differential-normal calculation. Actual mesh splits remain.
   for(let i=0;i<p.count;i++){
     const x=p.getX(i),y=p.getY(i),z=p.getZ(i),mask=poseCorrectiveMask(x,y);
-    if(mask<=0)continue;
+    const contact=taper==='contact-medial'?axillaMedialField(x,y,z):taper==='contact'?axillaContactField(x,y,z):0;
+    if(mask<=0&&contact===0)continue;
     const k=[x,y,z].map(v=>Math.round(v*1e6)).join(',');
     let n=lookup.get(k);
     if(n===undefined){n=lookup.size;lookup.set(k,n);}
-    group[i]=n;active.push({i,mask,group:n,taper:taper?armTaperGain(x,y,z,taper==='contour'):1});
+    group[i]=n;active.push({i,mask,group:n,contact,taper:taper?armTaperGain(x,y,z,taper==='contour'||taper==='contact'||taper==='contact-medial'):1});
   }
   const triangles:number[]=[];
   for(let k=0;k<index.count;k+=3){
@@ -71,7 +103,7 @@ function prepare(mesh:THREE.SkinnedMesh,index:THREE.BufferAttribute,taper:ArmTap
   if(active.length<100||!triangles.length)return;
   return {mesh,alternate,active,group,groupCount:lookup.size,triangles:Uint32Array.from(triangles)};
 }
-function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bone):Edit|undefined {
+function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bone,contactStrength:number):Edit|undefined {
   const {mesh,alternate,active,group,groupCount,triangles}=target,g=mesh.geometry;
   const pos=g.getAttribute('position'),normal=g.getAttribute('normal'),j=g.getAttribute('skinIndex'),w=g.getAttribute('skinWeight');
   if(!(pos.array instanceof Float32Array)||!(normal.array instanceof Float32Array)||pos.count!==group.length)return;
@@ -91,7 +123,8 @@ function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bon
   const old=new THREE.Vector3(),a=new THREE.Vector3(),b=new THREE.Vector3(),temp=new THREE.Vector3(),delta=new THREE.Vector3();
   const linear=new THREE.Matrix3(),elements=linear.elements;
   let changed=0,peak=0;
-  for(const {i,mask,taper} of active){
+  for(const {i,mask,taper,contact} of active){
+    if(mask<=0&&contactStrength===0)continue;
     old.fromBufferAttribute(pos,i);a.set(0,0,0);b.set(0,0,0);elements.fill(0);
     let sum=0,altSum=0;
     for(let k=0;k<4;k++){
@@ -108,6 +141,9 @@ function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bon
     if(sum<.999||sum>1.001||altSum<.999||altSum>1.001)return;
     a.multiplyScalar(1/sum);b.multiplyScalar(1/altSum);
     delta.subVectors(b,a).multiplyScalar(mask).clampLength(0,MAX_POSED_DELTA).multiplyScalar(taper);
+    // Apply the signed reserve in posed space, then invert the actual
+    // blended linear transform so body and fitted shirt share the field.
+    delta.x+=contact*contactStrength;
     const length=delta.length();
     if(!Number.isFinite(length))return;
     if(length<1e-8)continue;
@@ -115,7 +151,7 @@ function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bon
     const determinant=linear.determinant();
     if(!Number.isFinite(determinant)||determinant<.30||determinant>2.5)return;
     delta.applyMatrix3(linear.invert());
-    if(!Number.isFinite(delta.lengthSq())||delta.length()>.05)return;
+    if(!Number.isFinite(delta.lengthSq())||delta.length()>(contactStrength>0?.07:.05))return;
     temp.copy(old).add(delta);
     positions.set(temp.toArray(),i*3);changed++;peak=Math.max(peak,length);
   }
@@ -136,7 +172,8 @@ function correction(target:Target,side:Int8Array,left:THREE.Bone,right:THREE.Bon
     add(before,pos.array,i,j,k2);add(after,positions,i,j,k2);
   }
   const q=new THREE.Quaternion();
-  for(const {i,group:n} of active){
+  for(const {i,group:n,mask} of active){
+    if(mask<=0&&contactStrength===0)continue;
     va.fromArray(before,n*3);vb.fromArray(after,n*3);
     if(va.lengthSq()<1e-20||vb.lengthSq()<1e-20)continue;
     q.setFromUnitVectors(va.normalize(),vb.normalize());
@@ -175,7 +212,7 @@ export function createPoseCorrective(root:THREE.Object3D,fullBodyIndex:THREE.Buf
   }));
   const targets=[prepare(body,fullBodyIndex,armTaper),prepare(shirt,shirt.geometry.index,armTaper)];
   if(targets.some(t=>!t))return;
-  const revision=armTaper==='contour'?ARM_CONTOUR_ID:armTaper?ARM_TAPER_ID:POSE_CORRECTIVE_ID;
+  const revision=armTaper==='contact-medial'?AXILLA_MEDIAL_ID:armTaper==='contact'?AXILLA_CONTACT_ID:armTaper==='contour'?ARM_CONTOUR_ID:armTaper?ARM_TAPER_ID:POSE_CORRECTIVE_ID;
   let previous='',applications=0;
   return {
     revision,
@@ -188,7 +225,8 @@ export function createPoseCorrective(root:THREE.Object3D,fullBodyIndex:THREE.Buf
       // The caller has just rebuilt the ordinary physique and applied growth.
       // Both edits must pass before any surface is changed.
       root.updateMatrixWorld(true);
-      const edits=targets.map(t=>correction(t!,side,left,right));
+      const strength=armTaper==='contact'||armTaper==='contact-medial'?axillaContactStrength(levels):0;
+      const edits=targets.map(t=>correction(t!,side,left,right,strength));
       if(edits.some(e=>!e))return false;
       for(const e of edits){
         const p=e!.mesh.geometry.getAttribute('position'),n=e!.mesh.geometry.getAttribute('normal');

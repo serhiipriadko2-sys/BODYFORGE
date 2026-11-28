@@ -40,3 +40,13 @@ test('missing or unknown marker fails closed; only typed state leaves the probe'
   assert.equal(run({hasMarker:false}),'off');
   for(const marker of ['', 'READY','other','1234',null])assert.equal(run({marker}),'off');
 });
+
+// Source contract: the packaged notices panel requires a plain UTF-8 response.
+test('packaged text resources receive text/plain and UTF-8',()=>{
+  const mime=source.match(/private static String mime\(String p\) \{([\s\S]*?)\n    \}/)?.[1];
+  assert.ok(mime);
+  assert.ok(mime.includes('if (s.endsWith(".txt") || s.endsWith(".md")) return "text/plain";'));
+  assert.ok(source.includes('String type = mime(path);'));
+  assert.ok(source.includes('boolean text = type.startsWith("text/")'));
+  assert.ok(source.includes('new WebResourceResponse(type, text ? "UTF-8" : null, stream)'));
+});

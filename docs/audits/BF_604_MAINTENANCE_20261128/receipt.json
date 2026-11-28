@@ -1,0 +1,285 @@
+{
+  "diagnosticAfterR2": {
+    "formalRelease": "failed",
+    "screenContent": {
+      "pass": true,
+      "exit": 0,
+      "logSha256": "742aa3faf2237ffe66e648ea79c7b41d6747c0438fa3ff87dee880c458c659dd"
+    },
+    "backupHelpInitial": {
+      "pass": false,
+      "exit": 16,
+      "logSha256": "fcd33836614eed0cb1816a4c92fe0571d5981313f67eaac7b7d8fe86a4a2ddab"
+    },
+    "backupHelpCorrected": {
+      "pass": true,
+      "exit": 0,
+      "logSha256": "3a59b413ab93cfc46bf784acc45b2d972e58d64341917636632166f2db30000f"
+    },
+    "chromeScopeUnitChecks": 24,
+    "chromeRecoveryChecks": 11
+  },
+  "intentionalDrift": [
+    "qa/backup-help-e2e.mjs",
+    "qa/owned-chrome-windows.mjs",
+    "qa/owned-chrome.test.mjs"
+  ],
+  "unrelatedDrift": [
+    "android/pack_web_apk.py",
+    "android/tests/test_pack_web_apk.py",
+    "qa/local-avatar-foundation-review.ts",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarZoneFoundation.ts",
+    "src/lib/muscleZones.ts",
+    "src/lib/regionalFoundationHair.test.ts",
+    "src/lib/regionalFoundationHair.ts",
+    "src/lib/zoneAssetPins.ts"
+  ],
+  "scope": "BF-604 local maintenance; public distribution and physical-device qualification not-run",
+  "releaseR1": {
+    "status": "failed",
+    "stage": "synthetic-screen-ownership",
+    "pass": 25,
+    "all": 26
+  },
+  "diagnosticScreen": {
+    "pass": true,
+    "checks": 94,
+    "rootCause": "not-established"
+  },
+  "releaseR2": {
+    "status": "failed",
+    "stage": "synthetic-screen-content",
+    "pass": 26,
+    "all": 27,
+    "source": {
+      "kind": "local-snapshot",
+      "inputCount": 475,
+      "sha256": "33cd1b6870bb88c212320f0b912acd009e8c806158f8c1d68c86aab92cb6b25d"
+    }
+  },
+  "upstream": {
+    "status": "scoped-diagnostic-pass",
+    "checks": 111,
+    "entries": 86,
+    "bytes": 82430977,
+    "workerVersion": "e6770cc24c22ca750d19fbf1a6f8a5c980097dd7eae889e6832d526aacb857d5",
+    "cleanup": true
+  },
+  "apk": {
+    "status": "not-run"
+  },
+  "scoped": {
+    "total": 28,
+    "match": 28,
+    "drift": []
+  },
+  "currentSourceDrift": [
+    "android/pack_web_apk.py",
+    "android/tests/test_pack_web_apk.py",
+    "qa/backup-help-e2e.mjs",
+    "qa/local-avatar-foundation-review.ts",
+    "qa/owned-chrome-windows.mjs",
+    "qa/owned-chrome.test.mjs",
+    "src/components/Avatar3D.tsx",
+    "src/lib/avatarZoneFoundation.ts",
+    "src/lib/muscleZones.ts",
+    "src/lib/regionalFoundationHair.test.ts",
+    "src/lib/regionalFoundationHair.ts",
+    "src/lib/zoneAssetPins.ts"
+  ],
+  "publicLicense": "partial-transitive-native-and-assets",
+  "field": "not-run",
+  "evidence": [
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/scope-retry-patch.json",
+      "bytes": 443,
+      "sha256": "e7e3c3cc278ee227d33021e05dcd52b1673d4bb1236d5474152947eab3cb3872"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/scope-retry-unit.log",
+      "bytes": 5206,
+      "sha256": "dad30e74d731cf06c20270a96a1bbb59a81f09681a73d03ecf4356fe11ed2497"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/scope-retry-e2e.log",
+      "bytes": 3056,
+      "sha256": "2b462da0bc3e0cc426b3d8b2c5e2d3c765a50b76719ce41d8ccef8356c47f79e"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/backup-help-boolean-patch.json",
+      "bytes": 220,
+      "sha256": "7f4f1a00ee8d84e1a9836d996bd593fff92a1c1f896288f0337f34a74eab8896"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/diagnostic-remainder.json",
+      "bytes": 556,
+      "sha256": "8b2fa7576f9ea9021a0368022494bc5d96dc7e518ea4defafd8e0a65ce6ac5c4"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/diagnostic-screen-content.log",
+      "bytes": 2537,
+      "sha256": "742aa3faf2237ffe66e648ea79c7b41d6747c0438fa3ff87dee880c458c659dd"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/diagnostic-backup-help.log",
+      "bytes": 823,
+      "sha256": "fcd33836614eed0cb1816a4c92fe0571d5981313f67eaac7b7d8fe86a4a2ddab"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/diagnostic-backup-help-boolean.json",
+      "bytes": 367,
+      "sha256": "a94e24c9a4b14a2d86b1f1f42a9d2194a9c1d38a560c2ccbf0d63171caa97e93"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/diagnostic-backup-help-boolean-r2.log",
+      "bytes": 2388,
+      "sha256": "3a59b413ab93cfc46bf784acc45b2d972e58d64341917636632166f2db30000f"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/run-maintenance-diagnostic-r2.mjs",
+      "bytes": 38531,
+      "sha256": "fac71c6003e94be0aab4d9ec2457b87b7babd051adee4728511902e4d49858f3"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/source.json",
+      "bytes": 73774,
+      "sha256": "3ca1ef9aab33357d8b5c9d64d26c25fd44069072a74be5cfbfa72340129bcfd6"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/source-r2.json",
+      "bytes": 73774,
+      "sha256": "d03a2210421ea82ab450edd033a601a682ae1607d8ca208b7ef8eaa3c4481876"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/scoped-final.json",
+      "bytes": 4952,
+      "sha256": "fd888dc748cadfc65bb27c3a67cc2521e2814bcd88a261013dcb75db982d0b2c"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/license-patch.json",
+      "bytes": 3388,
+      "sha256": "5278a132e12708d9f1a87c09a831c43d61d5d28cdda42323a5ac8392178959c7"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/maintenance-core-patch.json",
+      "bytes": 440,
+      "sha256": "7f93d766886afccc18b819ae574dc9ceb3a38cd884729cf81ce3758aee900546"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/maintenance-client-patch.json",
+      "bytes": 670,
+      "sha256": "57ae3d9b5157a4cb08c044bbb2a91485dabf83a9be2ddae24441d09240ad6a6e"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/maintenance-ui-patch.json",
+      "bytes": 238,
+      "sha256": "9c4315539119c3f339a979faa75cbb90f4c67f3557955d8d69fb7ca53ff4ab12"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/maintenance-browser-patch.json",
+      "bytes": 446,
+      "sha256": "9c9aa8b6c95eb53e81ef576dee4b867a327b5c9932c36eb6062105b344b307a6"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/receipt-check-patch.json",
+      "bytes": 446,
+      "sha256": "e852c8273b29e65e896cf15b3ff51fc4019c6993001744e3b4b50a7f1ca2dbbf"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/native-mime-patch.json",
+      "bytes": 488,
+      "sha256": "ba9ccc94f02574ba9a275820560aec138cf86a68e9741df348f166ab01234563"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/license-unit.log",
+      "bytes": 2568,
+      "sha256": "56403e9952d96a828d1bf21072c3e8b1dd0225910263a2f5e09394a81af589d9"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/license-app-unit.log",
+      "bytes": 915,
+      "sha256": "2bc115ecfe78355ae627b860e148d23e3d6b869941ec13604c2ea1f3fe02bde4"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/maintenance-unit-r2.log",
+      "bytes": 1022,
+      "sha256": "93b68838dfc914117a42c950b98fa0d5ba75cd41aef25487afdade3324747612"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/types-r1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/shell-r1.log",
+      "bytes": 3047,
+      "sha256": "00eb9488e4fa4ba58f3f532a5eca5d64eb08966ca74059d740a0cc01ddedea2d"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/native-mime-unit.log",
+      "bytes": 1340,
+      "sha256": "118de4dd05fd913918b127477038ae9a91abc0f0acb25aa146cddd54708bf149"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/native-mime-harness.log",
+      "bytes": 62,
+      "sha256": "7d1711fe28dfba33a98544c01b20738990d0a6b9c11bac6086b4253e85533744"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/release.json",
+      "bytes": 22469,
+      "sha256": "e0368e573354a02485b84eef89723104c43c7efce0185883983ec9007449ab8b"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/release.stderr.log",
+      "bytes": 1712,
+      "sha256": "0652bd68590f8390f279e7964f77e6b5df1aa027bc2ccec5592d1865de4e4fbc"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/screen-ownership-diagnostic.log",
+      "bytes": 4364,
+      "sha256": "899413b68e29239170b503c007d2d68e66ac7e4cb6bbbf3e36c9aae600c999c5"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/release-r2.json",
+      "bytes": 47444,
+      "sha256": "8e4393432b2d4fd99f56dcc4326da9a65d16990703e2470cbec66f3c676df0d0"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/release-r2.stderr.log",
+      "bytes": 4592,
+      "sha256": "7d5927fbff4344c2bfabab238213887b4d848bb09b08b0e02bebad87e43f7f4b"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/run-maintenance-upstream-r2.mjs",
+      "bytes": 37894,
+      "sha256": "52ae3d3c9c1723ac9f45d0e9694006de1d3807472afafaecb79475f9aa0fb22d"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/verify-apk-web.py",
+      "bytes": 2505,
+      "sha256": "446cc563c1cb832fca0eba0e8a3a5dc0e8854802cf9f62b0c9911b628d84c58c"
+    },
+    {
+      "path": ".bodyforge-qa/bf604-maintenance-20261128/upstream-diagnostic-r2.log",
+      "bytes": 7528,
+      "sha256": "05818956d52a0bf641bc32988b4e12dc7421116fb97b58c552475a1b87a02e67"
+    },
+    {
+      "path": "docs/audits/BF_604_MAINTENANCE_20261128/FIELD_TEST_RU.md",
+      "bytes": 5223,
+      "sha256": "758e906e0780fbc035c1f75f693913339e459953f0c3e52d56b5e1b0aff0011b"
+    },
+    {
+      "path": "docs/audits/BF_604_MAINTENANCE_20261128/LICENSE_BOUNDARY.md",
+      "bytes": 4667,
+      "sha256": "892eba35ea7982ec63f3b502049adc656b1a5ffa69067832c202c43ef5870f41"
+    },
+    {
+      "path": "public/third-party-notices.txt",
+      "bytes": 30038,
+      "sha256": "3a42112b3594638805388847f07dd8d9243322a5bfe97ac6a53dd2b6077196f6"
+    }
+  ]
+}

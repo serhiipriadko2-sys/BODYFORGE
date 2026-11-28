@@ -27,7 +27,7 @@ def index_zip(archive):
 
 def inventory(dist):
     allowed = {".html", ".js", ".css", ".json", ".webmanifest", ".svg", ".png", ".jpg",
-               ".jpeg", ".webp", ".glb", ".woff", ".woff2", ".wasm", ".txt", ".md", ".ico"}
+               ".jpeg", ".webp", ".glb", ".hdr", ".woff", ".woff2", ".wasm", ".txt", ".md", ".ico"}
     entries = {}
     for p in sorted(dist.rglob("*")):
         st = p.lstat()

@@ -35,14 +35,14 @@ function safeName(name){
 }
 function publicName(name){
   if(!safeName(name))return false;
-  if(rootPublic.has(name))return true;
+  if(rootPublic.has(name)||name==='third-party-notices.txt')return true;
   return /^assets\/[a-z0-9_-]+\.(?:png|jpg|hdr|glb)$/.test(name)||
     /^assets\/athlete-[a-z0-9_-]+-source\.md$/.test(name)||
     /^fonts\/(?:[a-z0-9_-]+\.woff2|(?:Manrope|Unbounded)-OFL\.txt|README\.md)$/.test(name)||
     /^icons\/bodyforge-[a-z0-9_-]+\.(?:png|svg)$/.test(name);
 }
 function generatedName(name){
-  return safeName(name)&&(name==='index.html'||/^assets\/[A-Za-z0-9_-]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(name));
+  return safeName(name)&&(name==='index.html'||name==='bodyforge-offline.js'||/^assets\/[A-Za-z0-9_-]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(name));
 }
 function entriesMap(entries,allowed){
   requireThat(Array.isArray(entries)&&entries.length>0&&entries.length<=MAX_FILES,'MANIFEST_COUNT_INVALID');
@@ -142,6 +142,7 @@ export function generatedEntries(result){
   for(const bundle of bundles)for(const item of bundle.output){
     requireThat(isObject(item)&&generatedName(item.fileName),'GENERATED_PATH_FORBIDDEN',item?.fileName);
     const n=item.fileName;
+    requireThat(n!=='bodyforge-offline.js'||item.type==='asset','BUILD_OUTPUT_TYPE_INVALID',n);
     let data;
     if(item.type==='chunk'&&typeof item.code==='string'&&n.endsWith('.js'))data=Buffer.from(item.code,'utf8');
     else if(item.type==='asset'&&(typeof item.source==='string'||item.source instanceof Uint8Array))data=Buffer.from(item.source);

@@ -33,6 +33,34 @@ async function go(index,screen){
   await js('document.querySelectorAll(".mobile-nav button")['+index+'].click()');
   await until('document.querySelector(".app-shell")?.dataset.screen==='+JSON.stringify(screen),'screen '+screen);
 }
+async function pressKey(key, virtualKey, text) {
+  const params = {key, code: key, windowsVirtualKeyCode: virtualKey, nativeVirtualKeyCode: virtualKey};
+  await cdp('Input.dispatchKeyEvent', {type: 'keyDown', ...params, ...(text && {text, unmodifiedText: text})});
+  await cdp('Input.dispatchKeyEvent', {type: 'keyUp', ...params});
+}
+async function checkKeyboardBypass(width, mobile) {
+  await cdp('Emulation.setDeviceMetricsOverride', {width, height: 900, deviceScaleFactor: 1, mobile});
+  const navigation = await cdp('Page.navigate', {url: origin + '/?keyboard=' + width});
+  assert.ok(!navigation.errorText);
+  await until(`location.search === '?keyboard=${width}' && !!document.querySelector('#onboarding')`, 'onboarding at ' + width);
+  const before = await js(savedBytes);
+  await pressKey('Tab', 9);
+  const firstFocus = await js('document.activeElement?.textContent?.trim()');
+  check(firstFocus === 'К основному содержимому', 'first Tab offers content bypass at ' + width + ' CSS px (received: ' + firstFocus + ')');
+  check(await js(`(() => {
+    const e = document.activeElement, r = e.getBoundingClientRect();
+    return e.matches('a[href="#main-content"]:focus-visible') && r.width >= 44 && r.height >= 44 &&
+      r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight &&
+      e.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)) &&
+      document.documentElement.scrollWidth <= document.documentElement.clientWidth;
+  })()`), 'focused link is visible, unobscured and at least 44 px at ' + width);
+  await pressKey('Enter', 13, '\r');
+  await until("document.activeElement === document.querySelector('main#main-content')", 'focus moved to main at ' + width);
+  await pressKey('Tab', 9);
+  check(await js("document.activeElement.closest('main#main-content') !== null"),
+    'next Tab stays inside the page content at ' + width);
+  check(await js(savedBytes) === before, 'keyboard bypass leaves saved progress bytes unchanged at ' + width);
+}
 const savedBytes='JSON.stringify(Object.entries(localStorage).filter(([k])=>k.startsWith("bodyforge:pilot:v1")).sort(([a],[b])=>a.localeCompare(b)))';
 try{
   const verified=await requirePreviewOrigin(origin,process.env.BODYFORGE_QA_EXPECT_ENTRY_SHA256);
@@ -59,6 +87,11 @@ try{
   await cdp('Page.enable');await cdp('Runtime.enable');
   await cdp('Network.enable');await cdp('Network.setCacheDisabled',{cacheDisabled:true});
   await cdp('Network.setBypassServiceWorker',{bypass:true});
+  stage='keyboard-bypass';
+  await cdp('Page.bringToFront');
+  for (const width of [320, 360, 390, 428, 1280]) {
+    await checkKeyboardBypass(width, width < 740);
+  }
   await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:900,deviceScaleFactor:1,mobile:true});
   stage='fixture';
   const navigation=await cdp('Page.navigate',{url:origin+'/'});assert.ok(!navigation.errorText);

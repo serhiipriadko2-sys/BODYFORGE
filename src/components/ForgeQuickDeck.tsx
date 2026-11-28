@@ -1,6 +1,7 @@
 import { ArrowUpRight, CalendarCheck2, Dumbbell, Shield, Sparkles, Target } from 'lucide-react';
 import { nextTowerFloor, TOWER_FLOORS } from '../lib/game';
 import type { Profile } from '../lib/progression';
+import { investmentSummary } from '../lib/muscleZones';
 
 interface Props {
   profile: Profile;
@@ -13,14 +14,14 @@ interface Props {
 
 /** Real destinations, rather than fantasy workouts not implemented by MediaPipe. */
 export default function ForgeQuickDeck({ profile, disabled, onTraining, onAvatar, onTower, onDaily }: Props) {
-  const skillTotal = Object.values(profile.game.muscles).reduce((a,b)=>a+b,0);
+  const skillTotal = investmentSummary(profile.game);
   const towerDone = Math.min(profile.game.highestClearedFloor, TOWER_FLOORS.length);
   const tower = nextTowerFloor(profile.game);
   const tiles = [
     { id: 'training', title: 'Приседания', subtitle: '20 повторений', kicker: 'КАМЕРА · ТРЕНИРОВКА',
       meta: 'Подсчёт движений', action: onTraining, glyph: Dumbbell, hint: 'Перейти к тренировке' },
     { id: 'hero', title: 'Герой', subtitle: 'Улучшай бойца', kicker: 'РАЗВИТИЕ · 3D',
-      meta: `${skillTotal} / 20 улучшений`, action: onAvatar, glyph: Sparkles, hint: 'Открыть героя' },
+      meta: `${skillTotal.points} / ${skillTotal.max} улучшений`, action: onAvatar, glyph: Sparkles, hint: 'Открыть героя' },
     { id: 'tower', title: 'Башня', subtitle: towerDone === TOWER_FLOORS.length ? 'Этажи пройдены' : `Следующий: ${tower.floor}`,
       kicker: 'ИСПЫТАНИЯ', meta: `${towerDone} / ${TOWER_FLOORS.length} этажей`, action: onTower,
       glyph: Shield, hint: 'Открыть башню' },

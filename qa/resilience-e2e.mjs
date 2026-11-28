@@ -4,15 +4,29 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { requireDevOrigin, waitForOwnedBrowser, newOwnedPage, cleanupOwnedChrome } from './owned-chrome.mjs';
 
 const origin = process.env.BODYFORGE_QA_ORIGIN || 'http://127.0.0.1:5173';
-let port;
+await requireDevOrigin(origin);
+const sourceResponse = await fetch(origin + '/src/App.tsx', { redirect: 'error', signal: AbortSignal.timeout(10000) });
+if (!sourceResponse.ok) throw Error('App source unavailable');
+const source = await sourceResponse.text();
+const poseModules = [...new Set([...source.matchAll(/["'](\/node_modules\/\.vite[^/]*\/deps\/@mediapipe_tasks-vision\.js\?v=[a-f0-9]+)["']/g)].map(match => match[1]))];
+if (poseModules.length !== 1) throw Error('Expected one optimized MediaPipe module');
+const poseModule = poseModules[0];
+const moduleResponse = await fetch(origin + poseModule, { redirect: 'error', signal: AbortSignal.timeout(10000) });
+if (!moduleResponse.ok || !moduleResponse.headers.get('content-type')?.includes('javascript')) throw Error('MediaPipe module unavailable');
+await moduleResponse.arrayBuffer();
+const artifactDir = process.env.BODYFORGE_QA_ARTIFACT_DIR
+  ? path.resolve(process.env.BODYFORGE_QA_ARTIFACT_DIR) : fs.mkdtempSync(path.join(os.tmpdir(), 'bf-resilience-evidence-'));
+if (process.env.BODYFORGE_QA_ARTIFACT_DIR) fs.mkdirSync(artifactDir, { recursive: false });
+let browser;
 const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bf-resilience-'));
 const chrome = spawn(process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
   '--headless=new', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
   '--no-first-run', '--no-default-browser-check', '--remote-allow-origins=*',
   '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
-  '--remote-debugging-port=0', '--user-data-dir=' + profileDir, 'about:blank',
+  '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profileDir, 'about:blank',
 ], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
 let socket, seq = 0, initScript = null, bootSerial = 0;
@@ -87,12 +101,12 @@ async function reloadSavedProfile() {
 }
 async function shot(name) {
   const data = await cdp('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
-  const file = path.join(os.tmpdir(), name);
-  fs.writeFileSync(file, Buffer.from(data.data, 'base64'));
+  const file = path.join(artifactDir, name);
+  fs.writeFileSync(file, Buffer.from(data.data, 'base64'), { flag: 'wx' });
   console.log('SCREENSHOT ' + file);
 }
 async function prepareFixedPose() {
-  await js("(async()=>{\n const source=await(await fetch('/src/App.tsx')).text();\n const marker='/node_modules/.vite/deps/@mediapipe_tasks-vision.js?v=';\n const start=source.indexOf(marker);\n if(start<0)throw Error('MediaPipe import not found');\n const url=source.slice(start).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];\n const mp=await import(url);\n window.__poseCalls=0;\n mp.PoseLandmarker.prototype.detectForVideo=function(video){\n   window.__poseCalls++;\n   const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:0}));\n   const r=10*Math.PI/180;\n   p[23]={x:.5,y:.3,visibility:.98};\n   p[25]={x:.5,y:.5,visibility:.98};\n   p[27]={x:.5+.15*Math.sin(r)/(video.videoWidth/video.videoHeight),y:.5+.15*Math.cos(r),visibility:.98};\n   p[11]={x:.46,y:.15,visibility:.98};p[12]={x:.54,y:.15,visibility:.98};\n   return {landmarks:[p]};\n };\n return true;\n})()");
+  await js("(async()=>{\n const mp=await import("+JSON.stringify(poseModule)+");\n window.__poseCalls=0;\n mp.PoseLandmarker.prototype.detectForVideo=function(video){\n   window.__poseCalls++;\n   const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:0}));\n   const r=10*Math.PI/180;\n   p[23]={x:.5,y:.3,visibility:.98};\n   p[25]={x:.5,y:.5,visibility:.98};\n   p[27]={x:.5+.15*Math.sin(r)/(video.videoWidth/video.videoHeight),y:.5+.15*Math.cos(r),visibility:.98};\n   p[11]={x:.46,y:.15,visibility:.98};p[12]={x:.54,y:.15,visibility:.98};\n   return {landmarks:[p]};\n };\n return true;\n})()");
 }
 
 async function cameraReady() {
@@ -102,26 +116,14 @@ async function cameraReady() {
   await until("document.querySelector('.pose-hud-angle strong')?.textContent.includes('°')", 'live angle', 5000);
 }
 try {
-  // The launcher may exit 0 after handing off to Chrome on Windows.
-  // The unique profile's DevToolsActivePort is the browser readiness signal.
-  for (let i = 0; i < 150; i++) {
-    const file = path.join(profileDir, 'DevToolsActivePort');
-    if (fs.existsSync(file)) {
-      const candidate = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 65535) { port = candidate; break; }
-    }
-    if (chrome.exitCode !== null && chrome.exitCode !== 0) throw Error('Owned Chrome exited ' + chrome.exitCode);
-    await sleep(100);
-  }
-  if (!port) throw Error('Owned Chrome DevTools unavailable in disposable profile');
-  let endpoint;
-  for (let i = 0; i < 70; i++) {
-    try { const tabs = await (await fetch('http://127.0.0.1:' + port + '/json')).json(); endpoint = tabs.find((t) => t.type === 'page')?.webSocketDebuggerUrl; if (endpoint) break; } catch {}
-    await sleep(200);
-  }
-  if (!endpoint) throw Error('Owned Chrome page unavailable');
-  socket = new WebSocket(endpoint);
-  await new Promise((ok, no) => { socket.addEventListener('open', ok, { once: true }); socket.addEventListener('error', no, { once: true }); });
+  browser = await waitForOwnedBrowser(profileDir, chrome);
+  const target = await newOwnedPage(browser);
+  socket = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((ok, no) => {
+    const timer = setTimeout(() => no(Error('Owned CDP connect timeout')), 3000);
+    socket.addEventListener('open', () => { clearTimeout(timer); ok(); }, { once: true });
+    socket.addEventListener('error', () => { clearTimeout(timer); no(Error('Owned CDP connect failed')); }, { once: true });
+  });
   socket.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
   await cdp('Runtime.enable'); await cdp('Page.enable'); await cdp('Network.enable');
   await cdp('Network.setCacheDisabled', { cacheDisabled: true });
@@ -148,6 +150,20 @@ try {
   await js('window.__restoreStorage();true');
   await click('[data-action=retry-save]');
   await until("!!document.querySelector('#onboarding')", 'storage permission recovered');
+
+  check(await js('localStorage.getItem(' + JSON.stringify(key) + ')===null && localStorage.getItem(' + JSON.stringify(backupKey) + ')===null'), 'empty startup retry does not create a wallet or backup');
+
+  const originalPrimary = JSON.stringify(fighter), originalBackup = JSON.stringify({...fighter, coins: 35});
+  const epochKey = key + ':epoch', epoch = 'a1234567-1234-4123-8123-123456789abc';
+  await boot(originalPrimary, originalBackup, 'localStorage.setItem(' + JSON.stringify(epochKey) + ',' + JSON.stringify(epoch) + ');const get=Storage.prototype.getItem;Storage.prototype.getItem=function(){throw new DOMException("denied","SecurityError")};window.__restoreStorage=()=>{Storage.prototype.getItem=get};');
+  check(await js("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable'"), 'unreadable existing profile blocks onboarding');
+  await click('[data-action=retry-save]');
+  await until("document.querySelector('[data-storage-status]')?.dataset.storageStatus==='unavailable' && !document.querySelector('[data-action=retry-save]')?.disabled", 'still denied retry stays unavailable');
+  await js('window.__restoreStorage();true');
+  await click('[data-action=retry-save]');
+  await until("!!document.querySelector('.app-shell') && !document.querySelector('#onboarding')", 'retry loads existing profile and lineage');
+  check(await js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(originalPrimary) + '&&localStorage.getItem(' + JSON.stringify(backupKey) + ')===' + JSON.stringify(originalBackup) + '&&localStorage.getItem(' + JSON.stringify(epochKey) + ')===' + JSON.stringify(epoch)), 'startup retry preserves exact saved profile, backup and epoch');
+
 
   await boot(undefined, undefined, "const set=Storage.prototype.setItem;window.__failWrite=false;Storage.prototype.setItem=function(k,v){if(window.__failWrite)throw new DOMException('full','QuotaExceededError');return set.call(this,k,v)};");
   const beforeQuota = await js('localStorage.getItem(' + JSON.stringify(key) + ')');
@@ -210,11 +226,12 @@ try {
     'old tower replay after history rotation changes neither reward, floor, record nor workout total');
   check(await js('document.documentElement.scrollWidth<=390'), 'mature profile balances and lifetime totals fit a 390px phone');
 
-  await boot(undefined, undefined, "Object.defineProperty(window,'isSecureContext',{value:false});Object.defineProperty(crypto,'randomUUID',{value:undefined});");
+  await boot(undefined, undefined, "Object.defineProperty(window,'isSecureContext',{value:false});Object.defineProperty(crypto,'randomUUID',{value:undefined});window.__cameraRequests=0;navigator.mediaDevices.getUserMedia=()=>{window.__cameraRequests++;return Promise.reject(new Error('unexpected camera request'))};");
+  const beforeInsecure = await js('localStorage.getItem(' + JSON.stringify(key) + ')');
   await click('.mobile-nav button:nth-child(2)');
-  await click('#challenge .primary-button');
-  await until("document.querySelector('.camera-error')?.textContent.includes('HTTPS')", 'HTTP camera preflight without randomUUID');
-  check(await js("!document.querySelector('.camera-visible')"), 'HTTP start fails safely, no uncaught crypto error');
+  await until("document.querySelector('.camera-preflight strong')?.textContent.includes('HTTPS')", 'HTTP camera preflight without randomUUID');
+  check(await js("!document.querySelector('#challenge .primary-button') && !document.querySelector('.camera-visible') && window.__cameraRequests===0"), 'HTTP preflight hides start and never requests camera');
+  check(await js('localStorage.getItem(' + JSON.stringify(key) + ')===' + JSON.stringify(beforeInsecure)), 'HTTP preflight preserves exact profile');
 
   await boot();
   const external = JSON.stringify({ ...fighter, xp: 480, coins: 105 });
@@ -230,7 +247,7 @@ try {
   await js("(()=>{const v=document.querySelector('video');window.__track=v.srcObject.getVideoTracks()[0];const t=v.currentTime;Object.defineProperty(v,'currentTime',{configurable:true,get:()=>t});return true})()");
   await until("document.querySelector('.camera-control-help')?.textContent.includes('завис')", 'frozen camera watchdog', 4000);
   check(await js("document.querySelector('.pose-hud-angle strong')?.textContent==='—' && document.querySelector('.counter-number')?.textContent==='0'"), 'frozen frame clears obsolete pose without fake repetitions');
-  check(await js("document.querySelector('[data-guidance=camera-stalled]')?.textContent.includes('не ошибка твоей позы')"), 'freeze explanation does not blame player framing');
+  check(await js("document.querySelector('[data-guidance=camera-stalled]')?.textContent.includes('Это не оценка твоей позы.')"), 'freeze explanation does not blame player framing');
   await shot('bf-audit-frozen-camera.png');
   await js("delete document.querySelector('video').currentTime;true");
   await until("document.querySelector('.pose-hud-angle strong')?.textContent.includes('°')", 'video stream resumes');
@@ -275,7 +292,7 @@ try {
   check(await js("window.__hiddenTrack.readyState==='ended' && !document.querySelector('.camera-visible')"), 'pagehide releases the stream and cannot finish an unseen squat');
 
   await boot(undefined, undefined, "const get=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);navigator.mediaDevices.getUserMedia=async(...args)=>{const s=await get(...args);window.__modelFailureStream=s;return s}");
-  await js("(async()=>{const source=await(await fetch('/src/App.tsx')).text();const marker='/node_modules/.vite/deps/@mediapipe_tasks-vision.js?v=';const i=source.indexOf(marker);if(i<0)throw Error('module missing');const url=source.slice(i).split(String.fromCharCode(34))[0].split(String.fromCharCode(39))[0];const mp=await import(url);mp.FilesetResolver.forVisionTasks=()=>Promise.reject(new Error('QA: model runtime offline'));return true})()");
+  await js("(async()=>{const mp=await import("+JSON.stringify(poseModule)+");mp.FilesetResolver.forVisionTasks=()=>Promise.reject(new Error('QA: model runtime offline'));return true})()");
   await click('.mobile-nav button:nth-child(2)');
   await click('#challenge .primary-button');
   await until("!!document.querySelector('.camera-error')", 'model download failure is visible');
@@ -305,42 +322,6 @@ try {
   process.exitCode = 12;
 } finally {
   socket?.close();
-  // The Windows launcher may exit while the owned Chrome browser is still live.
-  // Close ONLY the browser whose port was written by this temporary profile.
-  try {
-    const file = path.join(profileDir, 'DevToolsActivePort');
-    if (fs.existsSync(file)) {
-      const ownedPort = Number(fs.readFileSync(file, 'utf8').split('\n')[0]);
-      if (Number.isSafeInteger(ownedPort) && ownedPort > 0 && ownedPort <= 65535) {
-        const response = await fetch('http://127.0.0.1:' + ownedPort + '/json/version',
-          { signal: AbortSignal.timeout(1500) });
-        if (!response.ok) throw Error('Owned browser CDP unavailable');
-        const { webSocketDebuggerUrl } = await response.json();
-        const endpoint = new URL(webSocketDebuggerUrl);
-        if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' ||
-            endpoint.port !== String(ownedPort) || !endpoint.pathname.startsWith('/devtools/browser/')) {
-          throw Error('Unverified owned browser endpoint');
-        }
-        const owned = new WebSocket(webSocketDebuggerUrl);
-        await new Promise((resolve, reject) => {
-          const timer = setTimeout(() => reject(Error('Owned CDP connection timeout')), 1500);
-          owned.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
-          owned.addEventListener('error', () => { clearTimeout(timer); reject(Error('Owned CDP connection failed')); }, { once: true });
-        });
-        const closed = new Promise((resolve) => {
-          const timer = setTimeout(resolve, 1500);
-          owned.addEventListener('close', () => { clearTimeout(timer); resolve(); }, { once: true });
-        });
-        owned.send(JSON.stringify({ id: 1, method: 'Browser.close' }));
-        await closed;
-        if (owned.readyState === WebSocket.OPEN) owned.close();
-      }
-    }
-  } catch (error) { console.warn('OWNED_CHROME_CLOSE_UNCONFIRMED', String(error)); }
-  chrome.kill(); await sleep(500);
-  if (path.dirname(profileDir) !== os.tmpdir() || !path.basename(profileDir).startsWith('bf-resilience-')) {
-    throw Error('Unverified temporary profile cleanup target');
-  }
-  try { fs.rmSync(profileDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }); }
-  catch (error) { console.error('TEMP_CLEANUP_BLOCKED', String(error)); process.exitCode ||= 17; }
+  try { await cleanupOwnedChrome(profileDir, 'bf-resilience-', chrome, browser); }
+  catch (error) { console.error('QA_OWNED_CLEANUP FAIL', String(error)); process.exitCode ||= 17; }
 }

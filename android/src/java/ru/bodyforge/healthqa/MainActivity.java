@@ -127,6 +127,7 @@ public final class MainActivity extends Activity {
     private static String mime(String p) {
         String s = p.toLowerCase(Locale.ROOT);
         if (s.endsWith(".html")) return "text/html";
+        if (s.endsWith(".txt") || s.endsWith(".md")) return "text/plain";
         if (s.endsWith(".js") || s.endsWith(".mjs")) return "text/javascript";
         if (s.endsWith(".css")) return "text/css";
         if (s.endsWith(".json") || s.endsWith(".webmanifest")) return "application/json";

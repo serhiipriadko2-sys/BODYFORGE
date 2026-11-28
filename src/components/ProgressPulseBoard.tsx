@@ -4,7 +4,8 @@ import {
   Gauge, Shield, Target, TrendingUp, Zap,
 } from 'lucide-react';
 import type { Profile } from '../lib/progression';
-import { fighterSkillMeters, fighterUpgradeFraction, weeklySessionLine } from '../lib/dashboardDisplay';
+import { fighterSkillMeters, fighterUpgradeFraction, fighterZoneMeters, weeklySessionLine } from '../lib/dashboardDisplay';
+import { zoneLevelsForGame, zoneViewEnabled, zoneTotal, TOTAL_ZONE_POINTS } from '../lib/muscleZones';
 import { comparePulsePeriods, type PulseRange } from '../lib/progressPulse';
 import { readActivityHistory, visibleActivityHistory, type ActivityHistoryIndex } from '../lib/activityHistory';
 
@@ -43,30 +44,44 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
       document.removeEventListener('visibilitychange', visible);
     };
   }, [profile, activityVisible, actionsDisabled]);
-  useEffect(() => {
-    // A hidden card has no measurable width. Restore the selected day on Camera entry
-    // or a range change without moving the page or losing the previous selection.
-    const strip = dateStrip.current;
-    if (!activityVisible || !strip) return;
-    const active = strip.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
-    if (!active) return;
-    if (active === strip.lastElementChild) {
-      strip.scrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
-    } else {
-      const rail = strip.getBoundingClientRect();
-      const day = active.getBoundingClientRect();
-      if (day.left < rail.left || day.right > rail.right) {
-        strip.scrollLeft += day.left - rail.left - (strip.clientWidth - day.width) / 2;
-      }
-    }
-  }, [range, activityVisible]);
   const indexed = activityVisible && !actionsDisabled && history?.profile === profile ? history.value : null;
   const coverage = indexed ?? visibleActivityHistory(profile);
   const { current: trend, previous, deltaSessions, historyLimited } =
     comparePulsePeriods(coverage.records, now, range, coverage.expectedCount, coverage.complete ? 'complete' : 'partial');
+  const selected = trend.days.find(day => day.date === selectedDate) ?? trend.days.at(-1);
+  const firstDate = trend.days[0]?.date;
+  const activeDate = selected?.date;
+  useEffect(() => {
+    // A hidden card has no measurable width. Only adjust the date strip itself.
+    const strip = dateStrip.current;
+    if (!activityVisible || !strip || !activeDate) return;
+    const active = strip.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+    if (!active) return;
+    const revealSelection = () => {
+      if (active === strip.lastElementChild) {
+        strip.scrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      } else {
+        const rail = strip.getBoundingClientRect();
+        const day = active.getBoundingClientRect();
+        if (day.left < rail.left || day.right > rail.right) {
+          strip.scrollLeft += day.left - rail.left - (strip.clientWidth - day.width) / 2;
+        }
+      }
+    };
+    revealSelection();
+    if (typeof ResizeObserver !== 'function') return;
+    let width = strip.clientWidth;
+    const resize = new ResizeObserver(() => {
+      const nextWidth = strip.clientWidth;
+      if (width === nextWidth) return;
+      width = nextWidth;
+      if (width > 0) revealSelection();
+    });
+    resize.observe(strip);
+    return () => resize.disconnect();
+  }, [activityVisible, range, firstDate, activeDate]);
   const chart = weeklySessionLine(trend.days);
   const observedPoints = historyLimited ? chart.points.filter(point => point.sessions > 0) : chart.points;
-  const selected = trend.days.find(day => day.date === selectedDate) ?? trend.days.at(-1);
   const displayCount = (count: number) => historyLimited ? (count ? `≥${count}` : '—') : String(count);
   const periodReps = historyLimited ? `Доступные повторы за ${range} дней: ${displayCount(trend.reps)}`
     : `Повторы упражнений за ${range} дней: ${trend.reps}`;
@@ -79,8 +94,10 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
       : deltaSessions === 0
         ? 'Столько же подходов, сколько в прошлом периоде'
         : `${deltaSessions > 0 ? '+' : ''}${deltaSessions} подходов к прошлому периоду`;
-  const muscles = fighterSkillMeters(profile.game.muscles);
-  const overall = fighterUpgradeFraction(profile.game.muscles);
+  const zones=zoneViewEnabled(profile.game)?zoneLevelsForGame(profile.game):null;
+  const muscles = zones?fighterZoneMeters(zones):fighterSkillMeters(profile.game.muscles);
+  const maxPoints=zones?TOTAL_ZONE_POINTS:20;
+  const overall = zones?zoneTotal(zones)/maxPoints:fighterUpgradeFraction(profile.game.muscles);
   const upgradePercent = Math.round(overall * 100);
 
   return (
@@ -95,10 +112,10 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
       </header>
 
       <article className="pulse-ring-card" aria-label="Игровые улучшения тела">
-        <div className="pulse-card-heading"><Gauge size={19}/> ОБЩИЙ ПРОГРЕСС <span className="pulse-heading-side">УЛУЧШЕНИЯ / 20</span></div>
+        <div className="pulse-card-heading"><Gauge size={19}/> ОБЩИЙ ПРОГРЕСС <span className="pulse-heading-side">УЛУЧШЕНИЯ / {maxPoints}</span></div>
         <div className="pulse-ring-layout">
           <div className="pulse-gauge" role="img" data-pulse-percent={upgradePercent}
-            aria-label={`Приобретено ${muscles.reduce((a,m)=>a+m.level,0)} из 20 улучшений. Корпус ${muscles[0].level} из 5, спина ${muscles[1].level} из 5, руки ${muscles[2].level} из 5`}>
+            aria-label={`Приобретено ${muscles.reduce((a,m)=>a+m.level,0)} из ${maxPoints} улучшений. ${muscles.map(m=>m.label+' '+m.level+' из '+(m.max??5)).join(', ')}`}>
             <svg viewBox="0 0 220 220" aria-hidden="true">
               <defs>
                 <filter id="pulse-halo" x="-80%" y="-80%" width="260%" height="260%">
@@ -122,7 +139,7 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
             <div className="pulse-gauge-label">
               <strong>{upgradePercent}<span>%</span></strong>
               <small>УСИЛЕНИЯ</small>
-              <span>{muscles.reduce((sum,m)=>sum+m.level,0)} / 20</span>
+              <span>{muscles.reduce((sum,m)=>sum+m.level,0)} / {maxPoints}</span>
             </div>
           </div>
           <div className="pulse-muscle-list" aria-label="Развитие мышц">
@@ -136,10 +153,10 @@ export default function ProgressPulseBoard({ profile, now, activityVisible, acti
                     <strong>{meter.label}</strong>
                     <span>{Math.round(meter.progress*100)}%</span>
                   </div>
-                  <div className="pulse-muscle-bottom"><small>Ур. {meter.level} из 5</small></div>
+                  <div className="pulse-muscle-bottom"><small>{zones?'Очки':'Ур.'} {meter.level} из {meter.max??5}</small></div>
                   <div className="pulse-muscle-rail" role="progressbar"
                     aria-label={`Усиление: ${meter.label}`} aria-valuenow={meter.level}
-                    aria-valuemin={0} aria-valuemax={5}>
+                    aria-valuemin={0} aria-valuemax={meter.max??5}>
                     <span style={{width:`${meter.progress*100}%`,backgroundColor:meter.color}}/>
                   </div>
                 </div>

@@ -371,9 +371,17 @@ export function useProfileStorage() {
     });
   }, [accept, applyJournal, runWrite, stageBeforeRecovery, epochIssue]);
   const retry = useCallback(() => {
+    // No trusted lineage was ever observed at startup. Explicit retry must
+    // load the real stored profile, not save the unreadable startup snapshot.
+    // A previously observed epoch or an in-memory completion still uses the
+    // existing conflict and journal paths.
+    if (epochRevision.current === undefined && !hydrated.current && !volatileResult.current) {
+      reload();
+      return Promise.resolve();
+    }
     const journal = readResultJournal();
     return !hydrated.current || volatileResult.current || journal.status === 'unavailable' || journal.entries.length ? replay() : save(profile, true);
-  }, [profile, replay, save]);
+  }, [profile, reload, replay, save]);
 
   const quarantine = useCallback(async (expected: readonly JournalEntry[]) => {
     if (!await stageBeforeRecovery()) return;

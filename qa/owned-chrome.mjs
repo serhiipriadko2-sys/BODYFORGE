@@ -6,9 +6,10 @@ import path from 'node:path';
 import net from 'node:net';
 import { ChildProcess } from 'node:child_process';
 import { recoverWindowsChrome } from './owned-chrome-windows.mjs';
+import { cleanupFailureCode } from './release-gate-diagnostics.mjs';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-class OwnershipError extends Error {}
+class OwnershipError extends Error { constructor(message){super(message);this.name='OwnershipError';} }
 const launches = new WeakMap();
 const samePath = (a,b) => process.platform==='win32'
   ? path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase()
@@ -221,12 +222,16 @@ async function closeBrowser(identity) {
   } finally { socket.close(); }
 }
 export async function cleanupOwnedChrome(profile, prefix, chrome, identity) {
+  let stage='bind';
+  try {
   // All destructive paths depend on the exact launcher, directory and identity proof.
   const proof=bindLaunch(profile,prefix,chrome);
+  stage='identity';
   const current=cleanupIdentity(proof,identity);
   if((!Number.isInteger(chrome.pid)||chrome.pid<=0)&&current.identity)
     throw new OwnershipError('Disposable launcher cannot authorize browser identity');
   let issue,graceful=false,recovery=null;
+  stage='cdp-close';
   if(current.disk&&current.identity){
     try { await closeBrowser(current.identity); graceful=true; }
     catch(error) {
@@ -234,19 +239,25 @@ export async function cleanupOwnedChrome(profile, prefix, chrome, identity) {
       issue=error;
     }
   }
+  stage='launcher-wait';
   await waitExit(chrome,3000);
+  stage='post-close-identity';
   assertProfile(proof);
   // A missing file after a recorded close is normal; a changed identity is not.
   const after=readIdentity(proof);
   if(after&&current.identity&&!sameIdentity(after,current.identity))throw new OwnershipError('Disposable identity mismatch');
+  stage='native-recovery';
   if(process.platform==='win32'&&chrome.pid!==undefined){
     recovery=await recoverWindowsChrome(proof.profile,proof.executable);
   }else if(chrome.pid!==undefined&&!graceful){
     // No unverified process-tree kill or directory deletion on other hosts.
     throw Error('Disposable browser graceful close unconfirmed on this platform');
   }
+  stage='launcher-exit';
   if(!await waitExit(chrome,2000))throw Error('Disposable launcher exit unconfirmed');
+  stage='debug-port';
   if(current.identity&&!await closedPort(current.identity.port))throw new OwnershipError('Disposable debugging port still listening or unverified');
+  stage='profile-removal';
   // Do not touch a replaced or linked profile, including during removal retries.
   const deadline=Date.now()+15000;
   let attempts=0,lastCode;
@@ -266,4 +277,8 @@ export async function cleanupOwnedChrome(profile, prefix, chrome, identity) {
   console.log('QA_OWNED_CLEANUP PASS attempts='+attempts+' mode='+mode+suffix);
   return {mode,attempts,profileRemoved:true,launcherExited:true,portClosed:current.identity?true:null,
     exactProfileBefore:recovery?.before??null,terminated:recovery?.terminated??null,remaining:recovery?.remaining??null};
+  }catch(error){
+    console.error('QA_OWNED_CLEANUP_FAILURE',stage,cleanupFailureCode(stage,error));
+    throw error;
+  }
 }

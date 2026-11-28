@@ -39,6 +39,12 @@ public static class BfOwnedChromeNative {
       return result;
     }finally{LocalFree(pointer);}
   }
+  static bool IsExited(IntPtr h,uint milliseconds=0) {
+    uint state=WaitForSingleObject(h,milliseconds);
+    if(state==0)return true;
+    if(state==258)return false;
+    throw new InvalidOperationException("owned wait state unavailable");
+  }
   public static bool Reap(int pid,long creation,string executable) {
     // SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_TERMINATE
     IntPtr h=OpenProcess(0x00101001,false,pid);
@@ -48,18 +54,30 @@ public static class BfOwnedChromeNative {
       throw new InvalidOperationException("owned handle unavailable");
     }
     try {
-      if(WaitForSingleObject(h,0)==0)return false;
+      if(IsExited(h))return false;
       long actual,exited,kernel,user;
-      if(!GetProcessTimes(h,out actual,out exited,out kernel,out user))
+      if(!GetProcessTimes(h,out actual,out exited,out kernel,out user)) {
+        if(IsExited(h,500))return false;
         throw new InvalidOperationException("creation time unavailable");
+      }
       // CIM timestamps have microsecond precision, FILETIME uses 100 ns ticks.
       if(Math.Abs(actual-creation)>10)throw new InvalidOperationException("process creation mismatch");
       StringBuilder image=new StringBuilder(32768);int length=image.Capacity;
-      if(!QueryFullProcessImageName(h,0,image,ref length)||
-        !String.Equals(image.ToString(),executable,StringComparison.OrdinalIgnoreCase))
+      // A failed image query is not a verified mismatch. Only a signaled
+      // handle proves the candidate already exited; otherwise fail closed.
+      if(!QueryFullProcessImageName(h,0,image,ref length)) {
+        // Allow a brief natural exit on this same pinned handle. No retry
+        // of termination, no fallback to PID-only ownership.
+        if(IsExited(h,500))return false;
+        throw new InvalidOperationException("process image unavailable");
+      }
+      if(!String.Equals(image.ToString(),executable,StringComparison.OrdinalIgnoreCase))
         throw new InvalidOperationException("process image mismatch");
+      if(IsExited(h))return false;
       if(!TerminateProcess(h,1)) {
-        if(WaitForSingleObject(h,0)==0)return false;
+        // The same verified process can already be exiting. Wait briefly
+        // on its pinned handle; never retry termination or infer exit from PID.
+        if(IsExited(h,500))return false;
         throw new InvalidOperationException("owned termination failed");
       }
       if(WaitForSingleObject(h,3000)!=0)throw new InvalidOperationException("owned exit unconfirmed");
@@ -68,7 +86,7 @@ public static class BfOwnedChromeNative {
   }
 }
 '@
-function Find-Owned {
+function Find-OwnedOnce {
   foreach($p in @(Get-CimInstance Win32_Process -Filter ("Name='"+$name+"'") -OperationTimeoutSec 5)) {
     if(-not $p.CommandLine) {
       if(-not $p.ExecutablePath -or [string]::Equals($p.ExecutablePath,$exe,[StringComparison]::OrdinalIgnoreCase)){
@@ -95,6 +113,20 @@ function Find-Owned {
     [pscustomobject]@{Pid=[int]$p.ProcessId;Created=[long]$p.CreationDate.ToUniversalTime().ToFileTimeUtc()}
   }
 }
+function Find-Owned {
+  # Retry only a read-only enumeration which failed to provide complete scope.
+  # Discard every partial enumeration; never retry the termination operation.
+  for($attempt=1;$attempt -le 3;$attempt++){
+    try {
+      $complete=@(Find-OwnedOnce)
+      return $complete
+    }catch{
+      if($_.Exception.Message -cne 'Chrome process scope uninspectable' -or $attempt -eq 3){throw}
+      Start-Sleep -Milliseconds (150*$attempt)
+    }
+  }
+}
+
 $before=@(Find-Owned)
 if($before.Count -gt 64){throw 'Owned process count exceeds bounded recovery'}
 $terminated=0
@@ -105,6 +137,30 @@ $after=@(Find-Owned)
 if($after.Count -ne 0){throw 'Owned processes remain'}
 [Console]::WriteLine((@{before=$before.Count;terminated=$terminated;remaining=$after.Count}|ConvertTo-Json -Compress))
 `;
+
+// Only fixed diagnostic categories leave this adapter. Never expose stderr, argv,
+// endpoints, process names beyond the fixed policy, or profile paths.
+export function windowsRecoveryFailureCode(error, stderr) {
+  if(error?.killed) return "native-timeout";
+  const text=typeof stderr==="string"?stderr:"";
+  const codes=[
+    ["Chrome process scope uninspectable","native-scope-uninspectable"],
+    ["Ambiguous exact-profile process","native-scope-ambiguous"],
+    ["process creation mismatch","native-creation-mismatch"],
+    ["process image mismatch","native-image-mismatch"],
+    ["process image unavailable","native-image-unavailable"],
+    ["owned wait state unavailable","native-wait-unavailable"],
+    ["owned handle unavailable","native-handle"],
+    ["creation time unavailable","native-handle"],
+    ["owned termination failed","native-termination"],
+    ["owned exit unconfirmed","native-exit"],
+    ["Owned processes remain","native-remaining"],
+    ["Owned process count exceeds bounded recovery","native-count"],
+  ];
+  for(const [message,code] of codes)if(text.includes(message))return code;
+  return "native-other";
+}
+function nativeFailure(message,code){return Object.assign(Error(message),{cleanupCode:code});}
 
 export async function recoverWindowsChrome(profile, executable) {
   if (process.platform !== 'win32') throw Error('Windows recovery unavailable');
@@ -123,14 +179,14 @@ export async function recoverWindowsChrome(profile, executable) {
     execFile(shell,['-NoProfile','-NonInteractive','-Command',recoveryScript],{
       windowsHide:true,timeout:25000,maxBuffer:16384,
       env:{...process.env,BF_OWNED_CHROME_PROFILE:profile,BF_OWNED_CHROME_EXE:exe},
-    },(error,stdout)=>{
+    },(error,stdout,stderr)=>{
       // Native errors may contain process or profile paths.
-      if(error){reject(Error('Exact-profile Windows recovery failed'));return}
-      try{resolve(JSON.parse(stdout))}catch{reject(Error('Invalid Windows recovery receipt'))}
+      if(error){reject(nativeFailure('Exact-profile Windows recovery failed',windowsRecoveryFailureCode(error,stderr)));return}
+      try{resolve(JSON.parse(stdout))}catch{reject(nativeFailure('Invalid Windows recovery receipt','native-receipt'))}
     });
   });
   if(!result||!Number.isInteger(result.before)||result.before<0||result.before>64||
     !Number.isInteger(result.terminated)||result.terminated<0||result.terminated>result.before||result.remaining!==0)
-    throw Error('Windows recovery postcondition unverified');
+    throw nativeFailure('Windows recovery postcondition unverified','native-receipt');
   return result;
 }

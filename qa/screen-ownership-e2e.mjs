@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
+import {recoveryFailureCode} from './release-gate-diagnostics.mjs';
 import {requireDevOrigin,requirePreviewOrigin,waitForOwnedBrowser,newOwnedPage,cleanupOwnedChrome} from './owned-chrome.mjs';
 
 const origin=process.env.BODYFORGE_QA_ORIGIN;
@@ -170,6 +171,7 @@ try{
   check(errors.length===0,'no uncaught page exceptions');
   stage='complete';
 }catch(error){
+  console.error('BF_SCREEN_OWNERSHIP_DIAGNOSTIC',stage,recoveryFailureCode(error));
   console.error('BF_SCREEN_OWNERSHIP_FAIL',stage,String(error.message).slice(0,180));process.exitCode=16;
 }finally{
   ws?.close();

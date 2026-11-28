@@ -4,8 +4,9 @@
  * by a server before any competitive use.
  */
 import type { Profile } from './progression';
+import { emptyZoneLevels, isMuscleZone, legacyProjection, normalizeZoneProgress, zoneLevelsForGame, ZONE_POINT_COST, ZONE_POINT_MAX, type MuscleZone, type ZoneProgress } from './muscleZones';
 
-export type BodyBuild = 'lean' | 'solid';
+export type BodyBuild = 'lean' | 'solid' | 'full';
 export type Muscle = 'arms' | 'core' | 'legs' | 'back';
 export type Outfit = 'base' | 'ember' | 'steel';
 export type WorkoutMode = 'training' | 'tower' | 'ghost';
@@ -42,6 +43,8 @@ export interface GameState {
   nickname: string;
   build: BodyBuild;
   muscles: Record<Muscle, number>;
+  /** Optional versioned regional progression; null preserves a corruption gate. */
+  zoneProgress?: ZoneProgress | null;
   outfit: Outfit;
   ownedOutfits: Outfit[];
   lastLoginDay: string | null;
@@ -80,7 +83,7 @@ function claimedDays(value: unknown, legacy: unknown): string[] {
   const entries: unknown[] = Array.isArray(value) ? value : [];
   return [...new Set([...entries, legacy].map(validDay).filter((day): day is string => day !== null))];
 }
-const validBuild = (v: unknown): v is BodyBuild => v === 'lean' || v === 'solid';
+const validBuild = (v: unknown): v is BodyBuild => v === 'lean' || v === 'solid' || v === 'full';
 const validOutfit = (v: unknown): v is Outfit => v === 'base' || v === 'ember' || v === 'steel';
 export const MAX_MUSCLE_LEVEL = 5;
 const muscleLevel = (value: unknown) =>
@@ -90,6 +93,8 @@ export function normalizeGame(value: unknown): GameState {
   const base = freshGame();
   if (!isRecord(value)) return base;
   const rawMuscles = isRecord(value.muscles) ? value.muscles : {};
+  const zoneProgress = Object.hasOwn(value, 'zoneProgress') ? normalizeZoneProgress(value.zoneProgress) : undefined;
+  const legacyMuscles = { arms: muscleLevel(rawMuscles.arms), core: muscleLevel(rawMuscles.core), legs: muscleLevel(rawMuscles.legs), back: muscleLevel(rawMuscles.back) };
   const owned: Outfit[] = Array.isArray(value.ownedOutfits)
     ? value.ownedOutfits.filter((item): item is Outfit => validOutfit(item)) : [];
   const ownedOutfits: Outfit[] = Array.from(new Set<Outfit>(['base', ...owned]));
@@ -107,12 +112,8 @@ export function normalizeGame(value: unknown): GameState {
     nickname: typeof value.nickname === 'string' && value.nickname.trim().length > 0
       ? value.nickname.trim().slice(0, 20) : base.nickname,
     build: validBuild(value.build) ? value.build : base.build,
-    muscles: {
-      arms: muscleLevel(rawMuscles.arms),
-      core: muscleLevel(rawMuscles.core),
-      legs: muscleLevel(rawMuscles.legs),
-      back: muscleLevel(rawMuscles.back),
-    },
+    muscles: zoneProgress ? legacyProjection(zoneProgress.levels) : legacyMuscles,
+    ...(zoneProgress === undefined ? {} : { zoneProgress }),
     ownedOutfits,
     outfit: validOutfit(value.outfit) && ownedOutfits.includes(value.outfit) ? value.outfit : 'base',
     lastLoginDay: validDay(value.lastLoginDay),
@@ -137,14 +138,14 @@ export function muscleCost(currentLevel: number): number {
   return 25 + Math.max(0, currentLevel) * 25;
 }
 
-export function createFighter(profile: Profile, build: BodyBuild, nickname: string): Profile {
+export function createFighter(profile: Profile, build: BodyBuild, nickname: string, regional = false): Profile {
   const name = nickname.trim().slice(0, 20);
-  if (profile.game.created || name.length < 2 || !validBuild(build)) return profile;
-  return { ...profile, game: { ...profile.game, created: true, build, nickname: name } };
+  if (profile.game.created || name.length < 2 || !validBuild(build) || (build === 'full' && !regional)) return profile;
+  return { ...profile, game: { ...profile.game, created: true, build, nickname: name, ...(regional ? { zoneProgress: { version: 1, levels: emptyZoneLevels() }, muscles: { arms: 0, core: 0, legs: 0, back: 0 } } : {}) } };
 }
 
 export function upgradeMuscle(profile: Profile, muscle: Muscle): Profile {
-  if (!MUSCLES.some((entry) => entry.id === muscle)) return profile;
+  if (profile.game.zoneProgress !== undefined || !MUSCLES.some((entry) => entry.id === muscle)) return profile;
   const currentLevel = profile.game.muscles[muscle];
   if (!profile.game.created || !Number.isFinite(profile.coins) || profile.coins < 0 ||
       !Number.isInteger(currentLevel) || currentLevel < 0 || currentLevel >= MAX_MUSCLE_LEVEL) return profile;
@@ -158,6 +159,15 @@ export function upgradeMuscle(profile: Profile, muscle: Muscle): Profile {
       muscles: { ...profile.game.muscles, [muscle]: currentLevel + 1 },
     },
   };
+}
+
+/** One paid point changes exactly one anatomical zone. Old broad upgrades are migrated only on success. */
+export function upgradeMuscleZone(profile: Profile, zone: MuscleZone): Profile {
+  if (!isMuscleZone(zone) || !profile.game.created || !Number.isFinite(profile.coins) || profile.coins < ZONE_POINT_COST) return profile;
+  const levels = zoneLevelsForGame(profile.game);
+  if (!levels || levels[zone] >= ZONE_POINT_MAX) return profile;
+  const next = { ...levels, [zone]: levels[zone] + 1 };
+  return { ...profile, coins: profile.coins - ZONE_POINT_COST, game: { ...profile.game, zoneProgress: { version: 1, levels: next }, muscles: legacyProjection(next) } };
 }
 
 export function buyOrEquipOutfit(profile: Profile, outfit: Outfit): Profile {

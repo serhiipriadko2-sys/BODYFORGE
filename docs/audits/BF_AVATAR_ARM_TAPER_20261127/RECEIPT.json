@@ -1,0 +1,810 @@
+{
+  "stage": "arm-taper-and-contour",
+  "date": "2026-11-27",
+  "status": "PASS_LOCAL_TECHNICAL_PARTIAL_VISUAL",
+  "head": "226429ae1080d000336a7430926d64e4bb54a89b",
+  "tests": {
+    "files": 123,
+    "passed": 1234,
+    "failed": 0,
+    "skippedOptIn": 1,
+    "targeted": 8
+  },
+  "browser": {
+    "checks": 396,
+    "frames": 48,
+    "draws": 1335,
+    "scenarios": [
+      {
+        "mode": "on",
+        "level": "max",
+        "checks": 66,
+        "frames": 8,
+        "draws": 221,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "on",
+        "level": "neutral",
+        "checks": 66,
+        "frames": 8,
+        "draws": 224,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "max",
+        "checks": 66,
+        "frames": 8,
+        "draws": 221,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "off",
+        "level": "neutral",
+        "checks": 66,
+        "frames": 8,
+        "draws": 218,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "contour",
+        "level": "max",
+        "checks": 66,
+        "frames": 8,
+        "draws": 230,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      {
+        "mode": "contour",
+        "level": "neutral",
+        "checks": 66,
+        "frames": 8,
+        "draws": 221,
+        "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    ]
+  },
+  "sampledGeometry": {
+    "states": 18,
+    "region": {
+      "shoulderTriangles": 5994,
+      "expandedTriangles": 14088,
+      "elbowTriangles": 3188,
+      "distalUniqueVertices": 1288
+    },
+    "comp": {
+      "prior": 1388,
+      "axial": 1388,
+      "contour": 1388
+    },
+    "severe": {
+      "prior": 219,
+      "axial": 219,
+      "contour": 219
+    },
+    "expandedComp": {
+      "prior": 1388,
+      "axial": 1388,
+      "contour": 1388
+    },
+    "expandedOverlap": {
+      "prior": 2772,
+      "axial": 2772,
+      "contour": 2772
+    },
+    "elbowComp": {
+      "prior": 0,
+      "axial": 0,
+      "contour": 0
+    },
+    "elbowSevere": {
+      "prior": 0,
+      "axial": 0,
+      "contour": 0
+    },
+    "elbowOverlap": {
+      "prior": 0,
+      "axial": 0,
+      "contour": 0
+    },
+    "shirt2": {
+      "prior": 338,
+      "axial": 337,
+      "contour": 335
+    },
+    "shirt5": {
+      "prior": 8,
+      "axial": 8,
+      "contour": 8
+    },
+    "distalRmsMm": {
+      "prior": 25.786861631605362,
+      "axial": 10.18223508199056,
+      "contour": 13.476869265238443
+    },
+    "displacementSecondDifferenceRmsMm": {
+      "prior": 0.40096558464898,
+      "axial": 0.6503678957621256,
+      "contour": 0.4797751506169637
+    }
+  },
+  "seams": {
+    "axial": {
+      "body": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      },
+      "shirt": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      },
+      "nippleRim": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      }
+    },
+    "contour-": {
+      "body": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      },
+      "shirt": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      },
+      "nippleRim": {
+        "maxIncreaseMm": 0,
+        "candidateMaxMm": 0
+      }
+    }
+  },
+  "productionMarkerHits": 0,
+  "productionAvatarBundleParity": true,
+  "credentialPatternHits": 0,
+  "android": "UNVERIFIED_NO_AUTHORIZED_DEVICE",
+  "artifactCount": 128,
+  "artifactBytes": 161968307,
+  "entries": [
+    {
+      "path": ".bodyforge-qa/arm-contour-build-20261127/assets/Avatar3D-523JYVbR.js",
+      "bytes": 842309,
+      "sha256": "f09bfcbd18a0ef92c6dcbc785399b85a958d0c6788d83024a65f4c85f850b060"
+    },
+    {
+      "path": ".bodyforge-qa/arm-taper-20261127/contour-runtime.bin",
+      "bytes": 36496656,
+      "sha256": "9656a75b2a0f45ae9c15613a8bddca20b303c59e819b75b8aa7143b907cc1934"
+    },
+    {
+      "path": ".bodyforge-qa/arm-taper-20261127/runtime.bin",
+      "bytes": 36496656,
+      "sha256": "e09882a36fdcaf7ba7c4301a7d64abe705bf457fd426feee8064f6e00d6268a2"
+    },
+    {
+      "path": ".bodyforge-qa/arm-taper-build-20261127/assets/Avatar3D-523JYVbR.js",
+      "bytes": 842309,
+      "sha256": "f09bfcbd18a0ef92c6dcbc785399b85a958d0c6788d83024a65f4c85f850b060"
+    },
+    {
+      "path": ".bodyforge-qa/pose-corrective-20261127/runtime.bin",
+      "bytes": 36496656,
+      "sha256": "ffae5ef86be158145737c87791879f57aae9e8af238ab0e6f9ebf3186bd87e47"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/Avatar3D.tsx.axial.txt",
+      "bytes": 74728,
+      "sha256": "ea40cb3423a9b2fccedd04a570157fdf06484462392910736b358d8dbfa67b64"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/Avatar3D.tsx.before.txt",
+      "bytes": 74644,
+      "sha256": "7bf48452ce771b9b751b12f28dfa68ec5411e36204528bfc2caf710ad4ca571a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/REPORT.md",
+      "bytes": 6817,
+      "sha256": "7426500c37153fee74d4853316d5163ad328c60ed968f1fa06683b92da7fdb9a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/avatar-quality-e2e.mjs.axial.txt",
+      "bytes": 150673,
+      "sha256": "3b0ae68e45f7415ef880b9ba4a4ffdb9f8b6bbe4c28c43ea4de06e37989e55e8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/avatar-quality-e2e.mjs.before.txt",
+      "bytes": 150486,
+      "sha256": "e5491b6ebadbba511d745de7ec17c0cb50c72764c26852f0f2231b360ec8725c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/avatarPoseCorrectiveReview.ts.axial.txt",
+      "bytes": 10634,
+      "sha256": "2945c7938de7ed88c3213abf3f169f6eb685ec649c432b767c0398d7b25f4064"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/avatarPoseCorrectiveReview.ts.before.txt",
+      "bytes": 9469,
+      "sha256": "8f07052d9d863664aaf88a3ff1749033b34275adfaf681b3151aa169a7a1dc62"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max.log",
+      "bytes": 6509,
+      "sha256": "691c4e3f20bb5b8ceb3e4308dd47d4a71b1c08aa476a589e500ed3d351334dd0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-legs-front.png",
+      "bytes": 604013,
+      "sha256": "884e492fd7ac78a4c60419a9dc0709c398ad07865d41497b81d66f9ca9e3e9f2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-legs-rear.png",
+      "bytes": 597816,
+      "sha256": "d5972768ade84025760be29ec4dad1c04aa0c65347979493d027d9f59eef4cc3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-portrait-front.png",
+      "bytes": 628705,
+      "sha256": "e2a2c7872818be39d02bd45822bf775622ff5db94d771670ed6c3cac7ea3eec9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-portrait-turned.png",
+      "bytes": 638031,
+      "sha256": "a6993ada1739490ee1a98b30d8cc1bf3d38cb9c75a567e7384b6bf5f900fd9e2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-shirt-front.png",
+      "bytes": 590505,
+      "sha256": "338b9c0a69270cb6ed718246f4ff9470948b7c9756cea0487e831aa37d966edd"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-shirt-rear.png",
+      "bytes": 565893,
+      "sha256": "f2f1e3b02513622b9f96c6e9ade9bf743fe4c08d7b727ad904938e32208eada8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-torso-front.png",
+      "bytes": 624428,
+      "sha256": "30e6eb8914a1fdd758a348f9144b3b2158fa63f982c323024ec59230891aa076"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-max/metric-torso-rear.png",
+      "bytes": 617709,
+      "sha256": "49e910155fbc3e02b9cc29372ca625826931fd2336a15b84a16407152ae1719e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral.log",
+      "bytes": 6574,
+      "sha256": "794660bf5a0fcb2b0d6cd6c25161609430f8635d7c223c99fcd414f670a5c172"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-legs-front.png",
+      "bytes": 602009,
+      "sha256": "a4d3e9432e65022e28914ca30044ef5fa17fc32dd4265e740edbcd35569e607d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-legs-rear.png",
+      "bytes": 598141,
+      "sha256": "aa2db852d920fab4c875136fc932a0fa7116dc6673b21b70a0a4f84843bad856"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-portrait-front.png",
+      "bytes": 628901,
+      "sha256": "436ae778d877262b4b912ce76b03d65b14b5099192ea90bd4c4f8a001f287a5e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-portrait-turned.png",
+      "bytes": 636061,
+      "sha256": "82cea43a05c81e1e1aa5ba192db2a887903b2d49910fec09b3f5f1770ad53d19"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-shirt-front.png",
+      "bytes": 592781,
+      "sha256": "221f0a62011256d04a4d594a10c5c7b48a53e1c152891f95be20d55b4479ea5b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-shirt-rear.png",
+      "bytes": 573130,
+      "sha256": "a6dc47513b2e09d1bce7c28ad39d023101a04f9e6a0eb5724676facb1c305f80"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-torso-front.png",
+      "bytes": 624658,
+      "sha256": "b35b5c9b78b82e2bbba367f73c7e0c147b98e4c76b08d7182b79ba9437a4c8f6"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-contour-neutral/metric-torso-rear.png",
+      "bytes": 618845,
+      "sha256": "9b98d853a5a28dfb21801df1a31391316619ed57781e4eb475e7db53b47ae005"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max.log",
+      "bytes": 6441,
+      "sha256": "d66e66b3d53c4ce09b860e8a9a70f3566ccf46f383345aa735df352083aed269"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-legs-front.png",
+      "bytes": 603432,
+      "sha256": "0efe333f4b009e436949520702b301616d49dff1f7cb6a1c7f71a78d5a9691bb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-legs-rear.png",
+      "bytes": 597337,
+      "sha256": "e1b60542f0f533b9ab1402dd1f31124c6ce87dbdd3913ac0da3a1b42a507c44d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-portrait-front.png",
+      "bytes": 628874,
+      "sha256": "bd066647fd450b6095c8a342bd18c95366413b259432668eee8f76828f3c410b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-portrait-turned.png",
+      "bytes": 638018,
+      "sha256": "be44b6436db81442dcf33e3e7725db1244a6f9cc6a8062488a27d26cfeace41f"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-shirt-front.png",
+      "bytes": 589954,
+      "sha256": "dbe81922617086bc1b1b591763323ad65095c9afa166fd7bfd0d2f2d93420453"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-shirt-rear.png",
+      "bytes": 565739,
+      "sha256": "36c2dae4566d0e119db72bb682564d71c5d274842236129660d7e47f6d26e059"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-torso-front.png",
+      "bytes": 624119,
+      "sha256": "26a3b232d5b504ca9d633b45b19005ab5771e178ce2e997d0b6f4ff52dc1ab96"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-max/metric-torso-rear.png",
+      "bytes": 617382,
+      "sha256": "b98cc50736e0afe7ce0a7df6cff2cb60c651e20b778d44ff0ce5f052819d435a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral.log",
+      "bytes": 6506,
+      "sha256": "713f994f183111e792bbd97067bef06ecf590d4cb124425c9825fdf5d4e53100"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-legs-front.png",
+      "bytes": 601487,
+      "sha256": "01710ecaa620b8e5186425f2ee76e57966edfea44d6e965508d48bcc646d0912"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-legs-rear.png",
+      "bytes": 597674,
+      "sha256": "4dcc4e532e12c88c2c9a993d01cfd83ab96fadc12dae7c4f42b0d2a2807fa81e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-portrait-front.png",
+      "bytes": 629038,
+      "sha256": "e1869447af5040fd4a561201eed5c2701f57a9ee32a7dcecf07e77dbec6b461c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-portrait-turned.png",
+      "bytes": 636155,
+      "sha256": "cd834bed64afcb7f8308a3d2f869bdac706fe0256c9f8b8d13cac7edc780e941"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-shirt-front.png",
+      "bytes": 591894,
+      "sha256": "3cc566f03ab46bb3ade0399a57c471b11af980d52133b907b96cd4da2fbaec0d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-shirt-rear.png",
+      "bytes": 572499,
+      "sha256": "25ef9811ce3513e0d34214fcdb648c6389d3d4ee07ce97a2c4de6b7e170e3eca"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-torso-front.png",
+      "bytes": 624052,
+      "sha256": "8f1a0a83378a4897c00c1261d6e4fd482705c81b9f21a75711173b21a22b3f1b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-off-neutral/metric-torso-rear.png",
+      "bytes": 618441,
+      "sha256": "a01ef8b3ab1ed5fed6d479c1324bae32799c015c2b79d9f51a2234102b9af9e3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max.log",
+      "bytes": 6424,
+      "sha256": "62a87fe1b3518ed12a93704c78031e14b003dacd1ee46003e3f4759ad7ea9dc2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-legs-front.png",
+      "bytes": 604055,
+      "sha256": "af82784b1ac04f183678fabf98bcad04657ac71bf2755510c584a7651661604e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-legs-rear.png",
+      "bytes": 597810,
+      "sha256": "8b8187cd1679caf0fe89c49bc4b629b987d0e74856d7aa85ccac8b1d52a00ae3"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-portrait-front.png",
+      "bytes": 628863,
+      "sha256": "5908c31d7dbf84d549381155dcca0a2d1aef70f467b764261a8da804c69a9eea"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-portrait-turned.png",
+      "bytes": 638013,
+      "sha256": "fbb16fdc5f4ec8a9ded58516e1706d6b9b39240d94d973c1b6d05abcbeffd1cf"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-shirt-front.png",
+      "bytes": 590604,
+      "sha256": "dd9922a2fa236944c15eeaa243ee05acce025feaf20f7b74816685aed84107d7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-shirt-rear.png",
+      "bytes": 565981,
+      "sha256": "10d7f2f7d59605f56b30a1df6f310ede094489fcef6a7ab082423f3d40c578f7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-torso-front.png",
+      "bytes": 624871,
+      "sha256": "9f83f84dc26e6f0b4032da55064b661b0134a68649494710781b00c28034d144"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-max/metric-torso-rear.png",
+      "bytes": 617997,
+      "sha256": "5b84182f4c03a6e68e0a9b365b9039452c9b4e599c6392c89c75d5e5ffa1c268"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral.log",
+      "bytes": 6489,
+      "sha256": "148c56f655fec974223d764663a97a6344dd655480588d5fc9ecc86958741b67"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-legs-front.png",
+      "bytes": 602292,
+      "sha256": "09183436a54426e9adeb562edefb0195e3f857efe2b7e1285c5ba6541810d86b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-legs-rear.png",
+      "bytes": 598310,
+      "sha256": "3cff78b733336d3c0fec516245bfe7fca00d7a2f061ea99be1efc2b1678ada44"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-portrait-front.png",
+      "bytes": 629028,
+      "sha256": "ebc9e555985d069141e434c1ef52a3378358a778afcb0353958c83ee8b191e88"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-portrait-turned.png",
+      "bytes": 636126,
+      "sha256": "457f7b36afd1c226388d124c95b5011edccb3293bc7790748024bf125ea7eb82"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-shirt-front.png",
+      "bytes": 593017,
+      "sha256": "cae0d1fc38d766ee00f4dd3578ce5f7d316793ab9494a0cdc4bde8cc78e3e050"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-shirt-rear.png",
+      "bytes": 573490,
+      "sha256": "3480999e83c316cfcd2dc5083964cc22742398961be2b2814c96bea701037175"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-torso-front.png",
+      "bytes": 625287,
+      "sha256": "122bef032fd138f59cb97cb6a2642d485316dacfecf20932750076cfb5c08bce"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/browser-on-neutral/metric-torso-rear.png",
+      "bytes": 619821,
+      "sha256": "983c511f83c2b9f6427e3623fe19abf04be46937624a13c86bcdd9c437c7effd"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/build.log",
+      "bytes": 3820,
+      "sha256": "877873e024c49ca77cb251938bfbadb4caa272ddfb3dd89528332f8c057050b1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/compare-arm-contour.py",
+      "bytes": 2613,
+      "sha256": "d5042cd4015b64f917608fba18fec388ac5503dd188e107e943d897f2cfb3ec7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/compare-arm-taper.py",
+      "bytes": 2588,
+      "sha256": "3bdede852f3730a747ec7f87e1ceb42092aa94d90c2c13a65071becbde532594"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/comparison.json",
+      "bytes": 12171,
+      "sha256": "81b281c02ce48cd403cafa91f34f995c098a17319db66919fe0d5105fee6190b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/comparison.log",
+      "bytes": 228,
+      "sha256": "9f8fbf0f1e8a951ef018281946e917f56e5ef9f12e38f637b7bba7c4c44a4bf9"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-build.log",
+      "bytes": 3876,
+      "sha256": "6243d2937fb3dd4ebc814557444ab35ba0c17dde86a72e47714cae0e80454a83"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-comparison.json",
+      "bytes": 12202,
+      "sha256": "601eade5564731ab6aa544e87349e56d49e0d7efcad56b038feb4348bc5b38a7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-comparison.log",
+      "bytes": 232,
+      "sha256": "15fbb18a97cd5b290226d3a9254e2082be68d1dffc22330ffc27d24cca8a5db5"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-full-vitest.log",
+      "bytes": 64730,
+      "sha256": "73b42b2b97784502c154c9ccd8f87d8ce38b43820f5f9b6bc19d355656eef11c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-production-gate.log",
+      "bytes": 37,
+      "sha256": "bb90839d17855e9b9a8e42ebb01a612071aadd6c6231fc974c30bdd98877176c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-runtime-clearance.json",
+      "bytes": 11201,
+      "sha256": "f0e50a9a4d379ed5db35e4ecd127304bac2e9fca7fef395bc51974869f988149"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-runtime-clearance.log",
+      "bytes": 17282,
+      "sha256": "4b380c9a48782199f31890f18674c30ef96b14725dbd0f6e1878c792db7240e1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-runtime.json",
+      "bytes": 28172,
+      "sha256": "fe7fa58a6122aa6e18d4f1cca8bcdf3243bdb15b6cbc36a6764b5333a72ac193"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-runtime.log",
+      "bytes": 1318,
+      "sha256": "d7d04eb95c42961b82ad358a1ab1b079913493a6c09a777b32f24ab5e5f46bf5"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-seam-clearance.json",
+      "bytes": 9504,
+      "sha256": "dfab8ed0896c7479c378c630836014b04289177af601fafbe8d1b912e7019893"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-seam-clearance.log",
+      "bytes": 544,
+      "sha256": "18cab84a8b1640a3936c75cb1fbda3eeb9e5278f601a884a874238b4da0ce427"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-sweep.json",
+      "bytes": 103311,
+      "sha256": "8201a1ccd2a9f93aabfcea242cb9468c791392ad66cc572e46582c63407721d1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/contour-sweep.log",
+      "bytes": 5950,
+      "sha256": "e335d3fc52b84cbde7796e2b2d74768e46e337cca09e4a94b1b6202881e7316d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/full-vitest.log",
+      "bytes": 63876,
+      "sha256": "7f435d61c7674cd3b761d0a8af5012fc8782a54bdc2ada8560d3f1fe3a2b41c1"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-max-legs.png",
+      "bytes": 951161,
+      "sha256": "5e38fbbfe7d8b6dd10c7b06228ed35b71ffe672235a06a856b882283bcae5f98"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-max-portrait.png",
+      "bytes": 938640,
+      "sha256": "7eb38dd500406f6f787d7e665f36efb0d28918e0b371048ac1da5d2d8aea37ec"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-max-shirt.png",
+      "bytes": 969308,
+      "sha256": "54269a824b6472eab18da8e841a5c0a35cbf2b432916ad10ba35fb482290c853"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-max-torso.png",
+      "bytes": 1036490,
+      "sha256": "3221a46ed4d27d7cf275f7668dc3a646b14d00270c77a04055ec8cb876e3be8a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-neutral-legs.png",
+      "bytes": 950349,
+      "sha256": "2d8d5056be3157173c7b0fad0bbbed9f4dd177eafc87ccf3647f24c541c0ab22"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-neutral-portrait.png",
+      "bytes": 940231,
+      "sha256": "6b7abe45cb46b68b2f7db6445e837e22409db57dde627b8e031fe1c992b2fb14"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-neutral-shirt.png",
+      "bytes": 960905,
+      "sha256": "2cb14e24a7c7c3b484d5c3f7eedb03d55ed530046b5ee5ed693c973e039cd094"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-contour-neutral-torso.png",
+      "bytes": 1032061,
+      "sha256": "d8ff6f20ad2c89661ac9130cfcd9f038120280623badd6237be5df7899085dc2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-max-legs.png",
+      "bytes": 950970,
+      "sha256": "3738761e5255769ad3e6d189323b603ec88026446696d19fbdb0628f965ff480"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-max-portrait.png",
+      "bytes": 931095,
+      "sha256": "62030de0408ed3945a7b59b460770971bc618b0fda05aea0d59cd48eac42abd8"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-max-shirt.png",
+      "bytes": 968542,
+      "sha256": "d9053d0a72de07fbd2e4ed9c53cd41f1de367a7f9fad5ec44da66456de9c2a81"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-max-torso.png",
+      "bytes": 1031083,
+      "sha256": "cfcccc7ed4e659736a9e1faac3d3d61857dbdd25bf9b67b57ba707207bd90878"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-neutral-legs.png",
+      "bytes": 950334,
+      "sha256": "2392522a0bb7e842efff0c3e9e74342ca523c00fa65a68690322552d5f751a53"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-neutral-portrait.png",
+      "bytes": 932330,
+      "sha256": "2ce4b8e7b57c7947d86b925affe874ea95c231d86190ec5528a200bc96ac0ad0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-neutral-shirt.png",
+      "bytes": 958121,
+      "sha256": "994a7b445c9d787393deacfc12dfc021f987b6c73f70b14ffecbe1780dca431d"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/matched-arm-taper-neutral-torso.png",
+      "bytes": 1027713,
+      "sha256": "96cd240eb8278ba1fb9da243a313ae25e343cc2456636421cf9f266fa9174812"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/measure-contour-runtime.py",
+      "bytes": 7167,
+      "sha256": "fc901594b7a7a7f8e5a9b03bf21207f6f3402a1039d8272b42ce9f7c0a7e9e34"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/measure-contour-seams.py",
+      "bytes": 2392,
+      "sha256": "e4d1181be1f3bfb794e6c3c2dd72239173013c95881268f723196f098645b6b4"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/measure-runtime.py",
+      "bytes": 5948,
+      "sha256": "9044fdb718f0fc66f338d6d238cdc673665623ce3d055867795d0cec9dafe767"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/measure-seams.py",
+      "bytes": 2368,
+      "sha256": "c4cc54f505b3c836b7ef547c7fad827d1ac4362514d32c05660d3e70a33bdc51"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/probe-arm-taper.py",
+      "bytes": 4985,
+      "sha256": "1657c5bcc96aecd50bc1a00e0436d7431400d5e868806f09e45469f8b36e35b2"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/probe-contour.py",
+      "bytes": 6215,
+      "sha256": "2df60f08c894a9a4c30edc880fc71c1744041f467058d03476645d518a0ade39"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/production-gate.log",
+      "bytes": 37,
+      "sha256": "bb90839d17855e9b9a8e42ebb01a612071aadd6c6231fc974c30bdd98877176c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/runtime-clearance.json",
+      "bytes": 28240,
+      "sha256": "869284faadd37df66c4103aecc6a112734e1bf55ce6356d922bea2ce6a08bdfb"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/runtime-clearance.log",
+      "bytes": 5936,
+      "sha256": "b355186e8292f437000510a1672caa0cb1aa9d6eb93c261146966b3edc3c422e"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/runtime.json",
+      "bytes": 28170,
+      "sha256": "b187784cf3566bd6ee3d06867800073006e941bb815022aa10c2b364e604e127"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/runtime.log",
+      "bytes": 994,
+      "sha256": "991ac5499cd4b86c29641b4a2d8f97f2078386f50dd2cb0dced1f0265e512c5a"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/seam-clearance.json",
+      "bytes": 9504,
+      "sha256": "dfab8ed0896c7479c378c630836014b04289177af601fafbe8d1b912e7019893"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/seam-clearance.log",
+      "bytes": 544,
+      "sha256": "18cab84a8b1640a3936c75cb1fbda3eeb9e5278f601a884a874238b4da0ce427"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/taper-sweep.json",
+      "bytes": 113112,
+      "sha256": "5f39ddf749def2b8e4575b2c89c2a57f5b6ae6827b17ec5c9b8e766a8fbbcc34"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/taper-sweep.log",
+      "bytes": 6332,
+      "sha256": "846ef322ff340e9bfabcc5589e38e33f1b923526c248072eef2ba506a71b8dd0"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_ARM_TAPER_20261127/verify-receipt.mjs",
+      "bytes": 11533,
+      "sha256": "423ba62878565f870aef9b5af1e72cc6335c346bb7cb8db4ba6b9ad5081f753b"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_POSE_CORRECTIVE_20261127/runtime.json",
+      "bytes": 28179,
+      "sha256": "39f7c164758d543aa3954c0a410865f76f30d4bb38ad136313c2e05e4c61fba1"
+    },
+    {
+      "path": "public/assets/bodyforge-athlete-efficient.glb",
+      "bytes": 4639184,
+      "sha256": "df8c4e3d0d8ebfbd6a03b83e537663bda41df5d0d30259ad1b530c2a2abefa7e"
+    },
+    {
+      "path": "qa/avatar-quality-e2e.mjs",
+      "bytes": 150792,
+      "sha256": "75c296d28e5ef9751a380d98e5ecb21e5b0dc541dc1610e13e18646ef88eea7e"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 74823,
+      "sha256": "eda7d92ef8abb09d50f7a45a4047aa62330f841ba026a734136a19524220064e"
+    },
+    {
+      "path": "src/lib/avatarArmContourReview.test.ts",
+      "bytes": 9400,
+      "sha256": "c45c2b1af875eb2ad7937652b4c2fc2aa2ab829d2b7f3fcc3f2c557c29082910"
+    },
+    {
+      "path": "src/lib/avatarArmTaperReview.test.ts",
+      "bytes": 9099,
+      "sha256": "2b6b399406e81af573f2f1dde39a320e4ebcebaab0386e0045c14f5dd51f31bc"
+    },
+    {
+      "path": "src/lib/avatarPhysique.ts",
+      "bytes": 6497,
+      "sha256": "2fcf4a0f8aaf75d9fe26a26eb4d991b983709ab3a15f6dcb1a493b9076524c15"
+    },
+    {
+      "path": "src/lib/avatarPose.ts",
+      "bytes": 1924,
+      "sha256": "4b84069276e4eff8d6b85da2ef67c87b2e0c68fbf37f02d7ff8fe9e72d77bc09"
+    },
+    {
+      "path": "src/lib/avatarPoseCorrectiveReview.test.ts",
+      "bytes": 8292,
+      "sha256": "5da0061c00a2d63f32e5abd6e5a602cbc43330c83efcb2342bc8bc6273c3728a"
+    },
+    {
+      "path": "src/lib/avatarPoseCorrectiveReview.ts",
+      "bytes": 11152,
+      "sha256": "17fd97dacf631cc699e613a56c735cf332581b2e1acfd6971522b4fc0bc84b25"
+    },
+    {
+      "path": "src/lib/avatarShoulderTransitionReview.ts",
+      "bytes": 8234,
+      "sha256": "56abe1d0d989ea0e741108e62c75a73563352c584920c77f0d3b257e654f74c2"
+    }
+  ]
+}

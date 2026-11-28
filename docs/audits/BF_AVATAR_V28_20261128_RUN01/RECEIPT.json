@@ -1,0 +1,1020 @@
+{
+  "status": "PARTIAL_RECEIPT_VERIFIED_LOCAL_TECHNICAL_PASS",
+  "head": "11d51edf407bed2ad7e1fd0a04332654fe46afcb",
+  "scope": "local V28 integrated; V29 reflectance diagnostic only",
+  "preview": "http://127.0.0.1:5231/?avatarFoundation=28&avatarFoundationRelief=1",
+  "checks": {
+    "envelopes": [
+      {
+        "build": "lean",
+        "cases": 473
+      },
+      {
+        "build": "solid",
+        "cases": 473
+      },
+      {
+        "build": "full",
+        "cases": 473
+      }
+    ],
+    "totalContact": 1419,
+    "minShirtMm": 0.22187825743458234,
+    "minShortsMm": 3.1042792616062798,
+    "seam": {
+      "states": 588,
+      "pairs": 544,
+      "maxAddedGapMm": 0
+    },
+    "source": "SOURCE_READBACK_PASS",
+    "ui": 1341,
+    "purchases": 540,
+    "motion": 134,
+    "unit": 1383,
+    "skipped": 1,
+    "testFiles": 143,
+    "build": "PASS_WITH_CHUNK_WARNING",
+    "boundaries": 23,
+    "productionFiles": 80,
+    "productionMarkers": 0,
+    "previousEntriesVerified": 781,
+    "newScreenshots": 124,
+    "android": "NO_CONNECTED_DEVICE",
+    "groom": "DIAGNOSTIC_KEEP_CURRENT",
+    "face": "DIAGNOSTIC_NOT_INTEGRATED"
+  },
+  "integration": [
+    {
+      "file": "src/components/Avatar3D.tsx",
+      "before": "313451d67870ae05b5878e25c94e2ad4bb5362b7174fa959d6a21d34f779e963",
+      "after": "d9aa9840187a1d6809826fc5e923443c242ee533580099243d9b1bc478efe467",
+      "bytes": 79088,
+      "backup": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/Avatar3D.tsx"
+    },
+    {
+      "file": "src/lib/avatarZoneFoundation.ts",
+      "before": "bdd669b1f8b1f073f518e6c8b3ac1c1410cb10ab7e745fb82bea4dffbc2941c0",
+      "after": "41533f644f27b0e4ec4d73eb6bd15143badd1b80f989ea5880f39482e4e02388",
+      "bytes": 10583,
+      "backup": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/avatarZoneFoundation.ts"
+    },
+    {
+      "file": "src/lib/muscleZones.ts",
+      "before": "9c7625a1974a20b6791218af50dda6208d2420b7f639883c2c1fa7a20c619ecb",
+      "after": "6dee9dcf5ab23f7606c9d4fceacd2733d7b5a5fd567e276b1920d6a761ea74dd",
+      "bytes": 6387,
+      "backup": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/muscleZones.ts"
+    },
+    {
+      "file": "src/lib/zoneAssetPins.ts",
+      "before": "fa443e64a77c4b79e5a036cd8d7b52f4455dc5c3f6c9a192a7bd0fb06d8f4238",
+      "after": "7aacb2c9e0b7d02fbc33781bb1104f7213456012811f7c8258fa6d40d1b127d8",
+      "bytes": 4506,
+      "backup": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/zoneAssetPins.ts"
+    },
+    {
+      "file": "qa/local-avatar-foundation-review.ts",
+      "before": "f39eea4fda6f006363cd04d7e9a7bfa062aea7b1aadc3c26cb08d8d32673c2a5",
+      "after": "c404cbce2436edb3b42efa55a076e3d9669854432356388d7ad2e115aca2ec47",
+      "bytes": 6315,
+      "backup": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/local-avatar-foundation-review.ts"
+    }
+  ],
+  "files": [
+    {
+      "path": ".bodyforge-qa/agent-v27-pectoral-20261128-run01/browser-v28-protected/result.json",
+      "bytes": 4587,
+      "sha256": "d11c320769a3ee99028710e3463bbbb292e44ce07259461605330246ddc60f76"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v27-pectoral-20261128-run01/v28-arms-graph30protected.npz",
+      "bytes": 69142,
+      "sha256": "941df73f794791c0a88493e06a94d0ee5df86221d0fc8104f733dfe921163338"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v27-pectoral-20261128-run01/v28-arms-protected-study.json",
+      "bytes": 3410,
+      "sha256": "aa645d932891390f357115bafdda5b7194d76f8202a63c1dcc47a9c69143e2d3"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v27-pectoral-20261128-run01/v28-fields-graph30protected.bin",
+      "bytes": 4678824,
+      "sha256": "dc021c9671a4e89cbdd8f2444a9a3a718b8686adc5a1cb0414affec77d38ca27"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v27-pectoral-20261128-run01/v28-runtime-transfer-protected.json",
+      "bytes": 576,
+      "sha256": "2e00f50196c866d4f8fff642581164975ce3ca4a2bcca28abf45046b29d344f4"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/audit-v28-envelope.py",
+      "bytes": 17531,
+      "sha256": "bed7c069d768db851c25967468813a94c633b7f751142fa0dd74ca16174dbb79"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/boundary-v28.json",
+      "bytes": 6646,
+      "sha256": "3819f85f81655e4a6b48010a3ff11694a0581549164b881147f207fc57449dee"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/deep-front-base.png",
+      "bytes": 244979,
+      "sha256": "805a6bd5dc8e5dc30dc834ca3dbe48d14e7f89d1c232f482c18724fdc3109bd6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/deep-front-calibrated.png",
+      "bytes": 259090,
+      "sha256": "eb8b10b557a4fd61138080d926f45560a0ff8eaa041592fc3c9faa0e6c7c4604"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/deep-front-subtle.png",
+      "bytes": 253675,
+      "sha256": "bfd4bdd3899ee525df1105dcda941f65b6a8132f146d4519afde3ac4049d8b37"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/porcelain-oblique-base.png",
+      "bytes": 290617,
+      "sha256": "6278c29935bdf5a47c27a98ae4009407b4b4f13698750fc2b1f1cb61e2a0f2b1"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/porcelain-oblique-calibrated.png",
+      "bytes": 294959,
+      "sha256": "c1359709e464bd3fcf841c79eda08feb3ad8517b6e76f43ad465b2e832a27d94"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/porcelain-oblique-subtle.png",
+      "bytes": 292737,
+      "sha256": "a3026dd2577866be95981d51767b64a2594616844df15878deb771595d167f6a"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/result.json",
+      "bytes": 7824,
+      "sha256": "52da5447560210166984a13f95583a295b799f9b85b3c4edf588269453c13f8b"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-front-base.png",
+      "bytes": 285056,
+      "sha256": "a1cdbf13534f6b0ac2f5db4aa07cd754fae7fa98b1b09042b6e612d8473ad63f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-front-calibrated.png",
+      "bytes": 293014,
+      "sha256": "5d3270597749e09b5e4c4d8c2b44269f8a9995910a9ce315a1eed404c220cff8"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-front-subtle.png",
+      "bytes": 288973,
+      "sha256": "c82bd87b39a70792691b88c30dc2826862e4cd155c7117b9846d83ee7a40ae0e"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-oblique-base.png",
+      "bytes": 286634,
+      "sha256": "1b82e55655caeed54186034af953621da6e5ec01dc9e34ac8164d991da6425a1"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-oblique-calibrated.png",
+      "bytes": 294375,
+      "sha256": "51a9ae5d2d72d42a7b788b3a39bafef08309d0a7fc39eaa22f28ea616f9dafef"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/sand-oblique-subtle.png",
+      "bytes": 290589,
+      "sha256": "75544bbd141153fb2a411e68d87f4fe51cba26f413ef9d191927c7871f91efaa"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/torso-control-base.png",
+      "bytes": 486875,
+      "sha256": "2698653bdbe86a9cc0068be7f751c64d919f7a264d9838b55531383492394a3f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/torso-control-calibrated.png",
+      "bytes": 486875,
+      "sha256": "2698653bdbe86a9cc0068be7f751c64d919f7a264d9838b55531383492394a3f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-face-reflectance/torso-control-subtle.png",
+      "bytes": 486875,
+      "sha256": "2698653bdbe86a9cc0068be7f751c64d919f7a264d9838b55531383492394a3f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/buzz-silver-0p00-msaa-cut.png",
+      "bytes": 186314,
+      "sha256": "011b64c523758dac09eab0b1ddeac21260b1495e857cc441f8d78aef9ccaf593"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/buzz-silver-0p00-msaa.png",
+      "bytes": 184833,
+      "sha256": "b4efb59930f72320991ba49879f7700103964d6cef41cc9a7926272783be4d41"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/buzz-silver-0p00-noaa-a2c.png",
+      "bytes": 180479,
+      "sha256": "d955dbaaecac13fc6722d4fa3f4ab6e0a9d3f2200de0e870a31137819e63ec26"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/buzz-silver-0p00-noaa-cut.png",
+      "bytes": 180479,
+      "sha256": "d955dbaaecac13fc6722d4fa3f4ab6e0a9d3f2200de0e870a31137819e63ec26"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/buzz-silver-0p00-ref3x.png",
+      "bytes": 204062,
+      "sha256": "f25ed6b4fcaf989b52932697a20185cc21bad997da0c07a62c77d8dc811b9826"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p00-msaa-cut.png",
+      "bytes": 187651,
+      "sha256": "077de8c83bb64c4e9aaa2a363ee0caaac1d0313e3154ffd58bc199a89abe010c"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p00-msaa.png",
+      "bytes": 185422,
+      "sha256": "10a5273bbde9bb327cc5ab471494cfbf14175d83c8ad530eddda6f80d12a5358"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p00-noaa-a2c.png",
+      "bytes": 178664,
+      "sha256": "fbbc6a0a289c351386ec7ed0372eaece5a15555e03c9513f79607c4120e8148f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p00-noaa-cut.png",
+      "bytes": 178664,
+      "sha256": "fbbc6a0a289c351386ec7ed0372eaece5a15555e03c9513f79607c4120e8148f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p00-ref3x.png",
+      "bytes": 205351,
+      "sha256": "2ed1a023b9528d30f886ae79dc865718e36189d7dd0b50800f0f2ebc57315ec0"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p62-msaa-cut.png",
+      "bytes": 189544,
+      "sha256": "ec8bdfacf7175eee140ad63702813a2cd3de15d42f105c94e4b540431fa95a80"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p62-msaa.png",
+      "bytes": 187519,
+      "sha256": "248a21d71dd7f50c970f11902f42fdcba6ed9502ec4a3d03a644398932acf912"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p62-noaa-a2c.png",
+      "bytes": 180452,
+      "sha256": "aa07b9ce797c6aa2bd0d91600e6531bc769be7a9048784d85d43c8903e1ab3e4"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p62-noaa-cut.png",
+      "bytes": 180452,
+      "sha256": "aa07b9ce797c6aa2bd0d91600e6531bc769be7a9048784d85d43c8903e1ab3e4"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/crop-ink-0p62-ref3x.png",
+      "bytes": 209630,
+      "sha256": "67e05ad458ac056b8777927383d4ec7bda41d81e26b5125b094302f9140a2ea9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/result.json",
+      "bytes": 14561,
+      "sha256": "c250b7fe03c56883a5f9bb201762cdc45107c57dbffb0138c787c4be6d6de9cf"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/swept-walnut-0p62-msaa-cut.png",
+      "bytes": 211711,
+      "sha256": "f07c3e8c3d0d1e97f3d6ad34ecd4adaaec16f7dba0c56422cc6064c0ba5704f7"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/swept-walnut-0p62-msaa.png",
+      "bytes": 210143,
+      "sha256": "aaa453ad291a0ee0d0ccc10ef67c1869504b68f7267c27cceafc0019ce7edbee"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/swept-walnut-0p62-noaa-a2c.png",
+      "bytes": 201978,
+      "sha256": "55dbeb8c58e4621d3849ed1c3666b0b763980f8266367b8e8a04599a3b714612"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/swept-walnut-0p62-noaa-cut.png",
+      "bytes": 201978,
+      "sha256": "55dbeb8c58e4621d3849ed1c3666b0b763980f8266367b8e8a04599a3b714612"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-groom-repeat/swept-walnut-0p62-ref3x.png",
+      "bytes": 231717,
+      "sha256": "6cd0456a94aabac2e806a39fea2cefad3c7be6a18df7135eefdc12d60a301bf9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-max-bare.png",
+      "bytes": 149326,
+      "sha256": "58247e6af913012bd3531eb2af92d6bb523f5df0f4eed1bf9abb833c525fc8d0"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-max-shirt-back.png",
+      "bytes": 137373,
+      "sha256": "046fcb137e2413911a13daa5356a2be20ba034ed8197386a8dd65493bc9aeab4"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-max-shirt-front.png",
+      "bytes": 142951,
+      "sha256": "05d7886bcadbce3a4bf0376ac3826b902260cd35d53ba178ded0f5460dbadbea"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-neutral-full.png",
+      "bytes": 148484,
+      "sha256": "13826b481eb6fd452cbd9b46052a287967a3b0bba5c841b58d2b0d60ae917a93"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-reloaded.png",
+      "bytes": 149914,
+      "sha256": "f096980343e0c110d0b33c7c83a2928e38b281e506f34158ccebc69dc3346507"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-zero-bare.png",
+      "bytes": 146483,
+      "sha256": "c572348f7bdb7f93e9e23e2d6b74df83d42b7e4d17e5700d54b6f99d5649290b"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-zero-shirt-back.png",
+      "bytes": 134550,
+      "sha256": "e52b75f80cb72b4ba7d0cc2c573665c90bc3c4602f60749d8ec8781dd3813932"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/full-zero-shirt-front.png",
+      "bytes": 138445,
+      "sha256": "1fad29cf1eede1b01b1183f378bd14eb7cc66770bd73c6e30f5ea9861eda82e9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-abs-0.png",
+      "bytes": 148895,
+      "sha256": "e018cb763d64822203b9205dc912d3bc5aa7233fb80d16ef69eb4f30bd845358"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-abs-12.png",
+      "bytes": 149638,
+      "sha256": "46699e7146db1489fa24331aaefd2fe7ab4c75c82ef49f0c579fa0bbb84666fa"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-biceps-0.png",
+      "bytes": 147702,
+      "sha256": "8d978f39a973764199e13fcd77d48be8f142729821dbe6e92d4475a1f15fb1b9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-biceps-12.png",
+      "bytes": 148089,
+      "sha256": "34c39f1abb6b2c839b6a0c312fdf2acc810106ffdedbaf682c537a4b78c5d1fa"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-calves-0.png",
+      "bytes": 141164,
+      "sha256": "72d4e502b649ccebc2fcb9871f133d835db3194f299405b3da5a7f375567a07c"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-calves-12.png",
+      "bytes": 141352,
+      "sha256": "a6bfff7d712f33d47b7c07d4f6a14637e5dc74a3f5919b73997928de3fc3be53"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-chest-0.png",
+      "bytes": 148125,
+      "sha256": "069acffb39cf9dcdb5cd22bb47961374a864cf66623d0a50e1a65925efea8faf"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-chest-12.png",
+      "bytes": 148895,
+      "sha256": "e018cb763d64822203b9205dc912d3bc5aa7233fb80d16ef69eb4f30bd845358"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-forearms-0.png",
+      "bytes": 148097,
+      "sha256": "3914c770b0063fb1ade042fab81f042a4608f634b3056de7a8b44548c5a76e26"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-forearms-12.png",
+      "bytes": 148125,
+      "sha256": "069acffb39cf9dcdb5cd22bb47961374a864cf66623d0a50e1a65925efea8faf"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-glutes-0.png",
+      "bytes": 140295,
+      "sha256": "99c832ea317348ef22b6935765cdf6034b0777d4c3a204e35c5479544af39cad"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-glutes-12.png",
+      "bytes": 141164,
+      "sha256": "72d4e502b649ccebc2fcb9871f133d835db3194f299405b3da5a7f375567a07c"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-hamstrings-0.png",
+      "bytes": 140011,
+      "sha256": "a3b2530e8b22c09c41edf3de6913c47335c7e06b87a5b334ba1bd42f9e11ce41"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-hamstrings-12.png",
+      "bytes": 140295,
+      "sha256": "99c832ea317348ef22b6935765cdf6034b0777d4c3a204e35c5479544af39cad"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-lats-0.png",
+      "bytes": 145727,
+      "sha256": "34874cf03ba03dd04a91995e50f1f81f0155983dc69f7d6d687a790c3a06af0f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-lats-12.png",
+      "bytes": 145735,
+      "sha256": "d1a00f6317174b923b805a627da612f4f9e76bd6fa6d3b715c412e608be941e2"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-lowerback-0.png",
+      "bytes": 145874,
+      "sha256": "e10452eb71fe15eadd4c259fb95bb56f8955c33fcad1b1a22e7d7e8367df0db3"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-lowerback-12.png",
+      "bytes": 146088,
+      "sha256": "0d96eeb6c555ca97c10f3db944c47a853b39c84a9f8069d42e3f29082c765289"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-bare.png",
+      "bytes": 150646,
+      "sha256": "339aa2e04f11aca82c003d8ba4dbd58b0955751fdaf980356f71f5b32bb0f780"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-legs-front.png",
+      "bytes": 142667,
+      "sha256": "83e255483c1c60aefb5242d475f9a4c97087e9c7213183397a0aed62e2749bcc"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-legs-rear.png",
+      "bytes": 141679,
+      "sha256": "d83b3504201efadd354ef617010fa7691120c24f94f99eb5a1a33b2e69523ca3"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-relief-back.png",
+      "bytes": 146088,
+      "sha256": "0d96eeb6c555ca97c10f3db944c47a853b39c84a9f8069d42e3f29082c765289"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-relief-front.png",
+      "bytes": 150646,
+      "sha256": "339aa2e04f11aca82c003d8ba4dbd58b0955751fdaf980356f71f5b32bb0f780"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-shirt-back.png",
+      "bytes": 140474,
+      "sha256": "0c10dccf3d99fd46890426082fa574c47f51537a24e7851152fccfefbb366d53"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-shirt-front.png",
+      "bytes": 145336,
+      "sha256": "f847f60604e435737707ce93c79ddedbd91572234417fb18d49ba830b8ce0d45"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-volume-only-back.png",
+      "bytes": 144265,
+      "sha256": "dea5ee57ac6dfc7ee2ac7bce1b362b6075f3751d9b456a51cbf9ca443bd6216f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-max-volume-only-front.png",
+      "bytes": 148868,
+      "sha256": "9d3696eae4b50feb2ed2568722c3d899ed4c7ffc50334a82b5a4699a695a45be"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-midback-0.png",
+      "bytes": 145735,
+      "sha256": "d1a00f6317174b923b805a627da612f4f9e76bd6fa6d3b715c412e608be941e2"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-midback-12.png",
+      "bytes": 145874,
+      "sha256": "e10452eb71fe15eadd4c259fb95bb56f8955c33fcad1b1a22e7d7e8367df0db3"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-neutral-full.png",
+      "bytes": 143274,
+      "sha256": "49b816cdf0888caccb09e5992b2891841fb668d20de0a21307723f4b1c4c698d"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-obliques-0.png",
+      "bytes": 149638,
+      "sha256": "46699e7146db1489fa24331aaefd2fe7ab4c75c82ef49f0c579fa0bbb84666fa"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-obliques-12.png",
+      "bytes": 149890,
+      "sha256": "971d053f40556254cb4f9a06b6ddd0d17399bba01ba95ff6f3553cacab2db032"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-quads-0.png",
+      "bytes": 141866,
+      "sha256": "590da0f696b0330e1508a3d1efaf56b211c5f4ed34622c5d8b30a1c91074d6b6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-quads-12.png",
+      "bytes": 142634,
+      "sha256": "8c07e5712b11b51b3c8a2af6dcec98b39b9c31604c990a14fa6406454395067f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-shoulders-0.png",
+      "bytes": 147613,
+      "sha256": "76430b5d9db5a59443c1815949e0850df6fe77b8dc64a47f0a400ac953b57adc"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-shoulders-12.png",
+      "bytes": 147702,
+      "sha256": "8d978f39a973764199e13fcd77d48be8f142729821dbe6e92d4475a1f15fb1b9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-traps-0.png",
+      "bytes": 145039,
+      "sha256": "68085dc29f860c59d741b0d4bdcf0e67bb6f106e5eabb6f4162e94d0b43555d0"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-traps-12.png",
+      "bytes": 145727,
+      "sha256": "34874cf03ba03dd04a91995e50f1f81f0155983dc69f7d6d687a790c3a06af0f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-triceps-0.png",
+      "bytes": 143314,
+      "sha256": "53a66744dc98e9dfa42ae5a85c96481c1fc5b3f0fea3f93e9258820b0353c78f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-triceps-12.png",
+      "bytes": 143861,
+      "sha256": "b508e978997fe51250d03dc585e5025cf522015bb65a5bb4e226d5b20c745ad5"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-zero-bare.png",
+      "bytes": 147613,
+      "sha256": "76430b5d9db5a59443c1815949e0850df6fe77b8dc64a47f0a400ac953b57adc"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-zero-shirt-back.png",
+      "bytes": 137733,
+      "sha256": "9541c7abf4c9b0865f8532b5da99cd58c9e522cd6d8f1d5ef7b68c7d66006757"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/lean-zero-shirt-front.png",
+      "bytes": 141368,
+      "sha256": "46c8c69a9225b5e2d09d7100ac6c526d6fa1d999eb59fcbc3d3c71fff68cb694"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/regional-ui-360.png",
+      "bytes": 75894,
+      "sha256": "d807a7513ba0abe47c7ce2b364a06e7606e1fe220a98ee2d9ff27c881c9932b1"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/regional-ui-390.png",
+      "bytes": 80519,
+      "sha256": "32f645f243f3a41bf0d70f26def5b32b7fb39a9780f33290675462af733863e7"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/result.json",
+      "bytes": 7411,
+      "sha256": "f9bf821a992000d48a9d30898cf67845057e13465e53081ca41f5ef244a07e4f"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-max-bare.png",
+      "bytes": 149332,
+      "sha256": "4dbc952538b05c463ee909894d2cb6328fd2e04795f1663308ab7f95f2d3f881"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-max-shirt-back.png",
+      "bytes": 138760,
+      "sha256": "e71304f284733e9c3ab20e1da6cbbd3c601abc22c1fda9120ea6ac7706f42748"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-max-shirt-front.png",
+      "bytes": 143695,
+      "sha256": "198c471e4f78d0c4611e44c7facb7ebadf081b3f7d0388db42230af5e50adaed"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-neutral-full.png",
+      "bytes": 147810,
+      "sha256": "2e2bfcde536780d2addc879bbdc6b339892467d011c04ffac86e32ff1726a34e"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-reloaded.png",
+      "bytes": 149363,
+      "sha256": "dd8148daed7281f45f4259889b045aba540ef5adbe984f4c5dcd5cd0681622c8"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-zero-bare.png",
+      "bytes": 146454,
+      "sha256": "02825b4a11801e5d952fd514dc2179cff3c28f6ee33f34f09c5e6b1102a679f6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-zero-shirt-back.png",
+      "bytes": 136246,
+      "sha256": "ff1d8134eaa64f2ec5ade382f3db9ab0a1e789cc2734493af1a975fcfc632209"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/solid-zero-shirt-front.png",
+      "bytes": 139557,
+      "sha256": "4cdcaedf5489944bca82666c1a267e4038c308897d21384e8d7e5e93f8be4c18"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/start-full.png",
+      "bytes": 137198,
+      "sha256": "67b2545964174d2e525d4e89267840ca6eb39ee1e46dafbf01cbf875c88e4fd6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/start-lean.png",
+      "bytes": 136339,
+      "sha256": "a78082e7813b46cf51f0c3abc9f841ebd75693d5ecaa1d9de98fe14dde77b875"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/start-solid.png",
+      "bytes": 136655,
+      "sha256": "627cce4fa52a3a2d1953477cc7a2b78e5bbb273d681cf0534b99b45dfc645f5d"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-hair-buzz.png",
+      "bytes": 143269,
+      "sha256": "c9b05e09bc198fdffb4d044ad3fa881add608c4bbcdcb1dedca3de4959072605"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-hair-crop.png",
+      "bytes": 145238,
+      "sha256": "6e7582bc679b2fa37bceccf14cb85d759c51386ff720e54e43c23564107b113b"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-hair-swept.png",
+      "bytes": 145382,
+      "sha256": "edfbf4582b2e6c5d7adb934328d109f433341d2350f84e7cc91ca0b40a31f2fd"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-tone-ink.png",
+      "bytes": 145382,
+      "sha256": "edfbf4582b2e6c5d7adb934328d109f433341d2350f84e7cc91ca0b40a31f2fd"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-tone-plum.png",
+      "bytes": 146065,
+      "sha256": "c375e2f6f30bba9a228d022f91f933125a2df3193948509418084b5f246ed230"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-tone-silver.png",
+      "bytes": 146165,
+      "sha256": "dc235f046d7f2cd40403825c293ae283bb0f47e7f2f364682b764194f9e4de23"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-integrated/ui-tone-walnut.png",
+      "bytes": 145969,
+      "sha256": "acd474f600d75396b10b7ccc5a0aa807ddf779f3f4ad2b8fc925761b44f283ff"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-0-moving.png",
+      "bytes": 138677,
+      "sha256": "250d9327f9b09b67d1511d17b219e1b492647492db264d4ccd55ae16d4671825"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-0-reset.png",
+      "bytes": 138445,
+      "sha256": "1fad29cf1eede1b01b1183f378bd14eb7cc66770bd73c6e30f5ea9861eda82e9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-0-still.png",
+      "bytes": 138445,
+      "sha256": "1fad29cf1eede1b01b1183f378bd14eb7cc66770bd73c6e30f5ea9861eda82e9"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-12-moving.png",
+      "bytes": 142862,
+      "sha256": "5096c80af70a78bb9b95202017d161ac87029a228b1a7ddef3fa50b69c0623e6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-12-reset.png",
+      "bytes": 142951,
+      "sha256": "05d7886bcadbce3a4bf0376ac3826b902260cd35d53ba178ded0f5460dbadbea"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/full-12-still.png",
+      "bytes": 142951,
+      "sha256": "05d7886bcadbce3a4bf0376ac3826b902260cd35d53ba178ded0f5460dbadbea"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-0-moving.png",
+      "bytes": 141695,
+      "sha256": "facc1ea7853013919691b91b0fa2c83f26be2f73c2d985c45a3548c23a312000"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-0-reset.png",
+      "bytes": 141368,
+      "sha256": "46c8c69a9225b5e2d09d7100ac6c526d6fa1d999eb59fcbc3d3c71fff68cb694"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-0-still.png",
+      "bytes": 141368,
+      "sha256": "46c8c69a9225b5e2d09d7100ac6c526d6fa1d999eb59fcbc3d3c71fff68cb694"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-12-moving.png",
+      "bytes": 145791,
+      "sha256": "22badacf11ff27f96cae19b8937223198cd27f6fa2e987b369e8bf814a509b15"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-12-reset.png",
+      "bytes": 145336,
+      "sha256": "f847f60604e435737707ce93c79ddedbd91572234417fb18d49ba830b8ce0d45"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/lean-12-still.png",
+      "bytes": 145336,
+      "sha256": "f847f60604e435737707ce93c79ddedbd91572234417fb18d49ba830b8ce0d45"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/result.json",
+      "bytes": 4037,
+      "sha256": "31c25a7fc67b679b1a99a097abdd6eb8e72970b85b1372a0c730f687b13ec828"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-0-moving.png",
+      "bytes": 139628,
+      "sha256": "cf0e784cc827fb5a1ed3d0c20e3f55e3db259176fbb3c50ba72809ff13c88e72"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-0-reset.png",
+      "bytes": 139557,
+      "sha256": "4cdcaedf5489944bca82666c1a267e4038c308897d21384e8d7e5e93f8be4c18"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-0-still.png",
+      "bytes": 139557,
+      "sha256": "4cdcaedf5489944bca82666c1a267e4038c308897d21384e8d7e5e93f8be4c18"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-12-moving.png",
+      "bytes": 143788,
+      "sha256": "5c065ea6ad4e546be9fd65b248a512b492451749e6b0f6b9ad2559473756cabe"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-12-reset.png",
+      "bytes": 143695,
+      "sha256": "198c471e4f78d0c4611e44c7facb7ebadf081b3f7d0388db42230af5e50adaed"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/browser-v28-motion/solid-12-still.png",
+      "bytes": 143695,
+      "sha256": "198c471e4f78d0c4611e44c7facb7ebadf081b3f7d0388db42230af5e50adaed"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/build-v28-fixed.log",
+      "bytes": 2846,
+      "sha256": "8fe9b1dd516599983a1d9c8878e5d801e137bc87c0adcb225df794040c44c146"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/build-v28-serial.log",
+      "bytes": 9922,
+      "sha256": "9b591b3bd4b8fa9cc643261136394650960bac0f3e2efeb3d06e2f00f5148430"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/build-v28.log",
+      "bytes": 952,
+      "sha256": "0a63571e84c74cb9341830d96446e12954b46bac7d42b489e7aa20e737e61104"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/diagnose-face-reflectance.mjs",
+      "bytes": 17472,
+      "sha256": "f22c854842358deacab1135ebd029a08a37cf1c50dfe44dac6c90e1c9c536e92"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/diagnose-groom-repeat.mjs",
+      "bytes": 17538,
+      "sha256": "c77972c1f35dd3186439f92788e0b7614e70c2742a579003ad8cdf8197d95804"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/diagnose-groom-sampling.mjs",
+      "bytes": 17120,
+      "sha256": "5ea71ac11a15a9101c67ab044f2b8171fc18151b60cb46ba2f4ae947c71124a5"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-full.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-full.log",
+      "bytes": 4995,
+      "sha256": "cb5e6be7d1f35545fbb0e0a6a63756c1bea24d165f5333e0e9e2626e7dd0e75a"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-lean.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-lean.log",
+      "bytes": 5007,
+      "sha256": "c8e2696cf0066d0a1c8143ad45ae5ba1b8cea402e32d7ff87228ab43f963bd40"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-solid.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/envelope-solid.log",
+      "bytes": 5072,
+      "sha256": "445e5b14a8c81dd8dce39c6da7451c10b68a919844f61b491cd0354864075020"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/face-reflectance.log",
+      "bytes": 5564,
+      "sha256": "d651337d6f2fa4e74113c4bfaa25fca980634fcace78ce0448910886193898ca"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/groom-repeat.log",
+      "bytes": 9812,
+      "sha256": "62fbd4cca90bb197c6987afabca302c28b2623b13d5cb6725b922a9d3ce82c52"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/groom.log",
+      "bytes": 1324,
+      "sha256": "23f5290db743353f47f663c6390192200c71c79ff05c763bb63f14b2a6c9a275"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/integrate-v28.cjs",
+      "bytes": 6778,
+      "sha256": "dbc79b23fb621303e6d3b536d2cf35fee217a6769cfeeb1d7f3b7bbae5a70fe2"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/integration-files.json",
+      "bytes": 1627,
+      "sha256": "53dbafa40c39fee2171cdddc7705b863633d5691970498f00d8360cb90f55c36"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/Avatar3D.tsx",
+      "bytes": 79023,
+      "sha256": "313451d67870ae05b5878e25c94e2ad4bb5362b7174fa959d6a21d34f779e963"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/avatarZoneFoundation.ts",
+      "bytes": 10494,
+      "sha256": "bdd669b1f8b1f073f518e6c8b3ac1c1410cb10ab7e745fb82bea4dffbc2941c0"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/local-avatar-foundation-review.ts",
+      "bytes": 6075,
+      "sha256": "f39eea4fda6f006363cd04d7e9a7bfa062aea7b1aadc3c26cb08d8d32673c2a5"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/muscleZones.ts",
+      "bytes": 6382,
+      "sha256": "9c7625a1974a20b6791218af50dda6208d2420b7f639883c2c1fa7a20c619ecb"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/preimage/zoneAssetPins.ts",
+      "bytes": 4168,
+      "sha256": "fa443e64a77c4b79e5a036cd8d7b52f4455dc5c3f6c9a192a7bd0fb06d8f4238"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/production-manifest-v28.json",
+      "bytes": 16730,
+      "sha256": "f6decf4fe06ac3d0fcc2cc9af321556a0897790839f834b63082b599ab91429e"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/rollback-v28.cjs",
+      "bytes": 880,
+      "sha256": "69c412e2a45d1009701b584956a7e26e387b7043d4bfa3bd8077c691742be09e"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/save-v28-source.py",
+      "bytes": 12315,
+      "sha256": "927284c5610f8ed57272598e8caeed7b669755e7ce6b9c53c42fcefa9913cdf7"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/unit-v28.log",
+      "bytes": 134856,
+      "sha256": "9168c3e988c1f0de7d63c1bb7d6e52982b8c56d2c4a741df56019d9326f74c15"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-browser-integrated-fixed.log",
+      "bytes": 104510,
+      "sha256": "9edadb7b080cbc59660a61fcf0bd2d68ffd6fc894ac291290e763790e4acadd3"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-browser-integrated.log",
+      "bytes": 2058,
+      "sha256": "a1f612859078c0498bbf0fb4df3391a2cfa56f174a9cb9123a7dcf3f4eeb22f6"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-browser-motion.log",
+      "bytes": 15278,
+      "sha256": "f8a0ad5446e2af80311b17376407fb41ce91f2b1a027e9165057695f5160012e"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-envelope-full.json",
+      "bytes": 316164,
+      "sha256": "fdf7f91b5fd6b8ced27c1ce6964cc0c120c96f0db23833ae2c50f407194c66ca"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-envelope-lean.json",
+      "bytes": 316076,
+      "sha256": "a8cffbe864380387d55347d88bad88e0947cadc344e98231378f226bff01ddf5"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-envelope-solid.json",
+      "bytes": 316654,
+      "sha256": "a9dcfc951a3c148d8becd5dea9a0858b52eff3913412960f18ef690c5655371d"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-seam.json",
+      "bytes": 226758,
+      "sha256": "0d1d324103e96da8c4bed52829cd6a4245ff6acc9ffbb0d9d3b398fe89ca7ccc"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-source.log",
+      "bytes": 4620,
+      "sha256": "f68a0ed90cc3137cf244dca7940a77555e52a0231bd52f9fc8d2e07cc86bbf62"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-source/foundation-arms-v28.blend",
+      "bytes": 32366646,
+      "sha256": "4146f1e874a02bf442a2e1c117b4f33d5a93645837d48a8d0de9eab1b6ee39ac"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-source/master-fields.npz",
+      "bytes": 2423765,
+      "sha256": "6cb6b157716d3379e32f02147b2cbaf9f3dfb79e6326f890fa10541a7979c281"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/v28-source/source-qc.json",
+      "bytes": 1681,
+      "sha256": "d820b3313989a9cdf2c1100c7148ae336f2ab07b4c8bb02428723f6391238192"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/verify-v28-boundary.mjs",
+      "bytes": 5246,
+      "sha256": "e857e183a51ee0003b1dadda7d172760af6dbc950a9f088de68dfd1641b9dd83"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/verify-v28-live-motion.mjs",
+      "bytes": 20176,
+      "sha256": "b9d72c5a7d6c54774a9b462cc69adffc1536a06f644c19f5b559239049fde5df"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/verify-v28-seam.mjs",
+      "bytes": 4911,
+      "sha256": "c88a431bd913b695c75811fe76d237aed275274e63aee27c2bac5667b16cc736"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/write-v28-receipt.mjs",
+      "bytes": 11324,
+      "sha256": "b3da31bb1032a45c7ffc3afaca58579eee6652169a5ea117bb08efa2f8e66985"
+    },
+    {
+      "path": ".bodyforge-qa/agent-v28-arms-20261128-run01/zones-browser-v28-e2e.mjs",
+      "bytes": 26967,
+      "sha256": "865e313fcce7e341719f3c641e0d21273f51e7cd4ef4da920a4f532c1416183c"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V24_20261128/RECEIPT.json",
+      "bytes": 59890,
+      "sha256": "2654a88f154f2df981af456c67669dfffe1537ef787a2edb958502e8cff25f79"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V25_CHEST_STUDY_20261128/RECEIPT.json",
+      "bytes": 11479,
+      "sha256": "efee976faac1aebf02167f25fd5a5e8d921bdc4e3ac96b5e0e552167ff5e2971"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V26_20261128_RUN01/RECEIPT.json",
+      "bytes": 79875,
+      "sha256": "fe8150519f3b10cdd4db73e66fbeb60277328d4cc9578c617a8905cba24800a7"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V27_20261128_RUN01/RECEIPT.json",
+      "bytes": 68228,
+      "sha256": "03a03c1b7c938fa5e335152bdefb080f6fcbd82296bfe318946ee7dc9c5f1f03"
+    },
+    {
+      "path": "docs/audits/BF_AVATAR_V28_20261128_RUN01/REPORT.md",
+      "bytes": 3158,
+      "sha256": "badf802d345c44c972bcecac56c055d7c2c1e1efd5f25d535b931965e04cfd65"
+    },
+    {
+      "path": "qa/local-avatar-foundation-review.ts",
+      "bytes": 6315,
+      "sha256": "c404cbce2436edb3b42efa55a076e3d9669854432356388d7ad2e115aca2ec47"
+    },
+    {
+      "path": "src/components/Avatar3D.tsx",
+      "bytes": 79088,
+      "sha256": "d9aa9840187a1d6809826fc5e923443c242ee533580099243d9b1bc478efe467"
+    },
+    {
+      "path": "src/lib/avatarZoneFoundation.ts",
+      "bytes": 10583,
+      "sha256": "41533f644f27b0e4ec4d73eb6bd15143badd1b80f989ea5880f39482e4e02388"
+    },
+    {
+      "path": "src/lib/muscleZones.ts",
+      "bytes": 6387,
+      "sha256": "6dee9dcf5ab23f7606c9d4fceacd2733d7b5a5fd567e276b1920d6a761ea74dd"
+    },
+    {
+      "path": "src/lib/zoneAssetPins.ts",
+      "bytes": 4506,
+      "sha256": "7aacb2c9e0b7d02fbc33781bb1104f7213456012811f7c8258fa6d40d1b127d8"
+    }
+  ]
+}
